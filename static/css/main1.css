@@ -1,0 +1,976 @@
+/*
+Resize and Rename
+
+https://bulkresizephotos.com/
+Make the longest side of images 65 pixels.
+for file in *.jpg; do mv "$file" "${file%.jpg}_v.jpg"; done
+
+https://themetry.com/css-image-cropping/
+
+Resolution of Austin Camera : 600 dpi
+
+*/
+
+* {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+/* styles */
+
+@import url('https://fonts.googleapis.com/css?family=PT+Sans');
+@import url('https://fonts.googleapis.com/css?family=PT+Mono');
+
+
+@font-face {
+    font-family: 'unica';
+    src: url('../fonts/neue-haas-unica-pro-regular.ttf')
+}
+
+:root {
+    --main-accent-color: rgb(253, 28, 21);
+}
+
+:root {
+    --black: #000000;
+    --darkblue: #34495e;
+    --nicered: #e74c3c;
+    --yellow: #C9C243;
+    --orange: #FFA644;
+    --blue: #3498db;
+    --white: #ffffff;
+    --lightgreen: #A6FFB4;
+    --nicebrown: #666666;
+    --salmonred: #FF9891;
+    --oftenbeige: #f5f5ed;
+    --aqua: #00FFFF;
+    --blue1: #C9F8F3;
+    --pink1: #FB94E8;
+    --exagrey: #565656;
+    --exablue: #7FC7E6;
+    --exaorange: #F7976A;
+    --exared: #F15D62;
+    --exadarkblue: #6096A8;
+    --exadarkred: #AF464E;
+    --exabrown: #BC7255;
+    --exapurple: #E52B8F;
+    --outline: #FFFFFF;
+    --oftenBeige2: #DADABC;
+    --alvagreen: #deff00:
+}
+
+/*polaroid  originals colors
+	.st0{fill:#00B140;}
+	.st1{fill:#37A3E0;}
+	.st2{fill:#DA291C;}
+	.st3{fill:#FF8200;}
+	.st4{fill:#FFB500;}
+*/
+
+body {
+    font-family: 'unica', sans-serif;
+    font-weight: 100;
+    font-size: 0.75em;
+    color: #34495e;
+    line-height: 1;
+    font-feature-settings: 'palt' 1;
+    -webkit-font-smoothing: antialiased;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    /*margin-top:70px; only with fixed header, on scroll*/
+}
+
+#polaroids {
+    background-color: var(--white);
+    min-height: 100vh;
+    max-height: 100vh;
+}
+
+header {
+    grid-column: span 3;
+    font-size: 1em;
+    color: #000;
+    /*color: var(--nicebrown);*/
+    height: 70px;
+    width: 100%;
+    top: 0px;
+    position: fixed;
+    z-index: 1;
+    display: block;
+}
+
+.headerBoxes {
+    position: relative;
+    height: 70px;
+    margin-left: 1em;
+    margin-right: 1em;
+    max-width: 700px;
+    border: 1px solid black;
+}
+
+.collapseOnMobile {
+    display: none;
+}
+
+.bannerholder {
+    background-color: var(--pink1);
+    height: 70px;
+    width: 250px;
+    position: absolute;
+    float: left;
+    display: none;
+}
+
+main {
+    position: relative;
+    overflow: auto;
+    max-width: 700px;
+}
+
+#polaroids main {
+    max-width: 100%;
+    height: calc(100vh - 100px);
+    min-height: calc(100vh - 100px);
+
+}
+
+nav {
+    position: relative;
+    padding: 0;
+    text-align: right;
+    z-index: 5000;
+    padding-bottom: 9px;
+}
+
+aside {
+    position: relative;
+}
+
+footer {
+    grid-column: span 3;
+    padding: 0;
+    font-size: 0.75em;
+    color: #000;
+    height: auto;
+    position: relative;
+}
+
+.footerBoxes {
+    position: relative;
+    ` height: auto;
+    padding-left: 55px;
+    padding-right: 1em;
+    width: calc(100% - 20px);
+    max-width: 550px;
+    text-align: left;
+}
+
+.titlebox {
+    position: relative;
+    z-index: 1000;
+    transform: translate(0, 1em);
+}
+
+.menubox {
+    float: right;
+    width: auto;
+    height: 95%;
+    transform: translate(-1em, 1em);
+}
+
+#often {
+    position: absolute;
+    width: auto;
+    white-space: nowrap;
+    top: 3px;
+    left: 45px
+}
+
+#mainIcon {
+    width: 45px;
+    height: 45px;
+}
+
+#mainIconDiv {
+    position: absolute;
+    display: block;
+    top: -13px;
+    left: 0;
+}
+
+.title {
+    color: #000;
+    font-weight: 900;
+    font-size: 1em;
+    white-space: nowrap;
+}
+
+h1 {
+    margin-bottom: 1em;
+    font-size: 1.3em;
+}
+
+.noshadow {
+    box-shadow: none;
+    opacity: 0.1;
+    transition: all 0.3s cubic-bezier(.25, .8, .25, 1);
+}
+
+.shadow {
+    opacity: 1;
+    box-shadow: 0 19px 38px rgba(0, 0, 0, 0.30), 0 15px 12px rgba(0, 0, 0, 0.22);
+    transition: all 0.3s cubic-bezier(.25, .8, .25, 1);
+}
+
+/*
+.shadow:hover {
+    box-shadow: 0 7px 14px rgba(0, 0, 0, 0.25), 0 5px 5px rgba(0, 0, 0, 0.22);
+}*/
+
+#box,
+#box1,
+#box2 {
+    top: 0;
+    left: 0;
+    max-width: 700px;
+    position: relative;
+    overflow: hidden;
+    display: block;
+    transition: all 0.3s linear;
+    height: auto;
+}
+
+#box {
+    width: calc(100% - 20px);
+    /*height: calc(100% - 5em);*/
+    margin: 10px;
+    border-radius: 5px;
+    background-color: var(--white);
+    position: absolute;
+}
+
+#box2 {
+    width: calc(100% - 20px);
+    max-width: 550px;
+    border-radius: 5px;
+    margin: 10px;
+    position: relative;
+
+}
+
+#box1 {
+    width: 100%;
+    max-width: 100%;
+    min-height: 100%;
+    position: relative;
+}
+
+#polaroid {
+    position: absolute;
+    bottom: 4em;
+}
+
+@keyframes spin {
+    100% {
+        -webkit-transform: rotate(360deg);
+        transform: rotate(360deg);
+    }
+}
+
+.is-waiting-a {
+    display: block;
+    position: relative;
+    float: right;
+    margin-left: 1em;
+}
+
+.is-waiting-b {
+    display: block;
+    position: relative;
+    float: right;
+    margin-left: 1em;
+}
+
+.switchPage {
+    width: 50px;
+    height: 50px;
+    color: #FF0033;
+    cursor: pointer;
+    z-index: 10;
+    padding-top: 5px;
+    border-radius: 10%;
+    text-align: center;
+}
+
+.on-display {
+    opacity: 1;
+    display: block;
+    z-index: 100;
+}
+
+.is-hidding-a,
+.is-hidding-b {
+    opacity: 0;
+}
+
+.is-hidding {
+    display: none;
+}
+
+.buttonSvg {
+    z-index: -1;
+    pointer-events: none;
+}
+
+.buttonIcon {
+    height: auto;
+    width: 50px;
+}
+
+.landing {
+    height: auto;
+    width: inherit;
+    top: 0;
+    position: absolute;
+}
+
+.landingabout {
+    height: auto;
+    width: 100%;
+    position: relative;
+    overflow: visible;
+}
+
+.landingx {
+    height: 600px;
+    width: 100%;
+    position: relative;
+    overflow: visible;
+    display: none;
+}
+
+.landingy {
+    height: 600px;
+    width: 100%;
+    position: relative;
+    overflow: visible;
+    display: block;
+    color: #111111;
+}
+
+.landingy h1 {
+    width: auto;
+    margin-top: 5em;
+    margin-bottom: 0;
+    font-size: 2.5em;
+    padding-top: 0.25em;
+    padding-bottom: 0.25em;
+    color: #333333;
+}
+
+.landingy h1 span {
+    background-color: #deff00;
+}
+
+
+.landingy h2 {
+    margin -top: -2em;
+    font-size: 1em;
+}
+
+.landingpolaroid {
+    height: 100vh;
+    max-height: 100vh;
+    min-width: 100%;
+    position: relative;
+    overflow: scroll;
+    /*
+    display: grid;
+    grid-template-columns: 0 auto;
+    grid-template-rows: auto;*/
+    transition: all 1s;
+}
+
+.polaroidLink,
+.gitLink {
+    height: 60px;
+    width: 60px;
+    position: relative;
+    display: block;
+}
+
+/* POLAROIDS */
+
+.loader {
+    position: fixed;
+    left: 0px;
+    top: 0px;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    /*background: url('http://www.downgraf.com/wp-content/uploads/2014/09/01-progress.gif?e44397') 50% 50% no-repeat rgb(249, 249, 249);*/
+    background-color: rgb(249, 249, 249);
+}
+
+.insideLoader {
+    position: relative;
+    width: 50%;
+    height: 50%;
+    margin: 10% auto auto auto;
+}
+
+#filters {
+    min-width: 100%;
+    max-width: 100%;
+    height: auto;
+    position: relative;
+    overflow-y: scroll;
+    margin-left: 0;
+    border-radius: 3px;
+}
+
+#polaroidSearchOverlay {
+    position: fixed;
+    left: 0;
+    bottom: 0%;
+    min-width: 100%;
+    min-height: 40%;
+    height: auto;
+    z-index: 1000;
+    background-color: rgba(255, 255, 255, 0.85);
+    display: none;
+    padding: 5px;
+}
+
+.polaroidSearchOverlayOpen {
+    display: block;
+}
+
+#openFilters {
+    position: absolute;
+    bottom: 10px;
+    left: 1em;
+    height: 28px;
+    width: auto;
+    color: red;
+    padding: 6px;
+    border-radius: 4px;
+    z-index: 1200;
+    cursor: pointer;
+    /*transform: rotate(-90deg);*/
+}
+
+
+#filtering {
+    position: absolute;
+    width: calc(100% - 10px);
+    height: 100%;
+    padding: 10px;
+    /*background-color: rgba(127, 255, 212, 0.85);*/
+    border-radius: 3px;
+    margin-bottom: 1px;
+}
+
+#galleryAndSearch {
+    min-height: 100%;
+    max-height: 100%;
+    width: auto;
+    position: relative;
+    overflow-y: scroll;
+    border-radius: 3px;
+    display: grid;
+    grid-template-columns: auto;
+    grid-template-rows: auto 0;
+}
+
+#galleryContainer {
+    min-height: 100%;
+    max-height: 100%;
+    width: auto;
+    position: relative;
+    overflow-y: scroll;
+    padding-left: 1em;
+}
+
+#gallery {
+    height: auto;
+    width: auto;
+    position: relative;
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: space-around;
+    padding: 0 3px;
+}
+
+#gallery .vignetteContainer {
+    position: relative;
+    width: auto;
+    height: auto;
+    max-width: 55px;
+    max-height: 60px;
+    cursor: pointer;
+    vertical-align: bottom;
+    margin: 0 auto;
+}
+
+#gallery .vignetteContainer img {
+    position: relative;
+    width: auto;
+    height: auto;
+    max-width: 55px;
+    max-height: 60px;
+    object-fit: contain;
+    border-radius: 4px;
+    margin: 0 auto;
+}
+
+#gallery .vignetteContainer img:hover {
+    opacity: 0.1;
+}
+
+
+#gallery .vignettebox {
+    position: relative;
+    width: 60px;
+    height: 70px;
+    cursor: pointer;
+    vertical-align: bottom;
+    margin-bottom: 8px;
+}
+
+a[data-date^='2010'] .vignettebox {
+    border-bottom: 1px solid brown;
+}
+
+a[data-date^='2006'] .vignettebox {
+    border-bottom: 1px solid green;
+}
+
+a[data-date^='2005'] .vignettebox {
+    border-bottom: 1px solid red;
+}
+
+a[data-date^='2004'] .vignettebox {
+    border-bottom: 1px solid aqua;
+}
+
+a[data-date^='2003'] .vignettebox {
+    border-bottom: 1px solid yellow;
+}
+
+
+div.maindisplay {
+    position: fixed;
+    padding-top: 10%;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    background-color: rgba(0, 0, 0, 0.95);
+    display: none;
+    opacity: 0;
+    z-index: 6000;
+    animation-name: displayFadeOut;
+    animation-delay: 0.1s;
+    animation-duration: 0.5s;
+    animation-fill-mode: forwards; // Stay on the last frame
+    animation-iteration-count: 1; // Run only once
+    animation-timing-function: linear;
+}
+
+div.maindisplayplus {
+    display: block;
+    animation-name: displayFadeIn;
+    animation-delay: 0.1s;
+    animation-duration: 0.5s;
+    animation-fill-mode: forwards; // Stay on the last frame
+    animation-iteration-count: 1; // Run only once
+    animation-timing-function: linear;
+}
+
+.sx70,
+.sixhundred,
+.sx70vignette {
+    margin-top: -45px;
+    width: 420px;
+    height: auto;
+}
+
+.spectra {
+    margin-left: 13px;
+    margin-top: -30px;
+    margin-bottom: -90px;
+    width: 400px;
+    height: auto;
+}
+
+.displayedPictureContainer {
+    position: relative;
+    display: block;
+    margin: 0 auto;
+    max-width: 360px;
+    max-height: 360px;
+    overflow: hidden;
+    text-indent: -35px;
+    border-radius: 10px;
+    border: 4px solid rgb(0, 0, 0);
+}
+
+.pictureProgress {
+    position: relative;
+    background-color: rgb(255, 255, 255);
+    padding: 4px;
+    border-radius: 4px;
+}
+
+.toppicture,
+.toppicture1,
+.toppicture2 {
+    position: relative;
+    width: 100%%;
+    height: auto;
+    float: left;
+}
+
+.toppicture,
+.toppicture1,
+.toppicture2 {
+    margin: 1.5px 0;
+}
+
+.toppicture:after,
+.toppicture1:after {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 100%;
+    width: 0;
+    height: 0;
+    border-left: 20px solid transparent;
+    border-top: 10px solid rgb(255, 255, 255);
+    border-right: 20px solid transparent;
+    z-index: 10;
+}
+
+.toppicture img,
+.toppicture1 img,
+.toppicture2 img {
+    max-width: 100%;
+    max-height: 100%;
+    border-radius: 4px;
+}
+
+.captiontext {
+    font-family: siteFont, "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 1em;
+    font-weight: 100;
+    color: #FFFFFF;
+    background: transparent;
+    display: block;
+    position: relative;
+    padding-bottom: 1em;
+    float: left;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10000;
+}
+
+@keyframes displayFadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes displayFadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+
+#polaroids nav {
+    display: grid;
+    grid-template-columns: 0.25fr 0.75fr;
+    grid-template-rows: auto;
+    height: 100px;
+}
+
+.polaroidTitle {
+    height: auto;
+    width: auto;
+    border: none;
+    margin: 9px 0 0 9px;
+    display: inline-block;
+    padding-right: 5px;
+}
+
+#atobio {
+    color: var(--exared);
+}
+
+#logoPolaroid {
+    height: 100px;
+    width: 100px;
+    vertical-align: bottom;
+    float: right;
+    transform: translateY(2px)
+}
+
+#titleText {
+    height: auto;
+    width: auto;
+    vertical-align: bottom;
+    float: left;
+}
+
+#titlePolaroidSvg {
+    height: 64px;
+    width: auto;
+    float: left;
+}
+
+#searchTools {
+    position: relative;
+    height: 100%;
+    width: auto;
+}
+
+#search {
+    position: relative;
+    height: auto;
+    width: auto;
+}
+
+input[type="text"].polaroidCategorySearchBar {
+    height: 28px;
+    border: none;
+    border-radius: 3px;
+    display: block;
+    text-indent: 5px;
+    color: #000;
+    padding: 3px 0;
+    margin-bottom: 5px;
+    font-size: 1em;
+    width: 100%;
+    background-color: #f1f1f1;
+    float: left;
+    cursor: pointer;
+}
+
+.polaroidCategorySearchBarSubmit {
+    height: 25px;
+    width: 100%;
+    border: none;
+    border-radius: 5px;
+    color: #FFFFFF;
+    padding: 5px 7px;
+    margin: 0;
+    font-size: 0.75em;
+    display: block;
+    position: relative;
+    cursor: pointer;
+    background-color: #ff0000;
+}
+
+#typeButtons {
+    float: left;
+    width: 15%;
+    padding-right: 10px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+#placesButtons {
+    float: left;
+    width: 65%;
+    padding-right: 10px;
+    padding-left: 10px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+#datesButtons {
+    float: left;
+    width: 20%;
+    padding-left: 10px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+.subCategory {
+    border: none;
+    color: white;
+    min-height: 18px;
+    height: auto;
+    margin: 2px;
+    padding: 2px 3px;
+    border-radius: 3px;
+    text-decoration: none;
+    font-size: 0.75em;
+    cursor: pointer;
+    flex-grow: 1;
+}
+
+.flex-container {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    height: auto;
+    width: 100%;
+
+
+    display: -webkit-box;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: -moz-flex;
+    display: -webkit-flex;
+    display: flex;
+
+    -webkit-justify-content: space-around;
+    justify-content: space-around;
+    -webkit-flex-flow: row wrap;
+    flex-flow: row wrap;
+    -webkit-align-items: stretch;
+    align-items: stretch;
+}
+
+
+
+/* END POLAROIDS */
+
+.frontbanner {
+    float: left;
+    width: auto;
+    height: 60px;
+    padding: 0.5em;
+    text-align: center;
+    margin: 1em;
+}
+
+.divText {
+    float: left;
+    width: auto;
+    font-size: 1;
+    font-weight: 100;
+    color: #666666;
+    background-color: var(--white);
+    border-radius: 3px;
+    padding: 0;
+    text-align: justify;
+    margin: 1.5em;
+}
+
+.divText p {
+    text-align: justify;
+}
+
+#displayinfo {
+    color: var(--exared);
+}
+
+
+
+
+@media (min-width: 768px) {
+    .container {
+        display: grid;
+        grid-template-columns: 0.191fr 0.618fr 0.191fr;
+        grid-template-rows: auto auto auto;
+    }
+
+    #polaroids.container {
+        display: block;
+        width: 100%;
+        min-height: 100vh;
+        max-height: 100vh;
+    }
+
+    main {
+        padding: 0;
+        margin-left: 1em;
+        margin-right: 1em;
+        border-radius: 5px;
+    }
+
+    .insideLoader {
+        position: relative;
+        width: 30%;
+        height: 30%;
+        margin: 10% auto auto auto;
+    }
+
+    #polaroids main {
+        margin: 0;
+        border-radius: 0;
+    }
+
+    .landingpolaroid {
+        grid-template-columns: 30px auto;
+    }
+
+    #polaroids nav {
+        grid-template-columns: 0.15fr 0.85fr;
+    }
+
+    header {
+        display: grid;
+        grid-template-columns: 0.191fr 0.618fr 0.191fr;
+        grid-template-rows: auto;
+    }
+
+    footer {
+        display: grid;
+        grid-template-columns: 0.191fr 0.618fr 0.191fr;
+        grid-template-rows: auto;
+    }
+
+    .collapseOnMobile {
+        display: inline-block;
+    }
+
+    .is-waiting-a,
+    .is-waiting-b {
+        margin-bottom: 1em;
+    }
+
+    #mainIcon {
+        left: -5px;
+        font-family: 'PT Sans', sans-serif;
+        display: inline-block;
+        background-color:
+    }
+
+    #jsontest img {
+        display: inline-block;
+        width: auto;
+        max-width: 60.5px;
+        height: 70px;
+        border: 3px solid var(--white);
+        border-radius: 2px;
+        margin: 2px;
+    }
+
+    .toppicture:after,
+    .toppicture1:after {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 100%;
+        width: 0;
+        height: 0;
+        border-left: 50px solid transparent;
+        border-top: 25px solid rgb(255, 255, 255);
+        border-right: 50px solid transparent;
+        z-index: 10;
+    }
+}

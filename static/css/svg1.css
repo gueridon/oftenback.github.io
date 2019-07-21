@@ -1,0 +1,271 @@
+/* styles */
+
+@import url('https://fonts.googleapis.com/css?family=PT+Sans');
+@import url('https://fonts.googleapis.com/css?family=PT+Mono');
+
+@font-face {
+    font-family: 'unica';
+    src: url('../fonts/neue-haas-unica-pro-regular.ttf')
+}
+
+#portrait {
+    margin: 0;
+    width: 200px;
+    height: 200px;
+    position: relative;
+    display: block;
+    float: left;
+    padding: 0;
+    border-radius: 50%;
+    z-index: 100;
+    box-shadow: inset 0px 0px 7px rgba(255, 255, 255, 0.9);
+    border: 1px solid #FFFFFF;
+    background: url("../images/nicholasTinSmall.jpg");
+    background-color: #D12F19;
+    background-blend-mode: multiply;
+    background-size: cover;
+}
+
+.aboutSvgName {
+    font-family: 'unica', sans-serif;
+    font-size: 2em;
+    font-weight: 900;
+    fill: rgba(255, 51, 102, 1);
+}
+
+.bannerName {
+    font-family: 'unica', sans-serif;
+    font-size: 2em;
+    fill: #000000;
+}
+
+.aboutSvgTextA {
+    font-family: 'unica', sans-serif;
+    font-size: 1.5em;
+}
+
+.aboutSvgTextB {
+    font-family: 'unica', sans-serif;
+    font-size: 1em;
+    fill: #999999;
+}
+
+.timeLineYears {
+    fill: #000000;
+    font-family: 'unica', sans-serif;
+    font-size: .5em;
+}
+
+.legendTimeLine,
+.skillTag {
+    font-family: 'unica', sans-serif;
+    font-size: 1em;
+    font-weight: 900;
+}
+
+.skillTagList {
+    font-family: 'unica', sans-serif;
+    font-size: 0.85em;
+    font-weight: 900;
+}
+
+.atob {
+    font-family: 'unica', sans-serif;
+    font-size: .85em;
+    fill: rgba(255, 51, 102, 1);
+    /*#e74c3c*/
+}
+
+.positionTitle {
+    font-family: 'unica', sans-serif;
+    font-size: 0.85em;
+    font-weight: 200;
+
+}
+
+.likeTitle {
+    font-family: 'unica', sans-serif;
+    font-size: 0.8em;
+    font-weight: 200;
+    fill: var(--blue);
+    stroke: var(--blue);
+}
+
+.likeTitle2 {
+    font-family: 'unica', sans-serif;
+    font-size: 0.8em;
+    font-weight: 200;
+    fill: #109618;
+    stroke: #109618;
+}
+
+.likeTitle3 {
+    font-family: 'unica', sans-serif;
+    font-size: 0.8em;
+    font-weight: 200;
+    fill: #000000;
+    stroke: #000000;
+}
+
+.year {
+    font-family: 'unica', sans-serif;
+    font-size: .6em;
+    font-weight: 200;
+    fill: none;
+    stroke: #ffffff;
+}
+
+.timeLineSubtext {
+    font-family: 'unica', sans-serif;
+    font-size: .85em;
+    fill: #444444;
+}
+
+.timeLineSubtext2 {
+    font-family: 'unica', sans-serif;
+    font-size: .85em;
+    fill: #444444;
+    /*#323232*/
+}
+
+.timeLineSubtextLink {
+    font-family: 'unica', sans-serif;
+    font-size: .85em;
+    fill: #444444;
+}
+
+.clickOccupation {
+    width: 300px;
+}
+
+
+
+circle#leo,
+circle#logocircle,
+circle#logoCircleFooter {
+    stroke: none;
+    stroke-width: 4;
+    fill: var(--blue1);
+}
+
+
+
+
+
+path#curve {
+    stroke: none;
+    stroke-width: 4;
+    fill: var(--white);
+}
+
+textPath#textPathTitle {
+    font-family: 'unica', sans-serif;
+    font-size: 2em;
+}
+
+#svgPolaroidHenry,
+#thesisPdf,
+.svgLink {
+    cursor: pointer;
+}
+
+.quote {
+    font-family: 'unica', sans-serif;
+    font-weight: 700;
+    font-size: 10px;
+    fill: var(--pink1);
+    text-anchor: end;
+}
+
+#polaroidTitle {
+    stroke: none;
+    stroke-width: 4;
+    fill: var(--nicered);
+    animation: rainbow 30s infinite linear;
+}
+
+#polaroidLoader {
+    stroke: none;
+    stroke-width: 4;
+    fill: var(--nicered);
+    animation: rainbow 2s infinite linear;
+}
+
+@keyframes rainbow {
+    0% {
+        fill: #9400D3;
+    }
+    14.28% {
+        fill: #4B0082;
+    }
+    28.56% {
+        fill: #0000FF;
+    }
+    42.84% {
+        fill: #00FF00;
+    }
+    57.12% {
+        fill: #FFFF00;
+    }
+    71.4% {
+        fill: #FF7F00;
+    }
+    85.68% {
+        fill: #FF0000;
+    }
+    85.68% {
+        fill: #9400D3;
+    }
+}
+
+.svghover {
+    cursor: pointer;
+}
+
+img #ducksponge {
+    border-radius: 50px;
+}
+
+.polaroidLink {
+    font-family: 'unica', sans-serif;
+    font-size: 0.8em;
+    font-weight: 200;
+    fill: #222222;
+    stroke: #222222;
+}
+
+.updatedate {
+    font-size: 3em;
+    font-weight: 400;
+    fill: #444444;
+}
+
+.updateyear {
+    font-size: 0.9em;
+    font-weight: 200;
+    fill: #444444;
+}
+
+.updatelast {
+    font-size: 0.9em;
+    font-weight: 200;
+    fill: #444444;
+}
+
+.git {
+    font-size: 2em;
+    font-weight: 900;
+    fill: var(--white);
+}
+
+.gitcomment {
+    font-size: 1em;
+    font-weight: 200;
+    fill: var(--white);
+}
+
+.maintitle {
+    font-size: 2em;
+    font-weight: 900;
+    fill: var(--exared);
+}

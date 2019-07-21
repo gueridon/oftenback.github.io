@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="iso-8859-1" standalone="no" ?>
+<?xml-stylesheet type="text/css" href="../css/svg1.css" ?>
+    <?xml-stylesheet type="text/css" href="../css/main1.css" ?>
+        <svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="535.5px" height="535.5px" viewBox="0 0 535.5 535.5" style="enable-background:new 0 0 535.5 535.5;" xml:space="preserve">
+	<g>
+		<path d="M487.688,0H47.812C37.246,0,28.688,8.559,28.688,19.125v497.25c0,10.566,8.559,19.125,19.125,19.125h439.875
+			c10.566,0,19.125-8.559,19.125-19.125V19.125C506.812,8.559,498.254,0,487.688,0z M468.562,372.938
+			c0,10.566-8.559,19.125-19.125,19.125H86.062c-10.566,0-19.125-8.559-19.125-19.125V47.812c0-10.566,8.559-19.125,19.125-19.125
+			h363.375c10.566,0,19.125,8.559,19.125,19.125V372.938z"/>
+	</g>
+</svg>

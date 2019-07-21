@@ -1,0 +1,102 @@
+/* styles */
+
+@import url('https://fonts.googleapis.com/css?family=PT+Sans');
+@import url('https://fonts.googleapis.com/css?family=PT+Mono');
+
+#portrait {
+    margin: 0;
+    width: 200px;
+    height: 200px;
+    position: relative;
+    display: block;
+    float: left;
+    padding: 0;
+    border-radius: 50%;
+    z-index: 100;
+    box-shadow: inset 0px 0px 7px rgba(255, 255, 255, 0.9);
+    border: 1px solid #FFFFFF;
+    background: url("../images/nicholasTinSmall.jpg");
+    background-color: #D12F19;
+    background-blend-mode: multiply;
+    background-size: cover;
+}
+
+.aboutSvgName {
+    font-family: 'PT Sans', sans-serif;
+    font-size: 2em;
+    fill: #000000;
+}
+
+.aboutSvgTextA {
+    font-family: 'PT Sans', sans-serif;
+    font-size: 1em;
+}
+
+.aboutSvgTextB {
+    font-family: 'PT Sans', sans-serif;
+    font-size: 1em;
+    fill: #999999;
+}
+
+.timeLineYears {
+    fill: #000000;
+    font-family: 'PT Sans', sans-serif;
+    font-size: .5em;
+}
+
+.legendTimeLine,
+.skillTag {
+    font-family: 'PT Sans', sans-serif;
+    font-size: .65em;
+    fill: #000000;
+}
+
+.positionTitle {
+    font-family: 'PT Sans', sans-serif;
+    font-size: .6em;
+    fill: #FFFFFF;
+}
+
+.timeLineSubtext {
+    font-family: 'PT Sans', sans-serif;
+    font-size: .65em;
+    fill: #000000;
+}
+
+.timeLineSubtext2 {
+    font-family: 'PT Sans', sans-serif;
+    font-size: .55em;
+    fill: #dd4477;
+}
+
+.timeLineSubtextLink {
+    font-family: 'PT Sans', sans-serif;
+    font-size: .55em;
+    fill: #22aa99;
+}
+
+.clickOccupation {
+    width: 300px;
+}
+
+circle#leo,
+circle#logocircle,
+circle#logoCircleFooter {
+    stroke: var(--main-accent-color);
+    stroke-width: 4;
+    fill: var(--blue);
+}
+
+#svgPolaroidHenry,
+#thesisPdf,
+.svgLink {
+    cursor: pointer;
+}
+
+.quote {
+    font-family: 'PT Sans', sans-serif;
+    font-weight: 700;
+    font-size: 10px;
+    fill: var(--pink1);
+    text-anchor: end;
+}
