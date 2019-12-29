@@ -29,8 +29,15 @@
 .aboutSvgName {
     font-family: 'unica', sans-serif;
     font-size: 2em;
-    font-weight: 900;
+    font-weight: 400;
     fill: rgba(255, 51, 102, 1);
+}
+
+.aboutSvgNameDouble {
+    font-family: 'unica', sans-serif;
+    font-size: 2em;
+    font-weight: 400;
+    fill: #9de0f6;
 }
 
 .bannerName {

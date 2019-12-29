@@ -1,0 +1,110 @@
+@font-face {
+    font-family: 'unica';
+    src: url('../fonts/neue-haas-unica-pro-regular.ttf')
+}
+
+@font-face {font-family: "LinotypeUniversW01-Regular"; src: url("//db.onlinewebfonts.com/t/721ab30c108d476c3538d4ccefc46937.eot"); src: url("//db.onlinewebfonts.com/t/721ab30c108d476c3538d4ccefc46937.eot?#iefix") format("embedded-opentype"), url("//db.onlinewebfonts.com/t/721ab30c108d476c3538d4ccefc46937.woff2") format("woff2"), url("//db.onlinewebfonts.com/t/721ab30c108d476c3538d4ccefc46937.woff") format("woff"), url("//db.onlinewebfonts.com/t/721ab30c108d476c3538d4ccefc46937.ttf") format("truetype"), url("//db.onlinewebfonts.com/t/721ab30c108d476c3538d4ccefc46937.svg#LinotypeUniversW01-Regular") format("svg"); }
+
+:root {
+--vermilion: #e34234;
+--wall: #EBEFF2;
+--text: #1B2A33;
+--white: #FFFFFF;
+}
+
+body {
+  font-family: "LinotypeUniversW01-Regular";
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--text);
+}
+
+main {
+    text-shadow: rgba(10, 189, 240, 0.75) 3px 3px 0px, rgba(254, 1, 1, 0.75) -3px -3px 0px;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+header {
+  display: flex;
+  flex-direction: column;
+  flex: 0.1;
+  text-align: left;
+  background-color: var(--white);
+}
+
+main {
+  flex: 1;
+  flex-direction: column;
+  /*background-color: rgba(10, 189, 240, 0.298039);
+  border-radius: 5px;*/
+}
+
+footer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  font-size: 0.75em;
+  line-height: 0.9em;
+  color: var(--vermilion);
+}
+
+section_center {
+  padding: 20px;
+  background-color: var(--white);
+}
+
+footer > section_center {
+  background-image: radial-gradient(circle at 0.05px 0.05px, #e34234 0.5px, transparent 0);
+  background-size: 3px 3px;
+}
+
+section_side {
+  display: none;
+}
+
+h1 {
+  margin-bottom: 1em;
+  font-size: 1.3em;
+  font-weight: bold;
+}
+
+@media (min-width: 768px) {
+  .container {
+    display: grid;
+    grid-template-columns: 18% 1fr 18%;
+    grid-template-rows: auto auto 1fr auto;
+  }
+
+header {
+  grid-column: span 3;
+  display: grid;
+  grid-template-columns: 18% 1fr 18%;
+  grid-template-rows: 1fr;
+}
+    
+footer {
+  grid-column: span 3;
+  display: grid;
+  grid-template-columns: 18% 1fr 18%;
+  grid-template-rows: 1fr;
+}
+    
+footer > section_center {
+  background-image: radial-gradient(circle at 0.05px 0.05px, #e34234 0.5px, transparent 0);
+  background-size: 3px 3px;
+}
+
+section_side {
+  padding: 20px;
+  background-color: var(--white);
+  display:flex;
+}
+    
+}
+

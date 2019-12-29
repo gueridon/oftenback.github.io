@@ -58,6 +58,9 @@ Resolution of Austin Camera : 600 dpi
     --outline: #FFFFFF;
     --oftenBeige2: #DADABC;
     --alvagreen: #deff00:
+    --uncivilizedpink: #E7A1A0;
+    --uncivilizedblue: #9de0f6;
+   
 }
 
 /*polaroid  originals colors
@@ -66,6 +69,21 @@ Resolution of Austin Camera : 600 dpi
 	.st2{fill:#DA291C;}
 	.st3{fill:#FF8200;}
 	.st4{fill:#FFB500;}
+
+ #d5ffd8
+    #008a06
+    #f1a500
+    #cc4749
+    #f27474
+    
+    #d55
+    #b4dbed
+    
+    #ea7d7d
+    #9de0f6
+
+f44336
+#e34234 vermilion
 */
 
 body {
