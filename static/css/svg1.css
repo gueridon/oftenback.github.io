@@ -30,7 +30,7 @@
     font-family: 'unica', sans-serif;
     font-size: 2em;
     font-weight: 400;
-    fill: rgba(255, 51, 102, 1);
+    fill: #FF3366;
 }
 
 .aboutSvgNameDouble {
@@ -68,6 +68,7 @@
     font-family: 'unica', sans-serif;
     font-size: 1em;
     font-weight: 900;
+    fill: #f5d300;
 }
 
 .skillTagList {
@@ -86,8 +87,9 @@
 .positionTitle {
     font-family: 'unica', sans-serif;
     font-size: 0.85em;
-    font-weight: 200;
-
+    font-weight: 900;
+    opacity: 0.8;
+    fill: #f5d300;
 }
 
 .likeTitle {
@@ -125,20 +127,29 @@
 .timeLineSubtext {
     font-family: 'unica', sans-serif;
     font-size: .85em;
-    fill: #444444;
+    opacity: 0.6;
+    fill: #f5d300;
 }
 
 .timeLineSubtext2 {
     font-family: 'unica', sans-serif;
     font-size: .85em;
-    fill: #444444;
+    fill: #dddddd;
     /*#323232*/
 }
 
 .timeLineSubtextLink {
     font-family: 'unica', sans-serif;
     font-size: .85em;
-    fill: #444444;
+    fill: #f5d300;
+    opacity: 0.6;
+    text-decoration-line: underline;
+}
+
+.infoLineSubtextLink {
+    font-family: 'unica', sans-serif;
+    font-size: .85em;
+    fill: #6096A8;
 }
 
 .clickOccupation {
