@@ -80,7 +80,7 @@
 .atob {
     font-family: 'unica', sans-serif;
     font-size: .85em;
-    fill: rgba(255, 51, 102, 1);
+    fill: #FF3366;
     /*#e74c3c*/
 }
 
@@ -149,7 +149,7 @@
 .infoLineSubtextLink {
     font-family: 'unica', sans-serif;
     font-size: .85em;
-    fill: #6096A8;
+    fill: #444444;
 }
 
 .clickOccupation {
