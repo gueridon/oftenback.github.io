@@ -287,3 +287,48 @@ img #ducksponge {
     font-weight: 900;
     fill: var(--exared);
 }
+
+
+/*
+#aboutGraphMain {
+    transition: clip-path 2s;
+    animation: overture 0.5s linear;
+}
+
+.resume-btn {
+    cursor: pointer;
+}
+
+.closeResume {
+    -webkit-clip-path: clip-path: circle(10% at 50% 45%);
+    clip-path: circle(10% at 50% 45%);
+}
+
+.openResume {
+    -webkit-clip-path: clip-path: circle(100% at 50% 45%);
+    clip-path: circle(100% at 50% 45%);
+}
+
+
+@keyframes openResume {
+  0% {
+    -webkit-clip-path: clip-path: circle(10% at 50% 45%);
+    clip-path: circle(10% at 50% 45%);
+  }
+  100% {
+    -webkit-clip-path: clip-path: circle(100% at 50% 45%);
+    clip-path: circle(100% at 50% 45%);
+  }
+}
+
+@keyframes overture {
+  0% {
+    -webkit-clip-path: clip-path: circle(0% at 50% 45%);
+    clip-path: circle(0% at 50% 45%);
+  }
+  100% {
+    -webkit-clip-path: clip-path: circle(10% at 50% 45%);
+    clip-path: circle(10% at 50% 45%);
+  }
+}
+*/
