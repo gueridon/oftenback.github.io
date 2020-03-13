@@ -3,6 +3,8 @@
 @import url('https://fonts.googleapis.com/css?family=PT+Sans');
 @import url('https://fonts.googleapis.com/css?family=PT+Mono');
 
+@import url('https://fonts.googleapis.com/css?family=Cairo&display=swap');
+
 @font-face {
     font-family: 'unica';
     src: url('../fonts/neue-haas-unica-pro-regular.ttf')
@@ -27,65 +29,71 @@
 }
 
 .aboutSvgName {
-    font-family: 'unica', sans-serif;
+    font-family: 'Cairo', sans-serif;
     font-size: 2em;
     font-weight: 400;
     fill: #FF3366;
 }
 
 .aboutSvgNameDouble {
-    font-family: 'unica', sans-serif;
+    font-family: 'Cairo', sans-serif;
     font-size: 2em;
     font-weight: 400;
     fill: #9de0f6;
 }
 
 .bannerName {
-    font-family: 'unica', sans-serif;
+    font-family: 'Cairo', sans-serif;
     font-size: 2em;
     fill: #000000;
 }
 
 .aboutSvgTextA {
-    font-family: 'unica', sans-serif;
+    font-family: 'Cairo', sans-serif;
     font-size: 1.5em;
 }
 
 .aboutSvgTextB {
-    font-family: 'unica', sans-serif;
+    font-family: 'Cairo', sans-serif;
     font-size: 1em;
     fill: #999999;
 }
 
 .timeLineYears {
     fill: #000000;
-    font-family: 'unica', sans-serif;
+    font-family: 'Cairo', sans-serif;
     font-size: .5em;
 }
 
 .legendTimeLine,
 .skillTag {
-    font-family: 'unica', sans-serif;
+    font-family: 'Cairo', sans-serif;
     font-size: 1em;
     font-weight: 900;
     fill: #f5d300;
 }
 
 .skillTagList {
-    font-family: 'unica', sans-serif;
+    font-family: 'Cairo', sans-serif;
     font-size: 0.85em;
     font-weight: 900;
 }
 
 .atob {
-    font-family: 'unica', sans-serif;
+    font-family: 'Cairo', sans-serif;
     font-size: .85em;
     fill: #FF3366;
     /*#e74c3c*/
 }
 
+.introtext {
+    font-family: 'Cairo', sans-serif;
+    font-size: .95em;
+    fill: #000000;
+}
+
 .positionTitle {
-    font-family: 'unica', sans-serif;
+    font-family: 'Cairo', sans-serif;
     font-size: 0.85em;
     font-weight: 900;
     opacity: 0.8;
@@ -93,7 +101,7 @@
 }
 
 .likeTitle {
-    font-family: 'unica', sans-serif;
+    font-family: 'Cairo', sans-serif;
     font-size: 0.8em;
     font-weight: 200;
     fill: var(--blue);
@@ -101,7 +109,7 @@
 }
 
 .likeTitle2 {
-    font-family: 'unica', sans-serif;
+    font-family: 'Cairo', sans-serif;
     font-size: 0.8em;
     font-weight: 200;
     fill: #109618;
@@ -109,7 +117,7 @@
 }
 
 .likeTitle3 {
-    font-family: 'unica', sans-serif;
+    font-family: 'Cairo', sans-serif;
     font-size: 0.8em;
     font-weight: 200;
     fill: #000000;
@@ -117,7 +125,7 @@
 }
 
 .year {
-    font-family: 'unica', sans-serif;
+    font-family: 'Cairo', sans-serif;
     font-size: .6em;
     font-weight: 200;
     fill: none;
@@ -125,21 +133,21 @@
 }
 
 .timeLineSubtext {
-    font-family: 'unica', sans-serif;
+    font-family: 'Cairo', sans-serif;
     font-size: .85em;
     opacity: 0.6;
     fill: #f5d300;
 }
 
 .timeLineSubtext2 {
-    font-family: 'unica', sans-serif;
+    font-family: 'Cairo', sans-serif;
     font-size: .85em;
     fill: #dddddd;
     /*#323232*/
 }
 
 .timeLineSubtextLink {
-    font-family: 'unica', sans-serif;
+    font-family: 'Cairo', sans-serif;
     font-size: .85em;
     fill: #f5d300;
     opacity: 0.6;
@@ -147,7 +155,7 @@
 }
 
 .infoLineSubtextLink {
-    font-family: 'unica', sans-serif;
+    font-family: 'Cairo', sans-serif;
     font-size: .85em;
     fill: #444444;
 }
@@ -177,7 +185,7 @@ path#curve {
 }
 
 textPath#textPathTitle {
-    font-family: 'unica', sans-serif;
+    font-family: 'Cairo', sans-serif;
     font-size: 2em;
 }
 
@@ -188,7 +196,7 @@ textPath#textPathTitle {
 }
 
 .quote {
-    font-family: 'unica', sans-serif;
+    font-family: 'Cairo', sans-serif;
     font-weight: 700;
     font-size: 10px;
     fill: var(--pink1);
@@ -245,7 +253,7 @@ img #ducksponge {
 }
 
 .polaroidLink {
-    font-family: 'unica', sans-serif;
+    font-family: 'Cairo', sans-serif;
     font-size: 0.8em;
     font-weight: 200;
     fill: #222222;
@@ -256,14 +264,14 @@ img #ducksponge {
     font-size: 3em;
     font-weight: 400;
     fill: #444444;
+    -webkit-transform:scale(0.6,1.0);
+    -moz-transform:scale(0.6, 1.0);
+    -ms-transform:scale(0.6, 1.0);
+    -o-transform:scale(0.6, 1.0);
+    transform:scale(0.6,1.0);
 }
 
-.updateyear {
-    font-size: 0.9em;
-    font-weight: 200;
-    fill: #444444;
-}
-
+.updateyear,
 .updatelast {
     font-size: 0.9em;
     font-weight: 200;
@@ -288,47 +296,74 @@ img #ducksponge {
     fill: var(--exared);
 }
 
-
-/*
 #aboutGraphMain {
-    transition: clip-path 2s;
-    animation: overture 0.5s linear;
+    -webkit-animation: overture 0.5s ease-in-out;
+    animation: overture 0.5s ease-in-out;
 }
 
-.resume-btn {
+#resume-btn,
+#polaroids-btn,
+#nlp-btn {
     cursor: pointer;
 }
 
 .closeResume {
-    -webkit-clip-path: clip-path: circle(10% at 50% 45%);
-    clip-path: circle(10% at 50% 45%);
+    -webkit-clip-path: circle(8% at 35% 43.25%);
+    clip-path: circle(9.5% at 50% 43.25%);
+    -webkit-transition: 1s ease-in-out;
+    transition: 1s ease-in-out;
 }
 
 .openResume {
-    -webkit-clip-path: clip-path: circle(100% at 50% 45%);
-    clip-path: circle(100% at 50% 45%);
-}
-
-
-@keyframes openResume {
-  0% {
-    -webkit-clip-path: clip-path: circle(10% at 50% 45%);
-    clip-path: circle(10% at 50% 45%);
-  }
-  100% {
-    -webkit-clip-path: clip-path: circle(100% at 50% 45%);
-    clip-path: circle(100% at 50% 45%);
-  }
+    -webkit-clip-path: circle(100% at 35% 43.25%);
+    clip-path: circle(100% at 50% 43.25%);
+    -webkit-transition: 1s ease-in-out;
+    transition: 1s ease-in-out;
 }
 
 @keyframes overture {
   0% {
-    -webkit-clip-path: clip-path: circle(0% at 50% 45%);
-    clip-path: circle(0% at 50% 45%);
+    clip-path: circle(0% at 50% 43.25%);
   }
   100% {
-    -webkit-clip-path: clip-path: circle(10% at 50% 45%);
-    clip-path: circle(10% at 50% 45%);
+    clip-path: circle(9.5% at 50% 43.25%);
   }
 }
-*/
+
+@-webkit-keyframes overture {
+  0% {
+    -webkit-clip-path: circle(0% at 35% 43.25%);
+  }
+  100% {
+    -webkit-clip-path: circle(8% at 35% 43.25%);
+  }
+}
+
+.resume-text {
+    fill: #FFFFFF;
+    stroke: #FFFFFF;
+    stroke-width: 1px;
+}
+
+#close-resume-text {
+    display: none;
+}
+
+.animated_down {
+    left:10px;
+}
+
+.animated_up {
+    left:0px;
+}
+
+.inProgress {
+    display: none;
+    font-size: 0.75em;
+    font-weight: 900;
+    stroke: none;
+    fill: #FF3366;
+    letter-spacing: 1px; 
+}
+
+                                  

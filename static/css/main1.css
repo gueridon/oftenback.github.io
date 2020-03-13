@@ -21,7 +21,7 @@ Resolution of Austin Camera : 600 dpi
 
 @import url('https://fonts.googleapis.com/css?family=PT+Sans');
 @import url('https://fonts.googleapis.com/css?family=PT+Mono');
-
+@import url('https://fonts.googleapis.com/css?family=Cairo&display=swap');
 
 @font-face {
     font-family: 'unica';
@@ -87,13 +87,15 @@ f44336
 */
 
 body {
-    font-family: 'unica', sans-serif;
+    font-family: 'Cairo', sans-serif;
     font-weight: 100;
     font-size: 0.75em;
     color: #34495e;
     line-height: 1;
     font-feature-settings: 'palt' 1;
     -webkit-font-smoothing: antialiased;
+    font-smoothing: antialiased;
+  
 }
 
 .container {
@@ -992,3 +994,5 @@ input[type="text"].polaroidCategorySearchBar {
         z-index: 10;
     }
 }
+
+
