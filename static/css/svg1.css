@@ -297,8 +297,8 @@ img #ducksponge {
 }
 
 #aboutGraphMain {
-    -webkit-animation: overture 0.5s ease-in-out;
-    animation: overture 0.5s ease-in-out;
+    -webkit-animation: overture 3s ease-in-out;
+    animation: overture 5s ease-in-out;
 }
 
 #resume-btn,
@@ -315,7 +315,7 @@ img #ducksponge {
 }
 
 .openResume {
-    -webkit-clip-path: circle(100% at 35% 43.25%);
+    -webkit-clip-path: circle(9.5% at 50% 43.25%);
     clip-path: circle(100% at 50% 43.25%);
     -webkit-transition: 1s ease-in-out;
     transition: 1s ease-in-out;
@@ -326,16 +326,16 @@ img #ducksponge {
     clip-path: circle(0% at 50% 43.25%);
   }
   100% {
-    clip-path: circle(9.5% at 50% 43.25%);
+    clip-path: circle(100% at 50% 43.25%);
   }
 }
 
 @-webkit-keyframes overture {
   0% {
-    -webkit-clip-path: circle(0% at 35% 43.25%);
+    -webkit-clip-path: circle(0% at 50% 43.25%);
   }
   100% {
-    -webkit-clip-path: circle(8% at 35% 43.25%);
+    -webkit-clip-path: circle(9.5% at 50% 43.25%);
   }
 }
 
