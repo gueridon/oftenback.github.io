@@ -296,10 +296,12 @@ img #ducksponge {
     fill: var(--exared);
 }
 
+/*
 #aboutGraphMain {
     -webkit-animation: overture 3s ease-in-out;
     animation: overture 5s ease-in-out;
 }
+*/
 
 #resume-btn,
 #polaroids-btn,
