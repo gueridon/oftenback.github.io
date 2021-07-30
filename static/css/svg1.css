@@ -32,7 +32,7 @@
     font-family: 'Cairo', sans-serif;
     font-size: 2em;
     font-weight: 400;
-    fill: #FF3366;
+    fill: #000000; /*FF3366*/
 }
 
 .aboutSvgNameDouble {
@@ -82,7 +82,7 @@
 .atob {
     font-family: 'Cairo', sans-serif;
     font-size: .85em;
-    fill: #FF3366;
+    fill: #000000;
     /*#e74c3c*/
 }
 
@@ -365,7 +365,5 @@ img #ducksponge {
     font-weight: 900;
     stroke: none;
     fill: #FF3366;
-    letter-spacing: 1px; 
+    letter-spacing: 1px;
 }
-
-                                  
