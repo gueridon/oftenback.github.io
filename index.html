@@ -6,45 +6,92 @@
     <meta http-equiv="content-type" content="text/html; charset=utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="./static/css/reset.css">
-    <link rel="stylesheet" href="./static/css/main1.css">
-    <link rel="stylesheet" href="./static/css/svg1.css">
-    <script src="https://code.jquery.com/jquery-3.4.1.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500&display=swap" rel="stylesheet">
 </head>
 
-<body class="container" id="container">
+<style type="text/css">
 
-    <nav id="navigation" class="collapseOnMobile">
-    </nav>
-    <main id="main">
+  :root {
+  --visible-border: none;
+  --font-site: 'Cairo', sans-serif;
+  --off-white:  #FAF9F6;
+}
+  
+.parent {
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    font-family: var(--font-site);
+    background-color: var(--off-white);
+    border-style: var(--visible-border);
+  }
 
-        <div id="box2">
-            <div class="landingabout">
-                <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 600 750" preserveAspectRatio="xMidYMid meet" id="aboutGraph2">
-                        <g id="aboutGraphMain">
-                                <text x="303" y="140" class="aboutSvgName" text-anchor="start">NICHOLAS</text>
-                                <text x="303" y="165" class="aboutSvgName" text-anchor="start">BACUEZ</text>
-                                <text x="303" y="180" class="atob" text-anchor="start">@oftenback.io</text>
-                                <image x="125" y="100" height="100" width="250" xlink:href="./static/images/oblogoLargeFaceNoTitle.svg" />
+.visual {
+  aspect-ratio: 16/9;
+  margin: 0;
+  padding: 0.5em;
+  border-radius: 5px;
+  border-style: var(--visible-border);
+}
 
-                            <text x="505" y="235" id="updatedate" class="updatedate" text-anchor="start"></text>
-                            <text x="115" y="60" id="updateyear" class="updateyear" transform="rotate(-90 327,22)"></text>
-                            <text x="367" y="245" class="updatelast" text-anchor="end">LAST UPDATE</text>
+footer {
+  font-size: .8rem;
+  line-height:100%;
+}
 
-                  </g>
-                </svg>
-                    <script>
-                        var d = new Date(document.lastModified);
-                        document.getElementById("updatedate").innerHTML = ("0" + d.getDate()).slice(-2) + "." + ("0" + (d.getMonth() + 1)).slice(-2);
-                        document.getElementById("updateyear").innerHTML = d.getFullYear();
-                    </script>
-            </div>
-        </div>
+h1 {
+  font-size: 1.5rem;
+  color: #333; ;
+  margin: 0;
+  padding: 0;
+}
+
+.mainImage {
+    max-width: 100%;
+    max-height: 100%;
+    border-radius: 5px;
+}
+
+.logo {
+    max-width: 50px;
+    max-height: 50px;
+    border-style: var(--visible-border);
+}
+
+</style>
+
+
+<body>
+  <div class="parent">
+    <header class="blue section" contenteditable>
+      <h1>
+        <img src="static/images/oblogoLargeFace.svg" class="logo">
+        Nicholas Bacuez
+      </h1>
+    </header>
+    <main class="coral section" contenteditable>
+      <div class="visual">
+        <img class="mainImage" src="static/images/wood-train-toy-16-9.jpg">
+      </div>
     </main>
-    <aside></aside>
-    <footer id="footer">
+    <footer contenteditable>
+      <script>
+        document.write("&copy;2012-" + new Date().getFullYear());
+      </script> oftenback.io
+      <br>
+      <script>
+        var lastUpdate = new Date(document.lastModified);
+        var dayMonth = ("0" + lastUpdate.getDate()).slice(-2) + "-" + ("0" + (lastUpdate.getMonth() + 1)).slice(-2);
+        var year = lastUpdate.getFullYear();
+        document.write("last updated on " + year + "-" + dayMonth);
+      </script>
+
+
+
+
+      <br>this site is optimized for chrome + safari
     </footer>
-
-    </body>
-
+  </div>
+</body>
 </html>
