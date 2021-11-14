@@ -13,9 +13,14 @@
 
 <style type="text/css">
 
+  @font-face {
+    font-family: 'NextBookRegular';
+    src: url('../fonts/FontsFree-Net-Futura-Next2.ttf')
+}
+
   :root {
   --visible-border: none;
-  --font-site: 'Cairo', sans-serif;
+  --font-site: 'NextBookRegular', sans-serif;
   --off-white:  #FAF9F6;
 }
 
@@ -27,6 +32,7 @@ body {
     grid-template-rows: auto 1fr auto;
     font-family: var(--font-site);
     border-style: var(--visible-border);
+    color: #101010;
   }
 
 .visual {
@@ -38,12 +44,14 @@ body {
 }
 
 footer {
-  font-size: .8rem;
-  line-height:100%;
+  font-size: .875rem;
+  line-height: 1.43;
+  letter-spacing: -0.01em;
 }
 
 h1 {
   font-size: 1.5rem;
+  font-weight: 500;
   color: #333; ;
   margin: 0;
   padding: 0;
