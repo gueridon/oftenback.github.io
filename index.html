@@ -22,14 +22,23 @@
 }
 
 body {
-  background-color: var(--off-white);
+  /* background-color: var(--off-white); */
 }
+
+html { /*https://css-tricks.com/perfect-full-page-background-image/ */
+  background: url(static/images/wood-train-toy-16-9.jpg) no-repeat center center fixed;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+}
+
 .parent {
   display: grid;
   grid-template-rows: auto 1fr auto;
   font-family: var(--font-site);
   border-style: var(--visible-border);
-  color: #101010;
+  color: #FFFFFF
   }
 
 .visual {
@@ -40,16 +49,35 @@ body {
   border-style: var(--visible-border);
 }
 
+header {
+    /* position: sticky; top: 0; */
+    position: fixed;
+    padding: 10px 10px 10px 10px;
+    top: 0;
+    width: 100%;
+    /* Height of the footer*/
+    height: auto;
+    background: none;
+}
+
+
 footer {
   font-size: .875rem;
   line-height: 1.43;
   letter-spacing: -0.01em;
-}
+  position: fixed;
+  padding: 10px 10px 10px 10px;
+  bottom: 0;
+  width: 100%;
+  /* Height of the footer*/
+  height: auto;
+  background: none;
+  }
 
 h1 {
   font-size: 1.5rem;
   font-weight: 500;
-  color: #333; ;
+  color: #FFF; ;
   margin: 0;
   padding: 0;
 }
@@ -79,7 +107,7 @@ h1 {
     </header>
     <main class="coral section">
       <div class="visual">
-        <img class="mainImage" src="static/images/wood-train-toy-16-9.jpg">
+        <!-- <img class="mainImage" src="static/images/wood-train-toy-16-9.jpg"> -->
       </div>
     </main>
     <footer>
