@@ -1,0 +1,120 @@
+          
+            
+//Family x4 1978
+//Marie-pierre 1983
+//Olivier 1996
+//Josselyn 1999
+//Cindy 1999
+//Edouard 2003
+//Herve 2003
+//Bob 2003-2008
+//Bob 2004-2023
+//Jim 2004-2010
+//Voisins 2005
+//Kevin 2005
+//Sean 2007
+//Allison 2008
+//Chris 2008
+//Tim 2013
+//Kingsley 2013
+//Henry 2016
+            
+            //const relationsData = [
+                
+                //[{name: "henry_white1", year_span: 2016 - 1978, color: "none"},
+                // {name: "henry_white2", year_span: CURRENT_YEAR - 2016, color: "white"}],
+                //[{name: "henry", year_span: 2016 - 1978, color: "none"},
+                // {name: "khenry1", year_span: CURRENT_YEAR - 2016, color: "var(--bhlightgrey)"}],
+                //
+                //[{name: "kingsley_white1", year_span: 2013 - 1978, color: "none"},
+                // {name: "kingsley_white2", year_span: CURRENT_YEAR - 2013, color: "white"}],
+                //[{name: "kingsley", year_span: 2013 - 1978, color: "none"},
+                // {name: "kingsley1", year_span: CURRENT_YEAR - 2013, color: "var(--bhlightgrey)"}],
+                //
+                //[{name: "tim_white1", year_span: 2013 - 1978, color: "none"},
+                // {name: "tim_white2", year_span: CURRENT_YEAR - 2013, color: "white"}],
+                //[{name: "tim", year_span: 2013 - 1978, color: "none"},
+                // {name: "tim1", year_span: CURRENT_YEAR - 2013, color: "var(--bhlightgrey)"}],
+                //
+                //[{name: "chris_white1", year_span: 2008 - 1978, color: "none"},
+                // {name: "chris_white2", year_span: CURRENT_YEAR - 2008, color: "white"}],
+                //[{name: "chris", year_span: 2008 - 1978, color: "none"},
+                // {name: "chris1", year_span: CURRENT_YEAR - 2008, color: "var(--bhlightgrey)"}],
+                //
+                //[{name: "allison_white1", year_span: 2008 - 1978, color: "none"},
+                // {name: "allison_white2", year_span: CURRENT_YEAR - 2008, color: "white"}],
+                //[{name: "allison", year_span: 2008 - 1978, color: "none"},
+                // {name: "allison1", year_span: CURRENT_YEAR - 2008, color: "var(--bhlightgrey)"}],
+                //
+                //[{name: "sean_white1", year_span: 2007 - 1978, color: "none"},
+                // {name: "sean_white2", year_span: CURRENT_YEAR - 2007, color: "white"}],
+                //[{name: "sean", year_span: 2007 - 1978, color: "none"},
+                // {name: "sean2", year_span: CURRENT_YEAR - 2007, color: "var(--bhlightgrey)"}],
+                // 
+                //[{name: "voisins_white1", year_span: 2005 - 1978, color: "none"},
+                // {name: "voisins_white2", year_span: CURRENT_YEAR - 2005, color: "white"}],
+                //[{name: "voisins", year_span: 2005 - 1978, color: "none"},
+                // {name: "voisins2", year_span: CURRENT_YEAR - 2005, color: "var(--bhlightgrey)"}],
+                //
+                //[{name: "kevin_white1", year_span: 2005 - 1978, color: "none"},
+                // {name: "kevin_white2", year_span: CURRENT_YEAR - 2005, color: "white"}],
+                //[{name: "kevin", year_span: 2005 - 1978, color: "none"},
+                // {name: "kevin2", year_span: CURRENT_YEAR - 2005, color: "var(--bhlightgrey)"}],
+                //
+                //[{name: "rel", year_span: 2003 - 1978, color: "none"},
+                // {name: "rel", year_span: 2010 - 2003, color: "white"},
+                // {name: "rel", year_span: CURRENT_YEAR - 2010, color: "white"}],
+                //[{name: "rel", year_span: 2003 - 1978, color: "none"},
+                // {name: "rel", year_span: 2010 - 2003, color: "var(--bhlightgrey)"},
+                // {name: "rel", year_span: CURRENT_YEAR - 2010, color: "white"}],
+                //
+                //[{name: "rel", year_span: 2003 - 1978, color: "none"},
+                // {name: "rel", year_span: 2023 - 2003, color: "white"},
+                // {name: "rel", year_span: CURRENT_YEAR - 2023, color: "white"}],
+                //[{name: "rel", year_span: 2003 - 1978, color: "none"},
+                // {name: "rel", year_span: 2023 - 2003, color: "var(--bhlightgrey)"},
+                // {name: "rel", year_span: CURRENT_YEAR - 2023, color: "white"}],
+                //
+                //[{name: "rel", year_span: 2003 - 1978, color: "none"},
+                // {name: "rel", year_span: CURRENT_YEAR - 2003, color: "white"}],
+                //[{name: "rel", year_span: 2003 - 1978, color: "none"},
+                // {name: "rel", year_span: CURRENT_YEAR - 2003, color: "var(--bhlightgrey)"}],
+                //
+                //[{name: "rel", year_span: 2003 - 1978, color: "none"},
+                // {name: "rel", year_span: CURRENT_YEAR - 2003, color: "white"}],
+                //[{name: "rel", year_span: 2003 - 1978, color: "none"},
+                // {name: "rel", year_span: CURRENT_YEAR - 2003, color: "var(--bhlightgrey)"}],
+                //
+                //[{name: "rel", year_span: 2003 - 1978, color: "none"},
+                // {name: "rel", year_span: 2008 - 2003, color: "white"},
+                // {name: "rel", year_span: CURRENT_YEAR - 2008, color: "white"}],
+                //[{name: "rel", year_span: 2003 - 1978, color: "none"},
+                // {name: "rel", year_span: 2008 - 2003, color: "var(--bhlightgrey)"},
+                // {name: "rel", year_span: CURRENT_YEAR - 2008, color: "white"}],
+                //
+                //[{name: "rel", year_span: 1999 - 1978, color: "none"},
+                // {name: "rel", year_span: CURRENT_YEAR - 1999, color: "white"}],
+                //[{name: "rel", year_span: 1999 - 1978, color: "none"},
+                // {name: "rel", year_span: CURRENT_YEAR - 1999, color: "var(--bhlightgrey)"}],
+                //
+                //[{name: "rel", year_span: 1999 - 1978, color: "none"},
+                // {name: "rel", year_span: CURRENT_YEAR - 1999, color: "white"}],
+                //[{name: "rel", year_span: 1999 - 1978, color: "none"},
+                // {name: "rel", year_span: CURRENT_YEAR - 1999, color: "var(--bhlightgrey)"}],
+                //
+                //[{name: "rel", year_span: 1996 - 1978, color: "none"},
+                // {name: "rel8", year_span: CURRENT_YEAR - 1996, color: "white"}],
+                //[{name: "rel7", year_span: 1996 - 1978, color: "none"},
+                // {name: "rel6", year_span: CURRENT_YEAR - 1996, color: "var(--bhlightgrey)"}],
+                //
+                //[{name: "rel5", year_span: 1981 - 1978, color: "none"},
+                // {name: "rel4", year_span: CURRENT_YEAR - 1981, color: "white"}],
+                //[{name: "rel4", year_span: 1981 - 1978, color: "none"},
+                // {name: "rel3", year_span: CURRENT_YEAR - 1981, color: "var(--bhlightgrey)"}],
+                
+                //[{name: "rel2", year_span: CURRENT_YEAR - 1978, color: "white"},
+                // {name: "remainder2", year_span: 0, color: "white" }],
+                //[{name: "rel1", year_span: CURRENT_YEAR - 1978, color: "var(--bhlightgrey)"},
+                // {name: "remainder1", year_span: 0, color: "white" }]
+                //
+            //];

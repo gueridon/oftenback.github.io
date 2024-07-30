@@ -35,6 +35,12 @@
     fill: #000000; /*FF3366*/
 }
 
+.tierName {
+    font-family: 'Cairo', sans-serif;
+    font-size: 1em;
+    font-weight: 400;
+}
+
 .aboutSvgNameDouble {
     font-family: 'Cairo', sans-serif;
     font-size: 2em;
@@ -129,7 +135,7 @@
     font-size: .6em;
     font-weight: 200;
     fill: none;
-    stroke: #ffffff;
+    stroke: #000000;
 }
 
 .timeLineSubtext {

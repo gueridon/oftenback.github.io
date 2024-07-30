@@ -61,6 +61,22 @@ Resolution of Austin Camera : 600 dpi
     --uncivilizedpink: #E7A1A0;
     --uncivilizedblue: #9de0f6;
    
+   /* bauhaus palette */
+    
+    --bhblack: #1a1616;
+    --bhpurple: #4f186b;
+    --bhblue: #3e4db4;
+        --bhblue_light: #9ea6d9;
+    --bhmarroon: #91144e;
+    --bhred: #ea1f25;
+        --bhred_light: #f48f92;
+    --bhbrown: #ad6d37;
+    --bhyellow:#f1ca00;
+        --bhyellow_light: #f6df66;
+    --bhbeige: #ecddbe;
+    --bhgrey: #3f4040;
+    --bhlightgrey: #58595B;
+    --bhblue_bhyellow: #978b5a;
 }
 
 /*polaroid  originals colors
@@ -181,7 +197,7 @@ footer {
 
 .footerBoxes {
     position: relative;
-    ` height: auto;
+    height: auto;
     padding-left: 55px;
     padding-right: 1em;
     width: calc(100% - 20px);
