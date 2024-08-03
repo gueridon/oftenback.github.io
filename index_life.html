@@ -39,8 +39,8 @@
                                     <g id="activities"></g>
                                     <g id="languagesunderlayer"></g>
                                     <g id="languages"></g>
+                                    <g id="relationsunderlayer"></g>
                                     <g id="relations"></g>
-                                    <g id="underlayer"></g>
                                 </g>
                             </g>
 
@@ -161,7 +161,6 @@
             const countriesData = [
                 { name: "france", year_span: 2005 - 1978, color: "var(--bhred)", label: "FRANCE" },
                 { name: "usa", year_span: CURRENT_YEAR - 2005, color: "var(--bhred)", label: "USA" }
-                //{ name: "remainder", year_span: 0, color: "var(--bhred)", label: "" }
             ];
             
             const citiesData = [
@@ -176,11 +175,6 @@
                 {name: "raphael", year_span: 2013 - 2011, color: "var(--bhred_light)", label: "SAN RAPHAEL" },
                 {name: "cambridge", year_span: 2016 - 2013, color: "var(--bhred_light)", label: "CAMBRIDGE" },
                 {name: "austin2", year_span: CURRENT_YEAR - 2016, color: "var(--bhred_light)", label: "AUSTIN" }
-                //{name: "remaindercities", year_span: 0, color: "var(--bhred_light)",  label: "" }
-                ];
-            
-            const activitiesWhiteData = [
-                {name: "activitiesunderlayer", year_span: CURRENT_YEAR - START_YEAR, color: "#FFFFFF", label: "" }
                 ];
             
             const mainActivitiesData = [
@@ -198,7 +192,6 @@
                 {name: "work1", year_span: 2016 - 2012, color: "var(--bhyellow)", label: "INTEL" },
                 {name: "work2", year_span: 2017 - 2016, color: "var(--bhyellow)", label: "" },
                 {name: "work3", year_span: CURRENT_YEAR - 2017, color: "var(--bhyellow)", label: "INDEED" }
-                //{name: "remaindermainactivities", year_span: 0, color: "var(--bhyellow)", label: "" }
             ]
             
             const activitiesData = [
@@ -216,53 +209,14 @@
                 {name: "indeed_taxo", year_span: 2020 - 2017, color: "var(--bhyellow_light)", label: "TAXONOMY" },
                 {name: "indeed_qm", year_span: 2021 - 2020, color: "var(--bhyellow_light)", label: "DEV" },
                 {name: "indeed_dev", year_span: CURRENT_YEAR - 2021, color: "var(--bhyellow_light)", label: "SWE" }
-                //{name: "remainderactivities", year_span: 0, color: "var(--bhyellow_light)",  label: "" }
                 ];
-            
-            const languagesWhiteData = [
-                {name: "languagesunderlayer", year_span: CURRENT_YEAR - START_YEAR, color: "#FFFFFF", label: "" }
-                ];
-            
-            //const languagesData = [
-            //    [{name: "latin5", year_span: 1992 - 1978, color: "var(--oftenBeige2)"},
-            //     {name: "latin4", year_span: 2009 - 1992, color: "var(--oftenBeige2)"},
-            //     {name: "latin3", year_span: CURRENT_YEAR - 2009, color: "var(--oftenBeige2)"},
-            //     {name: "remainder7", year_span: 0, color: "var(--oftenBeige2)" }],
-            //    [{name: "latin2", year_span: 1992 - 1978, color: "none"},
-            //     {name: "latin1", year_span: 2009 - 1992, color: "var(--bhlightgrey)"},
-            //     {name: "latin", year_span: CURRENT_YEAR - 2009, color: "var(--oftenBeige2)"},
-            //     {name: "remainder6", year_span: 0, color: "var(--oftenBeige2)" }],
-//
-            //    [{name: "spanish5", year_span: 1992 - 1978, color: "var(--oftenBeige2)"},
-            //     {name: "spanish4", year_span: 2009 - 1992, color: "var(--oftenBeige2)"},
-            //     {name: "spanish3", year_span: CURRENT_YEAR - 2009, color: "var(--oftenBeige2)"},
-            //     {name: "remainder5", year_span: 0, color: "var(--oftenBeige2)" }],
-            //    [{name: "spanish2", year_span: 1992 - 1978, color: "none"},
-            //     {name: "spanish1", year_span: 2009 - 1992, color: "var(--bhlightgrey)"},
-            //     {name: "spanish", year_span: CURRENT_YEAR - 2009, color: "var(--oftenBeige2)"},
-            //     {name: "remainder4", year_span: 0, color: "var(--oftenBeige2)" }],
-//
-            //    [{name: "english3", year_span: 1989 - 1978, color: "var(--oftenBeige2)"},
-            //     {name: "english2", year_span: CURRENT_YEAR - 1989, color: "var(--oftenBeige2)"},
-            //     {name: "remainder3", year_span: 0, color: "var(--oftenBeige2)" }],
-            //    [{name: "english1", year_span: 1989 - 1978, color: "none"},
-            //     {name: "english", year_span: CURRENT_YEAR - 1989, color: "var(--bhlightgrey)"},
-            //     {name: "remainder2", year_span: 0, color: "var(--oftenBeige2)" }],
-//
-            //    [{name: "french1", year_span: CURRENT_YEAR - 1978, color: "var(--oftenBeige2)"},
-            //     {name: "remainder1", year_span: 0, color: "var(--oftenBeige2)" }],
-            //    [{name: "french", year_span: CURRENT_YEAR - 1978, color: "var(--bhlightgrey)"},
-            //     {name: "remainder0", year_span: 0, color: "var(--oftenBeige2)" }]
-            //];
-            
-            
+
             const relationsData = [
                 {name: "none", year_span: 2002 - 1978, color: "none", label: "" },
                 {name: "bob", year_span: 2006 - 2002, color: "var(--bhblue_light)", label: "BOB" },
                 {name: "none1", year_span: 2008 - 2006, color: "none", label: "" },
                 {name: "allison", year_span: 2016 - 2008, color: "var(--bhblue_light)", label: "ALLISON" },
-                {name: "henry", year_span: CURRENT_YEAR - 2016, color: "var(--bhblue_light)", label: "ALLISON + HENRY" }
-                //{name: "remainderrelations", year_span: 0, color: "var(--bhblue_light)", label: "" }
+                {name: "henry", year_span: CURRENT_YEAR - 2016, color: "var(--bhblue_light)", label: "ALLISON + HENRY" }//{name: "remainderrelations", year_span: 0, color: "var(--bhblue_light)", label: "" }
             ];
             
             const languagesData = [
@@ -270,14 +224,7 @@
                 {name: "french1", year_span: 2002 - 1989, color: "var(--bhblue)", label: "FRENCH" },
                 {name: "french2", year_span: 2012 - 2002, color: "var(--bhblue)", label: "FRENCH" },
                 {name: "english", year_span: CURRENT_YEAR - 2012, color: "var(--bhblue)", label: "ENGLISH" }
-                //{name: "remainder1", year_span: 0, color: "var(--bhblue)", label: "" }
                 ];
-                                   
-                                   
-            const underlayerWhiteData = [
-                {name: "underlayer", year_span: CURRENT_YEAR - START_YEAR, color: "#FFFFFF", label: "" }
-                ];
-            
             
             function appendSectors(parentElementId, names, colors) {
                 names.forEach((name, index) => {
@@ -405,16 +352,30 @@
                 }
                 return radiuses;
             }
+        
+
+            const underLayers = [
+                {name: "activities", radius: 204},
+                {name: "languages", radius: 144},
+                {name: "relations", radius: 110}
+                ];
+
+            underLayers.forEach((underLayer) => {
+                var underlayersector = document.getElementById(underLayer.name+'underlayer');
+                var circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circle.setAttribute('cx', CX);
+                circle.setAttribute('cy', CY);
+                circle.setAttribute('r', underLayer.radius);
+                circle.setAttribute('fill', 'white');
+                underlayersector.appendChild(circle);
+                });
             
             addSectors("countries", countriesData, 260);
             addSectors("cities", citiesData, 230);
-            addSectors("activitiesunderlayer", activitiesWhiteData, 204);
             addSectors("mainactivities", mainActivitiesData, 200);
             addSectors("activities", activitiesData, 170);
-            addSectors("languagesunderlayer", languagesWhiteData, 144);
             addSectors("languages", languagesData, 140);
             addSectors("relations", relationsData, 110);
-            addSectors("languagesunderlayer", underlayerWhiteData, 84);
    
             const sectorGraph = {  
                 names: [],
@@ -428,31 +389,19 @@
                 radius: 0,
                 end_year: 0,
                 animateGraphic: function (timestamp) {
-                    console.log(this.yearSpansStart)
-                    console.log(this.yearSpansTarget);
-                    console.log(this.names);
                     if (!this.startTime) this.startTime = timestamp;
                     var progress = timestamp - this.startTime;
                     var fraction = Math.min(progress / this.duration, 1);
-                    console.log("this.startTime", this.startTime);
                     end_year = 0;
                     yearSpansCurrent = [];
                     for (var i = 0; i < this.yearSpansStart.length; i++) {
                         this.end_year = this.year + (this.targetYear - this.year) * fraction;
-                        //if (i < this.yearSpansStart.length - 1) {
-                        //    var startValue = this.yearSpansStart[i];
-                        //    var endValue = this.yearSpansTarget[i];
-                        //    yearSpansCurrent.push(startValue);
-                        //} else {
-                            var startValue = this.yearSpansStart[i];
-                            var endValue = this.yearSpansTarget[i];
-                            yearSpansCurrent.push(startValue + (endValue - startValue) * fraction);
-                        //}
+                        var startValue = this.yearSpansStart[i];
+                        var endValue = this.yearSpansTarget[i];
+                        yearSpansCurrent.push(startValue + (endValue - startValue) * fraction);
                     }
-                    console.log(this.names, this.labels, yearSpansCurrent, START_YEAR, this.end_year, this.radius);
                     drawGraph(this.names, this.labels, yearSpansCurrent, START_YEAR, this.end_year, this.radius);
                     
-
                     if (progress < this.duration) {
                         requestAnimationFrame(this.animateGraphic.bind(this));
                     } else {
@@ -472,19 +421,11 @@
                 requestAnimationFrame(newSectorGraph.animateGraphic.bind(newSectorGraph)); // Bind the method to the object
             }
         
-        
-        
             var countriesNames = countriesData.map(item => item.name);
             var countriesLabels = countriesData.map(item => item.label);
             var countriesTargetYears = countriesData.map(item => item.year_span);
             var countriesStartYears = [...countriesTargetYears];
             var countriesStartYears = countriesStartYears.fill(0);
-            
-            //var countriesNames = countriesData.map(item => item.name);
-            //var countriesLabels = countriesData.map(item => item.label);
-            //var countriesStartYears = countriesData.map(item => item.year_span);
-            //var countriesTargetYears = [...countriesStartYears];
-            //countriesTargetYears[countriesTargetYears.length - 1] = END_YEAR - CURRENT_YEAR;
             
             var citiesNames = citiesData.map(item => item.name);
             var citiesLabels = citiesData.map(item => item.label);
