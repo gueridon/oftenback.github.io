@@ -31,7 +31,7 @@
                                 style="fill: #ffffff; stroke-width: 0; stroke: rgb(0, 0, 0)" ry="5px" rx="5px" />
 
                             <g id="graphOnly">
-                                <g transform="rotate(-12 300,300)" id="mainGraphFrame">
+                                <g transform="rotate(-5 300,300)" id="mainGraphFrame">
                                     <g id="countries"></g>
                                     <g id="cities"></g>
                                     <g id="activitiesunderlayer"></g>
@@ -44,26 +44,49 @@
                                 </g>
                             </g>
 
-                            <text x="303" y="25" class="aboutSvgName" text-anchor="start">NICHOLAS</text>
-                            <text x="303" y="50" class="aboutSvgName" text-anchor="start">BACUEZ</text>
-                            <text x="303" y="65" class="atob" text-anchor="start">@oftenback.io</text>
+                            <text x="300" y="60" class="aboutSvgName" text-anchor="start">NICHOLAS</text>
+                            <text x="300" y="85" class="aboutSvgName" text-anchor="start">BACUEZ</text>
+                            <text x="300" y="100" class="atob" text-anchor="start">@oftenback.io</text>
 
-                            <text x="303" y="92" class="aboutSvgTextA" text-anchor="start"
+                            <text x="300" y="122" class="aboutSvgTextA" text-anchor="start"
                                 style="fill:rgba(255, 51, 102, 1);">LIFE</text>
-                            <text x="303" y="107" class="aboutSvgTextA" text-anchor="start"
+                            <text x="300" y="137" class="aboutSvgTextA" text-anchor="start"
                                 style="fill:rgba(255, 51, 102, 1);">FRAGMENTS</text>
-                            <text x="303" y="122" class="aboutSvgTextA" text-anchor="start"
+                            <text x="300" y="152" class="aboutSvgTextA" text-anchor="start"
                                 style="fill:rgba(255, 51, 102, 1);">VIEWER</text>
-                            <text x="303" y="145" class="aboutSvgTextB" text-anchor="start"
+                            <text x="300" y="167" class="aboutSvgTextB" text-anchor="start"
                                 style="fill:#999999;"></text>
 
-                            <circle cx="300" cy="300" r="82" style="fill: none; stroke-width: 4; stroke: #ffffff" />
-
+                            <!--
+                            <circle cx="300" cy="300" r="82" style="fill: #ffffff; stroke-width: 4; stroke: #ffffff" />
+                            <g id="resume-btn" onclick="startAllAnimations()">>
+                            <circle cx="300" cy="300" fill="none" r="10" stroke="#FF3366" stroke-width="2" opacity="0">
+                                <animate attributeName="r" from="10" to="80" dur="4s" begin="0s" repeatCount="1"/>
+                                <animate attributeName="opacity" from="1" to="0" dur="4s" begin="0s" repeatCount="1"/>
+                            </circle>
+                            -->
+                            <!--<circle cx="300" cy="300" fill="#FF3366" r="50"/>-->
+                            <!--<text x="300" y="300" text-anchor="middle" stroke-width="2px" dy=".3em"-->
+                                <!--class="resume-text">82</text>-->
+                            </g>
                             <circle cx="300" cy="300" r="70" style="fill: #fff; stroke-width: 0" />
                             <image xlink:href="./static/images/oblogoLargeFaceNoTitle.svg" x="240" y="240" height="120" width="120" mask="url(#portaitMask)" />
 
+                            <!--
                             <circle cx="300" cy="300" r="70"
                                 style="fill: none; stroke-width: 20; stroke: var(--bhred)" />
+                                -->
+                            
+                            <circle cx="300" cy="300" r="70" style="fill: none; stroke-width: 20; stroke: #ffffff" />
+                            <g id="resume-btn" onclick="startAllAnimations()">>
+                            <circle cx="300" cy="300" fill="none" r="50" stroke="#FF3366" stroke-width="2" opacity="0">
+                                <animate attributeName="r" from="50" to="80" dur="4s" begin="0s" repeatCount="1"/>
+                                <animate attributeName="opacity" from="1" to="0" dur="4s" begin="0s" repeatCount="1"/>
+                            </circle>
+                            <!--<circle cx="300" cy="300" fill="#FF3366" r="50"/>-->
+                            <!--<text x="300" y="300" text-anchor="middle" stroke-width="2px" dy=".3em"-->
+                                <!--class="resume-text">82</text>-->
+                            </g>
 
                             <text x="35" y="655" class="infoLineSubtextLink" text-anchor="start">Austin, TX</text>
                             <text x="35" y="670" class="atob" text-anchor="start">oftenback.io</text>
@@ -82,12 +105,14 @@
                             <text x="575" y="677" class="updatelast" text-anchor="end">LAST UPDATE</text>
                         </g>
 
+                        <!--
                         <g id="resume-btn" onclick="startAllAnimations()">>
-                            <circle cx="50" cy="590" r="40" style="fill:#FF3366;stroke-width:4;stroke:#FFFFFF;">>
+                            <circle cx="300" cy="300" r="40" style="fill:#FF3366;stroke-width:4;stroke:#FFFFFF;">>
                             </circle>
-                            <text x="50" y="590" text-anchor="middle" stroke-width="2px" dy=".3em"
+                            <text x="300" y="300" text-anchor="middle" stroke-width="2px" dy=".3em"
                                 class="resume-text">82</text>
                         </g>
+                        -->
                     </g>
 
                 </svg>
@@ -127,16 +152,16 @@
             
             const CX = 300;
             const CY = 300;
-            const INITIAL_ANGLE = 60;
+            const INITIAL_ANGLE = 50;
             const START_YEAR = 1978;
-            const END_YEAR = 2060;
             const CURRENT_YEAR = new Date().getFullYear() + 1;
+            const END_YEAR = CURRENT_YEAR;
             const SECTOR_BUFFER = 1;
    
             const countriesData = [
                 { name: "france", year_span: 2005 - 1978, color: "var(--bhred)", label: "FRANCE" },
-                { name: "usa", year_span: CURRENT_YEAR - 2005, color: "var(--bhred)", label: "USA" },
-                { name: "remainder", year_span: 0, color: "var(--bhred)", label: "" }
+                { name: "usa", year_span: CURRENT_YEAR - 2005, color: "var(--bhred)", label: "USA" }
+                //{ name: "remainder", year_span: 0, color: "var(--bhred)", label: "" }
             ];
             
             const citiesData = [
@@ -150,8 +175,8 @@
                 {name: "austin1", year_span: 2011 - 2005, color: "var(--bhred_light)", label: "AUSTIN" },
                 {name: "raphael", year_span: 2013 - 2011, color: "var(--bhred_light)", label: "SAN RAPHAEL" },
                 {name: "cambridge", year_span: 2016 - 2013, color: "var(--bhred_light)", label: "CAMBRIDGE" },
-                {name: "austin2", year_span: CURRENT_YEAR - 2016, color: "var(--bhred_light)", label: "AUSTIN" },
-                {name: "remaindercities", year_span: 0, color: "var(--bhred_light)",  label: "" }
+                {name: "austin2", year_span: CURRENT_YEAR - 2016, color: "var(--bhred_light)", label: "AUSTIN" }
+                //{name: "remaindercities", year_span: 0, color: "var(--bhred_light)",  label: "" }
                 ];
             
             const activitiesWhiteData = [
@@ -172,8 +197,8 @@
                 {name: "school9", year_span: 2012 - 2005, color: "var(--bhyellow)", label: "UT AUSTIN" },
                 {name: "work1", year_span: 2016 - 2012, color: "var(--bhyellow)", label: "INTEL" },
                 {name: "work2", year_span: 2017 - 2016, color: "var(--bhyellow)", label: "" },
-                {name: "work3", year_span: CURRENT_YEAR - 2017, color: "var(--bhyellow)", label: "INDEED" },
-                {name: "remaindermainactivities", year_span: 0, color: "var(--bhyellow)", label: "" }
+                {name: "work3", year_span: CURRENT_YEAR - 2017, color: "var(--bhyellow)", label: "INDEED" }
+                //{name: "remaindermainactivities", year_span: 0, color: "var(--bhyellow)", label: "" }
             ]
             
             const activitiesData = [
@@ -190,8 +215,8 @@
                 {name: "leave", year_span: 2017 - 2016, color: "var(--bhyellow_light)", label: "" },
                 {name: "indeed_taxo", year_span: 2020 - 2017, color: "var(--bhyellow_light)", label: "TAXONOMY" },
                 {name: "indeed_qm", year_span: 2021 - 2020, color: "var(--bhyellow_light)", label: "DEV" },
-                {name: "indeed_dev", year_span: CURRENT_YEAR - 2021, color: "var(--bhyellow_light)", label: "SWE" },
-                {name: "remainderactivities", year_span: 0, color: "var(--bhyellow_light)",  label: "" }
+                {name: "indeed_dev", year_span: CURRENT_YEAR - 2021, color: "var(--bhyellow_light)", label: "SWE" }
+                //{name: "remainderactivities", year_span: 0, color: "var(--bhyellow_light)",  label: "" }
                 ];
             
             const languagesWhiteData = [
@@ -232,17 +257,20 @@
             
             
             const relationsData = [
-                {name: "none", year_span: 2003 - 1978, color: "none", label: "" },
-                {name: "bob", year_span: 2007 - 2003, color: "var(--bhblue_light)", label: "BOB" },
-                {name: "none1", year_span: 2008 - 2007, color: "none", label: "" },
+                {name: "none", year_span: 2002 - 1978, color: "none", label: "" },
+                {name: "bob", year_span: 2006 - 2002, color: "var(--bhblue_light)", label: "BOB" },
+                {name: "none1", year_span: 2008 - 2006, color: "none", label: "" },
                 {name: "allison", year_span: 2016 - 2008, color: "var(--bhblue_light)", label: "ALLISON" },
-                {name: "henry", year_span: CURRENT_YEAR - 2016, color: "var(--bhblue_light)", label: "ALLISON + HENRY" },
-                {name: "remainderrelations", year_span: 0, color: "var(--bhblue_light)", label: "" }
+                {name: "henry", year_span: CURRENT_YEAR - 2016, color: "var(--bhblue_light)", label: "ALLISON + HENRY" }
+                //{name: "remainderrelations", year_span: 0, color: "var(--bhblue_light)", label: "" }
             ];
             
             const languagesData = [
-                {name: "french1", year_span: CURRENT_YEAR - 1978, color: "var(--bhblue)", label: "FRENCH" },
-                {name: "remainder1", year_span: 0, color: "var(--bhblue)", label: "" }
+                {name: "french", year_span: 1989 - 1978, color: "var(--bhblue)", label: "FRENCH" },
+                {name: "french1", year_span: 2002 - 1989, color: "var(--bhblue)", label: "FRENCH" },
+                {name: "french2", year_span: 2012 - 2002, color: "var(--bhblue)", label: "FRENCH" },
+                {name: "english", year_span: CURRENT_YEAR - 2012, color: "var(--bhblue)", label: "ENGLISH" }
+                //{name: "remainder1", year_span: 0, color: "var(--bhblue)", label: "" }
                 ];
                                    
                                    
@@ -349,10 +377,11 @@
             function addSectors(parentElementId, sectorData, radius) {
                 let sectorNames = sectorData.map(item => item.name);
                 let sectorYears = sectorData.map(item => item.year_span);
+                sectorYears.fill(0);
                 let sectorColors = sectorData.map(item => item.color);
                 let sectorLabels = sectorData.map(item => item.label);
                 appendSectors(parentElementId, sectorNames, sectorColors)
-                drawGraph(sectorNames, sectorLabels, sectorYears, START_YEAR, 2025, radius) 
+                drawGraph(sectorNames, sectorLabels, sectorYears, START_YEAR, END_YEAR, radius) 
             }
 
             function drawGraph(sector_names, sector_labels, year_spans, start_date, end_date, radius) {
@@ -410,15 +439,15 @@
                     yearSpansCurrent = [];
                     for (var i = 0; i < this.yearSpansStart.length; i++) {
                         this.end_year = this.year + (this.targetYear - this.year) * fraction;
-                        if (i < this.yearSpansStart.length - 1) {
-                            var startValue = this.yearSpansStart[i];
-                            var endValue = this.yearSpansTarget[i];
-                            yearSpansCurrent.push(startValue);
-                        } else {
+                        //if (i < this.yearSpansStart.length - 1) {
+                        //    var startValue = this.yearSpansStart[i];
+                        //    var endValue = this.yearSpansTarget[i];
+                        //    yearSpansCurrent.push(startValue);
+                        //} else {
                             var startValue = this.yearSpansStart[i];
                             var endValue = this.yearSpansTarget[i];
                             yearSpansCurrent.push(startValue + (endValue - startValue) * fraction);
-                        }
+                        //}
                     }
                     console.log(this.names, this.labels, yearSpansCurrent, START_YEAR, this.end_year, this.radius);
                     drawGraph(this.names, this.labels, yearSpansCurrent, START_YEAR, this.end_year, this.radius);
@@ -442,42 +471,50 @@
                 newSectorGraph.radius = radius;
                 requestAnimationFrame(newSectorGraph.animateGraphic.bind(newSectorGraph)); // Bind the method to the object
             }
-            
+        
+        
+        
             var countriesNames = countriesData.map(item => item.name);
             var countriesLabels = countriesData.map(item => item.label);
-            var countriesStartYears = countriesData.map(item => item.year_span);
-            var countriesTargetYears = [...countriesStartYears];
-            countriesTargetYears[countriesTargetYears.length - 1] = END_YEAR - CURRENT_YEAR;
+            var countriesTargetYears = countriesData.map(item => item.year_span);
+            var countriesStartYears = [...countriesTargetYears];
+            var countriesStartYears = countriesStartYears.fill(0);
+            
+            //var countriesNames = countriesData.map(item => item.name);
+            //var countriesLabels = countriesData.map(item => item.label);
+            //var countriesStartYears = countriesData.map(item => item.year_span);
+            //var countriesTargetYears = [...countriesStartYears];
+            //countriesTargetYears[countriesTargetYears.length - 1] = END_YEAR - CURRENT_YEAR;
             
             var citiesNames = citiesData.map(item => item.name);
             var citiesLabels = citiesData.map(item => item.label);
-            var citiesStartYears = citiesData.map(item => item.year_span);
-            var citiesTargetYears = [...citiesStartYears];
-            citiesTargetYears[citiesTargetYears.length - 1] = END_YEAR - CURRENT_YEAR;
-            
-            var activitiesNames = activitiesData.map(item => item.name);
-            var activitiesLabels = activitiesData.map(item => item.label);
-            var activitiesStartYears = activitiesData.map(item => item.year_span);
-            var activitiesTargetYears = [...activitiesStartYears];
-            activitiesTargetYears[activitiesTargetYears.length - 1] = END_YEAR - CURRENT_YEAR;
+            var citiesTargetYears = citiesData.map(item => item.year_span);
+            var citiesStartYears = [...citiesTargetYears];
+            var citiesStartYears = citiesStartYears.fill(0)
             
             var mainActivitiesNames = mainActivitiesData.map(item => item.name);
             var mainActivitiesLabels = mainActivitiesData.map(item => item.label);
-            var mainActivitiesStartYears = mainActivitiesData.map(item => item.year_span);
-            var mainActivitiesTargetYears = [...mainActivitiesStartYears];
-            mainActivitiesTargetYears[mainActivitiesTargetYears.length - 1] = END_YEAR - CURRENT_YEAR;
+            var mainActivitiesTargetYears = mainActivitiesData.map(item => item.year_span);
+            var mainActivitiesStartYears = [...mainActivitiesTargetYears];
+            var mainActivitiesStartYears = mainActivitiesStartYears.fill(0)
+            
+            var activitiesNames = activitiesData.map(item => item.name);
+            var activitiesLabels = activitiesData.map(item => item.label);
+            var activitiesTargetYears = activitiesData.map(item => item.year_span);
+            var activitiesStartYears = [...activitiesTargetYears];
+            var activitiesStartYears = activitiesStartYears.fill(0)
             
             var languagesNames = languagesData.map(item => item.name);
             var languagesLabels = languagesData.map(item => item.label);
-            var languagesStartYears = languagesData.map(item => item.year_span);
-            var languagesTargetYears = [...languagesStartYears];
-            languagesTargetYears[languagesTargetYears.length - 1] = END_YEAR - CURRENT_YEAR;
+            var languagesTargetYears = languagesData.map(item => item.year_span);
+            var languagesStartYears = [...languagesTargetYears];
+            var languagesStartYears = languagesStartYears.fill(0)
             
             var relationsNames = relationsData.map(item => item.name);
             var relationsLabels = relationsData.map(item => item.label);
-            var relationsStartYears = relationsData.map(item => item.year_span);
-            var relationsTargetYears = [...relationsStartYears];
-            relationsTargetYears[relationsTargetYears.length - 1] = END_YEAR - CURRENT_YEAR;
+            var relationsTargetYears = relationsData.map(item => item.year_span);
+            var relationsStartYears = [...relationsTargetYears];
+            var relationsStartYears = relationsStartYears.fill(0)
             
             function startAllAnimations() {
                 startAnimation(countriesNames, countriesLabels, countriesStartYears, countriesTargetYears, 260);
@@ -487,6 +524,8 @@
                 startAnimation(languagesNames, languagesLabels, languagesStartYears, languagesTargetYears, 140);
                 startAnimation(relationsNames, relationsLabels, relationsStartYears, relationsTargetYears, 110);
             }
+        
+            setTimeout(startAllAnimations, 4000);
     </script>
 </body>
 
