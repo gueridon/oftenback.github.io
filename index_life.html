@@ -19,13 +19,7 @@
             <div class="landingabout">
                 <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
                     viewBox="0 0 600 750" preserveAspectRatio="xMidYMid meet" id="aboutGraph2">
-
-
                     <g>
-                        <text x="303" y="25" class="aboutSvgName" text-anchor="start">NICHOLAS</text>
-                        <text x="303" y="50" class="aboutSvgName" text-anchor="start">BACUEZ</text>
-                        <text x="303" y="65" class="atob" text-anchor="start">@oftenback.io</text>
-
                         <g id="aboutGraphMain">
                             <rect x="0" y="0" width="580" height="700"
                                 style="fill: #ffffff; stroke-width: 0; stroke: rgb(0, 0, 0)" ry="5px" rx="5px" />
@@ -43,19 +37,6 @@
                                     <g id="relations"></g>
                                 </g>
                             </g>
-
-                            <text x="300" y="60" class="aboutSvgName" text-anchor="start">NICHOLAS</text>
-                            <text x="300" y="85" class="aboutSvgName" text-anchor="start">BACUEZ</text>
-                            <text x="300" y="100" class="atob" text-anchor="start">@oftenback.io</text>
-
-                            <text x="300" y="122" class="aboutSvgTextA" text-anchor="start"
-                                style="fill:rgba(255, 51, 102, 1);">LIFE</text>
-                            <text x="300" y="137" class="aboutSvgTextA" text-anchor="start"
-                                style="fill:rgba(255, 51, 102, 1);">FRAGMENTS</text>
-                            <text x="300" y="152" class="aboutSvgTextA" text-anchor="start"
-                                style="fill:rgba(255, 51, 102, 1);">VIEWER</text>
-                            <text x="300" y="167" class="aboutSvgTextB" text-anchor="start"
-                                style="fill:#999999;"></text>
 
                             <!--
                             <circle cx="300" cy="300" r="82" style="fill: #ffffff; stroke-width: 4; stroke: #ffffff" />
@@ -87,6 +68,22 @@
                             <!--<text x="300" y="300" text-anchor="middle" stroke-width="2px" dy=".3em"-->
                                 <!--class="resume-text">82</text>-->
                             </g>
+                        
+                        
+                            <!--
+                            <text x="35" y="25" class="aboutSvgName" text-anchor="start">NICHOLAS</text>
+                            <text x="35" y="50" class="aboutSvgName" text-anchor="start">BACUEZ</text>
+                            <text x="35" y="65" class="atob" text-anchor="start">@oftenback.io</text>
+                            -->
+
+                            <text x="35" y="552" class="aboutSvgTextA" text-anchor="start"
+                                style="fill:rgba(255, 51, 102, 1);">LIFE</text>
+                            <text x="35" y="567" class="aboutSvgTextA" text-anchor="start"
+                                style="fill:rgba(255, 51, 102, 1);">FRAGMENTS</text>
+                            <text x="35" y="582" class="aboutSvgTextA" text-anchor="start"
+                                style="fill:rgba(255, 51, 102, 1);">VIEWER</text>
+                            <text x="35" y="597" class="aboutSvgTextB" text-anchor="start"
+                                style="fill:#999999;"></text>
 
                             <text x="35" y="655" class="infoLineSubtextLink" text-anchor="start">Austin, TX</text>
                             <text x="35" y="670" class="atob" text-anchor="start">oftenback.io</text>
@@ -96,7 +93,7 @@
 
                             <!-- MAP #DADABC-->
 
-                        </g>
+                        
 
                         <g transform="translate(0, 30)">
                             <text x="852" y="665" id="updatedate" class="updatedate" text-anchor="start"></text>
@@ -152,7 +149,7 @@
             
             const CX = 300;
             const CY = 300;
-            const INITIAL_ANGLE = 50;
+            const INITIAL_ANGLE = 5;
             const START_YEAR = 1978;
             const CURRENT_YEAR = new Date().getFullYear() + 1;
             const END_YEAR = CURRENT_YEAR;
@@ -250,7 +247,7 @@
             function makeSector(year_data, radius, start_date, end_date, lastItem) {
                 var sectorBuffer = lastItem ? 0 : SECTOR_BUFFER;
                 var number_of_years = end_date - start_date;
-                var one_year = 300 / number_of_years;
+                var one_year = 360 / number_of_years;
                 var start_angle = INITIAL_ANGLE + year_data.start * one_year;
                 var end_angle = INITIAL_ANGLE + year_data.end * one_year - sectorBuffer;
                 var start = polarToCartesian(CX, CY, radius, end_angle),
@@ -353,7 +350,6 @@
                 return radiuses;
             }
         
-
             const underLayers = [
                 {name: "activities", radius: 204},
                 {name: "languages", radius: 144},
@@ -421,41 +417,42 @@
                 requestAnimationFrame(newSectorGraph.animateGraphic.bind(newSectorGraph)); // Bind the method to the object
             }
         
+            const fillValue = 0;
             var countriesNames = countriesData.map(item => item.name);
             var countriesLabels = countriesData.map(item => item.label);
             var countriesTargetYears = countriesData.map(item => item.year_span);
             var countriesStartYears = [...countriesTargetYears];
-            var countriesStartYears = countriesStartYears.fill(0);
+            var countriesStartYears = countriesStartYears.fill(fillValue);
             
             var citiesNames = citiesData.map(item => item.name);
             var citiesLabels = citiesData.map(item => item.label);
             var citiesTargetYears = citiesData.map(item => item.year_span);
             var citiesStartYears = [...citiesTargetYears];
-            var citiesStartYears = citiesStartYears.fill(0)
+            var citiesStartYears = citiesStartYears.fill(fillValue)
             
             var mainActivitiesNames = mainActivitiesData.map(item => item.name);
             var mainActivitiesLabels = mainActivitiesData.map(item => item.label);
             var mainActivitiesTargetYears = mainActivitiesData.map(item => item.year_span);
             var mainActivitiesStartYears = [...mainActivitiesTargetYears];
-            var mainActivitiesStartYears = mainActivitiesStartYears.fill(0)
+            var mainActivitiesStartYears = mainActivitiesStartYears.fill(fillValue)
             
             var activitiesNames = activitiesData.map(item => item.name);
             var activitiesLabels = activitiesData.map(item => item.label);
             var activitiesTargetYears = activitiesData.map(item => item.year_span);
             var activitiesStartYears = [...activitiesTargetYears];
-            var activitiesStartYears = activitiesStartYears.fill(0)
+            var activitiesStartYears = activitiesStartYears.fill(fillValue)
             
             var languagesNames = languagesData.map(item => item.name);
             var languagesLabels = languagesData.map(item => item.label);
             var languagesTargetYears = languagesData.map(item => item.year_span);
             var languagesStartYears = [...languagesTargetYears];
-            var languagesStartYears = languagesStartYears.fill(0)
+            var languagesStartYears = languagesStartYears.fill(fillValue)
             
             var relationsNames = relationsData.map(item => item.name);
             var relationsLabels = relationsData.map(item => item.label);
             var relationsTargetYears = relationsData.map(item => item.year_span);
             var relationsStartYears = [...relationsTargetYears];
-            var relationsStartYears = relationsStartYears.fill(0)
+            var relationsStartYears = relationsStartYears.fill(fillValue)
             
             function startAllAnimations() {
                 startAnimation(countriesNames, countriesLabels, countriesStartYears, countriesTargetYears, 260);
