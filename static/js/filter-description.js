@@ -10,7 +10,7 @@
 
 
         if (descriptions) { // If the element had descriptions
-            var $alldescriptions = descriptions.split(',')
+            var $alldescriptions = descriptions.split(',');
             //document.write($alldescriptions[0])
             descriptions.split(',').forEach(function (descriptionName) { // Split at comma and
                 if (descriptioned[descriptionName] == null) { // If object doesn't have tag

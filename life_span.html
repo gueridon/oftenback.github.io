@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Life in Weeks</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            text-align: center; 
+            background-color: #f4f4f4; 
+            margin: 0; /* Remove default margin */
+            padding: 0; /* Remove default padding */
+        }
+        h1 {
+            margin-top: 10px; /* Adjust top margin of title */
+        }
+        .input-container {
+            margin: 10px 0; /* Adjust margin around input section */
+        }
+        .grid-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px; /* Reduced padding */
+            background-color: rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            margin: 10px auto; /* Reduced margin */
+            width: fit-content;
+            overflow-x: auto; /* Allow horizontal scrolling if needed */
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(52, 10px); /* Adjust columns for weeks */
+            gap: 2px;
+            justify-content: center;
+        }
+        .week { 
+            width: 10px; 
+            height: 10px; 
+            display: inline-block; 
+        }
+        .elapsed { background-color: orange; }
+        .remaining { background-color: green; }
+    </style>
+</head>
+<body>
+    <h1>Your Life in Weeks</h1>
+    <div class="input-container">
+        <label for="birthdate">Birth Date:</label>
+        <input type="date" id="birthdate" value="1978-09-09">
+        <label for="lifeExpectancy">Life Expectancy (years):</label>
+        <input type="number" id="lifeExpectancy" value="80" min="1" max="120">
+        <button onclick="updateGrid()">Update</button>
+    </div>
+    <div class="grid-wrapper">
+        <div class="grid" id="lifespanGrid"></div>
+    </div>
+
+    <script>
+        function updateGrid() {
+            const birthDateInput = document.getElementById("birthdate").value;
+            const lifeExpectancyInput = parseInt(document.getElementById("lifeExpectancy").value, 10);
+            
+            if (!birthDateInput || isNaN(lifeExpectancyInput) || lifeExpectancyInput < 1) {
+                alert("Please enter a valid birthdate and life expectancy.");
+                return;
+            }
+
+            const birthDate = new Date(birthDateInput);
+            const today = new Date();
+            const weeksInLife = lifeExpectancyInput * 52;
+            const weeksElapsed = Math.floor((today - birthDate) / (1000 * 60 * 60 * 24 * 7));
+
+            const grid = document.getElementById("lifespanGrid");
+            grid.innerHTML = ""; // Clear previous grid
+
+            for (let i = 0; i < weeksInLife; i++) {
+                const week = document.createElement("div");
+                week.classList.add("week", i < weeksElapsed ? "elapsed" : "remaining");
+                grid.appendChild(week);
+            }
+        }
+
+        // Initialize grid on page load
+        updateGrid();
+    </script>
+</body>
+</html>

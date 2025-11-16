@@ -172,11 +172,12 @@
     <form id="recordForm">
       <div>
         <label for="artist">Artist</label>
-        <input id="artist" type="text" required autocomplete="off" />
+        <input id="artist" list="artistList" placeholder="Type or choose an artist" required autocomplete="off"/>
+        <datalist id="artistList"></datalist>
       </div>
       <div>
         <label for="title">Title</label>
-        <input id="title" type="text" required />
+        <input id="title" list="title" required />
       </div>
       <div>
         <label for="year">Year</label>
@@ -189,7 +190,9 @@
       </div>
       <div>
         <label for="format">Format</label>
-        <input id="format" type="text" />
+        <input id="format" list="formatList" placeholder="Type or choose a format" />
+        <datalist id="formatList"></datalist>
+        
       </div>
 
       <div class="controls">
@@ -277,11 +280,14 @@
 
     // elements
     const artistEl = document.getElementById('artist');
+    const artistListEl = document.getElementById('artistList');
     const titleEl = document.getElementById('title');
     const yearEl = document.getElementById('year');
     const genreEl = document.getElementById('genre');
-    const formatEl = document.getElementById('format');
     const genreListEl = document.getElementById('genreList');
+    const formatEl = document.getElementById('format');
+    const formatListEl = document.getElementById('formatList');
+    
     const countEl = document.getElementById('count');
 
     const ownerEl = document.getElementById('owner');
@@ -332,7 +338,9 @@
         records = [];
       }
       sortRecords();
-      updateGenreList();
+      function updateGenreList() {
+        updateDatalist(records, 'genre', genreListEl);
+      } 
       renderTable();
     }
 
@@ -493,6 +501,28 @@
       });
     }
 
+    function updateDatalist(records, field, datalistEl) {
+      const unique = new Set();
+
+      records.forEach(r => {
+        const value = r[field];
+        if (value && typeof value === 'string') {
+          unique.add(value.trim());
+        }
+      });
+
+      datalistEl.innerHTML = '';
+
+      Array.from(unique)
+        .sort((a, b) => a.localeCompare(b))
+        .forEach(v => {
+          const opt = document.createElement('option');
+          opt.value = v;
+          datalistEl.appendChild(opt);
+        });
+    }
+
+    
     // merging dedupe: artist+title (case-insensitive). local wins unless remote has additional non-empty fields.
     function mergeRecords(local, remote) {
       const map = new Map();
