@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Vinyl Collection — UI</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    :root {
+      --bg: #fafafa;
+      --card: #fff;
+      --muted: #666;
+      --accent: #f59e0b; /* orange */
+      --danger: #ef4444; /* red */
+      --primary: #0ea5e9;
+      --radius: 12px;
+      --gap: 12px;
+      --pad: 12px;
+    }
+
+    html,body { height:100%; }
+    body{
+      margin: 18px;
+      font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
+      background: linear-gradient(180deg,#fbfbfb,#fafafa);
+      color:#111827;
+    }
+
+    .container {
+      max-width: 980px;
+      margin: 0 auto;
+      background: var(--card);
+      padding: 18px;
+      border-radius: 16px;
+      box-shadow: 0 6px 24px rgba(16,24,40,0.06);
+    }
+
+    h1 { margin: 0 0 8px 0; font-size: 1.4rem; }
+    p.lead { margin:4px 0 16px 0; color:var(--muted); }
+
+    form#recordForm {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: var(--gap);
+      align-items: end;
+      margin-bottom: 14px;
+    }
+
+    label { display:block; font-size: 0.78rem; margin-bottom:6px; color:var(--muted); }
+    input[type="text"], input[type="number"] {
+      width:100%;
+      padding:10px;
+      border-radius: 10px;
+      border: 1px solid #e6e6e6;
+      box-sizing: border-box;
+      font-size: 0.95rem;
+    }
+
+    .controls {
+      display:flex;
+      gap:8px;
+      grid-column: 1/-1;
+    }
+
+    button {
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      box-shadow: 0 2px 6px rgba(2,6,23,0.04);
+    }
+
+    button.primary { background: var(--primary); color: white; }
+    button.ghost { background: transparent; color: var(--primary); border: 1px solid #e6f6ff; }
+    button.orange { background: var(--accent); color: white; }
+    button.small { padding: 8px 10px; font-size: 0.9rem; }
+
+    .table-wrap {
+      overflow:auto;
+      border-radius: var(--radius);
+      border: 1px solid #eaeaea;
+    }
+
+    table {
+      width:100%;
+      border-collapse: collapse;
+      min-width: 720px;
+    }
+
+    thead th {
+      background: #fbfbfb;
+      text-align: left;
+      padding: 12px;
+      font-size: 0.86rem;
+      color: #374151;
+      border-bottom: 1px solid #eee;
+    }
+
+    tbody td {
+      padding: 12px;
+      border-bottom: 1px solid #f1f1f1;
+      vertical-align: middle;
+    }
+
+    tbody tr:last-child td { border-bottom: none; }
+
+    .actions button {
+      margin-right: 6px;
+      border-radius: 10px;
+      padding: 6px 8px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      box-shadow: none;
+    }
+    .actions .edit { background: var(--accent); color:#111827; }
+    .actions .delete { background: var(--danger); color:white; }
+
+    .meta {
+      display:flex;
+      gap:12px;
+      align-items:center;
+      margin-top:12px;
+      flex-wrap:wrap;
+    }
+
+    .meta .box {
+      background: #fff;
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px dashed #eee;
+      font-size: 0.9rem;
+    }
+
+    footer { margin-top: 14px; color:var(--muted); font-size:0.85rem; }
+
+    /* Modal */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(2,6,23,0.45);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index: 1200;
+    }
+    .modal {
+      width: 420px;
+      background: white;
+      padding: 18px;
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(2,6,23,0.45);
+    }
+    .modal h3 { margin:0 0 8px 0; }
+    .modal p { margin: 0 0 12px 0; color: var(--muted); }
+    .modal .row { display:flex; gap:8px; justify-content:flex-end; }
+
+    /* small helpers */
+    .muted { color:var(--muted); font-size:0.9rem; }
+    .flex { display:flex; gap:8px; align-items:center; }
+    .spacer { flex:1; }
+
+    @media (max-width:720px){
+      .modal{ width: 92%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container" role="main">
+    <h1>Vinyl Collection</h1>
+    <p class="lead">Manage your collection locally and sync with a private GitHub repo (<code>vinyl.json</code>). Works offline — sync when ready.</p>
+
+    <form id="recordForm">
+      <div>
+        <label for="artist">Artist</label>
+        <input id="artist" type="text" required autocomplete="off" />
+      </div>
+      <div>
+        <label for="title">Title</label>
+        <input id="title" type="text" required />
+      </div>
+      <div>
+        <label for="year">Year</label>
+        <input id="year" type="number" min="1800" max="2100" />
+      </div>
+      <div>
+        <label for="genre">Genre</label>
+        <input id="genre" list="genreList" placeholder="Type or choose a genre" />
+        <datalist id="genreList"></datalist>
+      </div>
+      <div>
+        <label for="type">Type</label>
+        <input id="type" type="text" />
+      </div>
+
+      <div class="controls">
+        <button id="addBtn" class="primary" type="submit">Add / Update Record</button>
+        <button id="saveLocalBtn" type="button" class="ghost small">Save (Local)</button>
+        <button id="exportBtn" type="button" class="small">Export JSON</button>
+        <button id="importBtn" type="button" class="small">Import JSON</button>
+        <button id="clearBtn" type="button" class="small">Clear Local</button>
+      </div>
+    </form>
+
+    <div class="meta">
+      <div class="box">
+        <strong>Records:</strong> <span id="count">0</span>
+      </div>
+
+      <div class="box" title="Remote settings">
+        <label style="display:block;font-size:0.8rem;margin-bottom:4px;color:var(--muted)">GitHub Data Repo</label>
+        <input id="owner" placeholder="owner (username/org)" style="padding:6px;border-radius:8px;border:1px solid #eee;font-size:0.9rem" />
+        <input id="repo" placeholder="repo name (private)" style="padding:6px;border-radius:8px;border:1px solid #eee;font-size:0.9rem" />
+      </div>
+
+      <div class="box" style="display:flex;gap:8px;align-items:center;">
+        <label style="font-size:0.8rem;color:var(--muted);margin-right:6px">Token</label>
+        <input id="token" placeholder="Personal access token" style="width:360px;padding:6px;border-radius:8px;border:1px solid #eee" />
+        <button id="saveTokenBtn" class="small">Remember</button>
+      </div>
+
+      <div class="spacer"></div>
+
+      <div style="display:flex;gap:8px">
+        <button id="pullBtn" class="orange small">Pull from GitHub</button>
+        <button id="pushBtn" class="orange small">Push to GitHub</button>
+        <button id="syncBtn" class="primary small">Sync (Ask)</button>
+      </div>
+    </div>
+
+    <div style="margin-top:12px" class="table-wrap">
+      <table id="recordTable" aria-label="Vinyl records table">
+        <thead>
+          <tr>
+            <th>Artist</th>
+            <th>Title</th>
+            <th>Year</th>
+            <th>Genre</th>
+            <th>Notes</th>
+            <th style="min-width:140px">Actions</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <footer>
+      <small>UI repo: <code>oftenback.github.io/vinyl-collection-ui</code> — Data repo: <code>vinyl-collection-data</code> (private). Token stored only in your browser localStorage.</small>
+    </footer>
+  </div>
+
+  <!-- Modal for sync choice -->
+  <div id="modalBackdrop" class="modal-backdrop" role="dialog" aria-modal="true">
+    <div class="modal" role="document">
+      <h3 id="modalTitle">Remote data changed</h3>
+      <p id="modalBody">Choose an action:</p>
+      <div style="font-size:0.9rem;margin-bottom:12px;color:var(--muted)" id="modalInfo"></div>
+      <div class="row">
+        <button id="modalCancel" class="small">Cancel</button>
+        <button id="modalMerge" class="small">Merge & Upload</button>
+        <button id="modalOverwrite" class="small">Overwrite Remote</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { githubGetFile, githubCreateOrUpdateFile } from './sync.js';
+
+    const LS_KEY = 'vinyl_records_v1';
+    const LS_TOKEN_KEY = 'vinyl_token';
+    const LS_OWNER_KEY = 'vinyl_owner';
+    const LS_REPO_KEY = 'vinyl_repo';
+    const REMOTE_PATH = 'vinyl.json';
+
+    let records = [];
+    const tableBody = document.querySelector('#recordTable tbody');
+    const form = document.getElementById('recordForm');
+
+    // elements
+    const artistEl = document.getElementById('artist');
+    const titleEl = document.getElementById('title');
+    const yearEl = document.getElementById('year');
+    const genreEl = document.getElementById('genre');
+    const notesEl = document.getElementById('notes');
+    const genreListEl = document.getElementById('genreList');
+    const countEl = document.getElementById('count');
+
+    const ownerEl = document.getElementById('owner');
+    const repoEl = document.getElementById('repo');
+    const tokenEl = document.getElementById('token');
+    const saveTokenBtn = document.getElementById('saveTokenBtn');
+
+    const pullBtn = document.getElementById('pullBtn');
+    const pushBtn = document.getElementById('pushBtn');
+    const syncBtn = document.getElementById('syncBtn');
+
+    const modal = document.getElementById('modalBackdrop');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalBody = document.getElementById('modalBody');
+    const modalInfo = document.getElementById('modalInfo');
+    const modalCancel = document.getElementById('modalCancel');
+    const modalMerge = document.getElementById('modalMerge');
+    const modalOverwrite = document.getElementById('modalOverwrite');
+
+    // load local settings
+    function loadSettings() {
+      const token = localStorage.getItem(LS_TOKEN_KEY);
+      const owner = localStorage.getItem(LS_OWNER_KEY);
+      const repo = localStorage.getItem(LS_REPO_KEY);
+      if (token) tokenEl.value = token;
+      if (owner) ownerEl.value = owner;
+      if (repo) repoEl.value = repo;
+    }
+
+    saveTokenBtn.addEventListener('click', () => {
+      localStorage.setItem(LS_TOKEN_KEY, tokenEl.value.trim());
+      localStorage.setItem(LS_OWNER_KEY, ownerEl.value.trim());
+      localStorage.setItem(LS_REPO_KEY, repoEl.value.trim());
+      alert('Saved token + repo settings to localStorage (only your browser).');
+    });
+
+    // Local persistence
+    function loadLocal() {
+      const raw = localStorage.getItem(LS_KEY);
+      if (raw) {
+        try {
+          records = JSON.parse(raw);
+        } catch (e) {
+          console.error('Failed to parse local records', e);
+          records = [];
+        }
+      } else {
+        records = [];
+      }
+      sortRecords();
+      updateGenreList();
+      renderTable();
+    }
+
+    function saveLocal() {
+      localStorage.setItem(LS_KEY, JSON.stringify(records, null, 2));
+      alert('Saved locally.');
+      renderTable();
+    }
+
+    document.getElementById('saveLocalBtn').addEventListener('click', saveLocal);
+
+    // import / export
+    document.getElementById('exportBtn').addEventListener('click', () => {
+      const blob = new Blob([JSON.stringify(records, null, 2)], {type: 'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'vinyl-export.json';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    });
+
+    document.getElementById('importBtn').addEventListener('click', async () => {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'application/json';
+      input.onchange = async () => {
+        const file = input.files[0];
+        if (!file) return;
+        const text = await file.text();
+        try {
+          const imported = JSON.parse(text);
+          if (!Array.isArray(imported)) throw new Error('JSON must be an array');
+          // merge imported with local (no overwrite unless duplicate)
+          records = mergeRecords(records, imported);
+          saveLocal();
+          loadLocal();
+        } catch (e) {
+          alert('Import failed: ' + e.message);
+        }
+      };
+      input.click();
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', () => {
+      if (confirm('Clear all local records? This cannot be undone.')) {
+        records = [];
+        saveLocal();
+        loadLocal();
+      }
+    });
+
+    // add/update
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const newRecord = {
+        artist: artistEl.value.trim(),
+        title: titleEl.value.trim(),
+        year: yearEl.value ? String(yearEl.value).trim() : '',
+        genre: genreEl.value.trim(),
+        notes: notesEl.value.trim()
+      };
+
+      if (!newRecord.artist || !newRecord.title) {
+        alert('Artist and Title are required.');
+        return;
+      }
+
+      // update existing by artist+title (case-insensitive)
+      const idx = records.findIndex(r =>
+        r.artist.toLowerCase() === newRecord.artist.toLowerCase() &&
+        r.title.toLowerCase() === newRecord.title.toLowerCase()
+      );
+
+      if (idx >= 0) records[idx] = newRecord;
+      else records.push(newRecord);
+
+      sortRecords();
+      updateGenreList();
+      saveLocal();
+      renderTable();
+      form.reset();
+    });
+
+    // render
+    function renderTable() {
+      tableBody.innerHTML = '';
+      records.forEach((r, idx) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${escapeHtml(r.artist)}</td>
+          <td>${escapeHtml(r.title)}</td>
+          <td>${escapeHtml(r.year || '')}</td>
+          <td>${escapeHtml(r.genre || '')}</td>
+          <td>${escapeHtml(r.notes || '')}</td>
+          <td class="actions">
+            <button class="edit" data-i="${idx}">Edit</button>
+            <button class="delete" data-i="${idx}">Delete</button>
+          </td>
+        `;
+        tableBody.appendChild(tr);
+      });
+
+      document.querySelectorAll('.actions .edit').forEach(btn =>
+        btn.addEventListener('click', e => {
+          const i = Number(e.currentTarget.dataset.i);
+          const r = records[i];
+          artistEl.value = r.artist;
+          titleEl.value = r.title;
+          yearEl.value = r.year;
+          genreEl.value = r.genre;
+          notesEl.value = r.notes;
+          // remove item from list while editing to avoid duplicates
+          records.splice(i, 1);
+          renderTable();
+        })
+      );
+
+      document.querySelectorAll('.actions .delete').forEach(btn =>
+        btn.addEventListener('click', e => {
+          const i = Number(e.currentTarget.dataset.i);
+          if (confirm('Delete record?')) {
+            records.splice(i, 1);
+            saveLocal();
+            renderTable();
+            updateGenreList();
+          }
+        })
+      );
+
+      countEl.textContent = records.length;
+    }
+
+    // utilities
+    function escapeHtml(s) {
+      return (s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+
+    function sortRecords() {
+      records.sort((a,b) => {
+        const artistCmp = a.artist.localeCompare(b.artist, undefined, {sensitivity:'base'});
+        if (artistCmp !== 0) return artistCmp;
+        // attempt numeric year desc? We'll put older first; but if empty, push to end
+        const ay = Number(a.year) || 0;
+        const by = Number(b.year) || 0;
+        return ay - by;
+      });
+    }
+
+    function updateGenreList() {
+      const set = new Set();
+      records.forEach(r => { if (r.genre) set.add(r.genre.trim()); });
+      genreListEl.innerHTML = '';
+      Array.from(set).sort((x,y) => x.localeCompare(y)).forEach(g => {
+        const opt = document.createElement('option'); opt.value = g; genreListEl.appendChild(opt);
+      });
+    }
+
+    // merging dedupe: artist+title (case-insensitive). local wins unless remote has additional non-empty fields.
+    function mergeRecords(local, remote) {
+      const map = new Map();
+      const keyOf = r => (r.artist||'').toLowerCase().trim() + '||||' + (r.title||'').toLowerCase().trim();
+
+      // add local first
+      local.forEach(r => map.set(keyOf(r), {...r}));
+
+      // merge remote: add missing, or fill missing fields
+      remote.forEach(r => {
+        const k = keyOf(r);
+        if (!map.has(k)) {
+          map.set(k, {...r});
+        } else {
+          const existing = map.get(k);
+          // fill empty fields from remote
+          ['year','genre','notes'].forEach(f => {
+            if ((!existing[f] || existing[f].toString().trim() === '') && r[f]) {
+              existing[f] = r[f];
+            }
+          });
+          map.set(k, existing);
+        }
+      });
+
+      return Array.from(map.values());
+    }
+
+    // GitHub helpers using sync.js functions
+    async function pullFromGitHub() {
+      const owner = (ownerEl.value || '').trim();
+      const repo = (repoEl.value || '').trim();
+      const token = (tokenEl.value || '').trim();
+      if (!owner || !repo || !token) { alert('Enter owner, repo and token.'); return; }
+
+      try {
+        const remote = await githubGetFile(owner, repo, REMOTE_PATH, token);
+        if (!remote) {
+          if (confirm('No remote file found. Create remote from local?')) {
+            await pushToGitHub(); // will create
+          }
+          return;
+        }
+        // remote.content is parsed JSON
+        const remoteRecords = remote.content;
+        // show choice modal: remote vs local
+        showModal({
+          title: 'Remote file found',
+          body: `Remote has ${remoteRecords.length} records. Local has ${records.length} records.`,
+          info: `Remote sha: ${remote.sha}`,
+          onMerge: async () => {
+            records = mergeRecords(records, remoteRecords);
+            sortRecords();
+            saveLocal();
+            hideModal();
+            await uploadRecords(records, owner, repo, token, `Merge upload: ${new Date().toISOString()}`);
+          },
+          onOverwrite: async () => {
+            // overwrite local with remote
+            records = remoteRecords;
+            sortRecords();
+            saveLocal();
+            hideModal();
+          },
+          onCancel: () => hideModal()
+        });
+
+      } catch (e) {
+        console.error(e);
+        alert('Pull failed: ' + e.message);
+      }
+    }
+
+    async function pushToGitHub() {
+      const owner = (ownerEl.value || '').trim();
+      const repo = (repoEl.value || '').trim();
+      const token = (tokenEl.value || '').trim();
+      if (!owner || !repo || !token) { alert('Enter owner, repo and token.'); return; }
+
+      try {
+        // check remote
+        const remote = await githubGetFile(owner, repo, REMOTE_PATH, token);
+        if (!remote) {
+          if (!confirm('Remote file not found — create vinyl.json on remote?')) return;
+          await uploadRecords(records, owner, repo, token, `Create vinyl.json from UI: ${new Date().toISOString()}`);
+          alert('Created remote file.');
+          return;
+        }
+
+        // If exists, ask user (overwrite / merge / cancel)
+        showModal({
+          title: 'Remote file exists',
+          body: `Remote has ${remote.content.length} records. Local has ${records.length} records.`,
+          info: `Remote sha: ${remote.sha}`,
+          onMerge: async () => {
+            const merged = mergeRecords(records, remote.content);
+            records = merged;
+            sortRecords();
+            saveLocal();
+            hideModal();
+            await uploadRecords(records, owner, repo, token, `Merge upload from UI: ${new Date().toISOString()}`);
+          },
+          onOverwrite: async () => {
+            hideModal();
+            await uploadRecords(records, owner, repo, token, `Overwrite remote from UI: ${new Date().toISOString()}`);
+          },
+          onCancel: () => hideModal()
+        });
+
+      } catch (e) {
+        console.error(e);
+        alert('Push failed: ' + e.message);
+      }
+    }
+
+    async function syncAsk() {
+      // pull remote, then show choice (overwrite remote / merge / cancel)
+      const owner = (ownerEl.value || '').trim();
+      const repo = (repoEl.value || '').trim();
+      const token = (tokenEl.value || '').trim();
+      if (!owner || !repo || !token) { alert('Enter owner, repo and token.'); return; }
+
+      try {
+        const remote = await githubGetFile(owner, repo, REMOTE_PATH, token);
+        if (!remote) {
+          // remote missing => ask create or cancel
+          if (confirm('Remote file not found. Create remote from local now?')) {
+            await uploadRecords(records, owner, repo, token, `Create vinyl.json via sync: ${new Date().toISOString()}`);
+            alert('Remote created.');
+          }
+          return;
+        }
+
+        // remote exists
+        showModal({
+          title: 'Sync choices',
+          body: `Remote: ${remote.content.length} records. Local: ${records.length} records.`,
+          info: `Remote sha: ${remote.sha}`,
+          onMerge: async () => {
+            const merged = mergeRecords(records, remote.content);
+            records = merged;
+            sortRecords();
+            saveLocal();
+            hideModal();
+            await uploadRecords(records, owner, repo, token, `Merge upload via sync: ${new Date().toISOString()}`);
+          },
+          onOverwrite: async () => {
+            hideModal();
+            await uploadRecords(records, owner, repo, token, `Overwrite remote via sync: ${new Date().toISOString()}`);
+          },
+          onCancel: () => hideModal()
+        });
+
+      } catch (e) {
+        console.error(e);
+        alert('Sync failed: ' + e.message);
+      }
+    }
+
+    async function uploadRecords(recordsToUpload, owner, repo, token, message) {
+      try {
+        const payload = JSON.stringify(recordsToUpload, null, 2);
+        // call helper, it will create or update appropriately
+        const res = await githubCreateOrUpdateFile(owner, repo, REMOTE_PATH, token, payload, message);
+        if (res && res.content && res.commit) {
+          alert('Uploaded to GitHub successfully.');
+        } else {
+          alert('Upload finished (no detailed response).');
+        }
+      } catch (e) {
+        console.error(e);
+        alert('Upload failed: ' + e.message);
+      }
+    }
+
+    // modal helpers
+    function showModal({title, body, info, onMerge, onOverwrite, onCancel}) {
+      modalTitle.textContent = title || 'Remote file changed';
+      modalBody.textContent = body || '';
+      modalInfo.textContent = info || '';
+      modal.style.display = 'flex';
+      modalMerge.onclick = () => onMerge && onMerge();
+      modalOverwrite.onclick = () => onOverwrite && onOverwrite();
+      modalCancel.onclick = () => onCancel && onCancel();
+    }
+    function hideModal() {
+      modal.style.display = 'none';
+      modalMerge.onclick = null;
+      modalOverwrite.onclick = null;
+      modalCancel.onclick = null;
+    }
+
+    // wire up buttons
+    pullBtn.addEventListener('click', pullFromGitHub);
+    pushBtn.addEventListener('click', pushToGitHub);
+    syncBtn.addEventListener('click', syncAsk);
+
+    // save local when leaving
+    window.addEventListener('beforeunload', saveLocal);
+
+    // on load
+    loadSettings();
+    loadLocal();
+  </script>
+</body>
+</html>

@@ -1,0 +1,79 @@
+[
+  {
+    "artist": "Beethoven, Ludwig",
+    "title": "Symphonies 8 & 9",
+    "year": "1981",
+    "genre": "Classical",
+    "type": "LP"
+  },
+  {
+    "artist": "Pet Shop Boys",
+    "title": "Please",
+    "year": "1986",
+    "genre": "Synth Pop",
+    "type": "LP"
+  },
+  {
+    "artist": "Pet Shop Boys",
+    "title": "Being Boring",
+    "year": "1990",
+    "genre": "Synth Pop",
+    "type": "12” 45rpm Single"
+  },
+  {
+    "artist": "Pet Shop Boys",
+    "title": "Very",
+    "year": "1993",
+    "genre": "Synth Pop",
+    "type": "LP"
+  },
+  {
+    "artist": "Pet Shop Boys",
+    "title": "Bilingual",
+    "year": "1995",
+    "genre": "Synth Pop",
+    "type": "LP"
+  },
+  {
+    "artist": "Schubert, Franz",
+    "title": "Quintet in A, Op.114, “Trout”, D.667",
+    "year": "1973",
+    "genre": "Classical",
+    "type": "LP"
+  },
+  {
+    "artist": "Sylvester",
+    "title": "Sylvester",
+    "year": "1977",
+    "genre": "Disco",
+    "type": "LP"
+  },
+  {
+    "artist": "Sylvester",
+    "title": "Steps II",
+    "year": "1978",
+    "genre": "Disco",
+    "type": "LP"
+  },
+  {
+    "artist": "Sylvester",
+    "title": "Stars",
+    "year": "1979",
+    "genre": "Disco",
+    "type": "LP"
+  },
+  {
+    "artist": "Various",
+    "title": "Wamono Disco",
+    "year": "2024",
+    "genre": "Disco",
+    "type": "LP"
+  },
+  {
+    "artist": "Various",
+    "title": "The Phoenician Scheme",
+    "year": "2025",
+    "genre": "Soundtrack",
+    "type": "LP"
+  }
+]
