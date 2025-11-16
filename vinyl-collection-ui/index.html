@@ -235,7 +235,7 @@
             <th>Title</th>
             <th>Year</th>
             <th>Genre</th>
-            <th>Notes</th>
+            <th>Type</th>
             <th style="min-width:140px">Actions</th>
           </tr>
         </thead>
@@ -280,7 +280,7 @@
     const titleEl = document.getElementById('title');
     const yearEl = document.getElementById('year');
     const genreEl = document.getElementById('genre');
-    const notesEl = document.getElementById('notes');
+    const typeEl = document.getElementById('type');
     const genreListEl = document.getElementById('genreList');
     const countEl = document.getElementById('count');
 
@@ -395,7 +395,7 @@
         title: titleEl.value.trim(),
         year: yearEl.value ? String(yearEl.value).trim() : '',
         genre: genreEl.value.trim(),
-        notes: notesEl.value.trim()
+        type: typeEl.value.trim()
       };
 
       if (!newRecord.artist || !newRecord.title) {
@@ -429,7 +429,7 @@
           <td>${escapeHtml(r.title)}</td>
           <td>${escapeHtml(r.year || '')}</td>
           <td>${escapeHtml(r.genre || '')}</td>
-          <td>${escapeHtml(r.notes || '')}</td>
+          <td>${escapeHtml(r.type || '')}</td>
           <td class="actions">
             <button class="edit" data-i="${idx}">Edit</button>
             <button class="delete" data-i="${idx}">Delete</button>
@@ -446,7 +446,7 @@
           titleEl.value = r.title;
           yearEl.value = r.year;
           genreEl.value = r.genre;
-          notesEl.value = r.notes;
+          typeEl.value = r.type;
           // remove item from list while editing to avoid duplicates
           records.splice(i, 1);
           renderTable();
@@ -509,7 +509,7 @@
         } else {
           const existing = map.get(k);
           // fill empty fields from remote
-          ['year','genre','notes'].forEach(f => {
+          ['year','genre','type'].forEach(f => {
             if ((!existing[f] || existing[f].toString().trim() === '') && r[f]) {
               existing[f] = r[f];
             }
