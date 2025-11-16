@@ -22,9 +22,14 @@ export async function githubGetFile(owner, repo, path, token) {
 
   const json = await res.json();
   // content is base64 encoded
-  const decoded = atob(json.content.replace(/\n/g,''));
+  const raw = atob(json.content.replace(/\n/g,''));
+  const decoded = decodeURIComponent(escape(raw));
   let parsed;
-  try { parsed = JSON.parse(decoded); } catch (e) { parsed = []; }
+  try { 
+    parsed = JSON.parse(decoded); 
+  } catch (e) { 
+    parsed = []; 
+  }
   return { content: parsed, sha: json.sha, raw: decoded };
 }
 
