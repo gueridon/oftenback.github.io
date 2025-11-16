@@ -338,9 +338,7 @@
         records = [];
       }
       sortRecords();
-      function updateGenreList() {
-        updateDatalist(records, 'genre', genreListEl);
-      } 
+      updateAllDatalists();
       renderTable();
     }
 
@@ -522,6 +520,11 @@
         });
     }
 
+    function updateAllDatalists() {
+      updateDatalist(records, 'genre', genreListEl);
+      updateDatalist(records, 'artist', artistListEl);
+      updateDatalist(records, 'format', formatListEl);
+    }
     
     // merging dedupe: artist+title (case-insensitive). local wins unless remote has additional non-empty fields.
     function mergeRecords(local, remote) {
