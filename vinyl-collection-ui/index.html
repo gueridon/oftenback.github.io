@@ -419,7 +419,7 @@
       else records.push(newRecord);
 
       sortRecords();
-      updateGenreList();
+      updateAllDatalists();
       saveLocal();
       renderTable();
       form.reset();
@@ -435,7 +435,7 @@
           <td>${escapeHtml(r.title)}</td>
           <td>${escapeHtml(r.year || '')}</td>
           <td>${escapeHtml(r.genre || '')}</td>
-          <td>${escapeHtml(r.fromat || '')}</td>
+          <td>${escapeHtml(r.format || '')}</td>
           <td class="actions">
             <button class="edit" data-i="${idx}">Edit</button>
             <button class="delete" data-i="${idx}">Delete</button>
@@ -466,7 +466,7 @@
             records.splice(i, 1);
             saveLocal();
             renderTable();
-            updateGenreList();
+            updateAllDatalists();
           }
         })
       );
@@ -487,15 +487,6 @@
         const ay = Number(a.year) || 0;
         const by = Number(b.year) || 0;
         return ay - by;
-      });
-    }
-
-    function updateGenreList() {
-      const set = new Set();
-      records.forEach(r => { if (r.genre) set.add(r.genre.trim()); });
-      genreListEl.innerHTML = '';
-      Array.from(set).sort((x,y) => x.localeCompare(y)).forEach(g => {
-        const opt = document.createElement('option'); opt.value = g; genreListEl.appendChild(opt);
       });
     }
 
