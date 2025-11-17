@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Vinyl Collection – View Only</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    body {
+      font-family: Inter, sans-serif;
+      margin: 20px;
+      background: #fafafa;
+      color: #222;
+    }
+
+    h1 { margin-bottom: 10px; }
+
+    .top-bar {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    input {
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      min-width: 220px;
+    }
+
+    select {
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+    }
+
+    .table-wrap {
+      overflow: auto;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      background: white;
+    }
+
+    table {
+      width: 100%;
+      min-width: 720px;
+      border-collapse: collapse;
+    }
+
+    thead th {
+      background: #f3f3f3;
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+    }
+
+    tbody td {
+      padding: 10px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .pagination {
+      display: flex;
+      gap: 10px;
+      margin-top: 14px;
+      align-items: center;
+    }
+
+    button {
+      padding: 8px 12px;
+      border-radius: 8px;
+      background: #0ea5e9;
+      color: white;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      background: #9ccfe8;
+      cursor: default;
+    }
+
+    .count {
+      margin-left: auto;
+      color: #666;
+    }
+
+  </style>
+</head>
+<body>
+
+<h1>Vinyl Collection — Viewer</h1>
+
+<div class="top-bar">
+  <input id="search" placeholder="Search artist, title, genre, format…">
+  
+  <label for="pageSize">Records per page:</label>
+  <select id="pageSize">
+    <option>10</option>
+    <option>20</option>
+    <option>50</option>
+    <option>100</option>
+  </select>
+
+  <a href="index.html" style="margin-left:auto;font-size:0.9rem;">Back to Editor</a>
+</div>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Artist</th>
+        <th>Title</th>
+        <th>Year</th>
+        <th>Genre</th>
+        <th>Format</th>
+      </tr>
+    </thead>
+    <tbody id="tbody"></tbody>
+  </table>
+</div>
+
+<div class="pagination">
+  <button id="prevBtn">Previous</button>
+  <button id="nextBtn">Next</button>
+
+  <div class="count" id="countLabel"></div>
+</div>
+
+<script>
+  const LS_KEY = "vinyl_records_v1";
+
+  let allRecords = [];
+  let filtered = [];
+  let currentPage = 1;
+
+  const tbody = document.getElementById("tbody");
+  const searchEl = document.getElementById("search");
+  const pageSizeEl = document.getElementById("pageSize");
+  const prevBtn = document.getElementById("prevBtn");
+  const nextBtn = document.getElementById("nextBtn");
+  const countLabel = document.getElementById("countLabel");
+
+  // Load saved page size
+  const savedSize = localStorage.getItem("vinyl_page_size");
+  if (savedSize) pageSizeEl.value = savedSize;
+
+  function loadLocal() {
+    try {
+      const raw = localStorage.getItem(LS_KEY);
+      if (raw) allRecords = JSON.parse(raw);
+      else allRecords = [];
+    } catch (e) {
+      allRecords = [];
+    }
+    filtered = [...allRecords];
+    render();
+  }
+
+  function applyFilter() {
+    const q = searchEl.value.trim().toLowerCase();
+    if (!q) {
+      filtered = [...allRecords];
+    } else {
+      filtered = allRecords.filter(r =>
+        (r.artist || "").toLowerCase().includes(q) ||
+        (r.title || "").toLowerCase().includes(q) ||
+        (r.genre || "").toLowerCase().includes(q) ||
+        (r.format || "").toLowerCase().includes(q)
+      );
+    }
+    currentPage = 1;
+    render();
+  }
+
+  function render() {
+    const pageSize = parseInt(pageSizeEl.value);
+    const start = (currentPage - 1) * pageSize;
+    const end = start + pageSize;
+
+    const pageRecords = filtered.slice(start, end);
+
+    tbody.innerHTML = "";
+    pageRecords.forEach((r, i) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${start + i + 1}</td>
+        <td>${escapeHtml(r.artist)}</td>
+        <td>${escapeHtml(r.title)}</td>
+        <td>${escapeHtml(r.year || "")}</td>
+        <td>${escapeHtml(r.genre || "")}</td>
+        <td>${escapeHtml(r.format || "")}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    prevBtn.disabled = currentPage === 1;
+    nextBtn.disabled = end >= filtered.length;
+
+    countLabel.textContent = 
+      `${filtered.length} record${filtered.length !== 1 ? "s" : ""}`;
+  }
+
+  function escapeHtml(s) {
+    return (s || "").replace(/[&<>"']/g, c =>
+      ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c])
+    );
+  }
+
+  prevBtn.onclick = () => { currentPage--; render(); };
+  nextBtn.onclick = () => { currentPage++; render(); };
+
+  searchEl.oninput = applyFilter;
+
+  pageSizeEl.onchange = () => {
+    localStorage.setItem("vinyl_page_size", pageSizeEl.value);
+    currentPage = 1;
+    render();
+  };
+
+  loadLocal();
+</script>
+
+</body>
+</html>
