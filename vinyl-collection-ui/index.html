@@ -432,6 +432,7 @@
       records.forEach((r, idx) => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
+          <td>${idx + 1}</td>
           <td>${escapeHtml(r.artist)}</td>
           <td>${escapeHtml(r.title)}</td>
           <td>${escapeHtml(r.year || '')}</td>
