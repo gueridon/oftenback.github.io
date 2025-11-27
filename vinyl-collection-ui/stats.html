@@ -5,8 +5,14 @@
 <title>Vinyl Collection — Statistics</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<!-- Chart.js (core only) -->
+<!-- Chart.js -->
 <script src="https://unpkg.com/chart.js@4.4.0/dist/chart.umd.js"></script>
+
+<!-- DataLabels plugin (for doughnut labels only) -->
+<script src="https://unpkg.com/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.js"></script>
+<script>
+  Chart.register(ChartDataLabels);
+</script>
 
 <style>
   :root {
@@ -56,6 +62,11 @@
     padding: 16px;
   }
 
+  /* Ensure Top Artists chart is tall enough */
+  #artistsChart {
+    height: 600px !important;
+  }
+
   .top10 {
     background: var(--card);
     border: 1px solid var(--border);
@@ -70,11 +81,6 @@
 
   .muted { color: var(--muted); }
 </style>
-  <script src="https://unpkg.com/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.js"></script>
-
-  <script>
-    Chart.register(ChartDataLabels);
-  </script>
 </head>
 <body>
 
@@ -94,12 +100,12 @@
   </div>
 
   <div class="card">
-    <h3>Genres</h3>
+    <h3>Genres (Doughnut)</h3>
     <canvas id="genresChart"></canvas>
   </div>
 
   <div class="card">
-    <h3>Formats</h3>
+    <h3>Formats (Doughnut)</h3>
     <canvas id="formatsChart"></canvas>
   </div>
 
@@ -153,9 +159,11 @@ function countBy(field) {
   });
   return m;
 }
+
 function sorted(map) {
   return Array.from(map.entries()).sort((a,b)=>b[1]-a[1]);
 }
+
 function decadeOf(year) {
   const y = Number(year);
   return y ? Math.floor(y/10)*10 + "s" : "Unknown";
@@ -199,10 +207,11 @@ fillTop10(countBy("format"), "topFormats");
    Charts
    -------------------------- */
 
-// 1. Top 20 Artists
+// 1️⃣ Top 20 Artists — Horizontal Bar (All Visible)
 {
   const map = countBy("artist");
   const top = sorted(map).slice(0,20);
+
   new Chart(document.getElementById("artistsChart"),{
     type:"bar",
     data:{
@@ -211,13 +220,13 @@ fillTop10(countBy("format"), "topFormats");
     },
     options:{
       indexAxis:"y",
-      scales:{x:{beginAtZero:true}},
-      plugins:{ legend:{ display:false } }
+      scales:{ x:{ beginAtZero:true }},
+      plugins:{ legend:{display:false}, datalabels:{display:false} }
     }
   });
 }
 
-// 2. Genres
+// 2️⃣ Genres — Doughnut With Exterior Labels
 {
   const map = countBy("genre");
   const entries = sorted(map);
@@ -236,10 +245,10 @@ fillTop10(countBy("format"), "topFormats");
       plugins: {
         legend: { display:false },
         datalabels: {
-          anchor: "end",     // attach label to outer edge
-          align: "end",      // pull label outward
-          offset: 6,         // small offset to avoid overlapping chart
-          clamp: true,       // prevents far-out labels
+          anchor: "end",
+          align: "end",
+          offset: 6,
+          clamp: true,
           font: { size: 11, weight:"bold" },
           color: "#111",
           formatter: (value, ctx) => {
@@ -252,8 +261,7 @@ fillTop10(countBy("format"), "topFormats");
   });
 }
 
-  
-// 3. Formats
+// 3️⃣ Formats — Doughnut With Exterior Labels
 {
   const map = countBy("format");
   const entries = sorted(map);
@@ -272,10 +280,10 @@ fillTop10(countBy("format"), "topFormats");
       plugins: {
         legend: { display:false },
         datalabels: {
-          anchor: "end",     // attach label to outer edge
-          align: "end",      // pull label outward
-          offset: 6,         // small offset to avoid overlapping chart
-          clamp: true,       // prevents far-out labels
+          anchor: "end",
+          align: "end",
+          offset: 6,
+          clamp: true,
           font: { size: 11, weight:"bold" },
           color: "#111",
           formatter: (value, ctx) => {
@@ -288,16 +296,17 @@ fillTop10(countBy("format"), "topFormats");
   });
 }
 
-
-// 4. Decades
+// 4️⃣ Decades — Vertical Bar
 {
   const m = new Map();
   records.forEach(r=>{
-    const d=decadeOf(r.year);
+    const d = decadeOf(r.year);
     m.set(d,(m.get(d)||0)+1);
   });
 
-  const entries = sorted(m).filter(([d])=>d!=="Unknown").sort((a,b)=>parseInt(a[0])-parseInt(b[0]));
+  const entries = sorted(m)
+    .filter(([d])=>d!=="Unknown")
+    .sort((a,b)=>parseInt(a[0])-parseInt(b[0]));
 
   new Chart(document.getElementById("decadesChart"),{
     type:"bar",
@@ -306,14 +315,13 @@ fillTop10(countBy("format"), "topFormats");
       datasets:[{data:entries.map(([,c])=>c)}]
     },
     options:{
-      indexAxis:"y",
-      scales:{x:{beginAtZero:true}},
-      plugins:{ legend:{ display:false } }
+      scales:{ y:{ beginAtZero:true }},
+      plugins:{ legend:{display:false}, datalabels:{display:false} }
     }
   });
 }
 
-// 5. Year Timeline
+// 5️⃣ Year Timeline — Line Chart
 {
   const yearsMap = new Map();
   years.forEach(y=>yearsMap.set(y,(yearsMap.get(y)||0)+1));
@@ -325,16 +333,16 @@ fillTop10(countBy("format"), "topFormats");
       datasets:[{data:Array.from(yearsMap.values()), tension:0.25}]
     },
     options:{
-      indexAxis:"x",
-      scales:{x:{beginAtZero:true}},
-      plugins:{ legend:{ display:false } }
+      scales:{ y:{ beginAtZero:true }},
+      plugins:{ legend:{display:false}, datalabels:{display:false} }
     }
   });
 }
 
-// 6. Genre × Decade (Grouped Bar)
+// 6️⃣ Genre × Decade — Grouped Bar Chart
 {
   const genreList = sorted(countBy("genre")).map(([g])=>g);
+
   const decadeMap = new Map();
   records.forEach(r=>{
     const d=decadeOf(r.year);
@@ -342,28 +350,31 @@ fillTop10(countBy("format"), "topFormats");
     decadeMap.set(d,(decadeMap.get(d)||0)+1);
   });
 
-  const decades = Array.from(decadeMap.keys()).sort((a,b)=>parseInt(a)-parseInt(b));
+  const decades = Array.from(decadeMap.keys())
+    .sort((a,b)=>parseInt(a)-parseInt(b));
 
-  // Build datasets (one per genre)
-  const datasets = genreList.map(genre => {
-    return {
-      label: genre,
-      data: decades.map(decade => {
-        return records.filter(r => r.genre===genre && decadeOf(r.year)===decade).length;
-      })
-    };
-  });
+  const datasets = genreList.map(genre => ({
+    label: genre,
+    data: decades.map(decade =>
+      records.filter(r => r.genre===genre &&
+        decadeOf(r.year)===decade).length
+    )
+  }));
 
-  new Chart(document.getElementById("genreDecadeChart"),{
+  new Chart(document.getElementById("genreDecadeChart"), {
     type:"bar",
-    data:{labels:decades, datasets},
+    data:{ labels:decades, datasets },
     options:{
       responsive:true,
-      scales:{y:{beginAtZero:true}},
-      plugins:{legend:{position:"bottom"}}
+      scales:{ y:{beginAtZero:true}},
+      plugins:{
+        legend:{position:"bottom"},
+        datalabels:{display:false}
+      }
     }
   });
 }
 </script>
+
 </body>
 </html>
