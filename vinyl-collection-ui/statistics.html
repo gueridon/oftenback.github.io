@@ -1,568 +1,454 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Vinyl Collection — Statistics</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8">
+<title>Vinyl Collection — Statistics</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <!-- Chart.js core -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <!-- Treemap chart -->
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-treemap@2.0.3/dist/chartjs-chart-treemap.min.js"></script>
-  <!-- Matrix (heatmap) chart -->
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@2.0.0/dist/chartjs-chart-matrix.min.js"></script>
+<!-- Chart.js core -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
-  <style>
-    :root {
-      --bg: #fafafa;
-      --card: #ffffff;
-      --border: #e5e7eb;
-      --muted: #6b7280;
-      --accent: #0ea5e9;
-      --radius: 12px;
-    }
+<!-- Required for treemap text -->
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
 
-    body {
-      margin: 20px;
-      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: var(--bg);
-      color: #111827;
-    }
+<!-- Treemap plugin -->
+<script src="https://cdn.jsdelivr.net/npm/chartjs-chart-treemap@2.0.3/dist/chartjs-chart-treemap.min.js"></script>
 
-    h1 { margin-bottom: 6px; font-size: 1.6rem; }
+<!-- Matrix (heatmap) plugin -->
+<script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@2.0.0/dist/chartjs-chart-matrix.min.js"></script>
 
-    .nav {
-      margin-bottom: 18px;
-      font-size: 0.95rem;
-    }
-    .nav a {
-      margin-right: 14px;
-      color: var(--accent);
-      text-decoration: none;
-      font-weight: 600;
-    }
-    .nav a:hover {
-      text-decoration: underline;
-    }
+<script>
+  /* -------------------------
+     PLUGIN REGISTRATION FIXES
+     ------------------------- */
 
-    .summary-box {
-      background: var(--card);
-      border-radius: var(--radius);
-      border: 1px solid var(--border);
-      padding: 14px 16px;
-      margin-bottom: 20px;
-      font-size: 0.95rem;
-      line-height: 1.5;
-    }
+  // Register DataLabels plugin
+  Chart.register(ChartDataLabels);
 
-    .summary-box strong {
-      font-weight: 600;
-    }
+  // Treemap components
+  Chart.register(TreemapController);
+  Chart.register(TreemapElement);
 
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 20px;
-      margin-bottom: 24px;
-    }
+  // Matrix (heatmap) components
+  Chart.register(MatrixController);
+  Chart.register(MatrixElement);
+</script>
 
-    .card {
-      background: var(--card);
-      border-radius: var(--radius);
-      border: 1px solid var(--border);
-      padding: 14px 16px;
-      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
-    }
+<style>
+  :root {
+    --bg: #fafafa;
+    --card: #ffffff;
+    --border: #e5e7eb;
+    --muted: #6b7280;
+    --accent: #0ea5e9;
+    --radius: 12px;
+  }
 
-    .card h3 {
-      margin-top: 0;
-      margin-bottom: 10px;
-      font-size: 1rem;
-    }
+  body {
+    margin: 20px;
+    background: var(--bg);
+    color: #111827;
+    font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI";
+  }
 
-    canvas {
-      max-width: 100%;
-    }
+  h1 {
+    margin-bottom: 6px;
+  }
+  .nav {
+    margin-bottom: 18px;
+  }
+  .nav a {
+    margin-right: 14px;
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .summary-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin-bottom: 20px;
+  }
 
-    .top10 {
-      background: var(--card);
-      border-radius: var(--radius);
-      border: 1px solid var(--border);
-      padding: 14px 16px;
-      font-size: 0.94rem;
-    }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 20px;
+    margin-bottom: 24px;
+  }
 
-    .top10 h3 {
-      margin-top: 0;
-      margin-bottom: 6px;
-    }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+  }
 
-    .top10 ul {
-      margin: 0 0 10px 1.2rem;
-      padding: 0;
-      list-style: disc;
-    }
+  .card h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+  }
 
-    .top10 li {
-      margin-bottom: 3px;
-    }
+  canvas {
+    max-width: 100%;
+  }
 
-    .muted {
-      color: var(--muted);
-      font-size: 0.88rem;
-    }
-  </style>
+  .muted {
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+
+  .top10 {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+  }
+
+  .top10 ul {
+    margin: 0 0 12px 1.2rem;
+    padding: 0;
+  }
+</style>
 </head>
 <body>
 
-  <h1>📊 Vinyl Collection — Statistics</h1>
-  <div class="nav">
-    <a href="index.html">Editor</a>
-    <a href="view.html">Viewer</a>
+<h1>📊 Vinyl Collection — Statistics</h1>
+
+<div class="nav">
+  <a href="index.html">Editor</a>
+  <a href="view.html">Viewer</a>
+</div>
+
+<div id="summaryBox" class="summary-box"></div>
+
+<!-- First row -->
+<div class="grid">
+  <div class="card">
+    <h3>Artists — Top 20</h3>
+    <canvas id="artistBar"></canvas>
+    <p id="artistNote" class="muted"></p>
   </div>
 
-  <!-- Summary -->
-  <div id="summaryBox" class="summary-box"></div>
-
-  <!-- Main charts grid -->
-  <div class="grid">
-    <div class="card">
-      <h3>Artists — Top 20 (by record count)</h3>
-      <canvas id="artistBar"></canvas>
-      <p class="muted" id="artistNote"></p>
-    </div>
-
-    <div class="card">
-      <h3>Decade distribution</h3>
-      <canvas id="decadeBar"></canvas>
-    </div>
-
-    <div class="card">
-      <h3>Year distribution (line)</h3>
-      <canvas id="yearLine"></canvas>
-    </div>
-
-    <div class="card">
-      <h3>Formats</h3>
-      <canvas id="formatDonut"></canvas>
-    </div>
+  <div class="card">
+    <h3>Decades</h3>
+    <canvas id="decadeBar"></canvas>
   </div>
 
-  <!-- Genre views -->
-  <div class="grid">
-    <div class="card">
-      <h3>Genres — Treemap</h3>
-      <canvas id="genreTreemap"></canvas>
-      <p class="muted">Area represents how many records you have in each genre.</p>
-    </div>
-
-    <div class="card">
-      <h3>Genre × Decade — Heatmap</h3>
-      <canvas id="genreDecadeHeatmap"></canvas>
-      <p class="muted">Darker cells = more records for that genre in that decade.</p>
-    </div>
+  <div class="card">
+    <h3>Years distribution (line)</h3>
+    <canvas id="yearLine"></canvas>
   </div>
 
-  <!-- Top 10 lists -->
-  <div class="top10">
-    <h3>Top 10 — Artists</h3>
-    <ul id="topArtists"></ul>
+  <div class="card">
+    <h3>Formats</h3>
+    <canvas id="formatDonut"></canvas>
+  </div>
+</div>
 
-    <h3>Top 10 — Genres</h3>
-    <ul id="topGenres"></ul>
-
-    <h3>Top 10 — Formats</h3>
-    <ul id="topFormats"></ul>
-
-    <p class="muted">Counts are based on current local collection (<code>vinyl_records_v1</code> in localStorage).</p>
+<!-- Second row -->
+<div class="grid">
+  <div class="card">
+    <h3>Genres — Treemap</h3>
+    <canvas id="genreTreemap"></canvas>
   </div>
 
-  <script>
-    const LS_KEY = "vinyl_records_v1";
-    let records = [];
+  <div class="card">
+    <h3>Genre × Decade — Heatmap</h3>
+    <canvas id="genreDecadeHeatmap"></canvas>
+  </div>
+</div>
 
-    function loadRecords() {
-      try {
-        const raw = localStorage.getItem(LS_KEY);
-        if (!raw) return;
-        records = JSON.parse(raw) || [];
-      } catch (e) {
-        console.error("Failed to parse records", e);
-        records = [];
-      }
+<div class="top10">
+  <h3>Top 10 Artists</h3>
+  <ul id="topArtists"></ul>
+
+  <h3>Top 10 Genres</h3>
+  <ul id="topGenres"></ul>
+
+  <h3>Top 10 Formats</h3>
+  <ul id="topFormats"></ul>
+</div>
+
+<script>
+/* -------------------------
+   Loading & grouping helpers
+   ------------------------- */
+const LS_KEY = "vinyl_records_v1";
+let records = [];
+
+function loadRecords() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    records = raw ? JSON.parse(raw) : [];
+  } catch {
+    records = [];
+  }
+}
+
+function countBy(field) {
+  const m = new Map();
+  records.forEach(r => {
+    const v = (r[field] || "").trim();
+    if (!v) return;
+    m.set(v, (m.get(v) || 0) + 1);
+  });
+  return m;
+}
+
+function decadeOf(yearStr) {
+  const y = Number(yearStr);
+  if (!y) return "Unknown";
+  return Math.floor(y / 10) * 10 + "s";
+}
+
+function countByDecade() {
+  const map = new Map();
+  records.forEach(r => {
+    const d = decadeOf(r.year);
+    map.set(d, (map.get(d) || 0) + 1);
+  });
+  return map;
+}
+
+function yearList() {
+  return records
+    .map(r => Number(r.year))
+    .filter(y => y > 0)
+    .sort((a, b) => a - b);
+}
+
+function sortedEntries(map) {
+  return Array.from(map.entries()).sort((a,b) => b[1] - a[1]);
+}
+
+/* -------------------------
+   Summary section
+   ------------------------- */
+function updateSummary() {
+  const list = yearList();
+  const oldest = list.length ? Math.min(...list) : "—";
+  const newest = list.length ? Math.max(...list) : "—";
+  const median = list.length
+    ? list[Math.floor(list.length / 2)]
+    : "—";
+
+  document.getElementById("summaryBox").innerHTML = `
+    <strong>Total records:</strong> ${records.length}<br>
+    <strong>Unique artists:</strong> ${countBy("artist").size} |
+    <strong>Unique genres:</strong> ${countBy("genre").size} |
+    <strong>Unique formats:</strong> ${countBy("format").size}<br><br>
+    <strong>Oldest year:</strong> ${oldest} |
+    <strong>Newest year:</strong> ${newest} |
+    <strong>Median year:</strong> ${median}
+  `;
+}
+
+/* -------------------------
+   Top 10 lists
+   ------------------------- */
+function fillTop10(map, id) {
+  const el = document.getElementById(id);
+  el.innerHTML = "";
+  sortedEntries(map)
+    .slice(0, 10)
+    .forEach(([k,v]) => {
+      const li = document.createElement("li");
+      li.textContent = `${k} — ${v}`;
+      el.appendChild(li);
+    });
+}
+
+/* -------------------------
+   CHARTS
+   ------------------------- */
+
+function createArtistBar() {
+  const map = countBy("artist");
+  const sorted = sortedEntries(map);
+  const maxBars = 20;
+  const top = sorted.slice(0, maxBars);
+  const others = sorted.slice(maxBars);
+
+  const labels = top.map(([name]) => name);
+  const data = top.map(([,count]) => count);
+
+  if (others.length) {
+    const otherTotal = others.reduce((s, [,c]) => s+c, 0);
+    labels.push("Other");
+    data.push(otherTotal);
+    document.getElementById("artistNote").textContent =
+      `Top ${maxBars} artists shown + "Other". Total: ${sorted.length} artists.`;
+  }
+
+  new Chart(document.getElementById("artistBar"), {
+    type: "bar",
+    data: { labels, datasets: [{ data }] },
+    options: {
+      responsive: true,
+      indexAxis: "y",
+      scales: { x: { beginAtZero: true } }
     }
+  });
+}
 
-    function countByField(field) {
-      const map = new Map();
-      records.forEach(r => {
-        const value = (r[field] || "").trim();
-        if (!value) return;
-        map.set(value, (map.get(value) || 0) + 1);
-      });
-      return map;
-    }
+function createDecadeBar() {
+  const map = countByDecade();
+  const entries = Array.from(map.entries())
+    .filter(([d]) => d !== "Unknown")
+    .sort((a,b) => parseInt(a[0]) - parseInt(b[0]));
 
-    function groupDecade(yearStr) {
-      const y = Number(yearStr);
-      if (!y) return "Unknown";
-      const decade = Math.floor(y / 10) * 10;
-      return decade + "s";
-    }
+  const labels = entries.map(([d]) => d);
+  const data = entries.map(([,c]) => c);
 
-    function countByDecade() {
-      const map = new Map();
-      records.forEach(r => {
-        const d = groupDecade(r.year);
-        map.set(d, (map.get(d) || 0) + 1);
-      });
-      return map;
-    }
+  new Chart(document.getElementById("decadeBar"), {
+    type: "bar",
+    data: { labels, datasets: [{ data }] },
+    options: { scales: { y: { beginAtZero: true } } }
+  });
+}
 
-    function getYearList() {
-      return records
-        .map(r => Number(r.year))
-        .filter(y => y && !Number.isNaN(y))
-        .sort((a, b) => a - b);
-    }
+function createYearLine() {
+  const years = yearList();
+  const count = new Map();
 
-    function computeSummary() {
-      const total = records.length;
-      const years = getYearList();
+  years.forEach(y => count.set(y, (count.get(y)||0)+1));
 
-      const oldest = years.length ? Math.min(...years) : "—";
-      const newest = years.length ? Math.max(...years) : "—";
+  const labels = Array.from(count.keys());
+  const data   = labels.map(y => count.get(y));
 
-      let median = "—";
-      if (years.length) {
-        const sorted = [...years];
-        const mid = Math.floor(sorted.length / 2);
-        median = sorted.length % 2
-          ? sorted[mid]
-          : Math.round((sorted[mid - 1] + sorted[mid]) / 2);
-      }
+  new Chart(document.getElementById("yearLine"), {
+    type: "line",
+    data: { labels, datasets: [{ data, tension: 0.25 }] },
+    options: { scales: { y: { beginAtZero: true } } }
+  });
+}
 
-      const uniqueArtists = countByField("artist").size;
-      const uniqueGenres  = countByField("genre").size;
-      const uniqueFormats = countByField("format").size;
+function createFormatDonut() {
+  const map = countBy("format");
+  const labels = Array.from(map.keys());
+  const data = labels.map(l => map.get(l));
 
-      const summaryHtml = `
-        <strong>Total records:</strong> ${total}<br>
-        <strong>Unique artists:</strong> ${uniqueArtists} &nbsp;|&nbsp;
-        <strong>Unique genres:</strong> ${uniqueGenres} &nbsp;|&nbsp;
-        <strong>Unique formats:</strong> ${uniqueFormats}<br><br>
-        <strong>Oldest year:</strong> ${oldest} &nbsp;|&nbsp;
-        <strong>Newest year:</strong> ${newest} &nbsp;|&nbsp;
-        <strong>Median year:</strong> ${median}
-      `;
-      document.getElementById("summaryBox").innerHTML = summaryHtml;
-    }
+  new Chart(document.getElementById("formatDonut"), {
+    type: "doughnut",
+    data: { labels, datasets: [{ data }] },
+    options: { plugins: { legend: { position: "bottom" } } }
+  });
+}
 
-    function mapToSortedArray(map) {
-      return Array.from(map.entries())
-        .sort((a, b) => b[1] - a[1]);
-    }
+function createGenreTreemap() {
+  const map = countBy("genre");
+  const tree = Array.from(map.entries()).map(([genre,value]) => ({ genre, value }));
 
-    function fillTop10(map, ulId) {
-      const ul = document.getElementById(ulId);
-      ul.innerHTML = "";
-      mapToSortedArray(map)
-        .slice(0, 10)
-        .forEach(([name, count]) => {
-          const li = document.createElement("li");
-          li.textContent = `${name} — ${count}`;
-          ul.appendChild(li);
-        });
-    }
-
-    function createArtistBar() {
-      const artistMap = countByField("artist");
-      const sorted = mapToSortedArray(artistMap);
-
-      const maxBars = 20;
-      const top = sorted.slice(0, maxBars);
-      const others = sorted.slice(maxBars);
-
-      const labels = top.map(([name]) => name);
-      const data   = top.map(([, count]) => count);
-
-      if (others.length) {
-        const otherTotal = others.reduce((sum, [, c]) => sum + c, 0);
-        labels.push("Other");
-        data.push(otherTotal);
-        document.getElementById("artistNote").textContent =
-          `Showing top ${maxBars} artists + "Other". Total artists: ${sorted.length}.`;
-      } else {
-        document.getElementById("artistNote").textContent =
-          `Showing all ${sorted.length} artists.`;
-      }
-
-      const ctx = document.getElementById("artistBar");
-      new Chart(ctx, {
-        type: "bar",
-        data: {
-          labels,
-          datasets: [{
-            label: "Records",
-            data
-          }]
-        },
-        options: {
-          responsive: true,
-          indexAxis: "y",
-          scales: {
-            x: { beginAtZero: true }
-          }
-        }
-      });
-    }
-
-    function createDecadeBar() {
-      const decadeMap = countByDecade();
-      const entries = Array.from(decadeMap.entries());
-
-      const unknownIndex = entries.findIndex(([d]) => d === "Unknown");
-      let known = entries.filter(([d]) => d !== "Unknown");
-      known.sort((a, b) => {
-        const da = parseInt(a[0]) || 0;
-        const db = parseInt(b[0]) || 0;
-        return da - db;
-      });
-
-      const ordered = [...known];
-      if (unknownIndex !== -1) {
-        const unk = entries.find(([d]) => d === "Unknown");
-        ordered.push(unk);
-      }
-
-      const labels = ordered.map(([d]) => d);
-      const data   = ordered.map(([, c]) => c);
-
-      const ctx = document.getElementById("decadeBar");
-      new Chart(ctx, {
-        type: "bar",
-        data: {
-          labels,
-          datasets: [{
-            label: "Records per decade",
-            data
-          }]
-        },
-        options: {
-          responsive: true,
-          scales: {
-            y: { beginAtZero: true }
-          }
-        }
-      });
-    }
-
-    function createYearLine() {
-      const years = getYearList();
-      if (!years.length) return;
-
-      const yearCount = new Map();
-      years.forEach(y => {
-        yearCount.set(y, (yearCount.get(y) || 0) + 1);
-      });
-
-      const labels = Array.from(yearCount.keys()).sort((a, b) => a - b);
-      const data   = labels.map(y => yearCount.get(y));
-
-      const ctx = document.getElementById("yearLine");
-      new Chart(ctx, {
-        type: "line",
-        data: {
-          labels,
-          datasets: [{
-            label: "Records per year",
-            data,
-            fill: false,
-            tension: 0.25
-          }]
-        },
-        options: {
-          responsive: true,
-          scales: {
-            y: { beginAtZero: true }
-          }
-        }
-      });
-    }
-
-    function createFormatDonut() {
-      const formatMap = countByField("format");
-      const labels = Array.from(formatMap.keys());
-      const data   = labels.map(l => formatMap.get(l));
-
-      const ctx = document.getElementById("formatDonut");
-      new Chart(ctx, {
-        type: "doughnut",
-        data: {
-          labels,
-          datasets: [{
-            data
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { position: "bottom" }
-          }
-        }
-      });
-    }
-
-    function createGenreTreemap() {
-      const genreMap = countByField("genre");
-      const tree = Array.from(genreMap.entries()).map(([genre, count]) => ({
-        genre,
-        value: count
-      }));
-
-      const ctx = document.getElementById("genreTreemap").getContext("2d");
-      new Chart(ctx, {
-        type: "treemap",
-        data: {
-          datasets: [{
-            tree,
-            key: "value",
-            groups: ["genre"],
-            borderWidth: 1,
-            spacing: 0.5,
-            label: "Genres",
-            captions: {
-              display: true,
-              color: "#111827",
-              font: { size: 11 }
-            }
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              callbacks: {
-                title() { return ""; },
-                label(ctx) {
-                  const d = ctx.raw;
-                  return `${d.genre}: ${d.value} record(s)`;
-                }
-              }
+  new Chart(document.getElementById("genreTreemap"), {
+    type: "treemap",
+    data: {
+      datasets: [{
+        tree,
+        key: "value",
+        groups: ["genre"],
+        spacing: 1,
+        borderWidth: 1,
+        captions: { display: true, color: "#111", font: { size: 11 } }
+      }]
+    },
+    options: {
+      plugins: {
+        tooltip: {
+          callbacks: {
+            label(ctx) {
+              return `${ctx.raw.genre}: ${ctx.raw.value} record(s)`;
             }
           }
         }
-      });
+      }
     }
+  });
+}
 
-    function createGenreDecadeHeatmap() {
-      const genreMap = countByField("genre");
-      const decadeMap = countByDecade();
+function createGenreDecadeHeatmap() {
+  const genreMap = countBy("genre");
+  const decadeMap = countByDecade();
 
-      const genres = Array.from(genreMap.keys()).sort();
-      const decades = Array.from(decadeMap.keys())
-        .filter(d => d !== "Unknown")
-        .sort((a, b) => (parseInt(a) || 0) - (parseInt(b) || 0));
+  const genres = Array.from(genreMap.keys()).sort();
+  const decades = Array.from(decadeMap.keys())
+    .filter(d => d !== "Unknown")
+    .sort((a,b) => parseInt(a)-parseInt(b));
 
-      if (!decades.length || !genres.length) return;
+  const key = (g,d) => g+"|||"+d;
+  const combo = new Map();
 
-      // Build count per (genre, decade)
-      const comboCount = new Map();
-      const key = (g, d) => g + "|||"+ d;
+  records.forEach(r => {
+    const g = (r.genre || "").trim();
+    if (!g) return;
+    const d = decadeOf(r.year);
+    if (d === "Unknown") return;
+    combo.set(key(g,d), (combo.get(key(g,d))||0)+1);
+  });
 
-      records.forEach(r => {
-        const g = (r.genre || "").trim();
-        if (!g) return;
-        const d = groupDecade(r.year);
-        if (d === "Unknown") return;
-        const k = key(g, d);
-        comboCount.set(k, (comboCount.get(k) || 0) + 1);
-      });
+  const maxVal = Math.max(...combo.values(), 1);
 
-      const values = Array.from(comboCount.values());
-      const maxVal = values.length ? Math.max(...values) : 0;
+  const data = [];
+  genres.forEach((g, gy) => {
+    decades.forEach((d, dx) => {
+      const v = combo.get(key(g,d)) || 0;
+      if (!v) return;
+      data.push({ x: d, y: g, v });
+    });
+  });
 
-      const data = [];
-      genres.forEach((g, gy) => {
-        decades.forEach((d, dx) => {
-          const v = comboCount.get(key(g, d)) || 0;
-          if (!v) return;
-          data.push({
-            x: d,
-            y: g,
-            v
-          });
-        });
-      });
-
-      const ctx = document.getElementById("genreDecadeHeatmap").getContext("2d");
-      new Chart(ctx, {
-        type: "matrix",
-        data: {
-          datasets: [{
-            label: "Count",
-            data,
-            width: () => 18,
-            height: () => 16,
-            backgroundColor: ctx => {
-              const v = ctx.raw.v;
-              const alpha = 0.25 + 0.75 * (v / maxVal || 0);
-              return `rgba(14,165,233,${alpha})`; // blue-ish
-            },
-            borderColor: "rgba(15,23,42,0.1)",
-            borderWidth: 1
-          }]
+  new Chart(document.getElementById("genreDecadeHeatmap"), {
+    type: "matrix",
+    data: {
+      datasets: [{
+        data,
+        width: () => 18,
+        height: () => 18,
+        backgroundColor(ctx) {
+          const v = ctx.raw.v;
+          const alpha = 0.2 + 0.8*(v/maxVal);
+          return `rgba(14,165,233,${alpha})`;
         },
-        options: {
-          responsive: true,
-          scales: {
-            x: {
-              type: "category",
-              labels: decades,
-              offset: true,
-              grid: { display: false }
-            },
-            y: {
-              type: "category",
-              labels: genres,
-              offset: true,
-              grid: { display: false }
-            }
-          },
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              callbacks: {
-                title() { return ""; },
-                label(context) {
-                  const d = context.raw;
-                  return `${d.y} in ${d.x}: ${d.v} record(s)`;
-                }
-              }
+        borderColor: "rgba(0,0,0,0.1)",
+        borderWidth: 1
+      }]
+    },
+    options: {
+      scales: {
+        x: { type: "category", labels: decades, offset: true },
+        y: { type: "category", labels: genres, offset: true }
+      },
+      plugins: {
+        tooltip: {
+          callbacks: {
+            label(ctx) {
+              const d = ctx.raw;
+              return `${d.y} in ${d.x}: ${d.v} record(s)`;
             }
           }
         }
-      });
+      }
     }
+  });
+}
 
-    // ---- boot ----
-    loadRecords();
-    computeSummary();
+/* -------------------------
+   Boot
+   ------------------------- */
+loadRecords();
+updateSummary();
 
-    const artistCounts = countByField("artist");
-    const genreCounts  = countByField("genre");
-    const formatCounts = countByField("format");
+fillTop10(countBy("artist"), "topArtists");
+fillTop10(countBy("genre"), "topGenres");
+fillTop10(countBy("format"), "topFormats");
 
-    fillTop10(artistCounts, "topArtists");
-    fillTop10(genreCounts, "topGenres");
-    fillTop10(formatCounts, "topFormats");
-
-    createArtistBar();
-    createDecadeBar();
-    createYearLine();
-    createFormatDonut();
-    createGenreTreemap();
-    createGenreDecadeHeatmap();
-  </script>
+createArtistBar();
+createDecadeBar();
+createYearLine();
+createFormatDonut();
+createGenreTreemap();
+createGenreDecadeHeatmap();
+</script>
 </body>
 </html>
