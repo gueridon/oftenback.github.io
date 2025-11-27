@@ -5,33 +5,21 @@
 <title>Vinyl Collection — Statistics</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<!-- Chart.js core -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<!-- Chart.js -->
+<script src="https://unpkg.com/chart.js@4.4.0/dist/chart.umd.js"></script>
 
-<!-- Required for treemap text -->
-<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+<!-- DataLabels plugin -->
+<script src="https://unpkg.com/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.js"></script>
 
-<!-- Treemap plugin -->
-<script src="https://cdn.jsdelivr.net/npm/chartjs-chart-treemap@2.0.3/dist/chartjs-chart-treemap.min.js"></script>
+<!-- Treemap plugin (UMD build, correct MIME, works in WebKit) -->
+<script src="https://unpkg.com/chartjs-chart-treemap@2.0.3/dist/chartjs-chart-treemap.umd.js"></script>
 
-<!-- Matrix (heatmap) plugin -->
-<script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@2.0.0/dist/chartjs-chart-matrix.min.js"></script>
-
+<!-- Matrix (Heatmap) plugin (UMD build, correct MIME, works in WebKit) -->
+<script src="https://unpkg.com/chartjs-chart-matrix@2.0.1/dist/chartjs-chart-matrix.umd.js"></script>
 <script>
-  /* -------------------------
-     PLUGIN REGISTRATION FIXES
-     ------------------------- */
-
-  // Register DataLabels plugin
   Chart.register(ChartDataLabels);
-
-  // Treemap components
-  Chart.register(TreemapController);
-  Chart.register(TreemapElement);
-
-  // Matrix (heatmap) components
-  Chart.register(MatrixController);
-  Chart.register(MatrixElement);
+  Chart.register(Chart.TreemapController, Chart.TreemapElement);
+  Chart.register(Chart.MatrixController, Chart.MatrixElement);
 </script>
 
 <style>
