@@ -215,7 +215,7 @@ fillTop10(countBy("format"), "topFormats");
 // 2. Genres
 {
   const map = countBy("genre");
-  const top = sorted(map);
+  const entries = sorted(map);
   new Chart(document.getElementById("genresChart"),{
    type:"doughnut",
     data:{
