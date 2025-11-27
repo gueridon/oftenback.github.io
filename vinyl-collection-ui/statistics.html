@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Vinyl Collection — Statistics</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+  body {
+    font-family: Inter, sans-serif;
+    margin: 20px;
+    background: #fafafa;
+  }
+
+  h1 { margin-bottom: 6px; }
+  .nav {
+    margin-bottom: 20px;
+  }
+  .nav a {
+    margin-right: 14px;
+    color: #0ea5e9;
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .stat-box {
+    background: white;
+    padding: 14px;
+    border-radius: 10px;
+    border: 1px solid #eee;
+    margin-bottom: 20px;
+    font-size: 1rem;
+  }
+
+  .charts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 22px;
+  }
+
+  .chart-wrap {
+    background: white;
+    padding: 18px;
+    border-radius: 12px;
+    border: 1px solid #dfdfdf;
+  }
+
+  .top10-wrap {
+    background: white;
+    padding: 18px;
+    border-radius: 12px;
+    border: 1px solid #ddd;
+    margin-top: 25px;
+  }
+
+  ul {
+    padding-left: 20px;
+    margin: 0;
+  }
+
+  h3 { margin-top: 0; }
+
+  canvas {
+    max-width: 100%;
+  }
+</style>
+</head>
+<body>
+
+<h1>📊 Vinyl Collection – Statistics</h1>
+
+<div class="nav">
+  <a href="index.html">Editor</a>
+  <a href="view.html">Viewer</a>
+</div>
+
+<!-- Summary section -->
+<div class="stat-box" id="summaryBox"></div>
+
+<!-- Pie chart grid -->
+<div class="charts-grid">
+  <div class="chart-wrap">
+    <h3>By Artist</h3>
+    <canvas id="artistChart"></canvas>
+  </div>
+
+  <div class="chart-wrap">
+    <h3>By Genre</h3>
+    <canvas id="genreChart"></canvas>
+  </div>
+
+  <div class="chart-wrap">
+    <h3>By Format</h3>
+    <canvas id="formatChart"></canvas>
+  </div>
+
+  <div class="chart-wrap">
+    <h3>By Decade</h3>
+    <canvas id="decadeChart"></canvas>
+  </div>
+</div>
+
+<!-- Top 10 lists -->
+<div class="top10-wrap">
+  <h3>Top 10 — Artists</h3>
+  <ul id="topArtists"></ul>
+
+  <h3>Top 10 — Genres</h3>
+  <ul id="topGenres"></ul>
+
+  <h3>Top 10 — Formats</h3>
+  <ul id="topFormats"></ul>
+</div>
+
+<script>
+  const LS_KEY = "vinyl_records_v1";
+  let records = [];
+
+  function loadLocal() {
+    try {
+      const raw = localStorage.getItem(LS_KEY);
+      if (raw) records = JSON.parse(raw);
+    } catch (e) {
+      records = [];
+    }
+  }
+
+  function countByField(field) {
+    const map = new Map();
+    records.forEach(r => {
+      const value = (r[field] || "").trim();
+      if (!value) return;
+      map.set(value, (map.get(value) || 0) + 1);
+    });
+    return map;
+  }
+
+  function groupByDecade(yearStr) {
+    const year = Number(yearStr);
+    if (!year) return "Unknown";
+    const decade = Math.floor(year / 10) * 10;
+    return decade + "s";
+  }
+
+  function countByDecade() {
+    const map = new Map();
+    records.forEach(r => {
+      const dec = groupByDecade(r.year);
+      map.set(dec, (map.get(dec) || 0) + 1);
+    });
+    return map;
+  }
+
+  function makePie(canvasId, dataMap) {
+    const labels = Array.from(dataMap.keys());
+    const data = Array.from(dataMap.values());
+    new Chart(document.getElementById(canvasId), {
+      type: "pie",
+      data: {
+        labels,
+        datasets: [{
+          data
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: "bottom" }
+        }
+      }
+    });
+  }
+
+  function fillTop10(map, ulId) {
+    const ul = document.getElementById(ulId);
+    ul.innerHTML = "";
+
+    Array.from(map.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 10)
+      .forEach(([name, count]) => {
+        const li = document.createElement("li");
+        li.textContent = `${name} — ${count}`;
+        ul.appendChild(li);
+      });
+  }
+
+  function computeSummary() {
+    const years = records
+      .map(r => Number(r.year))
+      .filter(y => y);
+
+    const total = records.length;
+    const oldest = years.length ? Math.min(...years) : "—";
+    const newest = years.length ? Math.max(...years) : "—";
+
+    // median
+    let median = "—";
+    if (years.length) {
+      const sorted = [...years].sort((a, b) => a - b);
+      const mid = Math.floor(sorted.length / 2);
+      median = sorted.length % 2 ? sorted[mid] : Math.round((sorted[mid - 1] + sorted[mid]) / 2);
+    }
+
+    const summary = `
+      <strong>Total records:</strong> ${total}<br>
+      <strong>Unique artists:</strong> ${countByField("artist").size}<br>
+      <strong>Unique genres:</strong> ${countByField("genre").size}<br>
+      <strong>Unique formats:</strong> ${countByField("format").size}<br>
+      <br>
+      <strong>Oldest year:</strong> ${oldest}<br>
+      <strong>Newest year:</strong> ${newest}<br>
+      <strong>Median year:</strong> ${median}
+    `;
+
+    document.getElementById("summaryBox").innerHTML = summary;
+  }
+
+  // ---- RUN ----
+  loadLocal();
+  computeSummary();
+
+  const artistMap = countByField("artist");
+  const genreMap = countByField("genre");
+  const formatMap = countByField("format");
+  const decadeMap = countByDecade();
+
+  makePie("artistChart", artistMap);
+  makePie("genreChart", genreMap);
+  makePie("formatChart", formatMap);
+  makePie("decadeChart", decadeMap);
+
+  fillTop10(artistMap, "topArtists");
+  fillTop10(genreMap, "topGenres");
+  fillTop10(formatMap, "topFormats");
+</script>
+
+</body>
+</html>
