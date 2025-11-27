@@ -70,6 +70,11 @@
 
   .muted { color: var(--muted); }
 </style>
+  <script src="https://unpkg.com/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.js"></script>
+
+  <script>
+    Chart.register(ChartDataLabels);
+  </script>
 </head>
 <body>
 
@@ -216,29 +221,75 @@ fillTop10(countBy("format"), "topFormats");
 {
   const map = countBy("genre");
   const entries = sorted(map);
-  new Chart(document.getElementById("genresChart"),{
-   type:"doughnut",
-    data:{
-      labels:entries.map(([n])=>n),
-      datasets:[{data:entries.map(([,c])=>c)}]
+
+  new Chart(document.getElementById("genresChart"), {
+    type: "doughnut",
+    data: {
+      labels: entries.map(([name]) => name),
+      datasets: [{
+        data: entries.map(([, count]) => count)
+      }]
     },
-    options:{plugins:{legend:{position:"bottom"}}}
+    options: {
+      plugins: {
+        legend: { display: false }, // hide default legend
+
+        datalabels: {
+          color: "#111",
+          font: {
+            size: 12,
+            weight: "bold"
+          },
+          align: "end",
+          anchor: "end",
+          offset: 12,
+          formatter: (value, ctx) => {
+            const label = ctx.chart.data.labels[ctx.dataIndex];
+            return `${label} (${value})`;
+          }
+        }
+      }
+    }
   });
 }
+
   
 // 3. Formats
 {
   const map = countBy("format");
   const entries = sorted(map);
-  new Chart(document.getElementById("formatsChart"),{
-    type:"doughnut",
-    data:{
-      labels:entries.map(([n])=>n),
-      datasets:[{data:entries.map(([,c])=>c)}]
+
+  new Chart(document.getElementById("formatsChart"), {
+    type: "doughnut",
+    data: {
+      labels: entries.map(([name]) => name),
+      datasets: [{
+        data: entries.map(([, count]) => count)
+      }]
     },
-    options:{plugins:{legend:{position:"bottom"}}}
+    options: {
+      plugins: {
+        legend: { display: false }, // hide default legend
+
+        datalabels: {
+          color: "#111",
+          font: {
+            size: 12,
+            weight: "bold"
+          },
+          align: "end",
+          anchor: "end",
+          offset: 12,
+          formatter: (value, ctx) => {
+            const label = ctx.chart.data.labels[ctx.dataIndex];
+            return `${label} (${value})`;
+          }
+        }
+      }
+    }
   });
 }
+
 
 // 4. Decades
 {
