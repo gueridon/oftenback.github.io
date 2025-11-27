@@ -204,7 +204,11 @@ fillTop10(countBy("format"), "topFormats");
       labels:top.map(([n])=>n),
       datasets:[{data:top.map(([,c])=>c)}]
     },
-    options:{indexAxis:"y", scales:{x:{beginAtZero:true}}}
+    options:{
+      indexAxis:"y",
+      scales:{x:{beginAtZero:true}},
+      plugins:{ legend:{ display:false } }
+    }
   });
 }
 
@@ -213,15 +217,15 @@ fillTop10(countBy("format"), "topFormats");
   const map = countBy("genre");
   const top = sorted(map);
   new Chart(document.getElementById("genresChart"),{
-    type:"bar",
+   type:"doughnut",
     data:{
-      labels:top.map(([n])=>n),
-      datasets:[{data:top.map(([,c])=>c)}]
+      labels:entries.map(([n])=>n),
+      datasets:[{data:entries.map(([,c])=>c)}]
     },
-    options:{indexAxis:"y", scales:{x:{beginAtZero:true}}}
+    options:{plugins:{legend:{position:"bottom"}}}
   });
 }
-
+  
 // 3. Formats
 {
   const map = countBy("format");
@@ -252,7 +256,11 @@ fillTop10(countBy("format"), "topFormats");
       labels:entries.map(([d])=>d),
       datasets:[{data:entries.map(([,c])=>c)}]
     },
-    options:{scales:{y:{beginAtZero:true}}}
+    options:{
+      indexAxis:"y",
+      scales:{x:{beginAtZero:true}},
+      plugins:{ legend:{ display:false } }
+    }
   });
 }
 
@@ -267,7 +275,11 @@ fillTop10(countBy("format"), "topFormats");
       labels:Array.from(yearsMap.keys()),
       datasets:[{data:Array.from(yearsMap.values()), tension:0.25}]
     },
-    options:{scales:{y:{beginAtZero:true}}}
+    options:{
+      indexAxis:"y",
+      scales:{x:{beginAtZero:true}},
+      plugins:{ legend:{ display:false } }
+    }
   });
 }
 
