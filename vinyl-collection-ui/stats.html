@@ -220,7 +220,16 @@ fillTop10(countBy("format"), "topFormats");
     },
     options:{
       indexAxis:"y",
-      scales:{ x:{ beginAtZero:true }},
+      scales:{ 
+        x:{ beginAtZero:true },
+        y: {
+          ticks: {
+            autoSkip: false,
+            font: { size: 11 },
+            padding: 6
+          }
+        }
+      },
       plugins:{ legend:{display:false}, datalabels:{display:false} }
     }
   });
