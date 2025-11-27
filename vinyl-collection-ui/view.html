@@ -87,6 +87,21 @@
       margin-left: auto;
       color: #666;
     }
+      
+    .sortable {
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .sortable.asc::after {
+      content: " ▲";
+      font-size: 0.7rem;
+    }
+
+    .sortable.desc::after {
+      content: " ▼";
+      font-size: 0.7rem;
+    }
 
   </style>
 </head>
@@ -113,11 +128,11 @@
     <thead>
       <tr>
         <th>#</th>
-        <th>Artist</th>
-        <th>Title</th>
-        <th>Year</th>
-        <th>Genre</th>
-        <th>Format</th>
+        <th data-field="artist" class="sortable">Artist</th>
+        <th data-field="title" class="sortable">Title</th>
+        <th data-field="year" class="sortable">Year</th>
+        <th data-field="genre" class="sortable">Genre</th>
+        <th data-field="format" class="sortable">Format</th>
       </tr>
     </thead>
     <tbody id="tbody"></tbody>
@@ -137,6 +152,9 @@
   let allRecords = [];
   let filtered = [];
   let currentPage = 1;
+    
+  let sortField = null;
+  let sortDir = 1; // 1 = asc, -1 = desc
 
   const tbody = document.getElementById("tbody");
   const searchEl = document.getElementById("search");
@@ -173,6 +191,7 @@
         (r.format || "").toLowerCase().includes(q)
       );
     }
+    sortFiltered();
     currentPage = 1;
     render();
   }
@@ -210,6 +229,23 @@
       ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c])
     );
   }
+    
+  function sortFiltered() {
+      if (!sortField) return;
+
+      filtered.sort((a, b) => {
+        const A = (a[sortField] || "").toString().toLowerCase();
+        const B = (b[sortField] || "").toString().toLowerCase();
+
+        // numeric handling for year
+        if (sortField === "year") {
+          return (parseInt(A) || 0) - (parseInt(B) || 0) * sortDir;
+        }
+
+        return A.localeCompare(B) * sortDir;
+      });
+    }
+
 
   prevBtn.onclick = () => { currentPage--; render(); };
   nextBtn.onclick = () => { currentPage++; render(); };
@@ -223,6 +259,30 @@
   };
 
   loadLocal();
+  document.querySelectorAll("th.sortable").forEach(th => {
+  th.addEventListener("click", () => {
+    const field = th.dataset.field;
+
+    if (sortField === field) {
+      sortDir *=  -1; // toggle direction
+    } else {
+      sortField = field;
+      sortDir = 1;
+    }
+
+    // remove indicators from all
+    document.querySelectorAll("th.sortable").forEach(h => {
+      h.classList.remove("asc", "desc");
+    });
+
+    th.classList.add(sortDir === 1 ? "asc" : "desc");
+
+    sortFiltered();
+    currentPage = 1;
+    render();
+  });
+});
+
 </script>
 
 </body>
