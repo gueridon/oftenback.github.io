@@ -27,41 +27,44 @@
 <div class="card">
 
   <!-- =============== FORM ================ -->
-  <form id="recordForm">
-    <div>
-      <label>Artist</label>
-      <input id="artist" list="artistList" required autocomplete="off" />
-      <datalist id="artistList"></datalist>
-    </div>
+  <form id="recordForm" class="form-row">
 
-    <div>
-      <label>Title</label>
-      <input id="title" required />
-    </div>
+  <div class="form-block">
+    <label>Artist</label>
+    <input id="artist" list="artistList" required autocomplete="off" />
+    <datalist id="artistList"></datalist>
+  </div>
 
-    <div>
-      <label>Year</label>
-      <input id="year" type="number" min="1800" max="2100"/>
-    </div>
+  <div class="form-block">
+    <label>Title</label>
+    <input id="title" required />
+  </div>
 
-    <div>
-      <label>Genre</label>
-      <input id="genre" list="genreList"/>
-      <datalist id="genreList"></datalist>
-    </div>
+  <div class="form-block narrow">
+    <label>Year</label>
+    <input id="year" type="number" min="1800" max="2100"/>
+  </div>
 
-    <div>
-      <label>Format</label>
-      <input id="format" list="formatList"/>
-      <datalist id="formatList"></datalist>
-    </div>
+  <div class="form-block">
+    <label>Genre</label>
+    <input id="genre" list="genreList"/>
+    <datalist id="genreList"></datalist>
+  </div>
 
-    <div style="grid-column:1/-1; display:flex; gap:10px; margin-top:10px;">
-      <button class="primary" type="submit">Add / Update Record</button>
-      <button id="exportBtn" type="button">Export JSON</button>
-      <button id="importBtn" type="button">Import JSON</button>
-    </div>
-  </form>
+  <div class="form-block">
+    <label>Format</label>
+    <input id="format" list="formatList"/>
+    <datalist id="formatList"></datalist>
+  </div>
+
+  <div class="form-actions">
+    <button class="primary" type="submit">Add / Update</button>
+    <button id="exportBtn" type="button">Export JSON</button>
+    <button id="importBtn" type="button">Import JSON</button>
+  </div>
+
+</form>
+
 
   <!-- =============== REMOTE CONTROLS ================ -->
   <div style="margin-top:20px; display:flex; gap:10px; align-items:center;">
