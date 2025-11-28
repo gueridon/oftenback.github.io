@@ -87,6 +87,14 @@ nav a:hover {
   height: 100% !important;
 }
 
+/* Fix for charts collapsing and breaking the 2-column grid */
+.card.no-title {
+  min-height: 260px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 
 /* ------------------------------------------------------
    FORMS
