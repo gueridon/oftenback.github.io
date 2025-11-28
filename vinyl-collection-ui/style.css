@@ -75,6 +75,19 @@ nav a:hover {
   box-shadow: var(--shadow-small);
 }
 
+/* Remove default spacing for no-title cards */
+.card.no-title h3,
+.card.no-title h4 {
+  display: none;
+}
+
+/* Ensure canvas charts fill card nicely */
+.card.no-title canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+
 /* ------------------------------------------------------
    FORMS
 ------------------------------------------------------ */
