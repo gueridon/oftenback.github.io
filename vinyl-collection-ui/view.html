@@ -1,149 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Vinyl Collection – View Only</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <style>
-    body {
-      font-family: Inter, sans-serif;
-      margin: 20px;
-      background: #fafafa;
-      color: #222;
-    }
-
-    h1 { margin-bottom: 10px; }
-
-    .top-bar {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      margin-bottom: 14px;
-      flex-wrap: wrap;
-    }
-
-    input {
-      padding: 8px 10px;
-      border-radius: 8px;
-      border: 1px solid #ddd;
-      min-width: 220px;
-    }
-
-    select {
-      padding: 8px 10px;
-      border-radius: 8px;
-      border: 1px solid #ddd;
-    }
-
-    .table-wrap {
-      overflow: auto;
-      border: 1px solid #ddd;
-      border-radius: 10px;
-      background: white;
-    }
-
-    table {
-      width: 100%;
-      min-width: 720px;
-      border-collapse: collapse;
-    }
-
-    thead th {
-      background: #f3f3f3;
-      padding: 10px;
-      border-bottom: 1px solid #ddd;
-      text-align: left;
-    }
-
-    tbody td {
-      padding: 10px;
-      border-bottom: 1px solid #eee;
-    }
-
-    .pagination {
-      display: flex;
-      gap: 10px;
-      margin-top: 14px;
-      align-items: center;
-    }
-
-    button {
-      padding: 8px 12px;
-      border-radius: 8px;
-      background: #0ea5e9;
-      color: white;
-      border: none;
-      font-weight: 600;
-      cursor: pointer;
-    }
-
-    button:disabled {
-      background: #9ccfe8;
-      cursor: default;
-    }
-
-    .count {
-      margin-left: auto;
-      color: #666;
-    }
-      
-    .sortable {
-      cursor: pointer;
-      user-select: none;
-    }
-
-    .sortable.asc::after {
-      content: " ▲";
-      font-size: 0.7rem;
-    }
-
-    .sortable.desc::after {
-      content: " ▼";
-      font-size: 0.7rem;
-    }
-
-  </style>
+<meta charset="UTF-8">
+<title>Vinyl Collection — Viewer</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
 <h1>Vinyl Collection — Viewer</h1>
 
-<div class="top-bar">
-  <input id="search" placeholder="Search artist, title, genre, format…">
-  
-  <label for="pageSize">Records per page:</label>
-  <select id="pageSize">
-    <option>10</option>
-    <option>20</option>
-    <option>50</option>
-    <option>100</option>
-  </select>
+<nav>
+  <a href="index.html">Editor</a>
+  <a href="view.html">Viewer</a>
+  <a href="stats.html">Statistics</a>
+</nav>
 
-  <a href="index.html" style="margin-left:auto;font-size:0.9rem;">Back to Editor</a>
-</div>
+<div class="card">
 
-<div class="table-wrap">
-  <table>
-    <thead>
-      <tr>
-        <th>#</th>
-        <th data-field="artist" class="sortable">Artist</th>
-        <th data-field="title" class="sortable">Title</th>
-        <th data-field="year" class="sortable">Year</th>
-        <th data-field="genre" class="sortable">Genre</th>
-        <th data-field="format" class="sortable">Format</th>
-      </tr>
-    </thead>
-    <tbody id="tbody"></tbody>
-  </table>
-</div>
+  <div class="top-bar" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+    <input id="search" placeholder="Search artist, title, genre, format…">
+    <label>Records per page:</label>
+    <select id="pageSize">
+      <option>10</option><option>20</option><option>50</option><option>100</option>
+    </select>
+  </div>
 
-<div class="pagination">
-  <button id="prevBtn">Previous</button>
-  <button id="nextBtn">Next</button>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th class="sortable" data-field="artist">Artist</th>
+          <th class="sortable" data-field="title">Title</th>
+          <th class="sortable" data-field="year">Year</th>
+          <th class="sortable" data-field="genre">Genre</th>
+          <th class="sortable" data-field="format">Format</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
 
-  <div class="count" id="countLabel"></div>
+  <div class="pagination" style="display:flex;gap:10px;margin-top:12px;align-items:center;">
+    <button id="prevBtn">Previous</button>
+    <button id="nextBtn">Next</button>
+    <div id="countLabel" style="margin-left:auto;color:#555;"></div>
+  </div>
+
 </div>
 
 <script>

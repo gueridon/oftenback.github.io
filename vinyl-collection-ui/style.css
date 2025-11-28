@@ -1,0 +1,193 @@
+/* ------------------------------------------------------
+   GLOBAL COLOR PALETTE
+------------------------------------------------------ */
+:root {
+  --color-1: #d93a3a; /* red */
+  --color-2: #faa200; /* orange */
+  --color-3: #f2e9c5; /* cream */
+  --color-4: #3c709a; /* blue */
+  --color-5: #2b3d50; /* steel grey */
+
+  /* Greys */
+  --grey-light: #f5f5f5;
+  --grey-mid: #dcdcdc;
+  --grey-dark: #404040;
+
+  --bg: var(--grey-light);
+  --card: white;
+  --text: #222;
+
+  --radius: 10px;
+  --pad: 16px;
+  --font: Inter, system-ui, sans-serif;
+
+  --shadow-small: 0 2px 6px rgba(0,0,0,0.08);
+  --shadow-medium: 0 4px 14px rgba(0,0,0,0.10);
+}
+
+/* ------------------------------------------------------
+   BASE
+------------------------------------------------------ */
+body {
+  margin: 20px;
+  background: var(--bg);
+  font-family: var(--font);
+  color: var(--text);
+}
+
+/* ------------------------------------------------------
+   HEADER + NAV
+------------------------------------------------------ */
+h1 {
+  margin-top: 4px;
+  margin-bottom: 20px;
+  font-size: 1.85rem;
+  color: var(--color-5);
+}
+
+nav {
+  margin-bottom: 22px;
+  padding: 10px 2px;
+  display: flex;
+  gap: 18px;
+}
+
+nav a {
+  text-decoration: none;
+  font-weight: 600;
+  color: var(--color-4);
+  padding: 6px 10px;
+  border-radius: var(--radius);
+}
+
+nav a:hover {
+  background: var(--grey-mid);
+}
+
+/* ------------------------------------------------------
+   CARDS
+------------------------------------------------------ */
+.card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: var(--pad);
+  margin-bottom: 22px;
+  box-shadow: var(--shadow-small);
+}
+
+/* ------------------------------------------------------
+   FORMS
+------------------------------------------------------ */
+input, select {
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  border: none;
+  background: var(--grey-mid);
+  font-size: 0.95rem;
+}
+
+input:focus, select:focus {
+  outline: 2px solid var(--color-4);
+}
+
+/* Labels */
+label {
+  font-size: 0.75rem;
+  color: var(--grey-dark);
+  margin-bottom: 4px;
+  display: block;
+}
+
+/* ------------------------------------------------------
+   BUTTONS
+------------------------------------------------------ */
+button {
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  border: none;
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
+  box-shadow: var(--shadow-small);
+}
+
+/* Primary */
+button.primary {
+  background: var(--color-4);
+}
+
+/* Orange */
+button.orange {
+  background: var(--color-2);
+  color: #663d00;
+}
+
+/* Red */
+button.red {
+  background: var(--color-1);
+}
+
+/* Ghost */
+button.ghost {
+  background: transparent;
+  color: var(--color-4);
+  box-shadow: none;
+}
+
+/* Small */
+button.small {
+  padding: 6px 10px;
+  font-size: 0.85rem;
+}
+
+/* ------------------------------------------------------
+   TABLE
+------------------------------------------------------ */
+.table-wrap {
+  overflow: auto;
+  border-radius: var(--radius);
+  background: var(--card);
+  box-shadow: var(--shadow-small);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead th {
+  background: var(--grey-mid);
+  padding: 12px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--color-5);
+}
+
+tbody tr:nth-child(even) {
+  background: var(--grey-light);
+}
+
+tbody td {
+  padding: 12px;
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+/* ------------------------------------------------------
+   SYNC BADGE
+------------------------------------------------------ */
+.sync-status {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: white;
+  box-shadow: var(--shadow-small);
+}
+
+.sync-ok { background: #4caf50; }
+.sync-ahead { background: var(--color-2); color: #663d00; }
+.sync-remote { background: var(--color-4); }
+.sync-diverged { background: var(--color-1); }
+.sync-none { background: var(--grey-dark); }

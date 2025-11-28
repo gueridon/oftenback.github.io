@@ -5,125 +5,28 @@
 <title>Vinyl Collection — Statistics</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<!-- Chart.js -->
+<link rel="stylesheet" href="style.css">
+
+<!-- Chart libraries -->
 <script src="https://unpkg.com/chart.js@4.4.0/dist/chart.umd.js"></script>
-
-<!-- DataLabels only for doughnut charts -->
 <script src="https://unpkg.com/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.js"></script>
-<script>
-  Chart.register(ChartDataLabels);
-</script>
+<script>Chart.register(ChartDataLabels);</script>
 
-<style>
-  :root {
-  /* Bauhaus double-grey palette */
-  --bg: #e5e5e5;       /* Bauhaus grey */
-  --card: #f7f7f7;     /* lighter grey for card */
-  --border: #000000;   /* Bauhaus black geometry */
-  --muted: #444444;
-  --accent: #0033a0;   /* Bauhaus blue */
-  --radius: 6px;       /* subtle, Bauhaus isn’t round */
-}
-
-body {
-  margin: 20px;
-  background: var(--bg);
-  color: #111;
-  font-family: Inter, system-ui, sans-serif;
-}
-
-/* Minimalist Bauhaus header */
-h1 {
-  margin-bottom: 12px;
-  font-weight: 700;
-  color: #000;
-  border-left: 12px solid #c00000; /* red Bauhaus bar */
-  padding-left: 12px;
-}
-
-/* Navigation links with slight Bauhaus blue hint */
-.nav a {
-  margin-right: 16px;
-  color: var(--accent);
-  text-decoration: none;
-  font-weight: 600;
-}
-
-/* Card geometry: thin borders, no shadows */
-.card, .summary, .top10 {
-  background: var(--card);
-  border: 2px solid var(--border);
-  border-radius: var(--radius);
-  padding: 16px;
-}
-
-/* 2-column responsive grid */
-.grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 20px;
-}
-
-@media (max-width: 800px) {
-  .grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Collapsible section */
-.collapsible {
-  background: var(--card);
-  color: #000;
-  cursor: pointer;
-  padding: 14px;
-  width: 100%;
-  border: 2px solid var(--border);
-  border-radius: var(--radius);
-  text-align: left;
-  font-weight: 600;
-  font-size: 1rem;
-  margin-top: 16px;
-}
-
-.collapsible:hover {
-  background-color: #ececec;
-}
-
-.content {
-  padding: 0 16px;
-  display: none;
-  overflow: hidden;
-  background-color: var(--card);
-  border-left: 2px solid var(--border);
-  border-right: 2px solid var(--border);
-  border-bottom: 2px solid var(--border);
-  border-radius: 0 0 var(--radius) var(--radius);
-}
-
-.content ul {
-  margin: 12px 0 12px 16px;
-  padding: 0;
-}
-
-/* Full-width block for Genre×Decade */
-.card.full {
-  grid-column: 1 / -1;
-}
-
-</style>
 </head>
 <body>
 
-<h1>📊 Vinyl Collection — Statistics</h1>
+<h1>Vinyl Collection — Statistics</h1>
 
-<div class="nav">
+<nav>
   <a href="index.html">Editor</a>
   <a href="view.html">Viewer</a>
-</div>
+  <a href="stats.html">Statistics</a>
+</nav>
 
-<div id="summary" class="summary"></div>
+<div id="summary" class="card"></div>
 
-<div class="grid">
+<div class="grid two">
+
   <div class="card">
     <h3>Genres (Doughnut)</h3>
     <canvas id="genresChart"></canvas>
@@ -144,36 +47,26 @@ h1 {
     <canvas id="yearsChart"></canvas>
   </div>
 
-  <div class="card" style="grid-column: 1/-1;">
-    <h3>Genre × Decade (Stacked Bars)</h3>
+  <div class="card" style="grid-column:1/-1;">
+    <h3>Genre × Decade</h3>
     <canvas id="genreDecadeChart"></canvas>
   </div>
 </div>
 
-<div class="top10">
+<div class="card">
   <h3>Top 10 Artists</h3>
   <ul id="topArtists"></ul>
-
   <h3>Top 10 Genres</h3>
   <ul id="topGenres"></ul>
-
   <h3>Top 10 Formats</h3>
   <ul id="topFormats"></ul>
 </div>
-  
-<!-- Full List of Artists and Genres -->
-<div class="collapsible-block">
-  <button class="collapsible">All Artists (with counts)</button>
-  <div class="content">
-    <ul id="allArtistsList"></ul>
-  </div>
 
-  <button class="collapsible">All Genres (with counts)</button>
-  <div class="content">
-    <ul id="allGenresList"></ul>
-  </div>
-</div>
+<button class="collapsible">All Artists (with counts)</button>
+<div class="content"><ul id="allArtistsList"></ul></div>
 
+<button class="collapsible">All Genres (with counts)</button>
+<div class="content"><ul id="allGenresList"></ul></div>
 
 <script>
 /* --------------------------
@@ -401,28 +294,28 @@ fillTop10(countBy("format"), "topFormats");
    Full Lists (Artists + Genres)
    -------------------------- */
 
-  function fillFullList(map, targetId) {
-    const el = document.getElementById(targetId);
-    el.innerHTML = "";
+function fillFullList(map, targetId) {
+  const el = document.getElementById(targetId);
+  el.innerHTML = "";
 
-    sorted(map).forEach(([name, count]) => {
-      const li = document.createElement("li");
-      li.textContent = `${name} — ${count}`;
-      el.appendChild(li);
-    });
-  }
-
-  fillFullList(countBy("artist"), "allArtistsList");
-  fillFullList(countBy("genre"), "allGenresList");
-
-  // Collapsible section behavior
-  document.querySelectorAll(".collapsible").forEach(button => {
-    button.addEventListener("click", () => {
-      button.classList.toggle("active");
-      const content = button.nextElementSibling;
-      content.style.display = content.style.display === "block" ? "none" : "block";
-    });
+  sorted(map).forEach(([name, count]) => {
+    const li = document.createElement("li");
+    li.textContent = `${name} — ${count}`;
+    el.appendChild(li);
   });
+}
+
+fillFullList(countBy("artist"), "allArtistsList");
+fillFullList(countBy("genre"), "allGenresList");
+
+// Collapsible section behavior
+document.querySelectorAll(".collapsible").forEach(button => {
+  button.addEventListener("click", () => {
+    button.classList.toggle("active");
+    const content = button.nextElementSibling;
+    content.style.display = content.style.display === "block" ? "none" : "block";
+  });
+});
 
 </script>
 
