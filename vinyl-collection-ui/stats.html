@@ -16,106 +16,100 @@
 
 <style>
   :root {
-    --bg: #fafafa;
-    --card: #ffffff;
-    --border: #e5e7eb;
-    --muted: #6b7280;
-    --accent: #0ea5e9;
-    --radius: 12px;
-  }
+  /* Bauhaus double-grey palette */
+  --bg: #e5e5e5;       /* Bauhaus grey */
+  --card: #f7f7f7;     /* lighter grey for card */
+  --border: #000000;   /* Bauhaus black geometry */
+  --muted: #444444;
+  --accent: #0033a0;   /* Bauhaus blue */
+  --radius: 6px;       /* subtle, Bauhaus isn’t round */
+}
 
-  body {
-    margin: 20px;
-    background: var(--bg);
-    color: #111827;
-    font-family: Inter, system-ui, sans-serif;
-  }
+body {
+  margin: 20px;
+  background: var(--bg);
+  color: #111;
+  font-family: Inter, system-ui, sans-serif;
+}
 
-  h1 { margin-bottom: 12px; }
+/* Minimalist Bauhaus header */
+h1 {
+  margin-bottom: 12px;
+  font-weight: 700;
+  color: #000;
+  border-left: 12px solid #c00000; /* red Bauhaus bar */
+  padding-left: 12px;
+}
 
-  .nav a {
-    margin-right: 12px;
-    color: var(--accent);
-    text-decoration: none;
-    font-weight: 600;
-  }
+/* Navigation links with slight Bauhaus blue hint */
+.nav a {
+  margin-right: 16px;
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+}
 
-  .summary {
-    background: var(--card);
-    padding: 16px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    margin-bottom: 20px;
-  }
+/* Card geometry: thin borders, no shadows */
+.card, .summary, .top10 {
+  background: var(--card);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+}
 
+/* 2-column responsive grid */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+@media (max-width: 800px) {
   .grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr)); /* max 2 per row */
-    gap: 20px;
+    grid-template-columns: 1fr;
   }
+}
 
-  @media (max-width: 800px) {
-    .grid {
-      grid-template-columns: 1fr; /* 1 per row on mobile */
-    }
-  }
+/* Collapsible section */
+.collapsible {
+  background: var(--card);
+  color: #000;
+  cursor: pointer;
+  padding: 14px;
+  width: 100%;
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  text-align: left;
+  font-weight: 600;
+  font-size: 1rem;
+  margin-top: 16px;
+}
 
+.collapsible:hover {
+  background-color: #ececec;
+}
 
-  .card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 16px;
-  }
+.content {
+  padding: 0 16px;
+  display: none;
+  overflow: hidden;
+  background-color: var(--card);
+  border-left: 2px solid var(--border);
+  border-right: 2px solid var(--border);
+  border-bottom: 2px solid var(--border);
+  border-radius: 0 0 var(--radius) var(--radius);
+}
 
-  .top10 {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 16px;
-    margin-top: 20px;
-  }
+.content ul {
+  margin: 12px 0 12px 16px;
+  padding: 0;
+}
 
-  .top10 ul {
-    margin: 0 0 12px 1.2rem;
-  }
-  
-  /* Collapsible sections */
-  .collapsible {
-    background-color: var(--card);
-    color: #111;
-    cursor: pointer;
-    padding: 12px;
-    width: 100%;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    text-align: left;
-    font-size: 1rem;
-    margin-top: 12px;
-  }
+/* Full-width block for Genre×Decade */
+.card.full {
+  grid-column: 1 / -1;
+}
 
-  .collapsible:hover {
-    background-color: #f2f2f2;
-  }
-
-  .content {
-    padding: 0 16px;
-    display: none;
-    overflow: hidden;
-    background-color: var(--card);
-    border-left: 1px solid var(--border);
-    border-right: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
-    border-radius: 0 0 var(--radius) var(--radius);
-  }
-
-  .content ul {
-    margin: 12px 0 12px 16px;
-    padding: 0;
-  }
-
-
-  .muted { color: var(--muted); }
 </style>
 </head>
 <body>
