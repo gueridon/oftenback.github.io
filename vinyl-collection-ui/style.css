@@ -173,6 +173,30 @@ tbody td {
   color: var(--text);
 }
 
+/* Clean borderless stats tables */
+.stats-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 6px 0;
+}
+
+.stats-table td {
+  padding: 4px 0;
+  font-size: 0.95rem;
+}
+
+.stats-left {
+  text-align: left;
+  color: var(--color-5);
+  font-weight: 600;
+}
+
+.stats-right {
+  text-align: right;
+  color: var(--grey-dark);
+  font-weight: 600;
+}
+
 /* ------------------------------------------------------
    SYNC BADGE
 ------------------------------------------------------ */

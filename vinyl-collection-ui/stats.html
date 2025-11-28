@@ -7,12 +7,12 @@
 
 <link rel="stylesheet" href="style.css">
 
-<!-- Chart libraries -->
+<!-- Chart.js -->
 <script src="https://unpkg.com/chart.js@4.4.0/dist/chart.umd.js"></script>
 <script src="https://unpkg.com/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.js"></script>
 <script>Chart.register(ChartDataLabels);</script>
-
 </head>
+
 <body>
 
 <h1>Vinyl Collection — Statistics</h1>
@@ -23,8 +23,13 @@
   <a href="stats.html">Statistics</a>
 </nav>
 
-<div id="summary" class="card"></div>
+<!-- SUMMARY -->
+<div class="card">
+  <h3>Summary</h3>
+  <table id="summaryTable" class="stats-table"></table>
+</div>
 
+<!-- CHART GRID -->
 <div class="grid two">
 
   <div class="card">
@@ -43,35 +48,47 @@
   </div>
 
   <div class="card">
-    <h3>Years (Timeline)</h3>
+    <h3>Years Timeline</h3>
     <canvas id="yearsChart"></canvas>
   </div>
 
-  <div class="card" style="grid-column:1/-1;">
+  <div class="card full">
     <h3>Genre × Decade</h3>
     <canvas id="genreDecadeChart"></canvas>
   </div>
+
 </div>
 
+<!-- TOP 10s -->
 <div class="card">
-  <h3>Top 10 Artists</h3>
-  <ul id="topArtists"></ul>
-  <h3>Top 10 Genres</h3>
-  <ul id="topGenres"></ul>
-  <h3>Top 10 Formats</h3>
-  <ul id="topFormats"></ul>
+  <h3>Top 10</h3>
+
+  <h4>Artists</h4>
+  <table id="topArtistsTable" class="stats-table"></table>
+
+  <h4>Genres</h4>
+  <table id="topGenresTable" class="stats-table"></table>
+
+  <h4>Formats</h4>
+  <table id="topFormatsTable" class="stats-table"></table>
 </div>
 
+
+<!-- COLLAPSIBLES -->
 <button class="collapsible">All Artists (with counts)</button>
-<div class="content"><ul id="allArtistsList"></ul></div>
+<div class="content">
+  <table id="allArtistsTable" class="stats-table"></table>
+</div>
 
 <button class="collapsible">All Genres (with counts)</button>
-<div class="content"><ul id="allGenresList"></ul></div>
+<div class="content">
+  <table id="allGenresTable" class="stats-table"></table>
+</div>
 
 <script>
-/* --------------------------
-   Load Data
-   -------------------------- */
+/* --------------------------------------------
+   LOAD LOCAL DATA
+-------------------------------------------- */
 const LS_KEY = "vinyl_records_v1";
 let records = [];
 
@@ -82,48 +99,192 @@ try {
   records = [];
 }
 
-function countBy(field) {
+function countBy(key) {
   const m = new Map();
   records.forEach(r => {
-    const v = (r[field] || "").trim();
-    if (!v) return;
-    m.set(v, (m.get(v) || 0) + 1);
+    const v = (r[key] || "").trim();
+    if (v) m.set(v, (m.get(v)||0)+1);
   });
   return m;
 }
 
 function sorted(map) {
-  return Array.from(map.entries()).sort((a,b)=>b[1]-a[1]);
+  return [...map.entries()].sort((a,b)=>b[1]-a[1]);
 }
 
+/* --------------------------------------------
+   SUMMARY
+-------------------------------------------- */
+const years = records.map(r => Number(r.year)).filter(n => n>0).sort((a,b)=>a-b);
+const oldest = years[0] || "—";
+const newest = years[years.length-1] || "—";
+const median = years.length ? years[Math.floor(years.length/2)] : "—";
+
+const summaryRows = [
+  ["Total records", records.length],
+  ["Unique artists", countBy("artist").size],
+  ["Unique genres", countBy("genre").size],
+  ["Unique formats", countBy("format").size],
+  ["Oldest", oldest],
+  ["Newest", newest],
+  ["Median year", median],
+];
+
+summaryTable.innerHTML = summaryRows
+  .map(([label, value]) => `
+    <tr>
+      <td class="stats-left">${label}</td>
+      <td class="stats-right">${value}</td>
+    </tr>
+  `).join("");
+
+
+/* --------------------------------------------
+   CHARTS
+-------------------------------------------- */
+
+/* Colors from your palette */
+const palette = [
+  "#d93a3a",
+  "#faa200",
+  "#3c709a",
+  "#2b3d50",
+  "#f2e9c5"
+];
+
+/* Genres donut */
+{
+  const map = countBy("genre");
+  const entries = sorted(map);
+
+  new Chart(genresChart, {
+    type:"doughnut",
+    data:{
+      labels: entries.map(e=>e[0]),
+      datasets:[{ data: entries.map(e=>e[1]), backgroundColor: palette }]
+    },
+    options:{
+      cutout:"55%",
+      plugins:{
+        legend:{display:false},
+        datalabels:{
+          color:"#000",
+          font:{size:11},
+          formatter:(v,ctx)=>ctx.chart.data.labels[ctx.dataIndex]
+        }
+      }
+    }
+  });
+}
+
+/* Formats donut */
+{
+  const map = countBy("format");
+  const entries = sorted(map);
+
+  new Chart(formatsChart, {
+    type:"doughnut",
+    data:{
+      labels: entries.map(e=>e[0]),
+      datasets:[{ data: entries.map(e=>e[1]), backgroundColor: palette }]
+    },
+    options:{
+      cutout:"55%",
+      plugins:{
+        legend:{display:false},
+        datalabels:{
+          color:"#000",
+          font:{size:11},
+          formatter:(v,ctx)=>ctx.chart.data.labels[ctx.dataIndex]
+        }
+      }
+    }
+  });
+}
+
+/* Decades */
 function decadeOf(year) {
   const y = Number(year);
   return y ? Math.floor(y/10)*10 + "s" : "Unknown";
 }
 
-/* --------------------------
-   Summary
-   -------------------------- */
-const years = records.map(r => Number(r.year)).filter(y => y>0).sort((a,b)=>a-b);
-const oldest = years[0] || "—";
-const newest = years[years.length-1] || "—";
-const median = years.length ? years[Math.floor(years.length/2)] : "—";
+{
+  const m = new Map();
+  records.forEach(r=>{
+    const d = decadeOf(r.year);
+    if (d !== "Unknown")
+      m.set(d,(m.get(d)||0)+1);
+  });
 
-document.getElementById("summary").innerHTML = `
-  <strong>Total records:</strong> ${records.length}<br>
-  <strong>Unique artists:</strong> ${countBy("artist").size} |
-  <strong>Unique genres:</strong> ${countBy("genre").size} |
-  <strong>Unique formats:</strong> ${countBy("format").size}<br><br>
-  <strong>Oldest:</strong> ${oldest} |
-  <strong>Newest:</strong> ${newest} |
-  <strong>Median year:</strong> ${median}
-`;
+  const entries = [...m.entries()].sort((a,b)=>parseInt(a[0])-parseInt(b[0]));
 
-/* --------------------------
-   Top 10 lists
-   -------------------------- */
-function fillTop10(map, id) {
-  const el = document.getElementById(id);
+  new Chart(decadesChart,{
+    type:"bar",
+    data:{
+      labels: entries.map(e=>e[0]),
+      datasets:[{
+        data:entries.map(e=>e[1]),
+        backgroundColor: palette[0]
+      }]
+    },
+    options:{
+      plugins:{legend:{display:false}, datalabels:{display:false}},
+      scales:{y:{beginAtZero:true}}
+    }
+  });
+}
+
+/* Years timeline */
+{
+  const counts = new Map();
+  years.forEach(y=> counts.set(y,(counts.get(y)||0)+1));
+
+  new Chart(yearsChart,{
+    type:"line",
+    data:{
+      labels:[...counts.keys()],
+      datasets:[{
+        data:[...counts.values()],
+        borderColor: palette[3],
+        backgroundColor:"transparent",
+        tension:0.25
+      }]
+    },
+    options:{
+      plugins:{legend:{display:false}, datalabels:{display:false}},
+      scales:{y:{beginAtZero:true}}
+    }
+  });
+}
+
+/* Genre × Decade */
+{
+  const genres = [...countBy("genre").keys()];
+  const decades = [...new Set(records.map(r=>decadeOf(r.year)))].filter(x=>x!=="Unknown");
+  decades.sort((a,b)=>parseInt(a)-parseInt(b));
+
+  const datasets = genres.map((g,i)=>({
+    label:g,
+    data:decades.map(d=>records.filter(r=>r.genre===g && decadeOf(r.year)===d).length),
+    backgroundColor: palette[i % palette.length]
+  }));
+
+  new Chart(genreDecadeChart,{
+    type:"bar",
+    data:{ labels:decades, datasets },
+    options:{
+      plugins:{legend:{position:"bottom"}, datalabels:{display:false}},
+      responsive:true,
+      scales:{x:{stacked:true}, y:{stacked:true}}
+    }
+  });
+}
+
+/* --------------------------------------------
+   TOP LISTS
+-------------------------------------------- */
+function fillList(map, elId) {
+  const el = document.getElementById(elId);
   el.innerHTML = "";
   sorted(map).slice(0,10).forEach(([k,v])=>{
     const li = document.createElement("li");
@@ -131,192 +292,60 @@ function fillTop10(map, id) {
     el.appendChild(li);
   });
 }
-fillTop10(countBy("artist"), "topArtists");
-fillTop10(countBy("genre"), "topGenres");
-fillTop10(countBy("format"), "topFormats");
 
-/* --------------------------
-   Charts
-   -------------------------- */
+function fillTopTable(map, id) {
+  const table = document.getElementById(id);
+  table.innerHTML = "";
 
-// 1️⃣ Genres — Doughnut With Exterior Labels
-{
-  const map = countBy("genre");
-  const entries = sorted(map);
-
-  new Chart(document.getElementById("genresChart"), {
-    type: "doughnut",
-    data: {
-      labels: entries.map(([name]) => name),
-      datasets: [{
-        data: entries.map(([, count]) => count)
-      }]
-    },
-    options: {
-      cutout: "65%",
-      radius: "70%",
-      plugins: {
-        legend: { display:false },
-        datalabels: {
-          anchor: "end",
-          align: "end",
-          offset: 6,
-          clamp: true,
-          font: { size: 11, weight:"bold" },
-          color: "#111",
-          formatter: (value, ctx) => {
-            const label = ctx.chart.data.labels[ctx.dataIndex];
-            return `${label} (${value})`;
-          }
-        }
-      }
-    }
+  sorted(map).slice(0, 10).forEach(([k, v]) => {
+    table.innerHTML += `
+      <tr>
+        <td class="stats-left">${k}</td>
+        <td class="stats-right">${v}</td>
+      </tr>`;
   });
 }
 
-// 2️⃣ Formats — Doughnut With Exterior Labels
-{
-  const map = countBy("format");
-  const entries = sorted(map);
+fillTopTable(countBy("artist"), "topArtistsTable");
+fillTopTable(countBy("genre"), "topGenresTable");
+fillTopTable(countBy("format"), "topFormatsTable");
 
-  new Chart(document.getElementById("formatsChart"), {
-    type: "doughnut",
-    data: {
-      labels: entries.map(([name]) => name),
-      datasets: [{
-        data: entries.map(([, count]) => count)
-      }]
-    },
-    options: {
-      cutout: "65%",
-      radius: "70%",
-      plugins: {
-        legend: { display:false },
-        datalabels: {
-          anchor: "end",
-          align: "end",
-          offset: 6,
-          clamp: true,
-          font: { size: 11, weight:"bold" },
-          color: "#111",
-          formatter: (value, ctx) => {
-            const label = ctx.chart.data.labels[ctx.dataIndex];
-            return `${label} (${value})`;
-          }
-        }
-      }
-    }
-  });
-}
-
-// 3️⃣ Decades — Vertical Bar
-{
-  const m = new Map();
-  records.forEach(r=>{
-    const d = decadeOf(r.year);
-    m.set(d,(m.get(d)||0)+1);
-  });
-
-  const entries = sorted(m)
-    .filter(([d])=>d!=="Unknown")
-    .sort((a,b)=>parseInt(a[0])-parseInt(b[0]));
-
-  new Chart(document.getElementById("decadesChart"),{
-    type:"bar",
-    data:{
-      labels:entries.map(([d])=>d),
-      datasets:[{data:entries.map(([,c])=>c)}]
-    },
-    options:{
-      scales:{ y:{ beginAtZero:true }},
-      plugins:{ legend:{display:false}, datalabels:{display:false} }
-    }
-  });
-}
-
-// 4️⃣ Year Timeline — Line Chart
-{
-  const yearsMap = new Map();
-  years.forEach(y=>yearsMap.set(y,(yearsMap.get(y)||0)+1));
-
-  new Chart(document.getElementById("yearsChart"),{
-    type:"line",
-    data:{
-      labels:Array.from(yearsMap.keys()),
-      datasets:[{data:Array.from(yearsMap.values()), tension:0.25}]
-    },
-    options:{
-      scales:{ y:{ beginAtZero:true }},
-      plugins:{ legend:{display:false}, datalabels:{display:false} }
-    }
-  });
-}
-
-// 5️⃣ Genre × Decade — STACKED BAR CHART 🎉
-{
-  const genreList = sorted(countBy("genre")).map(([g])=>g);
-
-  const decades = [...new Set(
-    records
-      .map(r=>decadeOf(r.year))
-      .filter(d=>d!=="Unknown")
-  )].sort((a,b)=>parseInt(a)-parseInt(b));
-
-  const datasets = genreList.map(genre => ({
-    label: genre,
-    data: decades.map(decade =>
-      records.filter(r => r.genre===genre &&
-        decadeOf(r.year)===decade).length
-    )
-  }));
-
-  new Chart(document.getElementById("genreDecadeChart"), {
-    type: "bar",
-    data: {
-      labels: decades,
-      datasets: datasets
-    },
-    options: {
-      responsive: true,
-      scales: {
-        x: { stacked: true },
-        y: { stacked: true, beginAtZero: true }
-      },
-      plugins: {
-        legend: { position: "bottom" },
-        datalabels: { display: false }
-      }
-    }
-  });
-}
-
-  /* --------------------------
-   Full Lists (Artists + Genres)
-   -------------------------- */
-
-function fillFullList(map, targetId) {
-  const el = document.getElementById(targetId);
+/* --------------------------------------------
+   FULL LISTS
+-------------------------------------------- */
+function fillFull(map, elId) {
+  const el = document.getElementById(elId);
   el.innerHTML = "";
-
-  sorted(map).forEach(([name, count]) => {
+  sorted(map).forEach(([k,v])=>{
     const li = document.createElement("li");
-    li.textContent = `${name} — ${count}`;
+    li.textContent = `${k} — ${v}`;
     el.appendChild(li);
   });
 }
 
-fillFullList(countBy("artist"), "allArtistsList");
-fillFullList(countBy("genre"), "allGenresList");
+function fillFullTable(map, id) {
+  const table = document.getElementById(id);
+  table.innerHTML = sorted(map)
+    .map(([k,v]) => `
+      <tr>
+        <td class="stats-left">${k}</td>
+        <td class="stats-right">${v}</td>
+      </tr>
+    `)
+    .join("");
+}
 
-// Collapsible section behavior
-document.querySelectorAll(".collapsible").forEach(button => {
-  button.addEventListener("click", () => {
-    button.classList.toggle("active");
-    const content = button.nextElementSibling;
-    content.style.display = content.style.display === "block" ? "none" : "block";
-  });
+fillFullTable(countBy("artist"), "allArtistsTable");
+fillFullTable(countBy("genre"), "allGenresTable");
+
+
+/* collapsibles */
+document.querySelectorAll(".collapsible").forEach(btn => {
+  btn.onclick = () => {
+    const panel = btn.nextElementSibling;
+    panel.style.display = panel.style.display === "block" ? "none" : "block";
+  };
 });
-
 </script>
 
 </body>
