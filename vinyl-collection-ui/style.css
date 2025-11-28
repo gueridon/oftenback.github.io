@@ -99,6 +99,47 @@ label {
 }
 
 /* ------------------------------------------------------
+   HORIZONTAL FORM
+------------------------------------------------------ */
+
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-end;
+}
+
+.form-block {
+  display: flex;
+  flex-direction: column;
+  min-width: 160px;
+  flex: 1;
+}
+
+.form-block.narrow {
+  max-width: 90px;
+}
+
+.form-actions {
+  display: flex;
+  gap: 10px;
+  margin-left: auto; /* push buttons to the right */
+  padding-top: 6px;
+}
+
+/* Mobile collapse */
+@media (max-width: 800px) {
+  .form-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .form-actions {
+    margin-left: 0;
+  }
+}
+
+
+/* ------------------------------------------------------
    BUTTONS
 ------------------------------------------------------ */
 button {
