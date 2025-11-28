@@ -65,6 +65,29 @@ nav a:hover {
 }
 
 /* ------------------------------------------------------
+   GRID LAYOUT FOR CHARTS
+------------------------------------------------------ */
+.grid {
+  display: grid;
+  gap: 24px;
+}
+
+.grid.two {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.card.full {
+  grid-column: 1 / -1;
+}
+
+/* Optional: collapse to 1 column only on very small screens */
+@media (max-width: 600px) {
+  .grid.two {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ------------------------------------------------------
    CARDS
 ------------------------------------------------------ */
 .card {
