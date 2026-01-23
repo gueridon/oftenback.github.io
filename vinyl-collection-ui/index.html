@@ -7,6 +7,7 @@
 
 <link rel="stylesheet" href="style.css">
 <script type="module" src="sync.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 </head>
 
 <body>
@@ -17,6 +18,7 @@
   <a href="index.html">Editor</a>
   <a href="view.html">Viewer</a>
   <a href="stats.html">Statistics</a>
+  <a href="print-barcodes.html">Print Barcodes</a>
 </nav>
 
 <!-- SYNC STATUS BADGE -->
@@ -57,6 +59,11 @@
     <datalist id="formatList"></datalist>
   </div>
 
+  <div class="form-block">
+    <label>Barcode</label>
+    <input id="barcode" readonly style="background:#f0f0f0;"/>
+  </div>
+
   <div class="form-actions">
     <button class="primary" type="submit">Add / Update</button>
     <button id="exportBtn" type="button">Export JSON</button>
@@ -91,6 +98,7 @@
           <th>Year</th>
           <th>Genre</th>
           <th>Format</th>
+          <th>Barcode</th>
           <th style="min-width:120px">Actions</th>
         </tr>
       </thead>
@@ -154,6 +162,26 @@ function saveLocal() {
 }
 
 /* -----------------------------------------
+   BARCODE GENERATION
+----------------------------------------- */
+function generateBarcode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code = 'VNL-';
+  for (let i = 0; i < 6; i++) {
+    code += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return code;
+}
+
+function generateUniqueBarcode() {
+  let barcode;
+  do {
+    barcode = generateBarcode();
+  } while (records.some(r => r.barcode === barcode));
+  return barcode;
+}
+
+/* -----------------------------------------
    BASIC HELPERS
 ----------------------------------------- */
 function sortRecords() {
@@ -181,18 +209,48 @@ function renderTable() {
   tbody.innerHTML = "";
   records.forEach((r, i) => {
     const tr = document.createElement("tr");
+
+    // Create QR code cell
+    const qrCell = document.createElement("td");
+    qrCell.style.textAlign = "center";
+    const qrDiv = document.createElement("div");
+    qrDiv.style.display = "inline-block";
+    qrDiv.className = "qr-code-" + i;
+    qrCell.appendChild(qrDiv);
+
+    const barcodeText = document.createElement("div");
+    barcodeText.textContent = r.barcode || "N/A";
+    barcodeText.style.fontSize = "10px";
+    barcodeText.style.marginTop = "4px";
+    qrCell.appendChild(barcodeText);
+
     tr.innerHTML = `
       <td>${i+1}</td>
       <td>${r.artist}</td>
       <td>${r.title}</td>
       <td>${r.year||""}</td>
       <td>${r.genre||""}</td>
-      <td>${r.format||""}</td>
+      <td>${r.format||""}</td>`;
+
+    tr.appendChild(qrCell);
+
+    tr.innerHTML += `
       <td>
         <button class="orange small" data-i="${i}" data-action="edit">Edit</button>
         <button class="red small" data-i="${i}" data-action="delete">Delete</button>
       </td>`;
     tbody.appendChild(tr);
+
+    // Generate QR code after DOM is ready
+    if (r.barcode) {
+      setTimeout(() => {
+        new QRCode(qrDiv, {
+          text: r.barcode,
+          width: 64,
+          height: 64
+        });
+      }, 10);
+    }
   });
 
   document.querySelectorAll("[data-action='edit']").forEach(btn =>
@@ -203,6 +261,7 @@ function renderTable() {
       year.value = r.year;
       genre.value = r.genre;
       format.value = r.format;
+      barcode.value = r.barcode || "";
       records.splice(btn.dataset.i, 1);
       renderTable();
     }
@@ -225,12 +284,17 @@ function renderTable() {
 ----------------------------------------- */
 recordForm.onsubmit = e => {
   e.preventDefault();
+
+  // Generate barcode if not present (new record) or keep existing
+  const barcodeValue = barcode.value.trim() || generateUniqueBarcode();
+
   const newRecord = {
     artist: artist.value.trim(),
     title: title.value.trim(),
     year: year.value.trim(),
     genre: genre.value.trim(),
     format: format.value.trim(),
+    barcode: barcodeValue
   };
 
   const i = records.findIndex(r =>

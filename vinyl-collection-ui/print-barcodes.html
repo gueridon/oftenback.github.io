@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Vinyl Collection — Print Barcodes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<style>
+  @media print {
+    nav, button, .no-print { display: none !important; }
+    body { background: white; }
+  }
+
+  .barcode-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 20px;
+    padding: 20px;
+  }
+
+  .barcode-card {
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: center;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .barcode-card .qr-container {
+    margin: 8px auto;
+  }
+
+  .barcode-card .artist-name {
+    font-weight: bold;
+    font-size: 11px;
+    margin-bottom: 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .barcode-card .title-name {
+    font-size: 10px;
+    color: #555;
+    margin-bottom: 8px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .barcode-card .code-text {
+    font-family: monospace;
+    font-size: 12px;
+    font-weight: bold;
+    margin-top: 8px;
+  }
+</style>
+</head>
+
+<body>
+
+<h1 class="no-print">Vinyl Collection — Print Barcodes</h1>
+
+<nav class="no-print">
+  <a href="index.html">Editor</a>
+  <a href="view.html">Viewer</a>
+  <a href="stats.html">Statistics</a>
+  <a href="print-barcodes.html">Print Barcodes</a>
+</nav>
+
+<div class="card no-print">
+  <div style="display:flex; gap:12px; align-items:center; margin-bottom:16px;">
+    <input id="search" placeholder="Filter by artist, title, or barcode…" style="flex:1;">
+    <button id="printBtn" class="primary">Print Barcodes</button>
+    <button id="selectAllBtn" class="orange">Select All</button>
+    <button id="selectNoneBtn" class="ghost">Select None</button>
+  </div>
+  <div style="color:#555; font-size:14px;">
+    <span id="selectedCount">0</span> selected out of <span id="totalCount">0</span> records
+  </div>
+</div>
+
+<div class="barcode-grid" id="barcodeGrid"></div>
+
+<script>
+const LS_KEY = "vinyl_records_v1";
+let allRecords = [];
+let filtered = [];
+
+const searchEl = document.getElementById("search");
+const barcodeGrid = document.getElementById("barcodeGrid");
+const printBtn = document.getElementById("printBtn");
+const selectAllBtn = document.getElementById("selectAllBtn");
+const selectNoneBtn = document.getElementById("selectNoneBtn");
+const selectedCountEl = document.getElementById("selectedCount");
+const totalCountEl = document.getElementById("totalCount");
+
+/* Load records */
+function loadLocal() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    allRecords = raw ? JSON.parse(raw) : [];
+  } catch { allRecords = []; }
+
+  allRecords.sort((a,b) => a.artist.localeCompare(b.artist));
+  filtered = [...allRecords];
+  render();
+}
+
+/* Filter */
+function applyFilter() {
+  const q = searchEl.value.trim().toLowerCase();
+  if (!q) filtered = [...allRecords];
+  else {
+    filtered = allRecords.filter(r =>
+      (r.artist || "").toLowerCase().includes(q) ||
+      (r.title || "").toLowerCase().includes(q) ||
+      (r.barcode || "").toLowerCase().includes(q)
+    );
+  }
+  render();
+}
+
+/* Render barcode grid */
+function render() {
+  barcodeGrid.innerHTML = "";
+  totalCountEl.textContent = filtered.length;
+
+  filtered.forEach((r, i) => {
+    if (!r.barcode) return; // Skip records without barcodes
+
+    const card = document.createElement("div");
+    card.className = "barcode-card";
+    card.dataset.index = i;
+
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.className = "no-print";
+    checkbox.checked = true;
+    checkbox.style.marginBottom = "8px";
+    checkbox.onchange = updateSelectedCount;
+
+    const artistDiv = document.createElement("div");
+    artistDiv.className = "artist-name";
+    artistDiv.textContent = r.artist;
+
+    const titleDiv = document.createElement("div");
+    titleDiv.className = "title-name";
+    titleDiv.textContent = r.title;
+
+    const qrContainer = document.createElement("div");
+    qrContainer.className = "qr-container qr-print-" + i;
+
+    const codeText = document.createElement("div");
+    codeText.className = "code-text";
+    codeText.textContent = r.barcode;
+
+    card.appendChild(checkbox);
+    card.appendChild(artistDiv);
+    card.appendChild(titleDiv);
+    card.appendChild(qrContainer);
+    card.appendChild(codeText);
+
+    barcodeGrid.appendChild(card);
+
+    // Generate QR code
+    setTimeout(() => {
+      new QRCode(qrContainer, {
+        text: r.barcode,
+        width: 128,
+        height: 128
+      });
+    }, 10);
+  });
+
+  updateSelectedCount();
+}
+
+/* Update selected count */
+function updateSelectedCount() {
+  const checkboxes = document.querySelectorAll('.barcode-card input[type="checkbox"]');
+  const selected = Array.from(checkboxes).filter(cb => cb.checked).length;
+  selectedCountEl.textContent = selected;
+}
+
+/* Print only selected */
+printBtn.onclick = () => {
+  // Hide unselected cards temporarily
+  const cards = document.querySelectorAll('.barcode-card');
+  cards.forEach(card => {
+    const checkbox = card.querySelector('input[type="checkbox"]');
+    if (!checkbox.checked) {
+      card.style.display = 'none';
+    }
+  });
+
+  window.print();
+
+  // Restore visibility
+  cards.forEach(card => {
+    card.style.display = '';
+  });
+};
+
+/* Select all */
+selectAllBtn.onclick = () => {
+  document.querySelectorAll('.barcode-card input[type="checkbox"]').forEach(cb => {
+    cb.checked = true;
+  });
+  updateSelectedCount();
+};
+
+/* Select none */
+selectNoneBtn.onclick = () => {
+  document.querySelectorAll('.barcode-card input[type="checkbox"]').forEach(cb => {
+    cb.checked = false;
+  });
+  updateSelectedCount();
+};
+
+/* Event listeners */
+searchEl.oninput = applyFilter;
+
+/* Initialize */
+loadLocal();
+</script>
+
+</body>
+</html>

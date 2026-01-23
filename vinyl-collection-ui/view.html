@@ -5,6 +5,7 @@
 <title>Vinyl Collection — Viewer</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 </head>
 
 <body>
@@ -15,6 +16,7 @@
   <a href="index.html">Editor</a>
   <a href="view.html">Viewer</a>
   <a href="stats.html">Statistics</a>
+  <a href="print-barcodes.html">Print Barcodes</a>
 </nav>
 
 <div class="card">
@@ -22,7 +24,7 @@
   <!-- Top bar with search + page size -->
   <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
 
-    <input id="search" placeholder="Search artist, title, genre, format…">
+    <input id="search" placeholder="Search artist, title, genre, format, barcode…">
 
     <label style="margin-left:6px;">Page size:</label>
     <select id="pageSize">
@@ -45,6 +47,7 @@
           <th data-field="year" class="sortable">Year</th>
           <th data-field="genre" class="sortable">Genre</th>
           <th data-field="format" class="sortable">Format</th>
+          <th data-field="barcode" class="sortable">Barcode</th>
         </tr>
       </thead>
       <tbody id="tbody"></tbody>
@@ -102,7 +105,8 @@ function applyFilter() {
       (r.artist || "").toLowerCase().includes(q) ||
       (r.title || "").toLowerCase().includes(q) ||
       (r.genre || "").toLowerCase().includes(q) ||
-      (r.format || "").toLowerCase().includes(q)
+      (r.format || "").toLowerCase().includes(q) ||
+      (r.barcode || "").toLowerCase().includes(q)
     );
   }
   sortFiltered();
@@ -134,6 +138,21 @@ function render() {
   tbody.innerHTML = "";
   pageRecords.forEach((r, i) => {
     const tr = document.createElement("tr");
+
+    // Create QR code cell
+    const qrCell = document.createElement("td");
+    qrCell.style.textAlign = "center";
+    const qrDiv = document.createElement("div");
+    qrDiv.style.display = "inline-block";
+    qrDiv.className = "qr-viewer-" + (start + i);
+    qrCell.appendChild(qrDiv);
+
+    const barcodeText = document.createElement("div");
+    barcodeText.textContent = r.barcode || "N/A";
+    barcodeText.style.fontSize = "10px";
+    barcodeText.style.marginTop = "4px";
+    qrCell.appendChild(barcodeText);
+
     tr.innerHTML = `
       <td>${start + i + 1}</td>
       <td>${escapeHtml(r.artist)}</td>
@@ -142,7 +161,20 @@ function render() {
       <td>${escapeHtml(r.genre || "")}</td>
       <td>${escapeHtml(r.format || "")}</td>
     `;
+
+    tr.appendChild(qrCell);
     tbody.appendChild(tr);
+
+    // Generate QR code after DOM is ready
+    if (r.barcode) {
+      setTimeout(() => {
+        new QRCode(qrDiv, {
+          text: r.barcode,
+          width: 64,
+          height: 64
+        });
+      }, 10);
+    }
   });
 
   prevBtn.disabled = currentPage === 1;
