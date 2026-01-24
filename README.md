@@ -77,28 +77,34 @@ ZBLxNZPZluJmLeSvdSMDWNznQXPxDSmXoznWbIng
 **Recommended Method: Node.js Script** (Automatic)
 
 1. **Export your records**:
-   - Open the Editor (`index.html`) in browser
+   - Open the Editor (`index.html`) in browser at http://localhost:8000/vinyl-collection-ui/index.html
    - Click "Export JSON" button
-   - Save as `vinyl.json` in the project root directory
+   - Browser will download the file as `vinyl-export.json`
+   - Save it to the project root directory: `/path/to/oftenback.github.io/`
 
 2. **Run the cover fetcher**:
    ```bash
    cd vinyl-collection-ui
-   node fetch-covers.js ../vinyl.json
+   node fetch-covers.js ../vinyl-export.json
    ```
 
-3. **What happens**:
-   - Script searches Discogs for each record
-   - Downloads cover images directly to `covers/` folder
-   - Saves updated records to `vinyl-with-covers.json`
-   - Shows progress and statistics
-   - Respects rate limits (60 requests/minute)
+   The script will:
+   - Search Discogs for each record without a cover
+   - Download cover images directly to `covers/` folder
+   - Save updated records to `vinyl-export-with-covers.json`
+   - Show progress and statistics
+   - Respect rate limits (~1 request per second)
 
-4. **Import updated records**:
-   - Open the Editor (`index.html`)
-   - Click "Import JSON"
-   - Select `vinyl-with-covers.json`
-   - All covers will now display!
+3. **Import updated records**:
+   - Open the Editor (`index.html`) in browser
+   - Click "Import JSON" button
+   - Navigate to project root and select `vinyl-export-with-covers.json`
+   - Records will merge and covers will now display!
+
+4. **Sync to GitHub**:
+   - Click "Push Data" button in the Editor
+   - Your vinyl.json on GitHub will now include all cover paths
+   - The remote site will display all covers
 
 **Alternative Method: Browser UI** (Manual)
 
@@ -117,6 +123,17 @@ ZBLxNZPZluJmLeSvdSMDWNznQXPxDSmXoznWbIng
    - Covers appear as 60x60px thumbnails
    - Your preference is saved to localStorage
 
+### Fetching Covers for New Records
+
+When you add new vinyl records to your collection:
+
+1. **Export** the updated collection from the Editor
+2. **Run the script** again: `node fetch-covers.js ../vinyl-export.json`
+3. **Import** the updated `vinyl-export-with-covers.json`
+4. **Push** to sync with GitHub
+
+The script automatically skips records that already have covers, so it's safe to run multiple times.
+
 ### Covers Directory Structure
 
 Album covers are stored in:
@@ -127,7 +144,7 @@ vinyl-collection-ui/covers/
 
 - Image naming: `{barcode}.jpg` (e.g., `VNL-ABC123.jpg`)
 - Images are committed to git and sync via GitHub
-- Estimated total size: 50-100MB for 280 records
+- Total size: ~28MB for 262 covers
 
 ### Manual Upload
 
