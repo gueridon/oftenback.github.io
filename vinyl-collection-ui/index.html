@@ -341,11 +341,21 @@ recordForm.onsubmit = e => {
   // Generate barcode if not present (new record) or keep existing
   const barcodeValue = barcode.value.trim() || generateUniqueBarcode();
 
-  // Check if we're editing an existing record to preserve coverImage
-  const existingIndex = records.findIndex(r =>
-    r.artist.toLowerCase() === artist.value.trim().toLowerCase() &&
-    r.title.toLowerCase() === title.value.trim().toLowerCase()
-  );
+  // Find existing record by barcode first, then by artist+title
+  let existingIndex = -1;
+
+  // Priority 1: Match by barcode
+  if (barcodeValue) {
+    existingIndex = records.findIndex(r => r.barcode === barcodeValue);
+  }
+
+  // Priority 2: Match by artist + title (if no barcode match)
+  if (existingIndex === -1) {
+    existingIndex = records.findIndex(r =>
+      r.artist.toLowerCase() === artist.value.trim().toLowerCase() &&
+      r.title.toLowerCase() === title.value.trim().toLowerCase()
+    );
+  }
 
   const newRecord = {
     artist: artist.value.trim(),
@@ -357,12 +367,7 @@ recordForm.onsubmit = e => {
     coverImage: existingIndex >= 0 ? records[existingIndex].coverImage : undefined
   };
 
-  const i = records.findIndex(r =>
-    r.artist.toLowerCase() === newRecord.artist.toLowerCase() &&
-    r.title.toLowerCase() === newRecord.title.toLowerCase()
-  );
-
-  if (i >= 0) records[i] = newRecord;
+  if (existingIndex >= 0) records[existingIndex] = newRecord;
   else records.push(newRecord);
 
   sortRecords();
@@ -412,23 +417,47 @@ importBtn.onclick = () => {
 
 /* ============ MERGING LOGIC (used for Pull + Import) ============ */
 function mergeRecords(local, remote) {
-  const map = new Map();
-  const key = r => r.artist.toLowerCase()+"||"+r.title.toLowerCase();
+  const merged = [...local];
 
-  local.forEach(r => map.set(key(r), {...r}));
+  remote.forEach(remoteRecord => {
+    let existingIndex = -1;
 
-  remote.forEach(r => {
-    const k = key(r);
-    if (!map.has(k)) map.set(k, {...r});
-    else {
-      const o = map.get(k);
-      ['year','genre','format','barcode','coverImage'].forEach(f=>{
-        if (!o[f] && r[f]) o[f]=r[f];
-      });
+    // Priority 1: Match by barcode (if both have barcodes)
+    if (remoteRecord.barcode) {
+      existingIndex = merged.findIndex(r =>
+        r.barcode && r.barcode === remoteRecord.barcode
+      );
+    }
+
+    // Priority 2: Match by artist + title (if no barcode match)
+    if (existingIndex === -1) {
+      const remoteKey = remoteRecord.artist.toLowerCase() + "||" + remoteRecord.title.toLowerCase();
+      existingIndex = merged.findIndex(r =>
+        (r.artist.toLowerCase() + "||" + r.title.toLowerCase()) === remoteKey
+      );
+    }
+
+    if (existingIndex >= 0) {
+      // Record exists - merge fields
+      const existing = merged[existingIndex];
+
+      // Update fields from remote if they have values (remote takes precedence for updates)
+      merged[existingIndex] = {
+        artist: remoteRecord.artist || existing.artist,
+        title: remoteRecord.title || existing.title,
+        year: remoteRecord.year || existing.year,
+        genre: remoteRecord.genre || existing.genre,
+        format: remoteRecord.format || existing.format,
+        barcode: remoteRecord.barcode || existing.barcode,
+        coverImage: remoteRecord.coverImage || existing.coverImage
+      };
+    } else {
+      // New record - add it
+      merged.push({...remoteRecord});
     }
   });
 
-  return [...map.values()];
+  return merged;
 }
 
 /* -----------------------------------------
