@@ -300,3 +300,58 @@ tbody td {
 .sync-remote { background: var(--color-4); }
 .sync-diverged { background: var(--color-1); }
 .sync-none { background: var(--grey-dark); }
+
+/* ------------------------------------------------------
+   ALBUM COVERS
+------------------------------------------------------ */
+.cover-thumbnail {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 4px;
+  box-shadow: var(--shadow-small);
+}
+
+.cover-placeholder {
+  width: 60px;
+  height: 60px;
+  background-color: #e0e0e0;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: #999;
+}
+
+/* Hide covers on mobile for better space usage */
+@media (max-width: 600px) {
+  #coverHeader {
+    display: none !important;
+  }
+
+  .cover-thumbnail,
+  .cover-placeholder {
+    display: none !important;
+  }
+}
+
+/* Sortable table headers */
+th.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+th.sortable:hover {
+  background: var(--color-3);
+}
+
+th.sortable.asc::after {
+  content: " ▲";
+  font-size: 0.7em;
+}
+
+th.sortable.desc::after {
+  content: " ▼";
+  font-size: 0.7em;
+}

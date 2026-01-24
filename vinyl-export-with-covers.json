@@ -1,0 +1,2510 @@
+[
+  {
+    "artist": "Apollo",
+    "title": "Astro Disco",
+    "year": "1979",
+    "genre": "Disco",
+    "format": "12\" Single (33RPM)",
+    "barcode": "VNL-3LNG6V",
+    "coverImage": "covers/VNL-3LNG6V.jpg"
+  },
+  {
+    "artist": "Athletico Spizz 80",
+    "title": "Do A Runner",
+    "year": "1980",
+    "genre": "New Wave",
+    "format": "LP",
+    "barcode": "VNL-87E85E",
+    "coverImage": "covers/VNL-87E85E.jpg"
+  },
+  {
+    "artist": "Autry, Gene",
+    "title": "Gene Autry’s Western Classic",
+    "year": "1948",
+    "genre": "Country",
+    "format": "LP 10\"",
+    "barcode": "VNL-CWSTWD",
+    "coverImage": "covers/VNL-CWSTWD.jpg"
+  },
+  {
+    "artist": "B.T. Express",
+    "title": "Non-Stop",
+    "year": "1975",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-DDJD5L",
+    "coverImage": "covers/VNL-DDJD5L.jpg"
+  },
+  {
+    "artist": "Bacharach, Burt",
+    "title": "Butch Cassidy and the Sundance Kid",
+    "year": "1969",
+    "genre": "Soundtrack",
+    "format": "LP",
+    "barcode": "VNL-YCZ6RG",
+    "coverImage": "covers/VNL-YCZ6RG.jpg"
+  },
+  {
+    "artist": "Bacharach, Burt",
+    "title": "Lost Horizon",
+    "year": "1973",
+    "genre": "Soundtrack",
+    "format": "LP",
+    "barcode": "VNL-FHPZ8M",
+    "coverImage": "covers/VNL-FHPZ8M.jpg"
+  },
+  {
+    "artist": "Badalamenti, Angelo",
+    "title": "Twin Peaks",
+    "year": "1990",
+    "genre": "Soundtrack",
+    "format": "LP",
+    "barcode": "VNL-JSTYL6",
+    "coverImage": "covers/VNL-JSTYL6.jpg"
+  },
+  {
+    "artist": "Beau Dommage",
+    "title": "Beau Dommage",
+    "year": "1974",
+    "genre": "Folk",
+    "format": "LP",
+    "barcode": "VNL-XTJMZY",
+    "coverImage": "covers/VNL-XTJMZY.jpg"
+  },
+  {
+    "artist": "Beethoven, Ludwig",
+    "title": "Symphony 3 Eroica",
+    "year": "1957",
+    "genre": "Classical",
+    "format": "LP",
+    "barcode": "VNL-DSWGWM",
+    "coverImage": "covers/VNL-DSWGWM.jpg"
+  },
+  {
+    "artist": "Beethoven, Ludwig",
+    "title": "Symphonies 8 & 9",
+    "year": "1981",
+    "genre": "Classical",
+    "type": "LP",
+    "format": "LP",
+    "barcode": "VNL-DY3E52",
+    "coverImage": "covers/VNL-DY3E52.jpg"
+  },
+  {
+    "artist": "Beethoven, Ludwig",
+    "title": "Violin Concerto In D, Op.61",
+    "year": "1956",
+    "genre": "Classical",
+    "format": "LP",
+    "barcode": "VNL-FC368T",
+    "coverImage": "covers/VNL-FC368T.jpg"
+  },
+  {
+    "artist": "Belafonte, Harry",
+    "title": "Calypso",
+    "year": "1956",
+    "genre": "Folk",
+    "format": "LP",
+    "barcode": "VNL-W3YLK6",
+    "coverImage": "covers/VNL-W3YLK6.jpg"
+  },
+  {
+    "artist": "Bernstein, Leonard",
+    "title": "West Side Story",
+    "year": "1961",
+    "genre": "Classical",
+    "format": "LP",
+    "barcode": "VNL-XT8P7G",
+    "coverImage": "covers/VNL-XT8P7G.jpg"
+  },
+  {
+    "artist": "Boys Town Gang",
+    "title": "Cruisin’ the Streets",
+    "year": "1981",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-R8VJAK",
+    "coverImage": "covers/VNL-R8VJAK.jpg"
+  },
+  {
+    "artist": "Boys Town Gang",
+    "title": "Disc Charge",
+    "year": "1981",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-6KPZXQ",
+    "coverImage": "covers/VNL-6KPZXQ.jpg"
+  },
+  {
+    "artist": "Boys Town Gang",
+    "title": "Rich and Famous",
+    "year": "1983",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-98VHYW",
+    "coverImage": "covers/VNL-98VHYW.jpg"
+  },
+  {
+    "artist": "Boys Town Gang",
+    "title": "Cruisin’ the Streets Remix",
+    "year": "1981",
+    "genre": "Disco",
+    "format": "12\" Single (33RPM)",
+    "barcode": "VNL-JR4KBJ",
+    "coverImage": "covers/VNL-JR4KBJ.jpg"
+  },
+  {
+    "artist": "Brel, Jacques",
+    "title": "Brel",
+    "year": "1977",
+    "genre": "Chanson",
+    "format": "LP",
+    "barcode": "VNL-F5RQ6B",
+    "coverImage": "covers/VNL-F5RQ6B.jpg"
+  },
+  {
+    "artist": "Carlos, Walter",
+    "title": "Switched-On Bach",
+    "year": "1968",
+    "genre": "Electronic",
+    "format": "LP",
+    "barcode": "VNL-5XD8RS",
+    "coverImage": "covers/VNL-5XD8RS.jpg"
+  },
+  {
+    "artist": "Cerrone",
+    "title": "Cerrone 3 (Supernature)",
+    "year": "1977",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-L6QHZ5",
+    "coverImage": "covers/VNL-L6QHZ5.jpg"
+  },
+  {
+    "artist": "Cerrone",
+    "title": "Love In C Minor",
+    "year": "1977",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-MPGR8G",
+    "coverImage": "covers/VNL-MPGR8G.jpg"
+  },
+  {
+    "artist": "Chic",
+    "title": "C'est Chic",
+    "year": "1978",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-CNRC7Z",
+    "coverImage": "covers/VNL-CNRC7Z.jpg"
+  },
+  {
+    "artist": "Cohen, Leonard",
+    "title": "Songs of Leonard Cohen",
+    "year": "1968",
+    "genre": "Folk",
+    "format": "LP",
+    "barcode": "VNL-TT4L5P",
+    "coverImage": "covers/VNL-TT4L5P.jpg"
+  },
+  {
+    "artist": "Cohen, Leonard",
+    "title": "Greatest Hits",
+    "year": "1975",
+    "genre": "Folk",
+    "format": "LP",
+    "barcode": "VNL-X5DYVA",
+    "coverImage": "covers/VNL-X5DYVA.jpg"
+  },
+  {
+    "artist": "Coleman, Ornette",
+    "title": "Change of the Century",
+    "year": "1960",
+    "genre": "Jazz",
+    "format": "LP",
+    "barcode": "VNL-Y7VXU5",
+    "coverImage": "covers/VNL-Y7VXU5.jpg"
+  },
+  {
+    "artist": "Cooder, Ry",
+    "title": "Paris, tecas",
+    "year": "1985",
+    "genre": "Soundtrack",
+    "format": "LP",
+    "barcode": "VNL-48HGT9"
+  },
+  {
+    "artist": "Costandinos, Alex",
+    "title": "Sphinx (Judas Iscariot/Simon Peter)",
+    "year": "1977",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-KZQA3H"
+  },
+  {
+    "artist": "Costandinos, Alex",
+    "title": "Hunchback of Notre Dame",
+    "year": "1978",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-BRBH96",
+    "coverImage": "covers/VNL-BRBH96.jpg"
+  },
+  {
+    "artist": "Costandinos, Alex",
+    "title": "Paris Connection",
+    "year": "1978",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-EQCEJ6",
+    "coverImage": "covers/VNL-EQCEJ6.jpg"
+  },
+  {
+    "artist": "Cowley, Patrick",
+    "title": "Menergy / I Wanna Take You Home",
+    "year": "1981",
+    "genre": "Hi NRG",
+    "format": "12\" Single (45RPM)",
+    "barcode": "VNL-YH4DUH",
+    "coverImage": "covers/VNL-YH4DUH.jpg"
+  },
+  {
+    "artist": "Dassin, Joe",
+    "title": "Grands Succès",
+    "year": "1980",
+    "genre": "Chanson",
+    "format": "LP",
+    "barcode": "VNL-EGT5JR",
+    "coverImage": "covers/VNL-EGT5JR.jpg"
+  },
+  {
+    "artist": "Davis, Miles",
+    "title": "Ascenseur pour l'Echafaud",
+    "year": "1958",
+    "genre": "Jazz",
+    "format": "LP",
+    "barcode": "VNL-QR7AZY",
+    "coverImage": "covers/VNL-QR7AZY.jpg"
+  },
+  {
+    "artist": "Davis, Miles",
+    "title": "Water Babies",
+    "year": "1977",
+    "genre": "Jazz",
+    "format": "LP",
+    "barcode": "VNL-AKJ73G",
+    "coverImage": "covers/VNL-AKJ73G.jpg"
+  },
+  {
+    "artist": "Dead Rose Music Company",
+    "title": "Four Songs",
+    "year": "2012",
+    "genre": "Electronic",
+    "format": "12\" Single (45RPM)",
+    "barcode": "VNL-ZT7MUL",
+    "coverImage": "covers/VNL-ZT7MUL.jpg"
+  },
+  {
+    "artist": "Deal, Kim",
+    "title": "Nobody Loves You More",
+    "year": "2024",
+    "genre": "Rock",
+    "format": "LP",
+    "barcode": "VNL-DPPXE7",
+    "coverImage": "covers/VNL-DPPXE7.jpg"
+  },
+  {
+    "artist": "Delerm, Vincent",
+    "title": "Kensington Square",
+    "year": "2004",
+    "genre": "Chanson",
+    "format": "LP",
+    "barcode": "VNL-WEKLAY",
+    "coverImage": "covers/VNL-WEKLAY.jpg"
+  },
+  {
+    "artist": "Delerm, Vincent",
+    "title": "Les Amants Paralleles",
+    "year": "2013",
+    "genre": "Chanson",
+    "format": "LP",
+    "barcode": "VNL-HLJE9N",
+    "coverImage": "covers/VNL-HLJE9N.jpg"
+  },
+  {
+    "artist": "Delerm, Vincent",
+    "title": "A Présent",
+    "year": "2016",
+    "genre": "Chanson",
+    "format": "LP",
+    "barcode": "VNL-UVNWVS",
+    "coverImage": "covers/VNL-UVNWVS.jpg"
+  },
+  {
+    "artist": "Delerm, Vincent",
+    "title": "Panorama",
+    "year": "2019",
+    "genre": "Chanson",
+    "format": "LP",
+    "barcode": "VNL-7CM5MX",
+    "coverImage": "covers/VNL-7CM5MX.jpg"
+  },
+  {
+    "artist": "Delerm, Vincent",
+    "title": "La Fresque",
+    "year": "2025",
+    "genre": "Chanson",
+    "format": "LP",
+    "barcode": "VNL-ZLEAVW",
+    "coverImage": "covers/VNL-ZLEAVW.jpg"
+  },
+  {
+    "artist": "Diamond, Neil",
+    "title": "The Jazz Singer",
+    "year": "1980",
+    "genre": "Rock",
+    "format": "LP",
+    "barcode": "VNL-U26ECN",
+    "coverImage": "covers/VNL-U26ECN.jpg"
+  },
+  {
+    "artist": "Diamond, Neil",
+    "title": "Jonathan Livingston Seagull",
+    "year": "1973",
+    "genre": "Soundtrack",
+    "format": "LP",
+    "barcode": "VNL-RCLKNH",
+    "coverImage": "covers/VNL-RCLKNH.jpg"
+  },
+  {
+    "artist": "Diamond, Neil",
+    "title": "Jonathan Livingston Seagull (copy 2)",
+    "year": "1973",
+    "genre": "Soundtrack",
+    "format": "LP",
+    "barcode": "VNL-G76MHP"
+  },
+  {
+    "artist": "Diamond, Neil",
+    "title": "Moods",
+    "year": "1972",
+    "genre": "Rock",
+    "format": "LP",
+    "barcode": "VNL-CH2LFR",
+    "coverImage": "covers/VNL-CH2LFR.jpg"
+  },
+  {
+    "artist": "Diamond, Neil",
+    "title": "Moods (copy 2)",
+    "year": "1972",
+    "genre": "Rock",
+    "format": "LP",
+    "barcode": "VNL-6ASXHV"
+  },
+  {
+    "artist": "Diamond, Neil",
+    "title": "Rainbow",
+    "year": "1973",
+    "genre": "Rock",
+    "format": "LP",
+    "barcode": "VNL-PB2LVJ",
+    "coverImage": "covers/VNL-PB2LVJ.jpg"
+  },
+  {
+    "artist": "Diamond, Neil",
+    "title": "Beautiful Noise",
+    "year": "1976",
+    "genre": "Rock",
+    "format": "LP",
+    "barcode": "VNL-JWYYLR",
+    "coverImage": "covers/VNL-JWYYLR.jpg"
+  },
+  {
+    "artist": "Diamond, Neil",
+    "title": "Do It!",
+    "year": "1971",
+    "genre": "Rock",
+    "format": "LP",
+    "barcode": "VNL-BGF57F",
+    "coverImage": "covers/VNL-BGF57F.jpg"
+  },
+  {
+    "artist": "Disco Tex",
+    "title": "Disco Tex & The Sex-O-Lettes Review",
+    "year": "1975",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-AEEW5A",
+    "coverImage": "covers/VNL-AEEW5A.jpg"
+  },
+  {
+    "artist": "Douglas, Carol",
+    "title": "The Carol Douglas Album",
+    "year": "1975",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-LV4DJC",
+    "coverImage": "covers/VNL-LV4DJC.jpg"
+  },
+  {
+    "artist": "Douglas, Carol",
+    "title": "Burnin'",
+    "year": "1978",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-AFNF77",
+    "coverImage": "covers/VNL-AFNF77.jpg"
+  },
+  {
+    "artist": "Dvorak, Antonin",
+    "title": "Symphony No.8 in G, Op.88",
+    "year": "1979",
+    "genre": "Classical",
+    "format": "LP",
+    "barcode": "VNL-D2SJ9E",
+    "coverImage": "covers/VNL-D2SJ9E.jpg"
+  },
+  {
+    "artist": "Dvorak, Antonin",
+    "title": "Symphonie NR.9 “Aus der neuen Welt\"",
+    "year": "1977",
+    "genre": "Classical",
+    "format": "LP",
+    "barcode": "VNL-UHRZ7G",
+    "coverImage": "covers/VNL-UHRZ7G.jpg"
+  },
+  {
+    "artist": "Dylan, Bob",
+    "title": "Nashville Skyline",
+    "year": "1969",
+    "genre": "Folk",
+    "format": "LP",
+    "barcode": "VNL-3FMN6G",
+    "coverImage": "covers/VNL-3FMN6G.jpg"
+  },
+  {
+    "artist": "Electric Light Orchestra",
+    "title": "Xanadu",
+    "year": "1980",
+    "genre": "Soundtrack",
+    "format": "LP",
+    "barcode": "VNL-FZL2PA",
+    "coverImage": "covers/VNL-FZL2PA.jpg"
+  },
+  {
+    "artist": "Eli, Bobby",
+    "title": "Eli’s Second Coming",
+    "year": "1977",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-VDHZJJ",
+    "coverImage": "covers/VNL-VDHZJJ.jpg"
+  },
+  {
+    "artist": "Eurythmics",
+    "title": "Sweet Dreams",
+    "year": "1983",
+    "genre": "Synth Pop",
+    "format": "LP",
+    "barcode": "VNL-AET69Q",
+    "coverImage": "covers/VNL-AET69Q.jpg"
+  },
+  {
+    "artist": "Ferguson, Maynard",
+    "title": "Gonna Fly Now (Theme From \"Rocky\") / Theme From Star Trek",
+    "year": "1977",
+    "genre": "Disco",
+    "format": "12\" Single (45RPM)",
+    "barcode": "VNL-7NHLPD",
+    "coverImage": "covers/VNL-7NHLPD.jpg"
+  },
+  {
+    "artist": "Ferrante and Teicher",
+    "title": "Soundproof - The Sound Of Tomorrow Today!",
+    "year": "1956",
+    "genre": "Easy Listening",
+    "format": "LP",
+    "barcode": "VNL-SE845C",
+    "coverImage": "covers/VNL-SE845C.jpg"
+  },
+  {
+    "artist": "First Choice",
+    "title": "The Player",
+    "year": "1974",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-QS4QQG",
+    "coverImage": "covers/VNL-QS4QQG.jpg"
+  },
+  {
+    "artist": "Fist-O-Funk Orchestra",
+    "title": "New York Strut",
+    "year": "1977",
+    "genre": "Disco",
+    "format": "12\" Single (33RPM)",
+    "barcode": "VNL-XLCP3S",
+    "coverImage": "covers/VNL-XLCP3S.jpg"
+  },
+  {
+    "artist": "Flack, Roberta",
+    "title": "First Take (2 copies)",
+    "year": "1969",
+    "genre": "Funk / Soul",
+    "format": "LP",
+    "barcode": "VNL-M4MV4E",
+    "coverImage": "covers/VNL-M4MV4E.jpg"
+  },
+  {
+    "artist": "Flack, Roberta",
+    "title": "First Take",
+    "year": "1969",
+    "genre": "Funk / Soul",
+    "format": "LP",
+    "barcode": "VNL-G6E3XY",
+    "coverImage": "covers/VNL-G6E3XY.jpg"
+  },
+  {
+    "artist": "Flack, Roberta",
+    "title": "Quiet Fire",
+    "year": "1971",
+    "genre": "Funk / Soul",
+    "format": "LP",
+    "barcode": "VNL-6PY5FH",
+    "coverImage": "covers/VNL-6PY5FH.jpg"
+  },
+  {
+    "artist": "Flack, Roberta",
+    "title": "Roberta Flack",
+    "year": "1978",
+    "genre": "Funk / Soul",
+    "format": "LP",
+    "barcode": "VNL-7ZBLD3",
+    "coverImage": "covers/VNL-7ZBLD3.jpg"
+  },
+  {
+    "artist": "Foxy",
+    "title": "Get Off",
+    "year": "1978",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-TVH9F2",
+    "coverImage": "covers/VNL-TVH9F2.jpg"
+  },
+  {
+    "artist": "Gaynor, Gloria",
+    "title": "Never Can Say Goodbye",
+    "year": "1975",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-8J7DTC",
+    "coverImage": "covers/VNL-8J7DTC.jpg"
+  },
+  {
+    "artist": "Gaynor, Gloria",
+    "title": "Love tracks",
+    "year": "1978",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-2NL3M7",
+    "coverImage": "covers/VNL-2NL3M7.jpg"
+  },
+  {
+    "artist": "Gaynor, Gloria",
+    "title": "Park Avenue Sound",
+    "year": "1978",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-K8VUXP",
+    "coverImage": "covers/VNL-K8VUXP.jpg"
+  },
+  {
+    "artist": "Gaynor, Gloria",
+    "title": "Glorious",
+    "year": "1977",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-XHD6GN",
+    "coverImage": "covers/VNL-XHD6GN.jpg"
+  },
+  {
+    "artist": "Glass, Philip",
+    "title": "Music With Changing Parts",
+    "year": "1971",
+    "genre": "Contemporary",
+    "format": "LP",
+    "barcode": "VNL-ENH2P7",
+    "coverImage": "covers/VNL-ENH2P7.jpg"
+  },
+  {
+    "artist": "Glass, Philip",
+    "title": "Koyaanisqatsi",
+    "year": "1983",
+    "genre": "Contemporary",
+    "format": "LP",
+    "barcode": "VNL-ZAFQQC",
+    "coverImage": "covers/VNL-ZAFQQC.jpg"
+  },
+  {
+    "artist": "Glass, Philip",
+    "title": "The Photographer",
+    "year": "1983",
+    "genre": "Contemporary",
+    "format": "LP",
+    "barcode": "VNL-H2WRFJ",
+    "coverImage": "covers/VNL-H2WRFJ.jpg"
+  },
+  {
+    "artist": "Glass, Philip",
+    "title": "Mishima",
+    "year": "1985",
+    "genre": "Contemporary",
+    "format": "LP",
+    "barcode": "VNL-P5SWDU",
+    "coverImage": "covers/VNL-P5SWDU.jpg"
+  },
+  {
+    "artist": "Glass, Philip",
+    "title": "Akhnaten",
+    "year": "1987",
+    "genre": "Contemporary",
+    "format": "LP",
+    "barcode": "VNL-UUTQ42",
+    "coverImage": "covers/VNL-UUTQ42.jpg"
+  },
+  {
+    "artist": "Glass, Philip",
+    "title": "The Hours",
+    "year": "2002",
+    "genre": "Contemporary",
+    "format": "LP",
+    "barcode": "VNL-SUYQQ7",
+    "coverImage": "covers/VNL-SUYQQ7.jpg"
+  },
+  {
+    "artist": "Glass, Philip",
+    "title": "The Essential",
+    "year": "2012",
+    "genre": "Contemporary",
+    "format": "LP",
+    "barcode": "VNL-TW9JMY",
+    "coverImage": "covers/VNL-TW9JMY.jpg"
+  },
+  {
+    "artist": "Glass, Philip",
+    "title": "Piano Works - Vikingur Olafsson",
+    "year": "2017",
+    "genre": "Contemporary",
+    "format": "LP",
+    "barcode": "VNL-WZWDCB",
+    "coverImage": "covers/VNL-WZWDCB.jpg"
+  },
+  {
+    "artist": "Gleason, Jackie",
+    "title": "The Torch with the Blue Flame",
+    "year": "1958",
+    "genre": "Easy Listening",
+    "format": "LP",
+    "barcode": "VNL-2K6AES",
+    "coverImage": "covers/VNL-2K6AES.jpg"
+  },
+  {
+    "artist": "Haney, Mark; Seth",
+    "title": "Omnis Temporalis",
+    "year": "2022",
+    "genre": "Contemporary",
+    "format": "LP",
+    "barcode": "VNL-43TV9P",
+    "coverImage": "covers/VNL-43TV9P.jpg"
+  },
+  {
+    "artist": "Harold Melvin And The Blue Notes",
+    "title": "Wake Up Everybody",
+    "year": "1975",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-RVE9SD",
+    "coverImage": "covers/VNL-RVE9SD.jpg"
+  },
+  {
+    "artist": "Harold Melvin And The Blue Notes",
+    "title": "The Blue Album",
+    "year": "1979",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-J9LPC4",
+    "coverImage": "covers/VNL-J9LPC4.jpg"
+  },
+  {
+    "artist": "Heino",
+    "title": "Super Hits",
+    "year": "1977",
+    "genre": "Easy Listening",
+    "format": "LP",
+    "barcode": "VNL-5H56DY",
+    "coverImage": "covers/VNL-5H56DY.jpg"
+  },
+  {
+    "artist": "High Energy",
+    "title": "Turnin’ On",
+    "year": "1977",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-SPF5V3",
+    "coverImage": "covers/VNL-SPF5V3.jpg"
+  },
+  {
+    "artist": "Holmes, Leroy",
+    "title": "For A Few Dollars More",
+    "year": "1967",
+    "genre": "Soundtrack",
+    "format": "LP",
+    "barcode": "VNL-6D8EXU",
+    "coverImage": "covers/VNL-6D8EXU.jpg"
+  },
+  {
+    "artist": "Houellebecq, Michel",
+    "title": "Présence Humaine",
+    "year": "2000",
+    "genre": "Chanson",
+    "format": "LP",
+    "barcode": "VNL-5HJBAY",
+    "coverImage": "covers/VNL-5HJBAY.jpg"
+  },
+  {
+    "artist": "I Tirelli",
+    "title": "Verita '60",
+    "year": "1982",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-74E3MD",
+    "coverImage": "covers/VNL-74E3MD.jpg"
+  },
+  {
+    "artist": "Inner City Jam Band",
+    "title": "Inner City Jam (Mambonique) / Theme From Bob Newhart Show (Home To Emily)",
+    "year": "1977",
+    "genre": "Disco",
+    "format": "12\" Single (33RPM)",
+    "barcode": "VNL-U7F692",
+    "coverImage": "covers/VNL-U7F692.jpg"
+  },
+  {
+    "artist": "Inner City Jam Band",
+    "title": "Inner City Jam (Mambonique) / Theme From Bob Newhart Show (Home To Emily) (copy 2)",
+    "year": "1977",
+    "genre": "Disco",
+    "format": "12\" Single (33RPM)",
+    "barcode": "VNL-BD9MQ8"
+  },
+  {
+    "artist": "Jackson, Michael",
+    "title": "Thriller",
+    "year": "1982",
+    "genre": "Funk / Soul",
+    "format": "LP",
+    "barcode": "VNL-X3XQJW",
+    "coverImage": "covers/VNL-X3XQJW.jpg"
+  },
+  {
+    "artist": "Jackson, Michael",
+    "title": "Bad",
+    "year": "1987",
+    "genre": "Funk / Soul",
+    "format": "LP",
+    "barcode": "VNL-B87KPD",
+    "coverImage": "covers/VNL-B87KPD.jpg"
+  },
+  {
+    "artist": "Jankowski, Horst",
+    "title": "So What’s New?",
+    "year": "1966",
+    "genre": "Easy Listening",
+    "format": "LP",
+    "barcode": "VNL-9SLP4K",
+    "coverImage": "covers/VNL-9SLP4K.jpg"
+  },
+  {
+    "artist": "John, Elton",
+    "title": "Greatest Hits",
+    "year": "1975",
+    "genre": "Rock",
+    "format": "LP",
+    "barcode": "VNL-MGXCFH",
+    "coverImage": "covers/VNL-MGXCFH.jpg"
+  },
+  {
+    "artist": "Jones, Grace",
+    "title": "Portfolio",
+    "year": "1977",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-4L4U5Q",
+    "coverImage": "covers/VNL-4L4U5Q.jpg"
+  },
+  {
+    "artist": "Jones, Grace",
+    "title": "Island Life",
+    "year": "1985",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-57JSCE",
+    "coverImage": "covers/VNL-57JSCE.jpg"
+  },
+  {
+    "artist": "Jones, Grace",
+    "title": "Inside Story",
+    "year": "1986",
+    "genre": "Funk / Soul",
+    "format": "LP",
+    "barcode": "VNL-5GA8MZ",
+    "coverImage": "covers/VNL-5GA8MZ.jpg"
+  },
+  {
+    "artist": "Jones, Grace",
+    "title": "Love on Top of Love",
+    "year": "1989",
+    "genre": "Funk / Soul",
+    "format": "12\" Single (33RPM)",
+    "barcode": "VNL-LVKDLY",
+    "coverImage": "covers/VNL-LVKDLY.jpg"
+  },
+  {
+    "artist": "Kingsley, Gershon",
+    "title": "Switched-On Gershwin",
+    "year": "1972",
+    "genre": "Electronic",
+    "format": "LP",
+    "barcode": "VNL-8WUSTF",
+    "coverImage": "covers/VNL-8WUSTF.jpg"
+  },
+  {
+    "artist": "Kronos Quartet",
+    "title": "Music of Thelonious Monk",
+    "year": "1985",
+    "genre": "Jazz",
+    "format": "LP",
+    "barcode": "VNL-BQRC6T",
+    "coverImage": "covers/VNL-BQRC6T.jpg"
+  },
+  {
+    "artist": "Krupa, Gene",
+    "title": "Dance Parade",
+    "year": "1949",
+    "genre": "Jazz",
+    "format": "LP 10\"",
+    "barcode": "VNL-SAFJQL",
+    "coverImage": "covers/VNL-SAFJQL.jpg"
+  },
+  {
+    "artist": "Lennon, John",
+    "title": "Imagine",
+    "year": "1971",
+    "genre": "Rock",
+    "format": "LP",
+    "barcode": "VNL-AHTNZL",
+    "coverImage": "covers/VNL-AHTNZL.jpg"
+  },
+  {
+    "artist": "Liberace",
+    "title": "Liberace At The Piano",
+    "year": "1952",
+    "genre": "Classical",
+    "format": "LP 10\"",
+    "barcode": "VNL-GNVVAB",
+    "coverImage": "covers/VNL-GNVVAB.jpg"
+  },
+  {
+    "artist": "Little River Band",
+    "title": "First Under The Wire",
+    "year": "1979",
+    "genre": "Country",
+    "format": "LP",
+    "barcode": "VNL-ANAUUS",
+    "coverImage": "covers/VNL-ANAUUS.jpg"
+  },
+  {
+    "artist": "London, Julie",
+    "title": "Julie Is Her Name",
+    "year": "1955",
+    "genre": "Jazz",
+    "format": "LP",
+    "barcode": "VNL-GNDNS6",
+    "coverImage": "covers/VNL-GNDNS6.jpg"
+  },
+  {
+    "artist": "Loose Change",
+    "title": "Loose Change",
+    "year": "1979",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-2JHJVF",
+    "coverImage": "covers/VNL-2JHJVF.jpg"
+  },
+  {
+    "artist": "Lord Huron",
+    "title": "Lonesome Dreams",
+    "year": "2012",
+    "genre": "Folk",
+    "format": "LP",
+    "barcode": "VNL-KD2K6N",
+    "coverImage": "covers/VNL-KD2K6N.jpg"
+  },
+  {
+    "artist": "Lord Huron",
+    "title": "Strange Trails",
+    "year": "2015",
+    "genre": "Folk",
+    "format": "LP",
+    "barcode": "VNL-62AZSK",
+    "coverImage": "covers/VNL-62AZSK.jpg"
+  },
+  {
+    "artist": "Lord Huron",
+    "title": "The Cosmic Selector",
+    "year": "2025",
+    "genre": "Folk",
+    "format": "LP",
+    "barcode": "VNL-9KL4YM",
+    "coverImage": "covers/VNL-9KL4YM.jpg"
+  },
+  {
+    "artist": "Mabadu, Tunde",
+    "title": "Viva Disco",
+    "year": "1980",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-RKUHNZ",
+    "coverImage": "covers/VNL-RKUHNZ.jpg"
+  },
+  {
+    "artist": "Machine",
+    "title": "There But By The Grace Of God Go I",
+    "year": "1979",
+    "genre": "Disco",
+    "format": "12\" Single (33RPM)",
+    "barcode": "VNL-72EGH8",
+    "coverImage": "covers/VNL-72EGH8.jpg"
+  },
+  {
+    "artist": "Macho",
+    "title": "I’m a Man",
+    "year": "1978",
+    "genre": "Disco",
+    "format": "12\" Single (33RPM)",
+    "barcode": "VNL-BKRD43",
+    "coverImage": "covers/VNL-BKRD43.jpg"
+  },
+  {
+    "artist": "Mama Cass",
+    "title": "Mama's Big Ones",
+    "year": "1970",
+    "genre": "Folk",
+    "format": "LP",
+    "barcode": "VNL-P9EFPL",
+    "coverImage": "covers/VNL-P9EFPL.jpg"
+  },
+  {
+    "artist": "Mauriat, Paul",
+    "title": "The Soul Of Paul Mauriat",
+    "year": "1969",
+    "genre": "Easy Listening",
+    "format": "LP",
+    "barcode": "VNL-LRPCDM",
+    "coverImage": "covers/VNL-LRPCDM.jpg"
+  },
+  {
+    "artist": "Mauriat, Paul",
+    "title": "Theme From A Summer Place",
+    "year": "1972",
+    "genre": "Easy Listening",
+    "format": "LP",
+    "barcode": "VNL-BBR98V",
+    "coverImage": "covers/VNL-BBR98V.jpg"
+  },
+  {
+    "artist": "McCoy , Van",
+    "title": "The Hustle And Best Of Van McCoy",
+    "year": "1976",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-BUE6PF",
+    "coverImage": "covers/VNL-BUE6PF.jpg"
+  },
+  {
+    "artist": "McLean, Don",
+    "title": "American Pie",
+    "year": "1971",
+    "genre": "Rock",
+    "format": "LP",
+    "barcode": "VNL-G3PCAH",
+    "coverImage": "covers/VNL-G3PCAH.jpg"
+  },
+  {
+    "artist": "Meco",
+    "title": "Star Was And Other Galactic Funk",
+    "year": "1977",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-CYZQUE",
+    "coverImage": "covers/VNL-CYZQUE.jpg"
+  },
+  {
+    "artist": "Meco",
+    "title": "The Wizard of Oz",
+    "year": "1978",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-RV4UZZ",
+    "coverImage": "covers/VNL-RV4UZZ.jpg"
+  },
+  {
+    "artist": "Meco",
+    "title": "All The Big Band Classics",
+    "year": "1982",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-7JDD83",
+    "coverImage": "covers/VNL-7JDD83.jpg"
+  },
+  {
+    "artist": "Meco",
+    "title": "Theme From Close Encounters",
+    "year": "1977",
+    "genre": "Disco",
+    "format": "12\" Single (33RPM)",
+    "barcode": "VNL-NQBYXK",
+    "coverImage": "covers/VNL-NQBYXK.jpg"
+  },
+  {
+    "artist": "MFSB",
+    "title": "Love Is The Message",
+    "year": "1973",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-UCJLL2",
+    "coverImage": "covers/VNL-UCJLL2.jpg"
+  },
+  {
+    "artist": "MFSB",
+    "title": "Philadelphia Freedom",
+    "year": "1975",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-Z7JGBX",
+    "coverImage": "covers/VNL-Z7JGBX.jpg"
+  },
+  {
+    "artist": "MFSB",
+    "title": "Universal Love",
+    "year": "1975",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-6TVUDN",
+    "coverImage": "covers/VNL-6TVUDN.jpg"
+  },
+  {
+    "artist": "New Order",
+    "title": "Temptation",
+    "year": "1985",
+    "genre": "Synth Pop",
+    "format": "12\" Single (45RPM)",
+    "barcode": "VNL-592V5M",
+    "coverImage": "covers/VNL-592V5M.jpg"
+  },
+  {
+    "artist": "Norman Bass",
+    "title": "Clap Your Hands",
+    "year": "2002",
+    "genre": "House",
+    "format": "12\" Single (33RPM)",
+    "barcode": "VNL-DZGWB5",
+    "coverImage": "covers/VNL-DZGWB5.jpg"
+  },
+  {
+    "artist": "Obel, Agnes",
+    "title": "Philharmonics",
+    "year": "2010",
+    "genre": "Folk",
+    "format": "LP",
+    "barcode": "VNL-ST378L",
+    "coverImage": "covers/VNL-ST378L.jpg"
+  },
+  {
+    "artist": "Orbison, Roy",
+    "title": "The Ultimate Collection",
+    "year": "2016",
+    "genre": "Rock",
+    "format": "LP",
+    "barcode": "VNL-XWZNTH",
+    "coverImage": "covers/VNL-XWZNTH.jpg"
+  },
+  {
+    "artist": "Pet Shop Boys",
+    "title": "I Put A Spell On You",
+    "year": "1965",
+    "genre": "Jazz",
+    "format": "LP",
+    "barcode": "VNL-HTSQ2T"
+  },
+  {
+    "artist": "Pet Shop Boys",
+    "title": "Please",
+    "year": "1986",
+    "genre": "Synth Pop",
+    "type": "LP",
+    "format": "LP",
+    "barcode": "VNL-KAXJ4W",
+    "coverImage": "covers/VNL-KAXJ4W.jpg"
+  },
+  {
+    "artist": "Pet Shop Boys",
+    "title": "Actually",
+    "year": "1987",
+    "genre": "Synth Pop",
+    "format": "LP",
+    "barcode": "VNL-433VCL",
+    "coverImage": "covers/VNL-433VCL.jpg"
+  },
+  {
+    "artist": "Pet Shop Boys",
+    "title": "Introspective",
+    "year": "1988",
+    "genre": "Synth Pop",
+    "format": "LP",
+    "barcode": "VNL-VKG37L",
+    "coverImage": "covers/VNL-VKG37L.jpg"
+  },
+  {
+    "artist": "Pet Shop Boys",
+    "title": "Introspective (Multi Discs)",
+    "year": "1988",
+    "genre": "Synth Pop",
+    "format": "LP",
+    "barcode": "VNL-NCZABX"
+  },
+  {
+    "artist": "Pet Shop Boys",
+    "title": "Being Boring",
+    "year": "1990",
+    "genre": "Synth Pop",
+    "format": "12\" Single (45RPM)",
+    "barcode": "VNL-JT32PQ",
+    "coverImage": "covers/VNL-JT32PQ.jpg"
+  },
+  {
+    "artist": "Pet Shop Boys",
+    "title": "Behavior.",
+    "year": "1990",
+    "genre": "Synth Pop",
+    "format": "LP",
+    "barcode": "VNL-4B9X9G",
+    "coverImage": "covers/VNL-4B9X9G.jpg"
+  },
+  {
+    "artist": "Pet Shop Boys",
+    "title": "DjCulture/MusicForBoys",
+    "year": "1991",
+    "genre": "Synth Pop",
+    "format": "12\" Single (45RPM)",
+    "barcode": "VNL-2WZ33J",
+    "coverImage": "covers/VNL-2WZ33J.jpg"
+  },
+  {
+    "artist": "Pet Shop Boys",
+    "title": "Discography",
+    "year": "1991",
+    "genre": "Synth Pop",
+    "format": "12\" Single (45RPM)",
+    "barcode": "VNL-QWELBG",
+    "coverImage": "covers/VNL-QWELBG.jpg"
+  },
+  {
+    "artist": "Pet Shop Boys",
+    "title": "Very",
+    "year": "1993",
+    "genre": "Synth Pop",
+    "type": "LP",
+    "format": "LP",
+    "barcode": "VNL-6L8NKA",
+    "coverImage": "covers/VNL-6L8NKA.jpg"
+  },
+  {
+    "artist": "Pet Shop Boys",
+    "title": "Bilingual",
+    "year": "1995",
+    "genre": "Synth Pop",
+    "type": "LP",
+    "format": "LP",
+    "barcode": "VNL-VMYFLR",
+    "coverImage": "covers/VNL-VMYFLR.jpg"
+  },
+  {
+    "artist": "Pet Shop Boys",
+    "title": "Nightlife",
+    "year": "1999",
+    "genre": "Electronic",
+    "format": "LP",
+    "barcode": "VNL-WLL8WU",
+    "coverImage": "covers/VNL-WLL8WU.jpg"
+  },
+  {
+    "artist": "Pet Shop Boys",
+    "title": "Release",
+    "year": "2002",
+    "genre": "Synth Pop",
+    "format": "LP",
+    "barcode": "VNL-2H4F6G",
+    "coverImage": "covers/VNL-2H4F6G.jpg"
+  },
+  {
+    "artist": "Pet Shop Boys",
+    "title": "Electric",
+    "year": "2013",
+    "genre": "Synth Pop",
+    "format": "LP",
+    "barcode": "VNL-5Z8F8H",
+    "coverImage": "covers/VNL-5Z8F8H.jpg"
+  },
+  {
+    "artist": "Pet Shop Boys",
+    "title": "Super",
+    "year": "2016",
+    "genre": "Synth Pop",
+    "format": "LP",
+    "barcode": "VNL-3YCZYG",
+    "coverImage": "covers/VNL-3YCZYG.jpg"
+  },
+  {
+    "artist": "Pet Shop Boys",
+    "title": "Elysium",
+    "year": "2017",
+    "genre": "Synth Pop",
+    "format": "LP",
+    "barcode": "VNL-M3Q5J2",
+    "coverImage": "covers/VNL-M3Q5J2.jpg"
+  },
+  {
+    "artist": "Pet Shop Boys",
+    "title": "Hotspot",
+    "year": "2020",
+    "genre": "Synth Pop",
+    "format": "LP",
+    "barcode": "VNL-JYTE8N",
+    "coverImage": "covers/VNL-JYTE8N.jpg"
+  },
+  {
+    "artist": "Pet Shop Boys",
+    "title": "Nonetheless",
+    "year": "2024",
+    "genre": "Synth Pop",
+    "format": "LP",
+    "barcode": "VNL-6JDS2R",
+    "coverImage": "covers/VNL-6JDS2R.jpg"
+  },
+  {
+    "artist": "Pet Shop Boys",
+    "title": "West End Girl",
+    "year": "1985",
+    "genre": "Synth Pop",
+    "format": "12\" Single (45RPM)",
+    "barcode": "VNL-QK8EHB",
+    "coverImage": "covers/VNL-QK8EHB.jpg"
+  },
+  {
+    "artist": "Pet Shop Boys",
+    "title": "Actually (copy 2)",
+    "year": "1987",
+    "genre": "Synth Pop",
+    "format": "LP",
+    "barcode": "VNL-3439SX",
+    "coverImage": "covers/VNL-3439SX.jpg"
+  },
+  {
+    "artist": "Pet Shop Boys",
+    "title": "A Red Letter Day",
+    "year": "1997",
+    "genre": "Synth Pop",
+    "format": "12\" Single (33RPM)",
+    "barcode": "VNL-GT7KZJ",
+    "coverImage": "covers/VNL-GT7KZJ.jpg"
+  },
+  {
+    "artist": "Pet Shop Boys",
+    "title": "Loves Come Quickly",
+    "year": "1986",
+    "genre": "Synth Pop",
+    "format": "12\" Single (33RPM)",
+    "barcode": "VNL-C6C5H2",
+    "coverImage": "covers/VNL-C6C5H2.jpg"
+  },
+  {
+    "artist": "Pet Shop Boys",
+    "title": "Opportunities",
+    "year": "1986",
+    "genre": "Synth Pop",
+    "format": "12\" Single (33RPM)",
+    "barcode": "VNL-VV8DZE",
+    "coverImage": "covers/VNL-VV8DZE.jpg"
+  },
+  {
+    "artist": "Pet Shop Boys",
+    "title": "What Have I Done To Deserve This? With Dusty Springfield",
+    "year": "1987",
+    "genre": "Synth Pop",
+    "format": "12\" Single (33RPM)",
+    "barcode": "VNL-3EWDD2",
+    "coverImage": "covers/VNL-3EWDD2.jpg"
+  },
+  {
+    "artist": "Pet Shop Boys",
+    "title": "DJ Culture",
+    "year": "1991",
+    "genre": "Synth Pop",
+    "format": "12\" Single (33RPM)",
+    "barcode": "VNL-FCN7L9",
+    "coverImage": "covers/VNL-FCN7L9.jpg"
+  },
+  {
+    "artist": "Pet Shop Boys",
+    "title": "How Can You Expect To Be Taken Seriously",
+    "year": "1991",
+    "genre": "Synth Pop",
+    "format": "12\" Single (33RPM)",
+    "barcode": "VNL-WSRU3D",
+    "coverImage": "covers/VNL-WSRU3D.jpg"
+  },
+  {
+    "artist": "Pet Shop Boys",
+    "title": "Was It Worth It?",
+    "year": "1991",
+    "genre": "Synth Pop",
+    "format": "12\" Single (33RPM)",
+    "barcode": "VNL-YGV4JK",
+    "coverImage": "covers/VNL-YGV4JK.jpg"
+  },
+  {
+    "artist": "Pet Shop Boys",
+    "title": "Go West",
+    "year": "1993",
+    "genre": "Synth Pop",
+    "format": "12\" Single (33RPM)",
+    "barcode": "VNL-PB7YS8",
+    "coverImage": "covers/VNL-PB7YS8.jpg"
+  },
+  {
+    "artist": "Pet Shop Boys",
+    "title": "I would’n Normally Do This Kind Of Things (2/2)",
+    "year": "1993",
+    "genre": "Synth Pop",
+    "format": "12\" Single (33RPM)",
+    "barcode": "VNL-V3YPJZ"
+  },
+  {
+    "artist": "Pet Shop Boys",
+    "title": "I would’n Normally Do This Kind Of Things (1/2)",
+    "year": "1993",
+    "genre": "Synth Pop",
+    "format": "12\" Single (33RPM)",
+    "barcode": "VNL-RL258G"
+  },
+  {
+    "artist": "Pet Shop Boys",
+    "title": "Somewhere (Remixed)",
+    "year": "1997",
+    "genre": "Synth Pop",
+    "format": "12\" Single (33RPM)",
+    "barcode": "VNL-V948XG",
+    "coverImage": "covers/VNL-V948XG.jpg"
+  },
+  {
+    "artist": "Pet Shop Boys",
+    "title": "Se A Vida É (That's The Way Life Is) And To Step Aside (The Remixes)",
+    "year": "1997",
+    "genre": "Synth Pop",
+    "format": "12\" Single (33RPM)",
+    "barcode": "VNL-R6E873",
+    "coverImage": "covers/VNL-R6E873.jpg"
+  },
+  {
+    "artist": "Piaf, Edith",
+    "title": "Adieu Edith Piaf Little Sparrow",
+    "year": "1964",
+    "genre": "Chanson",
+    "format": "LP",
+    "barcode": "VNL-D7GG2Z",
+    "coverImage": "covers/VNL-D7GG2Z.jpg"
+  },
+  {
+    "artist": "Pointer, Noel",
+    "title": "Living For The City",
+    "year": "1977",
+    "genre": "Funk / Soul",
+    "format": "12\" Single (45RPM)",
+    "barcode": "VNL-V498F8",
+    "coverImage": "covers/VNL-V498F8.jpg"
+  },
+  {
+    "artist": "Puccini",
+    "title": "Madama Butterfly",
+    "year": "1978",
+    "genre": "Classical",
+    "format": "LP",
+    "barcode": "VNL-5XA5AA",
+    "coverImage": "covers/VNL-5XA5AA.jpg"
+  },
+  {
+    "artist": "Purcell, Henry",
+    "title": "Dido and Aeneas",
+    "year": "1985",
+    "genre": "Classical",
+    "format": "LP",
+    "barcode": "VNL-U9EA7M",
+    "coverImage": "covers/VNL-U9EA7M.jpg"
+  },
+  {
+    "artist": "Rhythm Heritage",
+    "title": "Disco-Fied",
+    "year": "1976",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-JKZS9E",
+    "coverImage": "covers/VNL-JKZS9E.jpg"
+  },
+  {
+    "artist": "Ross, Diana; Gaye, Marvin",
+    "title": "Diana & Marvin",
+    "year": "1973",
+    "genre": "Funk / Soul",
+    "format": "LP",
+    "barcode": "VNL-DGYJE3",
+    "coverImage": "covers/VNL-DGYJE3.jpg"
+  },
+  {
+    "artist": "Ross, Diana; The Supremes",
+    "title": "Greatest Hits",
+    "year": "1967",
+    "genre": "Funk / Soul",
+    "format": "LP",
+    "barcode": "VNL-5FPUZW",
+    "coverImage": "covers/VNL-5FPUZW.jpg"
+  },
+  {
+    "artist": "Ross, Diana; The Supremes",
+    "title": "Anthology",
+    "year": "1974",
+    "genre": "Funk / Soul",
+    "format": "LP",
+    "barcode": "VNL-N89VZX",
+    "coverImage": "covers/VNL-N89VZX.jpg"
+  },
+  {
+    "artist": "Santa Esmeralda",
+    "title": "Another Cha-Cha",
+    "year": "1979",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-7DSJ2D",
+    "coverImage": "covers/VNL-7DSJ2D.jpg"
+  },
+  {
+    "artist": "Schubert, Franz",
+    "title": "Quintet in A, Op.114",
+    "year": "1973",
+    "genre": "Classical",
+    "format": "LP",
+    "barcode": "VNL-7JCTMW",
+    "coverImage": "covers/VNL-7JCTMW.jpg"
+  },
+  {
+    "artist": "Shostakovitch, Dimitri",
+    "title": "Piano Concerto No. 1 Opus 35 & No. 2 Opus 102",
+    "year": "1961",
+    "genre": "Classical",
+    "format": "LP",
+    "barcode": "VNL-2K467Q"
+  },
+  {
+    "artist": "Shostakovitch, Dimitri",
+    "title": "Symphony No.11 In G Minor",
+    "year": "1957",
+    "genre": "Classical",
+    "format": "LP",
+    "barcode": "VNL-K69YUF"
+  },
+  {
+    "artist": "Simon And Garfunkel",
+    "title": "Greatest Hits",
+    "year": "1972",
+    "genre": "Folk",
+    "format": "LP",
+    "barcode": "VNL-KWPN79",
+    "coverImage": "covers/VNL-KWPN79.jpg"
+  },
+  {
+    "artist": "Simon, Paul",
+    "title": "There Goes Rhymin’ Simon",
+    "year": "1973",
+    "genre": "Rock",
+    "format": "LP",
+    "barcode": "VNL-K9MGEL",
+    "coverImage": "covers/VNL-K9MGEL.jpg"
+  },
+  {
+    "artist": "Simone, Nina",
+    "title": "At The Village Gate",
+    "year": "1962",
+    "genre": "Jazz",
+    "format": "LP",
+    "barcode": "VNL-RZWDPB",
+    "coverImage": "covers/VNL-RZWDPB.jpg"
+  },
+  {
+    "artist": "Simone, Nina",
+    "title": "Here Comes the Sun",
+    "year": "1971",
+    "genre": "Jazz",
+    "format": "LP",
+    "barcode": "VNL-EFUJKU",
+    "coverImage": "covers/VNL-EFUJKU.jpg"
+  },
+  {
+    "artist": "Simone, Nina",
+    "title": "Live in Europe",
+    "year": "1972",
+    "genre": "Jazz",
+    "format": "LP",
+    "barcode": "VNL-SHCAKV",
+    "coverImage": "covers/VNL-SHCAKV.jpg"
+  },
+  {
+    "artist": "Sister Sledge",
+    "title": "We Are Family",
+    "year": "1979",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-3AQ6CW",
+    "coverImage": "covers/VNL-3AQ6CW.jpg"
+  },
+  {
+    "artist": "Smith, Elliot",
+    "title": "Roman Candle",
+    "year": "1994",
+    "genre": "Rock",
+    "format": "LP",
+    "barcode": "VNL-9YM8YM",
+    "coverImage": "covers/VNL-9YM8YM.jpg"
+  },
+  {
+    "artist": "Stevens, Cat",
+    "title": "New Master / Father and Son",
+    "year": "1971",
+    "genre": "Folk",
+    "format": "LP",
+    "barcode": "VNL-LMPJRU",
+    "coverImage": "covers/VNL-LMPJRU.jpg"
+  },
+  {
+    "artist": "Stevens, Cat",
+    "title": "Teaser And The Firecat",
+    "year": "1971",
+    "genre": "Folk",
+    "format": "LP",
+    "barcode": "VNL-BW8TRW",
+    "coverImage": "covers/VNL-BW8TRW.jpg"
+  },
+  {
+    "artist": "Stevens, Cat",
+    "title": "Catch Bull At Four",
+    "year": "1972",
+    "genre": "Folk",
+    "format": "LP",
+    "barcode": "VNL-4D3J3G",
+    "coverImage": "covers/VNL-4D3J3G.jpg"
+  },
+  {
+    "artist": "Stevens, Cat",
+    "title": "Buddha And The Chocolate Box",
+    "year": "1974",
+    "genre": "Folk",
+    "format": "LP",
+    "barcode": "VNL-NRJJK8",
+    "coverImage": "covers/VNL-NRJJK8.jpg"
+  },
+  {
+    "artist": "Stevens, Cat",
+    "title": "Numbers",
+    "year": "1975",
+    "genre": "Folk",
+    "format": "LP",
+    "barcode": "VNL-XG2WPG",
+    "coverImage": "covers/VNL-XG2WPG.jpg"
+  },
+  {
+    "artist": "Stevens, Cat",
+    "title": "The Very Best Of Cat Stevens",
+    "year": "1990",
+    "genre": "Folk",
+    "format": "LP",
+    "barcode": "VNL-3PATTR",
+    "coverImage": "covers/VNL-3PATTR.jpg"
+  },
+  {
+    "artist": "Stevens, Cat",
+    "title": "Back to Earth",
+    "year": "1978",
+    "genre": "Folk",
+    "format": "LP",
+    "barcode": "VNL-KGC87Y",
+    "coverImage": "covers/VNL-KGC87Y.jpg"
+  },
+  {
+    "artist": "Stevens, Cat",
+    "title": "Mona Bone Jakon",
+    "year": "1970",
+    "genre": "Folk",
+    "format": "LP",
+    "barcode": "VNL-TKQXYF",
+    "coverImage": "covers/VNL-TKQXYF.jpg"
+  },
+  {
+    "artist": "Stevens, Cat",
+    "title": "Foreigner",
+    "year": "1973",
+    "genre": "Folk",
+    "format": "LP",
+    "barcode": "VNL-TC75P8",
+    "coverImage": "covers/VNL-TC75P8.jpg"
+  },
+  {
+    "artist": "Stevens, Cat",
+    "title": "Buddha And The Chocolate Box (copy 2)",
+    "year": "1974",
+    "genre": "Folk",
+    "format": "LP",
+    "barcode": "VNL-XTJ95Q"
+  },
+  {
+    "artist": "Stevens, Cat",
+    "title": "New Masters",
+    "year": "1967",
+    "genre": "Folk",
+    "format": "LP",
+    "barcode": "VNL-UDYJYN",
+    "coverImage": "covers/VNL-UDYJYN.jpg"
+  },
+  {
+    "artist": "Stewart, Al",
+    "title": "Year of the Cat",
+    "year": "1976",
+    "genre": "Rock",
+    "format": "LP",
+    "barcode": "VNL-QPB227",
+    "coverImage": "covers/VNL-QPB227.jpg"
+  },
+  {
+    "artist": "Strauss, Richard",
+    "title": "Four Last Songs (Schwarzkopf)",
+    "year": "1966",
+    "genre": "Classical",
+    "format": "LP",
+    "barcode": "VNL-3FE9G2",
+    "coverImage": "covers/VNL-3FE9G2.jpg"
+  },
+  {
+    "artist": "Strauss, Richard",
+    "title": "Capriccio",
+    "year": "1972",
+    "genre": "Classical",
+    "format": "LP",
+    "barcode": "VNL-3M2VR4",
+    "coverImage": "covers/VNL-3M2VR4.jpg"
+  },
+  {
+    "artist": "Strauss, Richard",
+    "title": "Ein Heldenleben",
+    "year": "1978",
+    "genre": "Classical",
+    "format": "LP",
+    "barcode": "VNL-BQJRWX",
+    "coverImage": "covers/VNL-BQJRWX.jpg"
+  },
+  {
+    "artist": "Strauss, Richard",
+    "title": "Four Last Songs (Norman)",
+    "year": "1983",
+    "genre": "Classical",
+    "format": "LP",
+    "barcode": "VNL-PCEEHK",
+    "coverImage": "covers/VNL-PCEEHK.jpg"
+  },
+  {
+    "artist": "Stravinsky, Igor",
+    "title": "Apollon Musagète",
+    "year": "1950",
+    "genre": "Classical",
+    "format": "LP",
+    "barcode": "VNL-FXBJRL",
+    "coverImage": "covers/VNL-FXBJRL.jpg"
+  },
+  {
+    "artist": "Stravinsky, Igor",
+    "title": "The Firebird/Symphony in 3 Movements",
+    "year": "1980",
+    "genre": "Classical",
+    "format": "LP",
+    "barcode": "VNL-NW4K8R",
+    "coverImage": "covers/VNL-NW4K8R.jpg"
+  },
+  {
+    "artist": "Sumac, Yma",
+    "title": "Voice of the Xtabay",
+    "year": "1950",
+    "genre": "Easy Listening",
+    "format": "LP",
+    "barcode": "VNL-9J4EU7",
+    "coverImage": "covers/VNL-9J4EU7.jpg"
+  },
+  {
+    "artist": "Sumac, Yma",
+    "title": "Mambo",
+    "year": "1954",
+    "genre": "Easy Listening",
+    "format": "LP 10\"",
+    "barcode": "VNL-9EPCYS",
+    "coverImage": "covers/VNL-9EPCYS.jpg"
+  },
+  {
+    "artist": "Summer, Donna",
+    "title": "A Love Trilogy",
+    "year": "1976",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-ZCYYPZ",
+    "coverImage": "covers/VNL-ZCYYPZ.jpg"
+  },
+  {
+    "artist": "Summer, Donna",
+    "title": "Four Season of Love",
+    "year": "1976",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-Q2LT4N",
+    "coverImage": "covers/VNL-Q2LT4N.jpg"
+  },
+  {
+    "artist": "Summer, Donna",
+    "title": "Once Upon a Time...",
+    "year": "1977",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-DT5VB6",
+    "coverImage": "covers/VNL-DT5VB6.jpg"
+  },
+  {
+    "artist": "Summer, Donna",
+    "title": "Stuff",
+    "year": "1977",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-UDYZ4Z",
+    "coverImage": "covers/VNL-UDYZ4Z.jpg"
+  },
+  {
+    "artist": "Summer, Donna",
+    "title": "I Remember Yesterday",
+    "year": "1977",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-PQ4B9M",
+    "coverImage": "covers/VNL-PQ4B9M.jpg"
+  },
+  {
+    "artist": "Summer, Donna",
+    "title": "Once Upon a Time… (Copy 2)",
+    "year": "1977",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-PYAWSU"
+  },
+  {
+    "artist": "Summer, Donna",
+    "title": "Live And More",
+    "year": "1978",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-FFS4HS",
+    "coverImage": "covers/VNL-FFS4HS.jpg"
+  },
+  {
+    "artist": "Summer, Donna",
+    "title": "Walk Away",
+    "year": "1980",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-288XGE",
+    "coverImage": "covers/VNL-288XGE.jpg"
+  },
+  {
+    "artist": "Summer, Donna",
+    "title": "Donna Summer",
+    "year": "1982",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-FRYUZ9",
+    "coverImage": "covers/VNL-FRYUZ9.jpg"
+  },
+  {
+    "artist": "Summer, Donna",
+    "title": "She Works Hard For The Money",
+    "year": "1983",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-8HC987",
+    "coverImage": "covers/VNL-8HC987.jpg"
+  },
+  {
+    "artist": "Summer, Donna",
+    "title": "Mac Arthur Park Suite",
+    "year": "1978",
+    "genre": "Disco",
+    "format": "12\" Single (45RPM)",
+    "barcode": "VNL-N2JJQE",
+    "coverImage": "covers/VNL-N2JJQE.jpg"
+  },
+  {
+    "artist": "Sylvester",
+    "title": "Sylvester",
+    "year": "1977",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-G259YY",
+    "coverImage": "covers/VNL-G259YY.jpg"
+  },
+  {
+    "artist": "Sylvester",
+    "title": "Sylvester (Copy 2)",
+    "year": "1977",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-B9GYVU",
+    "coverImage": "covers/VNL-B9GYVU.jpg"
+  },
+  {
+    "artist": "Sylvester",
+    "title": "Steps II",
+    "year": "1978",
+    "genre": "Disco",
+    "type": "LP",
+    "format": "LP",
+    "barcode": "VNL-NKG43W",
+    "coverImage": "covers/VNL-NKG43W.jpg"
+  },
+  {
+    "artist": "Sylvester",
+    "title": "Step II",
+    "year": "1978",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-XR9FSK",
+    "coverImage": "covers/VNL-XR9FSK.jpg"
+  },
+  {
+    "artist": "Sylvester",
+    "title": "Stars",
+    "year": "1979",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-2CRMQD",
+    "coverImage": "covers/VNL-2CRMQD.jpg"
+  },
+  {
+    "artist": "Sylvester",
+    "title": "Stars (Special Edition)",
+    "year": "1979",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-W4V3UN",
+    "coverImage": "covers/VNL-W4V3UN.jpg"
+  },
+  {
+    "artist": "Sylvester",
+    "title": "Someone Like You",
+    "year": "1986",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-26DAMS",
+    "coverImage": "covers/VNL-26DAMS.jpg"
+  },
+  {
+    "artist": "Sylvester",
+    "title": "Someone Like you (Copy 2)",
+    "year": "1986",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-9ZYCDL"
+  },
+  {
+    "artist": "Sylvester",
+    "title": "Private Recordings - August 1970",
+    "year": "2023",
+    "genre": "Jazz",
+    "format": "LP",
+    "barcode": "VNL-923PPV",
+    "coverImage": "covers/VNL-923PPV.jpg"
+  },
+  {
+    "artist": "Sylvester",
+    "title": "Live At The Opera House",
+    "year": "2024",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-X5W25N",
+    "coverImage": "covers/VNL-X5W25N.jpg"
+  },
+  {
+    "artist": "Sylvester",
+    "title": "I Who Have Nothing",
+    "year": "1979",
+    "genre": "Disco",
+    "format": "12\" Single (33RPM)",
+    "barcode": "VNL-F8K3HH",
+    "coverImage": "covers/VNL-F8K3HH.jpg"
+  },
+  {
+    "artist": "T.S. Eliot",
+    "title": "Old Possum’s Book of Practical Cats",
+    "year": "",
+    "genre": "Poetry",
+    "format": "LP",
+    "barcode": "VNL-Y8PRMY",
+    "coverImage": "covers/VNL-Y8PRMY.jpg"
+  },
+  {
+    "artist": "The 5th Dimension",
+    "title": "The Age of Aquarius",
+    "year": "1969",
+    "genre": "Funk / Soul",
+    "format": "LP",
+    "barcode": "VNL-HMYE7S",
+    "coverImage": "covers/VNL-HMYE7S.jpg"
+  },
+  {
+    "artist": "The Art Tatum Trio",
+    "title": "The Art Tatum Trio",
+    "year": "1953",
+    "genre": "Jazz",
+    "format": "LP 10\"",
+    "barcode": "VNL-JNKSFE",
+    "coverImage": "covers/VNL-JNKSFE.jpg"
+  },
+  {
+    "artist": "The Art Van Damme Quintette",
+    "title": "Cocktail Capers",
+    "year": "1950",
+    "genre": "Easy Listening",
+    "format": "LP 10\"",
+    "barcode": "VNL-Z65WZP",
+    "coverImage": "covers/VNL-Z65WZP.jpg"
+  },
+  {
+    "artist": "The Bee Gees",
+    "title": "Saturday Night Fever",
+    "year": "1977",
+    "genre": "Soundtrack",
+    "format": "LP",
+    "barcode": "VNL-CKFNHF",
+    "coverImage": "covers/VNL-CKFNHF.jpg"
+  },
+  {
+    "artist": "The Chiffons",
+    "title": "Everything You Always Wanted To Hear By The Chiffons But Couldn't Get",
+    "year": "1975",
+    "genre": "Funk / Soul",
+    "format": "LP",
+    "barcode": "VNL-HUCUMP",
+    "coverImage": "covers/VNL-HUCUMP.jpg"
+  },
+  {
+    "artist": "The Countrymen",
+    "title": "This World Can’t Stand Long",
+    "year": "",
+    "genre": "Country",
+    "format": "LP",
+    "barcode": "VNL-WG8XVA"
+  },
+  {
+    "artist": "The Impressions",
+    "title": "This Is My Country",
+    "year": "1968",
+    "genre": "Funk / Soul",
+    "format": "LP",
+    "barcode": "VNL-2WV85T",
+    "coverImage": "covers/VNL-2WV85T.jpg"
+  },
+  {
+    "artist": "The Impressions",
+    "title": "Preacher Man",
+    "year": "1973",
+    "genre": "Funk / Soul",
+    "format": "LP",
+    "barcode": "VNL-VVLB3S",
+    "coverImage": "covers/VNL-VVLB3S.jpg"
+  },
+  {
+    "artist": "The Moody Blues",
+    "title": "Voices in the Sky",
+    "year": "1984",
+    "genre": "Rock",
+    "format": "LP",
+    "barcode": "VNL-KMDEEZ",
+    "coverImage": "covers/VNL-KMDEEZ.jpg"
+  },
+  {
+    "artist": "The New Black Eagle Jazz Band",
+    "title": "The New Black Eagle Jazz Band",
+    "year": "1972",
+    "genre": "Jazz",
+    "format": "LP",
+    "barcode": "VNL-DMERX3",
+    "coverImage": "covers/VNL-DMERX3.jpg"
+  },
+  {
+    "artist": "The New York Disco Orchestra",
+    "title": "Reverie",
+    "year": "1978",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-HMUAFU",
+    "coverImage": "covers/VNL-HMUAFU.jpg"
+  },
+  {
+    "artist": "The Pointer Sisters",
+    "title": "The Pointer Sisters",
+    "year": "1973",
+    "genre": "Funk / Soul",
+    "format": "LP",
+    "barcode": "VNL-3XW86K",
+    "coverImage": "covers/VNL-3XW86K.jpg"
+  },
+  {
+    "artist": "The Pointer Sisters",
+    "title": "Live At The Opera House",
+    "year": "1974",
+    "genre": "Funk / Soul",
+    "format": "LP",
+    "barcode": "VNL-JLBTRM",
+    "coverImage": "covers/VNL-JLBTRM.jpg"
+  },
+  {
+    "artist": "The Pointer Sisters",
+    "title": "Steppin'",
+    "year": "1975",
+    "genre": "Funk / Soul",
+    "format": "LP",
+    "barcode": "VNL-LVL26H",
+    "coverImage": "covers/VNL-LVL26H.jpg"
+  },
+  {
+    "artist": "The Pointer Sisters",
+    "title": "Energy",
+    "year": "1978",
+    "genre": "Funk / Soul",
+    "format": "LP",
+    "barcode": "VNL-FRX4LB",
+    "coverImage": "covers/VNL-FRX4LB.jpg"
+  },
+  {
+    "artist": "The Pointer Sisters",
+    "title": "Contact",
+    "year": "1985",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-S7WF3C",
+    "coverImage": "covers/VNL-S7WF3C.jpg"
+  },
+  {
+    "artist": "The Real Thing",
+    "title": "Can you Feel The Force?",
+    "year": "1978",
+    "genre": "Disco",
+    "format": "12\" Single (33RPM)",
+    "barcode": "VNL-2Y67FN",
+    "coverImage": "covers/VNL-2Y67FN.jpg"
+  },
+  {
+    "artist": "The Rocket Boys",
+    "title": "Build Anyway",
+    "year": "2012",
+    "genre": "Rock",
+    "format": "LP",
+    "barcode": "VNL-7DUSN8"
+  },
+  {
+    "artist": "The Smiths",
+    "title": "Meat Is Murder",
+    "year": "1985",
+    "genre": "Rock",
+    "format": "LP",
+    "barcode": "VNL-A5UG7T",
+    "coverImage": "covers/VNL-A5UG7T.jpg"
+  },
+  {
+    "artist": "The Smiths",
+    "title": "The Queen Is Dead",
+    "year": "1986",
+    "genre": "Rock",
+    "format": "LP",
+    "barcode": "VNL-MQWEJY",
+    "coverImage": "covers/VNL-MQWEJY.jpg"
+  },
+  {
+    "artist": "The Somerset Strings",
+    "title": "Music for Washing and Ironing",
+    "year": "1958",
+    "genre": "Easy Listening",
+    "format": "LP",
+    "barcode": "VNL-35ZRL5",
+    "coverImage": "covers/VNL-35ZRL5.jpg"
+  },
+  {
+    "artist": "The Springer Brothers",
+    "title": "Dueling Banjos",
+    "year": "1973",
+    "genre": "Folk",
+    "format": "LP",
+    "barcode": "VNL-STU3N4",
+    "coverImage": "covers/VNL-STU3N4.jpg"
+  },
+  {
+    "artist": "The Supremes and The Four Tops",
+    "title": "The Magnificent 7",
+    "year": "1970",
+    "genre": "Funk / Soul",
+    "format": "LP",
+    "barcode": "VNL-MJZM9A",
+    "coverImage": "covers/VNL-MJZM9A.jpg"
+  },
+  {
+    "artist": "The Surfaris",
+    "title": "Wipe Out",
+    "year": "1963",
+    "genre": "Rock",
+    "format": "LP",
+    "barcode": "VNL-HGKFG9",
+    "coverImage": "covers/VNL-HGKFG9.jpg"
+  },
+  {
+    "artist": "The Traveling Wilburys",
+    "title": "Traveling Wilburys",
+    "year": "1989",
+    "genre": "Rock",
+    "format": "LP",
+    "barcode": "VNL-PDDKKQ",
+    "coverImage": "covers/VNL-PDDKKQ.jpg"
+  },
+  {
+    "artist": "Tuomo & Markus",
+    "title": "Music for the Road",
+    "year": "2025",
+    "genre": "Jazz",
+    "format": "LP",
+    "barcode": "VNL-BTLXY2"
+  },
+  {
+    "artist": "Two Tons O'Fun",
+    "title": "Two Tons O'Fun",
+    "year": "1980",
+    "genre": "Funk / Soul",
+    "format": "LP",
+    "barcode": "VNL-TRWDGM",
+    "coverImage": "covers/VNL-TRWDGM.jpg"
+  },
+  {
+    "artist": "Vangelis",
+    "title": "Heaven and Hell",
+    "year": "1975",
+    "genre": "Electronic",
+    "format": "LP",
+    "barcode": "VNL-AAT75H",
+    "coverImage": "covers/VNL-AAT75H.jpg"
+  },
+  {
+    "artist": "Vangelis",
+    "title": "Chariots of Fire",
+    "year": "1981",
+    "genre": "Electronic",
+    "format": "LP",
+    "barcode": "VNL-7L46CM",
+    "coverImage": "covers/VNL-7L46CM.jpg"
+  },
+  {
+    "artist": "Varèse , Edgard",
+    "title": "Music Of Varèse",
+    "year": "1971",
+    "genre": "Contemporary",
+    "format": "LP",
+    "barcode": "VNL-2CEJ7R",
+    "coverImage": "covers/VNL-2CEJ7R.jpg"
+  },
+  {
+    "artist": "Various",
+    "title": "2001 A Space Odyssey",
+    "year": "1968",
+    "genre": "Soundtrack",
+    "format": "LP",
+    "barcode": "VNL-6F4C7N",
+    "coverImage": "covers/VNL-6F4C7N.jpg"
+  },
+  {
+    "artist": "Various",
+    "title": "Cabaret",
+    "year": "1972",
+    "genre": "Soundtrack",
+    "format": "LP",
+    "barcode": "VNL-QF2PZP",
+    "coverImage": "covers/VNL-QF2PZP.jpg"
+  },
+  {
+    "artist": "Various",
+    "title": "Thank God It’s Friday",
+    "year": "1978",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-QRL7XB",
+    "coverImage": "covers/VNL-QRL7XB.jpg"
+  },
+  {
+    "artist": "Various",
+    "title": "ManHattan",
+    "year": "1979",
+    "genre": "Soundtrack",
+    "format": "LP",
+    "barcode": "VNL-GMS2NF",
+    "coverImage": "covers/VNL-GMS2NF.jpg"
+  },
+  {
+    "artist": "Various",
+    "title": "A Night At Studio 54",
+    "year": "1979",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-LUUJB7",
+    "coverImage": "covers/VNL-LUUJB7.jpg"
+  },
+  {
+    "artist": "Various",
+    "title": "Volume 11 Program 3",
+    "year": "1989",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-ZFBJN9",
+    "coverImage": "covers/VNL-ZFBJN9.jpg"
+  },
+  {
+    "artist": "Various",
+    "title": "Sweet Disco",
+    "year": "2018",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-P6SPBW",
+    "coverImage": "covers/VNL-P6SPBW.jpg"
+  },
+  {
+    "artist": "Various",
+    "title": "Disco Diggin'",
+    "year": "2022",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-7VJT25",
+    "coverImage": "covers/VNL-7VJT25.jpg"
+  },
+  {
+    "artist": "Various",
+    "title": "Wamono Disco",
+    "year": "2024",
+    "genre": "Disco",
+    "type": "LP",
+    "format": "LP",
+    "barcode": "VNL-ZTJ426",
+    "coverImage": "covers/VNL-ZTJ426.jpg"
+  },
+  {
+    "artist": "Various",
+    "title": "The Phoenician Scheme",
+    "year": "2025",
+    "genre": "Soundtrack",
+    "type": "LP",
+    "format": "LP",
+    "barcode": "VNL-KTG7E7",
+    "coverImage": "covers/VNL-KTG7E7.jpg"
+  },
+  {
+    "artist": "Various",
+    "title": "K-Pop Demon Hunters",
+    "year": "2025",
+    "genre": "Soundtrack",
+    "format": "LP",
+    "barcode": "VNL-KXKHGE",
+    "coverImage": "covers/VNL-KXKHGE.jpg"
+  },
+  {
+    "artist": "Various",
+    "title": "Disco - I’m coming Out",
+    "year": "2025",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-BFMYGV",
+    "coverImage": "covers/VNL-BFMYGV.jpg"
+  },
+  {
+    "artist": "Various",
+    "title": "A Clockwork Orange",
+    "year": "1972",
+    "genre": "Soundtrack",
+    "format": "LP",
+    "barcode": "VNL-JP96HV",
+    "coverImage": "covers/VNL-JP96HV.jpg"
+  },
+  {
+    "artist": "Various",
+    "title": "Ziegfield Follies of 1919",
+    "year": "1977",
+    "genre": "Easy Listening",
+    "format": "LP",
+    "barcode": "VNL-7MK67U"
+  },
+  {
+    "artist": "Various",
+    "title": "Nigeria 70",
+    "year": "2001",
+    "genre": "Funk / Soul",
+    "format": "LP",
+    "barcode": "VNL-XT7UGZ",
+    "coverImage": "covers/VNL-XT7UGZ.jpg"
+  },
+  {
+    "artist": "Various",
+    "title": "Space Funk",
+    "year": "2023",
+    "genre": "Funk / Soul",
+    "format": "LP",
+    "barcode": "VNL-ASUFQK",
+    "coverImage": "covers/VNL-ASUFQK.jpg"
+  },
+  {
+    "artist": "Various",
+    "title": "Art Of Mix - Vol. 10",
+    "year": "1989",
+    "genre": "Hi NRG",
+    "format": "LP",
+    "barcode": "VNL-UX44TR",
+    "coverImage": "covers/VNL-UX44TR.jpg"
+  },
+  {
+    "artist": "Verdon, Gwen",
+    "title": "Sweet Charity",
+    "year": "1966",
+    "genre": "Soundtrack",
+    "format": "LP",
+    "barcode": "VNL-XPBZ3T",
+    "coverImage": "covers/VNL-XPBZ3T.jpg"
+  },
+  {
+    "artist": "Village People",
+    "title": "Magic Night/Can’t Stop The Music",
+    "year": "1980",
+    "genre": "Disco",
+    "format": "12\" Single (45RPM)",
+    "barcode": "VNL-KHKPRQ",
+    "coverImage": "covers/VNL-KHKPRQ.jpg"
+  },
+  {
+    "artist": "Village People",
+    "title": "Medley 1985",
+    "year": "1985",
+    "genre": "Disco",
+    "format": "12\" Single (45RPM)",
+    "barcode": "VNL-QUHLQ4",
+    "coverImage": "covers/VNL-QUHLQ4.jpg"
+  },
+  {
+    "artist": "Village People",
+    "title": "Go West",
+    "year": "1979",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-VACX5D",
+    "coverImage": "covers/VNL-VACX5D.jpg"
+  },
+  {
+    "artist": "Village People",
+    "title": "Village People",
+    "year": "1977",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-7PL846",
+    "coverImage": "covers/VNL-7PL846.jpg"
+  },
+  {
+    "artist": "Village People",
+    "title": "Ready for the 80’s",
+    "year": "1979",
+    "genre": "Disco",
+    "format": "12\" Single (45RPM)",
+    "barcode": "VNL-23RZD6",
+    "coverImage": "covers/VNL-23RZD6.jpg"
+  },
+  {
+    "artist": "Village People",
+    "title": "Macho Man",
+    "year": "1978",
+    "genre": "Disco",
+    "format": "12\" Single (33RPM)",
+    "barcode": "VNL-4233B9",
+    "coverImage": "covers/VNL-4233B9.jpg"
+  },
+  {
+    "artist": "White, Barry",
+    "title": "Under the Influence of Love Unlimited",
+    "year": "1973",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-WTZLKM",
+    "coverImage": "covers/VNL-WTZLKM.jpg"
+  },
+  {
+    "artist": "White, Barry",
+    "title": "Stone Gon'",
+    "year": "1973",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-BKGVP7",
+    "coverImage": "covers/VNL-BKGVP7.jpg"
+  },
+  {
+    "artist": "White, Barry",
+    "title": "No Limit On Love",
+    "year": "1974",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-S4HBMC",
+    "coverImage": "covers/VNL-S4HBMC.jpg"
+  },
+  {
+    "artist": "White, Barry",
+    "title": "Rhapsody In White",
+    "year": "1974",
+    "genre": "Disco",
+    "format": "LP",
+    "barcode": "VNL-JS8ZF9",
+    "coverImage": "covers/VNL-JS8ZF9.jpg"
+  },
+  {
+    "artist": "Williams, John",
+    "title": "Closed Encounters Of The Third Kind",
+    "year": "1977",
+    "genre": "Soundtrack",
+    "format": "LP",
+    "barcode": "VNL-3VJNN2"
+  }
+]
