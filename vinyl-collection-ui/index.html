@@ -362,7 +362,7 @@ function mergeRecords(local, remote) {
     if (!map.has(k)) map.set(k, {...r});
     else {
       const o = map.get(k);
-      ['year','genre','format'].forEach(f=>{
+      ['year','genre','format','barcode'].forEach(f=>{
         if (!o[f] && r[f]) o[f]=r[f];
       });
     }
