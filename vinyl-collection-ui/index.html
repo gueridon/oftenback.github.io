@@ -7,7 +7,6 @@
 
 <link rel="stylesheet" href="style.css">
 <script type="module" src="sync.js"></script>
-<script type="module" src="discogs.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 </head>
 
@@ -88,13 +87,6 @@
     <button id="saveTokenBtn" class="ghost small">Save</button>
   </div>
 
-  <!-- Discogs settings -->
-  <div style="margin-top:12px; display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
-    <input id="discogsToken" placeholder="Discogs API token" style="width:360px;"/>
-    <button id="saveDiscogsBtn" class="ghost small">Save Discogs Token</button>
-    <button id="fetchAllCoversBtn" class="primary small">Fetch All Missing Covers</button>
-  </div>
-
   <!-- =============== TABLE ================ -->
   <div class="table-wrap" style="margin-top:18px;">
     <table id="recordTable">
@@ -108,7 +100,7 @@
           <th>Genre</th>
           <th>Format</th>
           <th>Barcode</th>
-          <th style="min-width:180px">Actions</th>
+          <th style="min-width:120px">Actions</th>
         </tr>
       </thead>
       <tbody></tbody>
@@ -123,13 +115,11 @@
 // =========================
 
 import { githubGetFile, githubCreateOrUpdateFile } from './sync.js';
-import { searchRelease, downloadAndSaveCover, triggerDownload, getLocalCoverPath, checkCoverExists } from './discogs.js';
 
 const LS_KEY = 'vinyl_records_v1';
 const LS_TOKEN = 'vinyl_token';
 const LS_OWNER = 'vinyl_owner';
 const LS_REPO = 'vinyl_repo';
-const LS_DISCOGS_TOKEN = 'vinyl_discogs_token';
 const REMOTE_FILE = 'vinyl.json';
 
 let records = [];
@@ -148,18 +138,12 @@ function setBadge(state, text) {
 owner.value = localStorage.getItem(LS_OWNER) || "";
 repo.value = localStorage.getItem(LS_REPO) || "";
 token.value = localStorage.getItem(LS_TOKEN) || "";
-discogsToken.value = localStorage.getItem(LS_DISCOGS_TOKEN) || "";
 
 saveTokenBtn.onclick = () => {
   localStorage.setItem(LS_OWNER, owner.value);
   localStorage.setItem(LS_REPO, repo.value);
   localStorage.setItem(LS_TOKEN, token.value);
   alert("Saved GitHub settings.");
-};
-
-saveDiscogsBtn.onclick = () => {
-  localStorage.setItem(LS_DISCOGS_TOKEN, discogsToken.value);
-  alert("Saved Discogs token.");
 };
 
 /* -----------------------------------------
@@ -276,7 +260,6 @@ function renderTable() {
     // Actions cell
     const actionsCell = document.createElement("td");
     actionsCell.innerHTML = `
-      <button class="primary small" data-i="${i}" data-action="fetch">Fetch Cover</button>
       <button class="orange small" data-i="${i}" data-action="edit">Edit</button>
       <button class="red small" data-i="${i}" data-action="delete">Delete</button>
     `;
@@ -295,14 +278,6 @@ function renderTable() {
       }, 10);
     }
   });
-
-  // Fetch Cover button handlers
-  document.querySelectorAll("[data-action='fetch']").forEach(btn =>
-    btn.onclick = async () => {
-      const index = parseInt(btn.dataset.i);
-      await fetchCoverForRecord(index);
-    }
-  );
 
   // Edit button handlers
   document.querySelectorAll("[data-action='edit']").forEach(btn =>
@@ -459,161 +434,6 @@ function mergeRecords(local, remote) {
 
   return merged;
 }
-
-/* -----------------------------------------
-   DISCOGS COVER FETCHING
------------------------------------------ */
-async function fetchCoverForRecord(index) {
-  const record = records[index];
-  const token = discogsToken.value.trim();
-
-  if (!token) {
-    alert("Please enter and save your Discogs API token first.");
-    return;
-  }
-
-  if (!record.barcode) {
-    alert("Record must have a barcode to fetch cover.");
-    return;
-  }
-
-  try {
-    // Show loading state
-    const btn = document.querySelector(`[data-i="${index}"][data-action="fetch"]`);
-    const originalText = btn.textContent;
-    btn.textContent = "Searching...";
-    btn.disabled = true;
-
-    // Search Discogs
-    const release = await searchRelease(
-      record.artist,
-      record.title,
-      record.year,
-      record.format,
-      token
-    );
-
-    if (!release || !release.coverImage) {
-      alert("No cover found on Discogs for this record.");
-      btn.textContent = originalText;
-      btn.disabled = false;
-      return;
-    }
-
-    // Download cover image
-    btn.textContent = "Downloading...";
-    const coverData = await downloadAndSaveCover(release.coverImage, record.barcode);
-
-    if (!coverData) {
-      alert("Failed to download cover image.");
-      btn.textContent = originalText;
-      btn.disabled = false;
-      return;
-    }
-
-    // Trigger download for user to save manually
-    triggerDownload(coverData.blob, coverData.filename);
-
-    // Update record with local path
-    record.coverImage = coverData.localPath;
-    saveLocal();
-
-    // Show success message
-    alert(`Cover downloaded! Please manually save the file "${coverData.filename}" to the "covers" folder in your vinyl-collection-ui directory.`);
-
-    btn.textContent = originalText;
-    btn.disabled = false;
-    renderTable();
-    checkRemoteStatus();
-
-  } catch (error) {
-    console.error("Error fetching cover:", error);
-    alert("Error fetching cover: " + error.message);
-    const btn = document.querySelector(`[data-i="${index}"][data-action="fetch"]`);
-    btn.textContent = "Fetch Cover";
-    btn.disabled = false;
-  }
-}
-
-/* Fetch all missing covers */
-fetchAllCoversBtn.onclick = async () => {
-  const token = discogsToken.value.trim();
-
-  if (!token) {
-    alert("Please enter and save your Discogs API token first.");
-    return;
-  }
-
-  const recordsWithoutCovers = records.filter(r => !r.coverImage && r.barcode);
-
-  if (recordsWithoutCovers.length === 0) {
-    alert("All records already have covers or are missing barcodes.");
-    return;
-  }
-
-  if (!confirm(`Fetch covers for ${recordsWithoutCovers.length} records? This may take a few minutes.`)) {
-    return;
-  }
-
-  fetchAllCoversBtn.disabled = true;
-  fetchAllCoversBtn.textContent = `Fetching 0/${recordsWithoutCovers.length}...`;
-
-  let successCount = 0;
-  let failCount = 0;
-
-  for (let i = 0; i < recordsWithoutCovers.length; i++) {
-    const record = recordsWithoutCovers[i];
-    const recordIndex = records.findIndex(r => r.barcode === record.barcode);
-
-    try {
-      // Update progress
-      fetchAllCoversBtn.textContent = `Fetching ${i + 1}/${recordsWithoutCovers.length}...`;
-
-      // Search Discogs
-      const release = await searchRelease(
-        record.artist,
-        record.title,
-        record.year,
-        record.format,
-        token
-      );
-
-      if (release && release.coverImage) {
-        // Download cover
-        const coverData = await downloadAndSaveCover(release.coverImage, record.barcode);
-
-        if (coverData) {
-          // Trigger download
-          triggerDownload(coverData.blob, coverData.filename);
-
-          // Update record
-          records[recordIndex].coverImage = coverData.localPath;
-          successCount++;
-
-          // Small delay to allow download to start
-          await new Promise(resolve => setTimeout(resolve, 500));
-        } else {
-          failCount++;
-        }
-      } else {
-        failCount++;
-      }
-
-    } catch (error) {
-      console.error(`Error fetching cover for ${record.artist} - ${record.title}:`, error);
-      failCount++;
-    }
-  }
-
-  saveLocal();
-  renderTable();
-  checkRemoteStatus();
-
-  fetchAllCoversBtn.disabled = false;
-  fetchAllCoversBtn.textContent = "Fetch All Missing Covers";
-
-  alert(`Batch fetch complete!\n\nSuccessful: ${successCount}\nFailed: ${failCount}\n\nPlease manually save all downloaded images to the "covers" folder.`);
-};
 
 /* -----------------------------------------
    REMOTE CHECK

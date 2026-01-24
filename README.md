@@ -106,22 +106,13 @@ ZBLxNZPZluJmLeSvdSMDWNznQXPxDSmXoznWbIng
    - Your vinyl.json on GitHub will now include all cover paths
    - The remote site will display all covers
 
-**Alternative Method: Browser UI** (Manual)
+### Viewing Covers
 
-1. **Configure Discogs Token**:
-   - Open the Editor (`index.html`)
-   - Enter the Discogs API token: `ZBLxNZPZluJmLeSvdSMDWNznQXPxDSmXoznWbIng`
-   - Click "Save Discogs Token"
-
-2. **Fetch covers** (limited by browser CORS restrictions):
-   - Click "Fetch Cover" for individual records
-   - Note: Browser downloads may fail due to CORS - use Node.js script instead
-
-3. **View Covers**:
-   - Open the Viewer (`view.html`)
-   - Click "Show/Hide Covers" to toggle cover display
-   - Covers appear as 60x60px thumbnails
-   - Your preference is saved to localStorage
+- Open the **Viewer** (`view.html`)
+- Click "Show/Hide Covers" to toggle cover display
+- Covers appear as 60x60px thumbnails
+- Your preference is saved to localStorage
+- Covers are hidden on mobile for better space usage
 
 ### Fetching Covers for New Records
 

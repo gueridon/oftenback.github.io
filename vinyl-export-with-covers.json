@@ -227,11 +227,12 @@
   },
   {
     "artist": "Cooder, Ry",
-    "title": "Paris, tecas",
+    "title": "Paris, Texas",
     "year": "1985",
     "genre": "Soundtrack",
     "format": "LP",
-    "barcode": "VNL-48HGT9"
+    "barcode": "VNL-48HGT9",
+    "coverImage": "covers/VNL-48HGT9.jpg"
   },
   {
     "artist": "Costandinos, Alex",
