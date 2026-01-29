@@ -138,6 +138,118 @@ Make sure:
 - You've imported the updated JSON with cover paths
 - The web server can access the covers directory
 
+### Covers not showing on GitHub Pages (oftenback.io)
+
+After pushing new covers and updated JSON to GitHub, the covers may not appear immediately on the live site. This is due to **GitHub Pages caching** and **browser caching**.
+
+**Symptoms:**
+- Covers uploaded and visible in GitHub repository
+- Individual cover URLs work (e.g., `https://oftenback.io/vinyl-collection-ui/covers/VNL-XXXXX.jpg`)
+- But covers don't show in the UI at `https://oftenback.io/vinyl-collection-ui/index.html`
+- Old record count showing instead of new count
+
+**Root Cause:**
+1. GitHub Pages takes 5-10 minutes to rebuild after a push
+2. The UI loads data from browser localStorage (old cached data)
+3. The `vinyl.json` file may be cached by CDN
+4. Browser caches both the page and the JSON files
+
+**Solution 1: Clear Browser Cache and Import Data (Fastest)**
+```bash
+# 1. Open the live site
+https://oftenback.io/vinyl-collection-ui/index.html
+
+# 2. Open Browser DevTools (F12)
+# 3. Go to: Application → Storage → Clear site data
+# 4. Click "Clear site data" button
+
+# 5. Hard refresh the page:
+#    - Windows/Linux: Ctrl + Shift + R
+#    - Mac: Cmd + Shift + R
+
+# 6. Import the updated JSON:
+#    - Click "Import JSON" button
+#    - Select: ~/gueridon/oftenback.github.io/vinyl.json
+#    - This loads all 360 records with 341 cover paths into localStorage
+
+# 7. Refresh the page
+#    All covers should now display!
+```
+
+**Solution 2: Use GitHub Sync Feature**
+
+If you have GitHub sync configured:
+```bash
+# 1. Open https://oftenback.io/vinyl-collection-ui/index.html
+
+# 2. Configure GitHub settings (if not already done):
+#    - Owner: gueridon (or your GitHub username)
+#    - Repo: oftenback.github.io
+#    - Token: [Your GitHub Personal Access Token]
+#    - Click "Save Settings"
+
+# 3. Click "Pull from Remote"
+#    This fetches vinyl.json from GitHub and merges with localStorage
+
+# 4. Refresh the page
+#    Covers should appear
+```
+
+**Solution 3: Wait for GitHub Pages to Rebuild**
+
+Sometimes you just need to wait:
+- GitHub Pages typically rebuilds in 5-10 minutes
+- Check deployment status: https://github.com/gueridon/oftenback.github.io/deployments
+- Once deployed, do a hard refresh (Ctrl+Shift+R)
+- Clear localStorage and import fresh data
+
+**Solution 4: Test Locally First**
+
+Before troubleshooting the live site, verify everything works locally:
+```bash
+cd ~/gueridon/oftenback.github.io/vinyl-collection-ui
+python3 -m http.server 8000
+
+# Open: http://localhost:8000/index.html
+# Click "Import JSON"
+# Select: ~/gueridon/oftenback.github.io/vinyl.json
+
+# If covers show locally but not remotely:
+# - It's a caching issue (use Solution 1)
+# - GitHub Pages is still building (use Solution 3)
+```
+
+**Verification Steps:**
+
+After applying any solution, verify:
+
+1. **Check record count:**
+   - Open the UI
+   - Look at table - should show 360 records
+
+2. **Check a new cover loads:**
+   - Open: `https://oftenback.io/vinyl-collection-ui/covers/VNL-2PY3S7.jpg`
+   - Should display album cover image
+   - If 404: GitHub Pages hasn't rebuilt yet (wait 5 minutes)
+
+3. **Check JSON file:**
+   - Open: `https://oftenback.io/vinyl.json`
+   - Should show 360 records
+   - If shows 1,020 or different number: Old cached version (wait or hard refresh)
+
+4. **Check localStorage:**
+   - Open DevTools → Application → Local Storage
+   - Find `vinyl_records_v1`
+   - Should contain 360 records with coverImage paths
+
+**Prevention:**
+
+To avoid this issue in the future:
+1. Always commit both JSON files and covers together
+2. Wait 10 minutes after pushing before checking live site
+3. Use "Import JSON" feature to force data refresh
+4. Consider using the GitHub sync feature for automatic updates
+
 ## Files and Directories
 
 ```
