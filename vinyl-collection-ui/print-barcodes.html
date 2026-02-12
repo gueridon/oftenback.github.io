@@ -70,9 +70,16 @@
 </nav>
 
 <div class="card no-print">
-  <div style="display:flex; gap:12px; align-items:center; margin-bottom:16px;">
-    <input id="search" placeholder="Filter by artist, title, or barcode…" style="flex:1;">
+  <div style="display:flex; gap:12px; align-items:center; margin-bottom:16px; flex-wrap:wrap;">
+    <input id="search" placeholder="Filter by artist, title, or barcode…" style="flex:1; min-width:200px;">
+    <select id="filterMode" style="padding:6px 10px;">
+      <option value="all">All records</option>
+      <option value="unprinted">Unprinted only</option>
+      <option value="bydate">By date added</option>
+    </select>
+    <select id="dateGroup" style="padding:6px 10px; display:none;"></select>
     <button id="printBtn" class="primary">Print Barcodes</button>
+    <button id="markPrintedBtn" class="orange">Mark as Printed</button>
     <button id="selectAllBtn" class="orange">Select All</button>
     <button id="selectNoneBtn" class="ghost">Select None</button>
   </div>
@@ -91,10 +98,13 @@ let filtered = [];
 const searchEl = document.getElementById("search");
 const barcodeGrid = document.getElementById("barcodeGrid");
 const printBtn = document.getElementById("printBtn");
+const markPrintedBtn = document.getElementById("markPrintedBtn");
 const selectAllBtn = document.getElementById("selectAllBtn");
 const selectNoneBtn = document.getElementById("selectNoneBtn");
 const selectedCountEl = document.getElementById("selectedCount");
 const totalCountEl = document.getElementById("totalCount");
+const filterModeEl = document.getElementById("filterMode");
+const dateGroupEl = document.getElementById("dateGroup");
 
 /* Load records */
 function loadLocal() {
@@ -104,21 +114,60 @@ function loadLocal() {
   } catch { allRecords = []; }
 
   allRecords.sort((a,b) => a.artist.localeCompare(b.artist));
-  filtered = [...allRecords];
-  render();
+  populateDateGroups();
+  applyFilter();
+}
+
+/* Populate date group dropdown from available dates */
+function populateDateGroups() {
+  const dates = new Set();
+  allRecords.forEach(r => {
+    if (r.dateAdded) dates.add(r.dateAdded.slice(0, 10));
+  });
+  const sorted = [...dates].sort().reverse(); // newest first
+
+  dateGroupEl.innerHTML = '';
+  sorted.forEach(d => {
+    const opt = document.createElement("option");
+    opt.value = d;
+    // Format as locale date string
+    const [y, m, day] = d.split('-');
+    opt.textContent = new Date(y, m - 1, day).toLocaleDateString(undefined, {
+      year: 'numeric', month: 'short', day: 'numeric'
+    });
+    dateGroupEl.appendChild(opt);
+  });
 }
 
 /* Filter */
 function applyFilter() {
   const q = searchEl.value.trim().toLowerCase();
-  if (!q) filtered = [...allRecords];
-  else {
-    filtered = allRecords.filter(r =>
+  const mode = filterModeEl.value;
+
+  // Start with all records
+  filtered = [...allRecords];
+
+  // Apply mode filter
+  if (mode === 'unprinted') {
+    filtered = filtered.filter(r => !r.printed);
+  } else if (mode === 'bydate') {
+    const selectedDate = dateGroupEl.value;
+    if (selectedDate) {
+      filtered = filtered.filter(r =>
+        r.dateAdded && r.dateAdded.slice(0, 10) === selectedDate
+      );
+    }
+  }
+
+  // Apply text search on top
+  if (q) {
+    filtered = filtered.filter(r =>
       (r.artist || "").toLowerCase().includes(q) ||
       (r.title || "").toLowerCase().includes(q) ||
       (r.barcode || "").toLowerCase().includes(q)
     );
   }
+
   render();
 }
 
@@ -132,7 +181,7 @@ function render() {
 
     const card = document.createElement("div");
     card.className = "barcode-card";
-    card.dataset.index = i;
+    card.dataset.barcode = r.barcode;
 
     const checkbox = document.createElement("input");
     checkbox.type = "checkbox";
@@ -186,21 +235,39 @@ function updateSelectedCount() {
 
 /* Print only selected */
 printBtn.onclick = () => {
-  // Hide unselected cards temporarily
   const cards = document.querySelectorAll('.barcode-card');
   cards.forEach(card => {
     const checkbox = card.querySelector('input[type="checkbox"]');
-    if (!checkbox.checked) {
-      card.style.display = 'none';
-    }
+    if (!checkbox.checked) card.style.display = 'none';
   });
 
   window.print();
 
-  // Restore visibility
+  cards.forEach(card => { card.style.display = ''; });
+};
+
+/* Mark checked records as printed */
+markPrintedBtn.onclick = () => {
+  const cards = document.querySelectorAll('.barcode-card');
+  const barcodes = [];
   cards.forEach(card => {
-    card.style.display = '';
+    const checkbox = card.querySelector('input[type="checkbox"]');
+    if (checkbox.checked) barcodes.push(card.dataset.barcode);
   });
+
+  if (barcodes.length === 0) return;
+
+  // Update in the master allRecords array
+  const bcSet = new Set(barcodes);
+  allRecords.forEach(r => {
+    if (bcSet.has(r.barcode)) r.printed = true;
+  });
+
+  // Save back to localStorage
+  localStorage.setItem(LS_KEY, JSON.stringify(allRecords, null, 2));
+
+  // Re-apply filter to refresh the grid
+  applyFilter();
 };
 
 /* Select all */
@@ -218,6 +285,14 @@ selectNoneBtn.onclick = () => {
   });
   updateSelectedCount();
 };
+
+/* Filter mode change */
+filterModeEl.onchange = () => {
+  dateGroupEl.style.display = filterModeEl.value === 'bydate' ? '' : 'none';
+  applyFilter();
+};
+
+dateGroupEl.onchange = applyFilter;
 
 /* Event listeners */
 searchEl.oninput = applyFilter;

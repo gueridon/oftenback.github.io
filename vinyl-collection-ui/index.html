@@ -153,6 +153,17 @@ function loadLocal() {
   try {
     records = JSON.parse(localStorage.getItem(LS_KEY)) || [];
   } catch { records = []; }
+
+  // Backfill dateAdded for existing records that lack it
+  let migrated = false;
+  records.forEach(r => {
+    if (!r.dateAdded) {
+      r.dateAdded = '2026-02-01T00:00:00.000Z';
+      migrated = true;
+    }
+  });
+  if (migrated) localStorage.setItem(LS_KEY, JSON.stringify(records, null, 2));
+
   sortRecords();
   updateDatalists();
   renderTable();
@@ -332,6 +343,8 @@ recordForm.onsubmit = e => {
     );
   }
 
+  const existing = existingIndex >= 0 ? records[existingIndex] : null;
+
   const newRecord = {
     artist: artist.value.trim(),
     title: title.value.trim(),
@@ -339,7 +352,9 @@ recordForm.onsubmit = e => {
     genre: genre.value.trim(),
     format: format.value.trim(),
     barcode: barcodeValue,
-    coverImage: existingIndex >= 0 ? records[existingIndex].coverImage : undefined
+    coverImage: existing ? existing.coverImage : undefined,
+    dateAdded: existing ? existing.dateAdded : new Date().toISOString(),
+    printed: existing ? existing.printed : false
   };
 
   if (existingIndex >= 0) records[existingIndex] = newRecord;
@@ -424,11 +439,16 @@ function mergeRecords(local, remote) {
         genre: remoteRecord.genre || existing.genre,
         format: remoteRecord.format || existing.format,
         barcode: remoteRecord.barcode || existing.barcode,
-        coverImage: remoteRecord.coverImage || existing.coverImage
+        coverImage: remoteRecord.coverImage || existing.coverImage,
+        dateAdded: existing.dateAdded || remoteRecord.dateAdded || '2026-02-01T00:00:00.000Z',
+        printed: existing.printed !== undefined ? existing.printed : (remoteRecord.printed || false)
       };
     } else {
       // New record - add it
-      merged.push({...remoteRecord});
+      const added = {...remoteRecord};
+      if (!added.dateAdded) added.dateAdded = new Date().toISOString();
+      if (added.printed === undefined) added.printed = false;
+      merged.push(added);
     }
   });
 
