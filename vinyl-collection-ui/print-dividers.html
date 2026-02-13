@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Vinyl Collection — Print Dividers</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="style.css">
+<style>
+  @media print {
+    nav, .no-print { display: none !important; }
+    body { background: white; margin: 0; }
+  }
+
+  .divider-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+    padding: 20px;
+  }
+
+  .divider-card {
+    border: 2px solid #333;
+    padding: 16px 12px;
+    text-align: center;
+    break-inside: avoid;
+    page-break-inside: avoid;
+    background: white;
+  }
+
+  .divider-card.letter {
+    border-color: var(--color-4);
+  }
+
+  .divider-card.artist {
+    border-color: var(--color-2);
+  }
+
+  .divider-card .divider-text {
+    font-weight: 700;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .divider-card.letter .divider-text {
+    font-size: 48px;
+    line-height: 1.2;
+    color: var(--color-4);
+  }
+
+  .divider-card.artist .divider-text {
+    font-size: 18px;
+    line-height: 1.4;
+    color: var(--color-5);
+  }
+
+  .divider-card .divider-count {
+    font-size: 12px;
+    color: #888;
+    margin-top: 6px;
+  }
+</style>
+</head>
+
+<body>
+
+<h1 class="no-print">Vinyl Collection — Print Dividers</h1>
+
+<nav class="no-print">
+  <a href="index.html">Editor</a>
+  <a href="view.html">Viewer</a>
+  <a href="stats.html">Statistics</a>
+  <a href="print-barcodes.html">Print Barcodes</a>
+  <a href="print-dividers.html">Print Dividers</a>
+</nav>
+
+<div class="card no-print">
+  <div style="display:flex; gap:12px; align-items:center; margin-bottom:16px; flex-wrap:wrap;">
+    <select id="filterMode" style="padding:6px 10px;">
+      <option value="all">All dividers</option>
+      <option value="letters">Letters only</option>
+      <option value="artists">Artists only</option>
+    </select>
+    <button id="printBtn" class="primary">Print Dividers</button>
+  </div>
+  <div style="color:#555; font-size:14px;">
+    <span id="letterCount">0</span> letter dividers,
+    <span id="artistCount">0</span> artist dividers
+  </div>
+</div>
+
+<div class="divider-grid" id="dividerGrid"></div>
+
+<script>
+const LS_KEY = "vinyl_records_v1";
+let allRecords = [];
+
+const dividerGrid = document.getElementById("dividerGrid");
+const filterModeEl = document.getElementById("filterMode");
+const printBtn = document.getElementById("printBtn");
+const letterCountEl = document.getElementById("letterCount");
+const artistCountEl = document.getElementById("artistCount");
+
+function loadLocal() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    allRecords = raw ? JSON.parse(raw) : [];
+  } catch { allRecords = []; }
+  render();
+}
+
+function buildDividers() {
+  const letterCounts = {};
+  const artistCounts = {};
+
+  allRecords.forEach(r => {
+    if (!r.artist) return;
+    const first = r.artist[0].toUpperCase();
+    if (first >= 'A' && first <= 'Z') {
+      letterCounts[first] = (letterCounts[first] || 0) + 1;
+    }
+    artistCounts[r.artist] = (artistCounts[r.artist] || 0) + 1;
+  });
+
+  const letters = Object.keys(letterCounts).sort().map(letter => ({
+    type: 'letter',
+    text: letter,
+    count: letterCounts[letter]
+  }));
+
+  const artists = Object.entries(artistCounts)
+    .filter(([, count]) => count >= 3)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([artist, count]) => ({
+      type: 'artist',
+      text: artist,
+      count
+    }));
+
+  return { letters, artists };
+}
+
+function render() {
+  const { letters, artists } = buildDividers();
+  const mode = filterModeEl.value;
+
+  let dividers = [];
+  if (mode === 'all' || mode === 'letters') dividers = dividers.concat(letters);
+  if (mode === 'all' || mode === 'artists') dividers = dividers.concat(artists);
+
+  // When showing all, interleave: letter then its artists alphabetically
+  if (mode === 'all') {
+    dividers = [];
+    const artistsByLetter = {};
+    artists.forEach(a => {
+      const l = a.text[0].toUpperCase();
+      if (!artistsByLetter[l]) artistsByLetter[l] = [];
+      artistsByLetter[l].push(a);
+    });
+
+    letters.forEach(l => {
+      dividers.push(l);
+      if (artistsByLetter[l.text]) {
+        dividers = dividers.concat(artistsByLetter[l.text]);
+      }
+    });
+  }
+
+  letterCountEl.textContent = letters.length;
+  artistCountEl.textContent = artists.length;
+
+  dividerGrid.innerHTML = "";
+
+  dividers.forEach(d => {
+    const card = document.createElement("div");
+    card.className = "divider-card " + d.type;
+
+    const text = document.createElement("div");
+    text.className = "divider-text";
+    text.textContent = d.text;
+
+    const count = document.createElement("div");
+    count.className = "divider-count";
+    count.textContent = d.count + (d.count === 1 ? " record" : " records");
+
+    card.appendChild(text);
+    card.appendChild(count);
+    dividerGrid.appendChild(card);
+  });
+}
+
+filterModeEl.onchange = render;
+
+printBtn.onclick = () => window.print();
+
+loadLocal();
+</script>
+
+</body>
+</html>
