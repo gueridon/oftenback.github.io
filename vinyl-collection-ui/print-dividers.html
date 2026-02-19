@@ -19,39 +19,35 @@
   }
 
   .divider-card {
-    border: 2px solid #333;
-    height: 52px;
-    padding: 0 20px;
+    border: 2px solid var(--color-2);
+    height: 104px;
     display: flex;
-    align-items: center;
+    flex-direction: column;
     break-inside: avoid;
     page-break-inside: avoid;
     background: white;
   }
 
-  .divider-card.letter {
-    border-color: var(--color-4);
+  .divider-half {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
   }
 
-  .divider-card.artist {
-    border-color: var(--color-2);
+  .divider-half:first-child {
+    border-bottom: 2px dashed #999;
   }
 
-  .divider-card .divider-text {
+  .divider-text {
     font-weight: 700;
+    font-size: 16px;
+    color: var(--color-5);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-  }
-
-  .divider-card.letter .divider-text {
-    font-size: 32px;
-    color: var(--color-4);
-  }
-
-  .divider-card.artist .divider-text {
-    font-size: 16px;
-    color: var(--color-5);
+    padding: 0 12px;
   }
 </style>
 </head>
@@ -70,16 +66,10 @@
 
 <div class="card no-print">
   <div style="display:flex; gap:12px; align-items:center; margin-bottom:16px; flex-wrap:wrap;">
-    <select id="filterMode" style="padding:6px 10px;">
-      <option value="all">All dividers</option>
-      <option value="letters">Letters only</option>
-      <option value="artists">Artists only</option>
-    </select>
     <button id="printBtn" class="primary">Print Dividers</button>
   </div>
   <div style="color:#555; font-size:14px;">
-    <span id="letterCount">0</span> letter dividers,
-    <span id="artistCount">0</span> artist dividers
+    <span id="artistCount">0</span> artist dividers (2+ records)
   </div>
 </div>
 
@@ -90,9 +80,7 @@ const LS_KEY = "vinyl_records_v1";
 let allRecords = [];
 
 const dividerGrid = document.getElementById("dividerGrid");
-const filterModeEl = document.getElementById("filterMode");
 const printBtn = document.getElementById("printBtn");
-const letterCountEl = document.getElementById("letterCount");
 const artistCountEl = document.getElementById("artistCount");
 
 function loadLocal() {
@@ -104,81 +92,48 @@ function loadLocal() {
 }
 
 function buildDividers() {
-  const letterCounts = {};
   const artistCounts = {};
 
   allRecords.forEach(r => {
     if (!r.artist) return;
-    const first = r.artist[0].toUpperCase();
-    if (first >= 'A' && first <= 'Z') {
-      letterCounts[first] = (letterCounts[first] || 0) + 1;
-    }
     artistCounts[r.artist] = (artistCounts[r.artist] || 0) + 1;
   });
 
-  const letters = Object.keys(letterCounts).sort().map(letter => ({
-    type: 'letter',
-    text: letter,
-    count: letterCounts[letter]
-  }));
-
-  const artists = Object.entries(artistCounts)
-    .filter(([, count]) => count >= 3)
+  return Object.entries(artistCounts)
+    .filter(([, count]) => count >= 2)
     .sort(([a], [b]) => a.localeCompare(b))
-    .map(([artist, count]) => ({
-      type: 'artist',
-      text: artist,
-      count
-    }));
-
-  return { letters, artists };
+    .map(([artist, count]) => ({ text: artist, count }));
 }
 
 function render() {
-  const { letters, artists } = buildDividers();
-  const mode = filterModeEl.value;
-
-  let dividers = [];
-  if (mode === 'all' || mode === 'letters') dividers = dividers.concat(letters);
-  if (mode === 'all' || mode === 'artists') dividers = dividers.concat(artists);
-
-  // When showing all, interleave: letter then its artists alphabetically
-  if (mode === 'all') {
-    dividers = [];
-    const artistsByLetter = {};
-    artists.forEach(a => {
-      const l = a.text[0].toUpperCase();
-      if (!artistsByLetter[l]) artistsByLetter[l] = [];
-      artistsByLetter[l].push(a);
-    });
-
-    letters.forEach(l => {
-      dividers.push(l);
-      if (artistsByLetter[l.text]) {
-        dividers = dividers.concat(artistsByLetter[l.text]);
-      }
-    });
-  }
-
-  letterCountEl.textContent = letters.length;
+  const artists = buildDividers();
   artistCountEl.textContent = artists.length;
 
   dividerGrid.innerHTML = "";
 
-  dividers.forEach(d => {
+  artists.forEach(d => {
     const card = document.createElement("div");
-    card.className = "divider-card " + d.type;
+    card.className = "divider-card";
 
-    const text = document.createElement("div");
-    text.className = "divider-text";
-    text.textContent = d.text;
+    const topHalf = document.createElement("div");
+    topHalf.className = "divider-half";
+    const topText = document.createElement("div");
+    topText.className = "divider-text";
+    topText.textContent = d.text;
+    topHalf.appendChild(topText);
 
-    card.appendChild(text);
+    const bottomHalf = document.createElement("div");
+    bottomHalf.className = "divider-half";
+    const bottomText = document.createElement("div");
+    bottomText.className = "divider-text";
+    bottomText.textContent = d.text;
+    bottomHalf.appendChild(bottomText);
+
+    card.appendChild(topHalf);
+    card.appendChild(bottomHalf);
     dividerGrid.appendChild(card);
   });
 }
-
-filterModeEl.onchange = render;
 
 printBtn.onclick = () => window.print();
 
