@@ -28,9 +28,9 @@
     "genre": "Jazz",
     "format": "LP",
     "barcode": "VNL-F6L8YH",
+    "coverImage": "covers/VNL-F6L8YH.jpg",
     "dateAdded": "2026-02-26T11:47:18.338Z",
-    "printed": false,
-    "coverImage": "covers/VNL-F6L8YH.jpg"
+    "printed": false
   },
   {
     "artist": "Athletico Spizz 80",
@@ -61,9 +61,9 @@
     "genre": "Country",
     "format": "LP",
     "barcode": "VNL-TEF5YL",
+    "coverImage": "covers/VNL-TEF5YL.jpg",
     "dateAdded": "2026-02-26T11:50:13.944Z",
-    "printed": false,
-    "coverImage": "covers/VNL-TEF5YL.jpg"
+    "printed": false
   },
   {
     "artist": "B.T. Express",
@@ -138,9 +138,9 @@
     "genre": "Jazz",
     "format": "LP",
     "barcode": "VNL-R9R7TQ",
+    "coverImage": "covers/VNL-R9R7TQ.jpg",
     "dateAdded": "2026-02-26T11:48:22.457Z",
-    "printed": false,
-    "coverImage": "covers/VNL-R9R7TQ.jpg"
+    "printed": false
   },
   {
     "artist": "Beau Dommage",
@@ -226,9 +226,9 @@
     "genre": "Classical",
     "format": "LP",
     "barcode": "VNL-PTATWJ",
+    "coverImage": "covers/VNL-PTATWJ.jpg",
     "dateAdded": "2026-02-01T00:00:00.000Z",
-    "printed": true,
-    "coverImage": "covers/VNL-PTATWJ.jpg"
+    "printed": true
   },
   {
     "artist": "Beethoven, Ludwig",
@@ -237,9 +237,9 @@
     "genre": "Classical",
     "format": "LP",
     "barcode": "VNL-T8WD2F",
+    "coverImage": "covers/VNL-T8WD2F.jpg",
     "dateAdded": "2026-02-26T12:06:11.919Z",
-    "printed": false,
-    "coverImage": "covers/VNL-T8WD2F.jpg"
+    "printed": false
   },
   {
     "artist": "Beethoven, Ludwig",
@@ -248,9 +248,9 @@
     "genre": "Classical",
     "format": "LP",
     "barcode": "VNL-XK6TXB",
+    "coverImage": "covers/VNL-XK6TXB.jpg",
     "dateAdded": "2026-02-26T12:11:58.870Z",
-    "printed": false,
-    "coverImage": "covers/VNL-XK6TXB.jpg"
+    "printed": false
   },
   {
     "artist": "Beethoven, Ludwig",
@@ -259,9 +259,9 @@
     "genre": "Classical",
     "format": "LP",
     "barcode": "VNL-JM8RXF",
+    "coverImage": "covers/VNL-JM8RXF.jpg",
     "dateAdded": "2026-02-26T12:16:43.857Z",
-    "printed": false,
-    "coverImage": "covers/VNL-JM8RXF.jpg"
+    "printed": false
   },
   {
     "artist": "Beethoven, Ludwig",
@@ -270,9 +270,9 @@
     "genre": "Classical",
     "format": "LP",
     "barcode": "VNL-YYDAAQ",
+    "coverImage": "covers/VNL-YYDAAQ.jpg",
     "dateAdded": "2026-02-26T12:22:16.336Z",
-    "printed": false,
-    "coverImage": "covers/VNL-YYDAAQ.jpg"
+    "printed": false
   },
   {
     "artist": "Beethoven, Ludwig",
@@ -281,9 +281,9 @@
     "genre": "Classical",
     "format": "LP",
     "barcode": "VNL-CBGGWY",
+    "coverImage": "covers/VNL-CBGGWY.jpg",
     "dateAdded": "2026-02-26T12:23:06.211Z",
-    "printed": false,
-    "coverImage": "covers/VNL-CBGGWY.jpg"
+    "printed": false
   },
   {
     "artist": "Belafonte, Harry",
@@ -303,9 +303,9 @@
     "genre": "Classical",
     "format": "LP",
     "barcode": "VNL-7SDH8T",
+    "coverImage": "covers/VNL-7SDH8T.jpg",
     "dateAdded": "2026-02-26T11:58:02.292Z",
-    "printed": false,
-    "coverImage": "covers/VNL-7SDH8T.jpg"
+    "printed": false
   },
   {
     "artist": "Bernstein, Leonard",
@@ -325,9 +325,9 @@
     "genre": "Classical",
     "format": "LP",
     "barcode": "VNL-ZWT2XS",
+    "coverImage": "covers/VNL-ZWT2XS.jpg",
     "dateAdded": "2026-02-26T11:59:55.828Z",
-    "printed": false,
-    "coverImage": "covers/VNL-ZWT2XS.jpg"
+    "printed": false
   },
   {
     "artist": "Black Sun",
@@ -336,9 +336,9 @@
     "genre": "Disco",
     "format": "12\" Single (33RPM)",
     "barcode": "VNL-BTJ2GK",
+    "coverImage": "covers/VNL-BTJ2GK.jpg",
     "dateAdded": "2026-02-25T00:06:39.024Z",
-    "printed": false,
-    "coverImage": "covers/VNL-BTJ2GK.jpg"
+    "printed": false
   },
   {
     "artist": "Bowie, David",
@@ -347,9 +347,9 @@
     "genre": "Rock",
     "format": "LP",
     "barcode": "VNL-44TP44",
+    "coverImage": "covers/VNL-44TP44.jpg",
     "dateAdded": "2026-02-01T00:00:00.000Z",
-    "printed": true,
-    "coverImage": "covers/VNL-44TP44.jpg"
+    "printed": true
   },
   {
     "artist": "Boys Town Gang",
@@ -468,9 +468,9 @@
     "genre": "Disco",
     "format": "LP",
     "barcode": "VNL-6M7QSZ",
+    "coverImage": "covers/VNL-6M7QSZ.jpg",
     "dateAdded": "2026-02-25T11:34:07.787Z",
-    "printed": false,
-    "coverImage": "covers/VNL-6M7QSZ.jpg"
+    "printed": false
   },
   {
     "artist": "Cerrone",
@@ -479,9 +479,9 @@
     "genre": "Disco",
     "format": "LP",
     "barcode": "VNL-UQD9HA",
+    "coverImage": "covers/VNL-UQD9HA.jpg",
     "dateAdded": "2026-02-25T11:37:36.924Z",
-    "printed": false,
-    "coverImage": "covers/VNL-UQD9HA.jpg"
+    "printed": false
   },
   {
     "artist": "Cerrone",
@@ -490,9 +490,9 @@
     "genre": "Disco",
     "format": "LP",
     "barcode": "VNL-LQFGEZ",
+    "coverImage": "covers/VNL-LQFGEZ.jpg",
     "dateAdded": "2026-02-25T11:38:05.694Z",
-    "printed": false,
-    "coverImage": "covers/VNL-LQFGEZ.jpg"
+    "printed": false
   },
   {
     "artist": "Cerrone",
@@ -501,9 +501,9 @@
     "genre": "Disco",
     "format": "LP",
     "barcode": "VNL-MH4F28",
+    "coverImage": "covers/VNL-MH4F28.jpg",
     "dateAdded": "2026-02-25T11:38:40.451Z",
-    "printed": false,
-    "coverImage": "covers/VNL-MH4F28.jpg"
+    "printed": false
   },
   {
     "artist": "Chandler, Gene",
@@ -512,9 +512,9 @@
     "genre": "Funk / Soul",
     "format": "LP",
     "barcode": "VNL-NJZKCB",
+    "coverImage": "covers/VNL-NJZKCB.jpg",
     "dateAdded": "2026-02-01T00:00:00.000Z",
-    "printed": true,
-    "coverImage": "covers/VNL-NJZKCB.jpg"
+    "printed": true
   },
   {
     "artist": "Chic",
@@ -588,9 +588,9 @@
     "genre": "Synth Pop",
     "format": "12\" Single (33RPM)",
     "barcode": "VNL-RPJJT6",
+    "coverImage": "covers/VNL-RPJJT6.jpg",
     "dateAdded": "2026-02-01T00:00:00.000Z",
-    "printed": true,
-    "coverImage": "covers/VNL-RPJJT6.jpg"
+    "printed": true
   },
   {
     "artist": "Cooder, Ry",
@@ -621,9 +621,9 @@
     "genre": "Folk",
     "format": "LP",
     "barcode": "VNL-L8QFFT",
+    "coverImage": "covers/VNL-L8QFFT.jpg",
     "dateAdded": "2026-02-01T00:00:00.000Z",
-    "printed": true,
-    "coverImage": "covers/VNL-L8QFFT.jpg"
+    "printed": true
   },
   {
     "artist": "Costandinos, Alex",
@@ -707,9 +707,9 @@
     "genre": "Disco",
     "format": "LP",
     "barcode": "VNL-H96YJ6",
+    "coverImage": "covers/VNL-H96YJ6.jpg",
     "dateAdded": "2026-02-01T00:00:00.000Z",
-    "printed": true,
-    "coverImage": "covers/VNL-H96YJ6.jpg"
+    "printed": true
   },
   {
     "artist": "Dassin, Joe",
@@ -729,9 +729,9 @@
     "genre": "Soundtrack",
     "format": "LP",
     "barcode": "VNL-UV4T6B",
+    "coverImage": "covers/VNL-UV4T6B.jpg",
     "dateAdded": "2026-02-01T00:00:00.000Z",
-    "printed": true,
-    "coverImage": "covers/VNL-UV4T6B.jpg"
+    "printed": true
   },
   {
     "artist": "Davis, Miles",
@@ -839,9 +839,9 @@
     "genre": "Easy Listening",
     "format": "LP",
     "barcode": "VNL-7NP82D",
+    "coverImage": "covers/VNL-7NP82D.jpg",
     "dateAdded": "2026-02-26T11:42:56.542Z",
-    "printed": false,
-    "coverImage": "covers/VNL-7NP82D.jpg"
+    "printed": false
   },
   {
     "artist": "Diamond, Neil",
@@ -958,9 +958,9 @@
     "genre": "Disco",
     "format": "12\" Single (33RPM)",
     "barcode": "VNL-QE2KKK",
+    "coverImage": "covers/VNL-QE2KKK.jpg",
     "dateAdded": "2026-02-25T11:34:58.441Z",
-    "printed": false,
-    "coverImage": "covers/VNL-QE2KKK.jpg"
+    "printed": false
   },
   {
     "artist": "Disko Band",
@@ -969,9 +969,9 @@
     "genre": "Disco",
     "format": "LP",
     "barcode": "VNL-DHSPKM",
+    "coverImage": "covers/VNL-DHSPKM.jpg",
     "dateAdded": "2026-02-25T00:27:28.036Z",
-    "printed": false,
-    "coverImage": "covers/VNL-DHSPKM.jpg"
+    "printed": false
   },
   {
     "artist": "Dolby's Cube",
@@ -980,9 +980,9 @@
     "genre": "Synth Pop",
     "format": "12\" Single (45RPM)",
     "barcode": "VNL-9LUHY8",
+    "coverImage": "covers/VNL-9LUHY8.jpg",
     "dateAdded": "2026-02-01T00:00:00.000Z",
-    "printed": true,
-    "coverImage": "covers/VNL-9LUHY8.jpg"
+    "printed": true
   },
   {
     "artist": "Douglas, Carol",
@@ -1013,9 +1013,9 @@
     "genre": "Disco",
     "format": "LP",
     "barcode": "VNL-ZNYXVD",
+    "coverImage": "covers/VNL-ZNYXVD.jpg",
     "dateAdded": "2026-02-25T00:14:40.931Z",
-    "printed": false,
-    "coverImage": "covers/VNL-ZNYXVD.jpg"
+    "printed": false
   },
   {
     "artist": "Dupree, Cornell",
@@ -1024,9 +1024,9 @@
     "genre": "Jazz",
     "format": "LP",
     "barcode": "VNL-CAUFZ8",
+    "coverImage": "covers/VNL-CAUFZ8.jpg",
     "dateAdded": "2026-02-01T00:00:00.000Z",
-    "printed": true,
-    "coverImage": "covers/VNL-CAUFZ8.jpg"
+    "printed": true
   },
   {
     "artist": "Dvorak, Antonin",
@@ -1112,9 +1112,9 @@
     "genre": "Disco",
     "format": "LP",
     "barcode": "VNL-364DN9",
+    "coverImage": "covers/VNL-364DN9.jpg",
     "dateAdded": "2026-02-25T00:10:19.654Z",
-    "printed": false,
-    "coverImage": "covers/VNL-364DN9.jpg"
+    "printed": false
   },
   {
     "artist": "Ferrante and Teicher",
@@ -1134,9 +1134,9 @@
     "genre": "Disco",
     "format": "LP",
     "barcode": "VNL-KDEVC5",
+    "coverImage": "covers/VNL-KDEVC5.jpg",
     "dateAdded": "2026-02-01T00:00:00.000Z",
-    "printed": true,
-    "coverImage": "covers/VNL-KDEVC5.jpg"
+    "printed": true
   },
   {
     "artist": "First Choice",
@@ -1156,9 +1156,9 @@
     "genre": "Disco",
     "format": "LP",
     "barcode": "VNL-5NR944",
+    "coverImage": "covers/VNL-5NR944.jpg",
     "dateAdded": "2026-02-01T00:00:00.000Z",
-    "printed": true,
-    "coverImage": "covers/VNL-5NR944.jpg"
+    "printed": true
   },
   {
     "artist": "First Choice",
@@ -1167,9 +1167,9 @@
     "genre": "Disco",
     "format": "12\" Single (45RPM)",
     "barcode": "VNL-XPSX5B",
+    "coverImage": "covers/VNL-XPSX5B.jpg",
     "dateAdded": "2026-02-25T11:42:03.303Z",
-    "printed": false,
-    "coverImage": "covers/VNL-XPSX5B.jpg"
+    "printed": false
   },
   {
     "artist": "Fist-O-Funk Orchestra",
@@ -1244,9 +1244,9 @@
     "genre": "Classical",
     "format": "LP",
     "barcode": "VNL-NPDD6M",
+    "coverImage": "covers/VNL-NPDD6M.jpg",
     "dateAdded": "2026-02-26T12:15:20.090Z",
-    "printed": false,
-    "coverImage": "covers/VNL-NPDD6M.jpg"
+    "printed": false
   },
   {
     "artist": "Gaynor, Gloria",
@@ -1310,9 +1310,9 @@
     "genre": "Disco",
     "format": "LP",
     "barcode": "VNL-BDCEUT",
+    "coverImage": "covers/VNL-BDCEUT.jpg",
     "dateAdded": "2026-02-25T00:15:14.052Z",
-    "printed": false,
-    "coverImage": "covers/VNL-BDCEUT.jpg"
+    "printed": false
   },
   {
     "artist": "Gaynor, Gloria",
@@ -1321,9 +1321,9 @@
     "genre": "Disco",
     "format": "LP",
     "barcode": "VNL-XB4JN4",
+    "coverImage": "covers/VNL-XB4JN4.jpg",
     "dateAdded": "2026-02-25T00:29:48.116Z",
-    "printed": false,
-    "coverImage": "covers/VNL-XB4JN4.jpg"
+    "printed": false
   },
   {
     "artist": "Gaynor, Gloria",
@@ -1332,9 +1332,9 @@
     "genre": "Disco",
     "format": "12\" Single (33RPM)",
     "barcode": "VNL-7K9XML",
+    "coverImage": "covers/VNL-7K9XML.jpg",
     "dateAdded": "2026-02-25T11:40:14.582Z",
-    "printed": false,
-    "coverImage": "covers/VNL-7K9XML.jpg"
+    "printed": false
   },
   {
     "artist": "Genghis Khan",
@@ -1618,9 +1618,9 @@
     "genre": "Electronic",
     "format": "12\" Single (33RPM)",
     "barcode": "VNL-7JW9DY",
+    "coverImage": "covers/VNL-7JW9DY.jpg",
     "dateAdded": "2026-02-01T00:00:00.000Z",
-    "printed": true,
-    "coverImage": "covers/VNL-7JW9DY.jpg"
+    "printed": true
   },
   {
     "artist": "I Tirelli",
@@ -1683,9 +1683,9 @@
     "genre": "Surf",
     "format": "LP",
     "barcode": "VNL-H8379K",
+    "coverImage": "covers/VNL-H8379K.jpg",
     "dateAdded": "2026-02-26T11:51:05.208Z",
-    "printed": false,
-    "coverImage": "covers/VNL-H8379K.jpg"
+    "printed": false
   },
   {
     "artist": "Jankowski, Horst",
@@ -1826,9 +1826,9 @@
     "genre": "Disco",
     "format": "12\" Single (33RPM)",
     "barcode": "VNL-TE4HCK",
+    "coverImage": "covers/VNL-TE4HCK.jpg",
     "dateAdded": "2026-02-26T12:09:20.867Z",
-    "printed": false,
-    "coverImage": "covers/VNL-TE4HCK.jpg"
+    "printed": false
   },
   {
     "artist": "Jones, Quincy",
@@ -1837,9 +1837,9 @@
     "genre": "Funk / Soul",
     "format": "LP",
     "barcode": "VNL-RZMJBM",
+    "coverImage": "covers/VNL-RZMJBM.jpg",
     "dateAdded": "2026-02-26T12:21:33.128Z",
-    "printed": false,
-    "coverImage": "covers/VNL-RZMJBM.jpg"
+    "printed": false
   },
   {
     "artist": "Jones, Tamiko",
@@ -1848,9 +1848,9 @@
     "genre": "Funk / Soul",
     "format": "LP",
     "barcode": "VNL-SFGNQP",
+    "coverImage": "covers/VNL-SFGNQP.jpg",
     "dateAdded": "2026-02-01T00:00:00.000Z",
-    "printed": true,
-    "coverImage": "covers/VNL-SFGNQP.jpg"
+    "printed": true
   },
   {
     "artist": "Junko Ohashi",
@@ -1870,9 +1870,9 @@
     "genre": "Disco",
     "format": "LP",
     "barcode": "VNL-FY3BK2",
+    "coverImage": "covers/VNL-FY3BK2.jpg",
     "dateAdded": "2026-02-01T00:00:00.000Z",
-    "printed": true,
-    "coverImage": "covers/VNL-FY3BK2.jpg"
+    "printed": true
   },
   {
     "artist": "Juvet, Patrick",
@@ -1881,9 +1881,9 @@
     "genre": "Disco",
     "format": "LP",
     "barcode": "VNL-HAX66H",
+    "coverImage": "covers/VNL-HAX66H.jpg",
     "dateAdded": "2026-02-01T00:00:00.000Z",
-    "printed": true,
-    "coverImage": "covers/VNL-HAX66H.jpg"
+    "printed": true
   },
   {
     "artist": "Juvet, Patrick",
@@ -1892,9 +1892,9 @@
     "genre": "Disco",
     "format": "LP",
     "barcode": "VNL-LU9FGV",
+    "coverImage": "covers/VNL-LU9FGV.jpg",
     "dateAdded": "2026-02-25T00:17:19.467Z",
-    "printed": false,
-    "coverImage": "covers/VNL-LU9FGV.jpg"
+    "printed": false
   },
   {
     "artist": "Kara, Anton",
@@ -1979,9 +1979,9 @@
     "genre": "Disco",
     "format": "LP",
     "barcode": "VNL-46XLDB",
+    "coverImage": "covers/VNL-46XLDB.jpg",
     "dateAdded": "2026-02-25T11:37:10.082Z",
-    "printed": false,
-    "coverImage": "covers/VNL-46XLDB.jpg"
+    "printed": false
   },
   {
     "artist": "Little River Band",
@@ -2056,9 +2056,9 @@
     "genre": "Easy Listening",
     "format": "LP",
     "barcode": "VNL-TYGGBC",
+    "coverImage": "covers/VNL-TYGGBC.jpg",
     "dateAdded": "2026-02-26T11:52:15.581Z",
-    "printed": false,
-    "coverImage": "covers/VNL-TYGGBC.jpg"
+    "printed": false
   },
   {
     "artist": "M. Sage + Friends",
@@ -2133,9 +2133,9 @@
     "genre": "Soundtrack",
     "format": "LP",
     "barcode": "VNL-Y5KEVU",
+    "coverImage": "covers/VNL-Y5KEVU.jpg",
     "dateAdded": "2026-02-01T00:00:00.000Z",
-    "printed": true,
-    "coverImage": "covers/VNL-Y5KEVU.jpg"
+    "printed": true
   },
   {
     "artist": "Mancini, Henry",
@@ -2144,9 +2144,9 @@
     "genre": "Soundtrack",
     "format": "LP",
     "barcode": "VNL-5EB3T8",
+    "coverImage": "covers/VNL-5EB3T8.jpg",
     "dateAdded": "2026-02-25T00:31:56.704Z",
-    "printed": false,
-    "coverImage": "covers/VNL-5EB3T8.jpg"
+    "printed": false
   },
   {
     "artist": "Manhattans",
@@ -2166,9 +2166,9 @@
     "genre": "Classical",
     "format": "LP",
     "barcode": "VNL-RKSFN2",
+    "coverImage": "covers/VNL-RKSFN2.jpg",
     "dateAdded": "2026-02-26T11:59:12.635Z",
-    "printed": false,
-    "coverImage": "covers/VNL-RKSFN2.jpg"
+    "printed": false
   },
   {
     "artist": "Mauriat, Paul",
@@ -2199,9 +2199,9 @@
     "genre": "Easy Listening",
     "format": "LP",
     "barcode": "VNL-F3ZTSA",
+    "coverImage": "covers/VNL-F3ZTSA.jpg",
     "dateAdded": "2026-02-01T00:00:00.000Z",
-    "printed": true,
-    "coverImage": "covers/VNL-F3ZTSA.jpg"
+    "printed": true
   },
   {
     "artist": "Mauriat, Paul",
@@ -2210,9 +2210,9 @@
     "genre": "Disco",
     "format": "LP",
     "barcode": "VNL-CWMKDC",
+    "coverImage": "covers/VNL-CWMKDC.jpg",
     "dateAdded": "2026-02-01T00:00:00.000Z",
-    "printed": true,
-    "coverImage": "covers/VNL-CWMKDC.jpg"
+    "printed": true
   },
   {
     "artist": "McCoy , Van",
@@ -2309,9 +2309,9 @@
     "genre": "Disco",
     "format": "LP",
     "barcode": "VNL-WMQJHV",
+    "coverImage": "covers/VNL-WMQJHV.jpg",
     "dateAdded": "2026-02-01T00:00:00.000Z",
-    "printed": true,
-    "coverImage": "covers/VNL-WMQJHV.jpg"
+    "printed": true
   },
   {
     "artist": "Meco",
@@ -2363,9 +2363,9 @@
     "genre": "Funk / Soul",
     "format": "LP",
     "barcode": "VNL-VWMMNZ",
+    "coverImage": "covers/VNL-VWMMNZ.jpg",
     "dateAdded": "2026-02-01T00:00:00.000Z",
-    "printed": true,
-    "coverImage": "covers/VNL-VWMMNZ.jpg"
+    "printed": true
   },
   {
     "artist": "Moby",
@@ -2385,9 +2385,9 @@
     "genre": "Soundtrack",
     "format": "LP",
     "barcode": "VNL-SVWZ4L",
+    "coverImage": "covers/VNL-SVWZ4L.jpg",
     "dateAdded": "2026-02-25T00:30:38.838Z",
-    "printed": false,
-    "coverImage": "covers/VNL-SVWZ4L.jpg"
+    "printed": false
   },
   {
     "artist": "Moroder, Giorgio",
@@ -2396,9 +2396,9 @@
     "genre": "Soundtrack",
     "format": "LP",
     "barcode": "VNL-5GW7KJ",
+    "coverImage": "covers/VNL-5GW7KJ.jpg",
     "dateAdded": "2026-02-25T11:39:25.352Z",
-    "printed": false,
-    "coverImage": "covers/VNL-5GW7KJ.jpg"
+    "printed": false
   },
   {
     "artist": "Moustaki, Georges",
@@ -2418,9 +2418,9 @@
     "genre": "Classical",
     "format": "LP",
     "barcode": "VNL-29FVUL",
+    "coverImage": "covers/VNL-29FVUL.jpg",
     "dateAdded": "2026-02-26T12:01:05.458Z",
-    "printed": false,
-    "coverImage": "covers/VNL-29FVUL.jpg"
+    "printed": false
   },
   {
     "artist": "Munich Machine",
@@ -2429,9 +2429,9 @@
     "genre": "Disco",
     "format": "LP",
     "barcode": "VNL-H8MBYM",
+    "coverImage": "covers/VNL-H8MBYM.jpg",
     "dateAdded": "2026-02-01T00:00:00.000Z",
-    "printed": true,
-    "coverImage": "covers/VNL-H8MBYM.jpg"
+    "printed": true
   },
   {
     "artist": "Munich Machine / Giorgio Moroder",
@@ -2451,9 +2451,9 @@
     "genre": "Classical",
     "format": "LP",
     "barcode": "VNL-LSWG9M",
+    "coverImage": "covers/VNL-LSWG9M.jpg",
     "dateAdded": "2026-02-26T11:57:08.202Z",
-    "printed": false,
-    "coverImage": "covers/VNL-LSWG9M.jpg"
+    "printed": false
   },
   {
     "artist": "New Order",
@@ -2495,9 +2495,9 @@
     "genre": "Soundtrack",
     "format": "LP",
     "barcode": "VNL-5UT3LN",
+    "coverImage": "covers/VNL-5UT3LN.jpg",
     "dateAdded": "2026-02-01T00:00:00.000Z",
-    "printed": true,
-    "coverImage": "covers/VNL-5UT3LN.jpg"
+    "printed": true
   },
   {
     "artist": "Obel, Agnes",
@@ -2528,9 +2528,9 @@
     "genre": "Rock",
     "format": "LP",
     "barcode": "VNL-LYYFSH",
+    "coverImage": "covers/VNL-LYYFSH.jpg",
     "dateAdded": "2026-02-26T12:07:12.031Z",
-    "printed": false,
-    "coverImage": "covers/VNL-LYYFSH.jpg"
+    "printed": false
   },
   {
     "artist": "Osamu Shoji",
@@ -2561,16 +2561,6 @@
     "format": "LP",
     "barcode": "VNL-LMVGQL",
     "coverImage": "covers/VNL-LMVGQL.jpg",
-    "dateAdded": "2026-02-01T00:00:00.000Z",
-    "printed": true
-  },
-  {
-    "artist": "Pet Shop Boys",
-    "title": "I Put A Spell On You",
-    "year": "1965",
-    "genre": "Jazz",
-    "format": "LP",
-    "barcode": "VNL-HTSQ2T",
     "dateAdded": "2026-02-01T00:00:00.000Z",
     "printed": true
   },
@@ -2930,9 +2920,9 @@
     "genre": "Synth Pop",
     "format": "12\" Single (45RPM)",
     "barcode": "VNL-NMFUCE",
+    "coverImage": "covers/VNL-NMFUCE.jpg",
     "dateAdded": "2026-02-01T00:00:00.000Z",
-    "printed": true,
-    "coverImage": "covers/VNL-NMFUCE.jpg"
+    "printed": true
   },
   {
     "artist": "Pet Shop Boys",
@@ -2941,9 +2931,9 @@
     "genre": "Synth Pop",
     "format": "12\" Single (33RPM)",
     "barcode": "VNL-925J2N",
+    "coverImage": "covers/VNL-925J2N.jpg",
     "dateAdded": "2026-02-25T00:08:07.621Z",
-    "printed": false,
-    "coverImage": "covers/VNL-925J2N.jpg"
+    "printed": false
   },
   {
     "artist": "Pet Shop Boys",
@@ -2952,9 +2942,9 @@
     "genre": "Synth Pop",
     "format": "12\" Single (33RPM)",
     "barcode": "VNL-EG4LTY",
+    "coverImage": "covers/VNL-EG4LTY.jpg",
     "dateAdded": "2026-02-25T00:09:52.344Z",
-    "printed": false,
-    "coverImage": "covers/VNL-EG4LTY.jpg"
+    "printed": false
   },
   {
     "artist": "Piaf, Edith",
@@ -3017,9 +3007,9 @@
     "genre": "Classical",
     "format": "LP",
     "barcode": "VNL-FNLSZX",
+    "coverImage": "covers/VNL-FNLSZX.jpg",
     "dateAdded": "2026-02-26T12:02:09.270Z",
-    "printed": false,
-    "coverImage": "covers/VNL-FNLSZX.jpg"
+    "printed": false
   },
   {
     "artist": "Puccini",
@@ -3028,9 +3018,9 @@
     "genre": "Classical",
     "format": "LP",
     "barcode": "VNL-VL3FW9",
+    "coverImage": "covers/VNL-VL3FW9.jpg",
     "dateAdded": "2026-02-26T12:03:22.748Z",
-    "printed": false,
-    "coverImage": "covers/VNL-VL3FW9.jpg"
+    "printed": false
   },
   {
     "artist": "Purcell, Henry",
@@ -3050,9 +3040,9 @@
     "genre": "Classical",
     "format": "LP",
     "barcode": "VNL-824CRM",
+    "coverImage": "covers/VNL-824CRM.jpg",
     "dateAdded": "2026-02-26T12:24:00.901Z",
-    "printed": false,
-    "coverImage": "covers/VNL-824CRM.jpg"
+    "printed": false
   },
   {
     "artist": "Ravel, Maurice",
@@ -3182,9 +3172,9 @@
     "genre": "New Wave",
     "format": "LP",
     "barcode": "VNL-4PHGFN",
+    "coverImage": "covers/VNL-4PHGFN.jpg",
     "dateAdded": "2026-02-25T11:33:20.627Z",
-    "printed": false,
-    "coverImage": "covers/VNL-4PHGFN.jpg"
+    "printed": false
   },
   {
     "artist": "Shostakovitch, Dimitri",
@@ -3268,9 +3258,9 @@
     "genre": "Jazz",
     "format": "LP",
     "barcode": "VNL-J8W8KT",
+    "coverImage": "covers/VNL-J8W8KT.jpg",
     "dateAdded": "2026-02-26T11:46:01.013Z",
-    "printed": false,
-    "coverImage": "covers/VNL-J8W8KT.jpg"
+    "printed": false
   },
   {
     "artist": "Simone, Nina",
@@ -3279,9 +3269,20 @@
     "genre": "Jazz",
     "format": "LP",
     "barcode": "VNL-PPHYQZ",
+    "coverImage": "covers/VNL-PPHYQZ.jpg",
     "dateAdded": "2026-02-26T11:46:26.820Z",
+    "printed": false
+  },
+  {
+    "artist": "Simone, Nina",
+    "title": "I Put A Spell On You",
+    "year": "1965",
+    "genre": "Jazz",
+    "format": "LP",
+    "barcode": "VNL-HTSQ2T",
+    "dateAdded": "2026-02-26T14:36:34.935Z",
     "printed": false,
-    "coverImage": "covers/VNL-PPHYQZ.jpg"
+    "coverImage": "covers/VNL-HTSQ2T.jpg"
   },
   {
     "artist": "Sister Sledge",
@@ -3301,9 +3302,9 @@
     "genre": "Classical",
     "format": "LP",
     "barcode": "VNL-TR3AMG",
+    "coverImage": "covers/VNL-TR3AMG.jpg",
     "dateAdded": "2026-02-26T12:24:45.467Z",
-    "printed": false,
-    "coverImage": "covers/VNL-TR3AMG.jpg"
+    "printed": false
   },
   {
     "artist": "Smith, Elliot",
@@ -3520,9 +3521,9 @@
     "genre": "Classical",
     "format": "LP",
     "barcode": "VNL-2Z9XGL",
+    "coverImage": "covers/VNL-2Z9XGL.jpg",
     "dateAdded": "2026-02-25T00:19:17.047Z",
-    "printed": false,
-    "coverImage": "covers/VNL-2Z9XGL.jpg"
+    "printed": false
   },
   {
     "artist": "Strauss, Richard",
@@ -3541,9 +3542,9 @@
     "genre": "Classical",
     "format": "LP",
     "barcode": "VNL-8SAUXH",
+    "coverImage": "covers/VNL-8SAUXH.jpg",
     "dateAdded": "2026-02-25T00:23:07.921Z",
-    "printed": false,
-    "coverImage": "covers/VNL-8SAUXH.jpg"
+    "printed": false
   },
   {
     "artist": "Strauss, Richard",
@@ -3572,9 +3573,9 @@
     "genre": "Classical",
     "format": "LP",
     "barcode": "VNL-9LBNJA",
+    "coverImage": "covers/VNL-9LBNJA.jpg",
     "dateAdded": "2026-02-26T11:53:48.348Z",
-    "printed": false,
-    "coverImage": "covers/VNL-9LBNJA.jpg"
+    "printed": false
   },
   {
     "artist": "Strauss, Richard",
@@ -3583,9 +3584,9 @@
     "genre": "Classical",
     "format": "LP",
     "barcode": "VNL-GGKM8K",
+    "coverImage": "covers/VNL-GGKM8K.jpg",
     "dateAdded": "2026-02-26T11:54:38.187Z",
-    "printed": false,
-    "coverImage": "covers/VNL-GGKM8K.jpg"
+    "printed": false
   },
   {
     "artist": "Strauss, Richard",
@@ -3594,9 +3595,9 @@
     "genre": "Classical",
     "format": "LP",
     "barcode": "VNL-KN52PD",
+    "coverImage": "covers/VNL-KN52PD.jpg",
     "dateAdded": "2026-02-26T11:55:22.421Z",
-    "printed": false,
-    "coverImage": "covers/VNL-KN52PD.jpg"
+    "printed": false
   },
   {
     "artist": "Strauss, Richard",
@@ -3605,9 +3606,9 @@
     "genre": "Classical",
     "format": "LP",
     "barcode": "VNL-G3XPVS",
+    "coverImage": "covers/VNL-G3XPVS.jpg",
     "dateAdded": "2026-02-26T12:04:05.017Z",
-    "printed": false,
-    "coverImage": "covers/VNL-G3XPVS.jpg"
+    "printed": false
   },
   {
     "artist": "Stravinsky, Igor",
@@ -3660,9 +3661,9 @@
     "genre": "Classical",
     "format": "LP",
     "barcode": "VNL-22HWTU",
+    "coverImage": "covers/VNL-22HWTU.jpg",
     "dateAdded": "2026-02-01T00:00:00.000Z",
-    "printed": true,
-    "coverImage": "covers/VNL-22HWTU.jpg"
+    "printed": true
   },
   {
     "artist": "Sugarhill Gang",
@@ -3671,9 +3672,9 @@
     "genre": "Funk / Soul",
     "format": "LP",
     "barcode": "VNL-T5B3BH",
+    "coverImage": "covers/VNL-T5B3BH.jpg",
     "dateAdded": "2026-02-26T12:10:07.361Z",
-    "printed": false,
-    "coverImage": "covers/VNL-T5B3BH.jpg"
+    "printed": false
   },
   {
     "artist": "Sumac, Yma",
@@ -3824,9 +3825,9 @@
     "genre": "Disco",
     "format": "LP",
     "barcode": "VNL-EJYUK6",
+    "coverImage": "covers/VNL-EJYUK6.jpg",
     "dateAdded": "2026-02-01T00:00:00.000Z",
-    "printed": true,
-    "coverImage": "covers/VNL-EJYUK6.jpg"
+    "printed": true
   },
   {
     "artist": "Sun Ra",
@@ -3999,9 +4000,9 @@
     "genre": "Hi NRG",
     "format": "LP",
     "barcode": "VNL-Z7SS4V",
+    "coverImage": "covers/VNL-Z7SS4V.jpg",
     "dateAdded": "2026-02-25T00:15:56.794Z",
-    "printed": false,
-    "coverImage": "covers/VNL-Z7SS4V.jpg"
+    "printed": false
   },
   {
     "artist": "T.S. Eliot",
@@ -4021,9 +4022,9 @@
     "genre": "Disco",
     "format": "LP",
     "barcode": "VNL-6JRM5V",
+    "coverImage": "covers/VNL-6JRM5V.jpg",
     "dateAdded": "2026-02-01T00:00:00.000Z",
-    "printed": true,
-    "coverImage": "covers/VNL-6JRM5V.jpg"
+    "printed": true
   },
   {
     "artist": "Tantra",
@@ -4032,9 +4033,9 @@
     "genre": "Disco",
     "format": "12\" Single (33RPM)",
     "barcode": "VNL-JTWMH4",
+    "coverImage": "covers/VNL-JTWMH4.jpg",
     "dateAdded": "2026-02-01T00:00:00.000Z",
-    "printed": true,
-    "coverImage": "covers/VNL-JTWMH4.jpg"
+    "printed": true
   },
   {
     "artist": "Tantra",
@@ -4043,9 +4044,9 @@
     "genre": "Disco",
     "format": "12\" Single (33RPM)",
     "barcode": "VNL-7QTFRM",
+    "coverImage": "covers/VNL-7QTFRM.jpg",
     "dateAdded": "2026-02-25T11:41:21.549Z",
-    "printed": false,
-    "coverImage": "covers/VNL-7QTFRM.jpg"
+    "printed": false
   },
   {
     "artist": "Tantra",
@@ -4054,9 +4055,9 @@
     "genre": "Disco",
     "format": "12\" Single (33RPM)",
     "barcode": "VNL-Q8JNJJ",
+    "coverImage": "covers/VNL-Q8JNJJ.jpg",
     "dateAdded": "2026-02-26T12:08:07.007Z",
-    "printed": false,
-    "coverImage": "covers/VNL-Q8JNJJ.jpg"
+    "printed": false
   },
   {
     "artist": "The 5th Dimension",
@@ -4109,9 +4110,9 @@
     "genre": "Classical",
     "format": "LP",
     "barcode": "VNL-FF3W6B",
+    "coverImage": "covers/VNL-FF3W6B.jpg",
     "dateAdded": "2026-02-26T12:15:59.886Z",
-    "printed": false,
-    "coverImage": "covers/VNL-FF3W6B.jpg"
+    "printed": false
   },
   {
     "artist": "The Capris",
@@ -4130,9 +4131,9 @@
     "genre": "Classical",
     "format": "LP",
     "barcode": "VNL-7HTPHV",
+    "coverImage": "covers/VNL-7HTPHV.jpg",
     "dateAdded": "2026-02-25T00:26:42.198Z",
-    "printed": false,
-    "coverImage": "covers/VNL-7HTPHV.jpg"
+    "printed": false
   },
   {
     "artist": "The Chiffons",
@@ -4154,6 +4155,17 @@
     "barcode": "VNL-WG8XVA",
     "dateAdded": "2026-02-01T00:00:00.000Z",
     "printed": true
+  },
+  {
+    "artist": "The Eagles",
+    "title": "On The Border",
+    "year": "1974",
+    "genre": "Rock",
+    "format": "LP",
+    "barcode": "VNL-6BXTBG",
+    "dateAdded": "2026-02-26T15:29:07.816Z",
+    "printed": false,
+    "coverImage": "covers/VNL-6BXTBG.jpg"
   },
   {
     "artist": "The Impressions",
@@ -4184,9 +4196,9 @@
     "genre": "Funk / Soul",
     "format": "LP",
     "barcode": "VNL-7WL2H5",
+    "coverImage": "covers/VNL-7WL2H5.jpg",
     "dateAdded": "2026-02-26T12:12:29.988Z",
-    "printed": false,
-    "coverImage": "covers/VNL-7WL2H5.jpg"
+    "printed": false
   },
   {
     "artist": "The London Philharmonic Orchestra",
@@ -4195,9 +4207,9 @@
     "genre": "Classical",
     "format": "LP",
     "barcode": "VNL-E2FTMK",
+    "coverImage": "covers/VNL-E2FTMK.jpg",
     "dateAdded": "2026-02-25T00:20:40.319Z",
-    "printed": false,
-    "coverImage": "covers/VNL-E2FTMK.jpg"
+    "printed": false
   },
   {
     "artist": "The London Philharmonic Orchestra",
@@ -4206,9 +4218,9 @@
     "genre": "Contemporary",
     "format": "LP",
     "barcode": "VNL-UPZPP3",
+    "coverImage": "covers/VNL-UPZPP3.jpg",
     "dateAdded": "2026-02-25T00:25:19.291Z",
-    "printed": false,
-    "coverImage": "covers/VNL-UPZPP3.jpg"
+    "printed": false
   },
   {
     "artist": "The Love Machine",
@@ -4217,9 +4229,9 @@
     "genre": "Disco",
     "format": "LP",
     "barcode": "VNL-B5XSY5",
+    "coverImage": "covers/VNL-B5XSY5.jpg",
     "dateAdded": "2026-02-01T00:00:00.000Z",
-    "printed": true,
-    "coverImage": "covers/VNL-B5XSY5.jpg"
+    "printed": true
   },
   {
     "artist": "The Moody Blues",
@@ -4327,9 +4339,9 @@
     "genre": "Funk / Soul",
     "format": "LP",
     "barcode": "VNL-RQ3FNU",
+    "coverImage": "covers/VNL-RQ3FNU.jpg",
     "dateAdded": "2026-02-01T00:00:00.000Z",
-    "printed": true,
-    "coverImage": "covers/VNL-RQ3FNU.jpg"
+    "printed": true
   },
   {
     "artist": "The Real Thing",
@@ -4359,9 +4371,9 @@
     "genre": "Disco",
     "format": "LP",
     "barcode": "VNL-MERG24",
+    "coverImage": "covers/VNL-MERG24.jpg",
     "dateAdded": "2026-02-25T00:04:51.422Z",
-    "printed": false,
-    "coverImage": "covers/VNL-MERG24.jpg"
+    "printed": false
   },
   {
     "artist": "The Salsoul Orchestra",
@@ -4370,9 +4382,9 @@
     "genre": "Disco",
     "format": "LP",
     "barcode": "VNL-L5JNVR",
+    "coverImage": "covers/VNL-L5JNVR.jpg",
     "dateAdded": "2026-02-25T00:12:27.970Z",
-    "printed": false,
-    "coverImage": "covers/VNL-L5JNVR.jpg"
+    "printed": false
   },
   {
     "artist": "The Salsoul Orchestra",
@@ -4381,9 +4393,9 @@
     "genre": "Funk / Soul",
     "format": "LP",
     "barcode": "VNL-HBHE3N",
+    "coverImage": "covers/VNL-HBHE3N.jpg",
     "dateAdded": "2026-02-25T00:13:55.617Z",
-    "printed": false,
-    "coverImage": "covers/VNL-HBHE3N.jpg"
+    "printed": false
   },
   {
     "artist": "The Salsoul Orchestra",
@@ -4392,9 +4404,9 @@
     "genre": "Disco",
     "format": "LP",
     "barcode": "VNL-46E2P2",
+    "coverImage": "covers/VNL-46E2P2.jpg",
     "dateAdded": "2026-02-25T00:31:11.456Z",
-    "printed": false,
-    "coverImage": "covers/VNL-46E2P2.jpg"
+    "printed": false
   },
   {
     "artist": "The Smiths",
@@ -4469,9 +4481,9 @@
     "genre": "Funk / Soul",
     "format": "12\" Single (33RPM)",
     "barcode": "VNL-L52F6H",
+    "coverImage": "covers/VNL-L52F6H.jpg",
     "dateAdded": "2026-02-01T00:00:00.000Z",
-    "printed": true,
-    "coverImage": "covers/VNL-L52F6H.jpg"
+    "printed": true
   },
   {
     "artist": "The Surfaris",
@@ -4513,9 +4525,9 @@
     "genre": "Disco",
     "format": "12\" Single (33RPM)",
     "barcode": "VNL-MLWC9M",
+    "coverImage": "covers/VNL-MLWC9M.jpg",
     "dateAdded": "2026-02-25T11:43:22.479Z",
-    "printed": false,
-    "coverImage": "covers/VNL-MLWC9M.jpg"
+    "printed": false
   },
   {
     "artist": "Thomas, Dylan",
@@ -4524,9 +4536,9 @@
     "genre": "Poetry",
     "format": "LP",
     "barcode": "VNL-NC77UN",
+    "coverImage": "covers/VNL-NC77UN.jpg",
     "dateAdded": "2026-02-01T00:00:00.000Z",
-    "printed": true,
-    "coverImage": "covers/VNL-NC77UN.jpg"
+    "printed": true
   },
   {
     "artist": "Tiomkin, Dimitri",
@@ -4546,9 +4558,9 @@
     "genre": "Europop",
     "format": "12\" Single (45RPM)",
     "barcode": "VNL-DJQX6Z",
+    "coverImage": "covers/VNL-DJQX6Z.jpg",
     "dateAdded": "2026-02-25T11:50:28.638Z",
-    "printed": false,
-    "coverImage": "covers/VNL-DJQX6Z.jpg"
+    "printed": false
   },
   {
     "artist": "Tuomo & Markus",
@@ -4644,9 +4656,9 @@
     "genre": "Electronic",
     "format": "LP",
     "barcode": "VNL-939KWF",
+    "coverImage": "covers/VNL-939KWF.jpg",
     "dateAdded": "2026-02-01T00:00:00.000Z",
-    "printed": true,
-    "coverImage": "covers/VNL-939KWF.jpg"
+    "printed": true
   },
   {
     "artist": "Varèse , Edgard",
@@ -4896,9 +4908,9 @@
     "genre": "Folk",
     "format": "LP",
     "barcode": "VNL-UXHD2E",
+    "coverImage": "covers/VNL-UXHD2E.jpg",
     "dateAdded": "2026-02-26T12:26:10.127Z",
-    "printed": false,
-    "coverImage": "covers/VNL-UXHD2E.jpg"
+    "printed": false
   },
   {
     "artist": "Verdon, Gwen",
@@ -4984,9 +4996,9 @@
     "genre": "Disco",
     "format": "LP",
     "barcode": "VNL-2C5MGK",
+    "coverImage": "covers/VNL-2C5MGK.jpg",
     "dateAdded": "2026-02-25T11:46:08.837Z",
-    "printed": false,
-    "coverImage": "covers/VNL-2C5MGK.jpg"
+    "printed": false
   },
   {
     "artist": "Village People",
@@ -4995,9 +5007,9 @@
     "genre": "Disco",
     "format": "LP",
     "barcode": "VNL-CZ45VM",
+    "coverImage": "covers/VNL-CZ45VM.jpg",
     "dateAdded": "2026-02-25T11:46:44.350Z",
-    "printed": false,
-    "coverImage": "covers/VNL-CZ45VM.jpg"
+    "printed": false
   },
   {
     "artist": "Village People",
@@ -5006,9 +5018,9 @@
     "genre": "Disco",
     "format": "12\" Single (33RPM)",
     "barcode": "VNL-E7RYS5",
+    "coverImage": "covers/VNL-E7RYS5.jpg",
     "dateAdded": "2026-02-25T11:47:27.611Z",
-    "printed": false,
-    "coverImage": "covers/VNL-E7RYS5.jpg"
+    "printed": false
   },
   {
     "artist": "Wagner, Richard",
@@ -5138,9 +5150,9 @@
     "genre": "Disco",
     "format": "LP",
     "barcode": "VNL-4W6N6J",
+    "coverImage": "covers/VNL-4W6N6J.jpg",
     "dateAdded": "2026-02-26T12:10:32.291Z",
-    "printed": false,
-    "coverImage": "covers/VNL-4W6N6J.jpg"
+    "printed": false
   },
   {
     "artist": "Williams, John",
@@ -5170,9 +5182,9 @@
     "genre": "Funk / Soul",
     "format": "LP",
     "barcode": "VNL-MWDJWS",
+    "coverImage": "covers/VNL-MWDJWS.jpg",
     "dateAdded": "2026-02-25T00:11:25.083Z",
-    "printed": false,
-    "coverImage": "covers/VNL-MWDJWS.jpg"
+    "printed": false
   },
   {
     "artist": "Yuzo Kayama",
@@ -5192,9 +5204,9 @@
     "genre": "Hi NRG",
     "format": "12\" Single (45RPM)",
     "barcode": "VNL-J2EXKL",
+    "coverImage": "covers/VNL-J2EXKL.jpg",
     "dateAdded": "2026-02-25T11:36:07.764Z",
-    "printed": false,
-    "coverImage": "covers/VNL-J2EXKL.jpg"
+    "printed": false
   },
   {
     "artist": "沢井・琴アンサンブル, ディスコ・ラヴランド・オーケストラ",
