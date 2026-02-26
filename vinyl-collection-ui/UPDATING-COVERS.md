@@ -14,7 +14,8 @@ This guide explains how to fetch and add album covers for your vinyl records usi
 2. Copy `vinyl.json` to the website repo
 3. Run the cover fetching script
 4. Copy updated JSON back as the main `vinyl.json`
-5. Commit and push changes to GitHub
+5. Sync cover paths back to the data repo
+6. Commit and push changes to GitHub
 
 ## Detailed Steps
 
@@ -75,7 +76,20 @@ The script outputs `vinyl-with-covers.json` — copy it over the main file:
 cp ~/oftenback.github.io/vinyl-with-covers.json ~/oftenback.github.io/vinyl.json
 ```
 
-### 5. Commit and Push to GitHub
+### 5. Sync Cover Paths Back to Data Repo
+
+The data repo (`vinyl-collection-data`) is what the UI pulls from via "Pull from Remote".
+It needs the updated cover paths too, otherwise a pull will overwrite them.
+
+```bash
+cp ~/oftenback.github.io/vinyl.json ~/vinyl-collection-data/vinyl.json
+cd ~/vinyl-collection-data
+git add vinyl.json
+git commit -m "Update cover paths for new album covers"
+git push
+```
+
+### 6. Commit and Push Website to GitHub
 
 ```bash
 cd ~/oftenback.github.io
@@ -94,7 +108,7 @@ git commit -m "Add new album covers from Discogs"
 git push
 ```
 
-### 6. Verify on GitHub Pages
+### 7. Verify on GitHub Pages
 
 After pushing, GitHub Pages will rebuild your site (usually 1-2 minutes).
 Visit https://oftenback.github.io/vinyl-collection-ui/ to see the new covers.
