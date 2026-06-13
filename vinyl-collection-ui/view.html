@@ -1,303 +1,94 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<title>Vinyl Collection — Viewer</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" href="style.css">
-<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <meta charset="utf-8" />
+  <title>vinyl — browse</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="./style.css" />
 </head>
-
 <body>
+  <main class="page">
+    <div class="controls">
+      <input id="q" type="search" placeholder="search artist, title, year, genre, format, barcode…" autocomplete="off" autofocus />
+      <label for="sort">sort:</label>
+      <select id="sort">
+        <option value="artist">artist</option>
+        <option value="title">title</option>
+        <option value="year">year</option>
+        <option value="dateAdded">date added</option>
+      </select>
+      <select id="direction">
+        <option value="asc">a → z</option>
+        <option value="desc">z → a</option>
+      </select>
+      <span id="count" style="color: var(--muted); font-size: 13px;"></span>
+    </div>
 
-<h1>Vinyl Collection — Viewer</h1>
+    <div id="records" class="records"></div>
+  </main>
 
-<nav>
-  <a href="index.html">Editor</a>
-  <a href="view.html">Viewer</a>
-  <a href="stats.html">Statistics</a>
-  <a href="print-barcodes.html">Print Barcodes</a>
-  <a href="print-dividers.html">Print Dividers</a>
-</nav>
+  <script type="module">
+    import { renderShell, renderFooter } from "./js/shell.js";
+    import { loadRecords, coverUrl, matchesQuery, sortRecords } from "./js/data.js";
 
-<div class="card">
+    renderShell("view.html");
 
-  <!-- Top bar with search + page size + cover toggle -->
-  <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+    const q = document.getElementById("q");
+    const sortField = document.getElementById("sort");
+    const sortDir = document.getElementById("direction");
+    const list = document.getElementById("records");
+    const countEl = document.getElementById("count");
 
-    <input id="search" placeholder="Search artist, title, genre, format, barcode…">
+    let all = [];
 
-    <label style="margin-left:6px;">Page size:</label>
-    <select id="pageSize">
-      <option>10</option>
-      <option>20</option>
-      <option>50</option>
-      <option>100</option>
-    </select>
+    function render() {
+      const filtered = all.filter(r => matchesQuery(r, q.value.trim()));
+      const sorted = sortRecords(filtered, sortField.value, sortDir.value);
 
-    <button id="toggleCoversBtn" class="primary small" style="margin-left:12px;">Hide Covers</button>
+      countEl.textContent = filtered.length === all.length
+        ? `${all.length} records`
+        : `${filtered.length} of ${all.length}`;
 
-  </div>
-
-  <!-- Table -->
-  <div class="table-wrap" style="margin-top:18px;">
-    <table>
-      <thead>
-        <tr>
-          <th>#</th>
-          <th id="coverHeader">Cover</th>
-          <th data-field="artist" class="sortable">Artist</th>
-          <th data-field="title" class="sortable">Title</th>
-          <th data-field="year" class="sortable">Year</th>
-          <th data-field="genre" class="sortable">Genre</th>
-          <th data-field="format" class="sortable">Format</th>
-          <th data-field="barcode" class="sortable">Barcode</th>
-        </tr>
-      </thead>
-      <tbody id="tbody"></tbody>
-    </table>
-  </div>
-
-  <!-- Pagination -->
-  <div style="display:flex; gap:10px; margin-top:16px; align-items:center;">
-    <button id="prevBtn" class="orange small">Previous</button>
-    <button id="nextBtn" class="primary small">Next</button>
-    <div id="countLabel" style="margin-left:auto; color:#555;"></div>
-  </div>
-
-</div>
-
-<script>
-/* ========== VIEW.JS LOGIC ========== */
-
-const LS_KEY = "vinyl_records_v1";
-const LS_SHOW_COVERS = "viewer_show_covers";
-
-let allRecords = [];
-let filtered = [];
-let currentPage = 1;
-let sortField = null;
-let sortDir = 1;
-let showCovers = true;
-
-const tbody = document.getElementById("tbody");
-const searchEl = document.getElementById("search");
-const pageSizeEl = document.getElementById("pageSize");
-const prevBtn = document.getElementById("prevBtn");
-const nextBtn = document.getElementById("nextBtn");
-const countLabel = document.getElementById("countLabel");
-const toggleCoversBtn = document.getElementById("toggleCoversBtn");
-const coverHeader = document.getElementById("coverHeader");
-
-/* Restore page size */
-const savedSize = localStorage.getItem("viewer_page_size");
-if (savedSize) pageSizeEl.value = savedSize;
-
-/* Restore cover visibility preference */
-const savedShowCovers = localStorage.getItem(LS_SHOW_COVERS);
-if (savedShowCovers !== null) {
-  showCovers = savedShowCovers === "true";
-}
-
-/* Update toggle button text and cover column visibility */
-function updateCoverVisibility() {
-  if (showCovers) {
-    toggleCoversBtn.textContent = "Hide Covers";
-    coverHeader.style.display = "";
-  } else {
-    toggleCoversBtn.textContent = "Show Covers";
-    coverHeader.style.display = "none";
-  }
-}
-
-/* Initialize cover visibility */
-updateCoverVisibility();
-
-/* load local records */
-function loadLocal() {
-  try {
-    const raw = localStorage.getItem(LS_KEY);
-    allRecords = raw ? JSON.parse(raw) : [];
-  } catch { allRecords = []; }
-
-  filtered = [...allRecords];
-  render();
-}
-
-/* filtering */
-function applyFilter() {
-  const q = searchEl.value.trim().toLowerCase();
-  if (!q) filtered = [...allRecords];
-  else {
-    filtered = allRecords.filter(r =>
-      (r.artist || "").toLowerCase().includes(q) ||
-      (r.title || "").toLowerCase().includes(q) ||
-      (r.genre || "").toLowerCase().includes(q) ||
-      (r.format || "").toLowerCase().includes(q) ||
-      (r.barcode || "").toLowerCase().includes(q)
-    );
-  }
-  sortFiltered();
-  currentPage = 1;
-  render();
-}
-
-/* sorting */
-function sortFiltered() {
-  if (!sortField) return;
-
-  filtered.sort((a,b) => {
-    const A = (a[sortField] || "").toString().toLowerCase();
-    const B = (b[sortField] || "").toString().toLowerCase();
-
-    if (sortField === "year") {
-      return (parseInt(A)||0) - (parseInt(B)||0) * sortDir;
-    }
-    return A.localeCompare(B) * sortDir;
-  });
-}
-
-/* rendering */
-function render() {
-  const pageSize = parseInt(pageSizeEl.value);
-  const start = (currentPage - 1) * pageSize;
-  const pageRecords = filtered.slice(start, start + pageSize);
-
-  tbody.innerHTML = "";
-  pageRecords.forEach((r, i) => {
-    const tr = document.createElement("tr");
-
-    // Row number
-    const numCell = document.createElement("td");
-    numCell.textContent = start + i + 1;
-    tr.appendChild(numCell);
-
-    // Cover image cell (conditionally shown)
-    if (showCovers) {
-      const coverCell = document.createElement("td");
-      coverCell.style.textAlign = "center";
-      if (r.coverImage) {
-        const img = document.createElement("img");
-        img.src = r.coverImage;
-        img.className = "cover-thumbnail";
-        img.alt = "Album cover";
-        img.style.width = "60px";
-        img.style.height = "60px";
-        img.style.objectFit = "cover";
-        img.style.borderRadius = "4px";
-        coverCell.appendChild(img);
-      } else {
-        const placeholder = document.createElement("div");
-        placeholder.style.width = "60px";
-        placeholder.style.height = "60px";
-        placeholder.style.backgroundColor = "#e0e0e0";
-        placeholder.style.borderRadius = "4px";
-        placeholder.style.display = "flex";
-        placeholder.style.alignItems = "center";
-        placeholder.style.justifyContent = "center";
-        placeholder.style.fontSize = "10px";
-        placeholder.style.color = "#999";
-        placeholder.textContent = "No cover";
-        coverCell.appendChild(placeholder);
-      }
-      tr.appendChild(coverCell);
+      // Render via HTML to keep this dependency-free; if we need finer control
+      // later (virtualization, animations), swap to DOM construction.
+      list.innerHTML = sorted.map(r => {
+        const cov = coverUrl(r);
+        const img = cov
+          ? `<img class="cover" src="${cov}" alt="" loading="lazy" />`
+          : `<div class="cover placeholder">♪</div>`;
+        return `
+          <div class="record">
+            ${img}
+            <div class="meta">
+              <div class="title">${escape(r.title)}</div>
+              <div class="artist">${escape(r.artist)}</div>
+              <div class="sub">
+                <span>${escape(r.year || "?")}</span>
+                <span>${escape(r.format || "")}</span>
+                <span>${escape(r.genre || "")}</span>
+                <span class="barcode">${escape(r.barcode)}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("");
     }
 
-    // Other fields
-    tr.innerHTML += `
-      <td>${escapeHtml(r.artist)}</td>
-      <td>${escapeHtml(r.title)}</td>
-      <td>${escapeHtml(r.year || "")}</td>
-      <td>${escapeHtml(r.genre || "")}</td>
-      <td>${escapeHtml(r.format || "")}</td>
-    `;
-
-    // Create QR code cell
-    const qrCell = document.createElement("td");
-    qrCell.style.textAlign = "center";
-    const qrDiv = document.createElement("div");
-    qrDiv.style.display = "inline-block";
-    qrDiv.className = "qr-viewer-" + (start + i);
-    qrCell.appendChild(qrDiv);
-
-    const barcodeText = document.createElement("div");
-    barcodeText.textContent = r.barcode || "N/A";
-    barcodeText.style.fontSize = "10px";
-    barcodeText.style.marginTop = "4px";
-    qrCell.appendChild(barcodeText);
-
-    tr.appendChild(qrCell);
-    tbody.appendChild(tr);
-
-    // Generate QR code after DOM is ready
-    if (r.barcode) {
-      setTimeout(() => {
-        new QRCode(qrDiv, {
-          text: r.barcode,
-          width: 64,
-          height: 64
-        });
-      }, 10);
-    }
-  });
-
-  prevBtn.disabled = currentPage === 1;
-  nextBtn.disabled = start + pageSize >= filtered.length;
-
-  countLabel.textContent = `${filtered.length} record${filtered.length !== 1 ? "s" : ""}`;
-}
-
-/* helpers */
-function escapeHtml(s) {
-  return (s || "").replace(/[&<>"']/g, c =>
-    ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c])
-  );
-}
-
-/* event listeners */
-prevBtn.onclick = () => { currentPage--; render(); };
-nextBtn.onclick = () => { currentPage++; render(); };
-searchEl.oninput = applyFilter;
-
-pageSizeEl.onchange = () => {
-  localStorage.setItem("viewer_page_size", pageSizeEl.value);
-  currentPage = 1;
-  render();
-};
-
-toggleCoversBtn.onclick = () => {
-  showCovers = !showCovers;
-  localStorage.setItem(LS_SHOW_COVERS, showCovers.toString());
-  updateCoverVisibility();
-  render();
-};
-
-document.querySelectorAll("th.sortable").forEach(th => {
-  th.addEventListener("click", () => {
-    const field = th.dataset.field;
-
-    if (sortField === field) sortDir *= -1;
-    else {
-      sortField = field;
-      sortDir = 1;
+    function escape(s) {
+      return String(s == null ? "" : s)
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     }
 
-    /* remove arrows from all */
-    document.querySelectorAll("th.sortable").forEach(h =>
-      h.classList.remove("asc","desc")
-    );
+    [q, sortField, sortDir].forEach(el => el.addEventListener("input", render));
 
-    th.classList.add(sortDir === 1 ? "asc" : "desc");
-
-    sortFiltered();
-    currentPage = 1;
-    render();
-  });
-});
-
-/* go! */
-loadLocal();
-</script>
-
+    try {
+      all = await loadRecords();
+      render();
+      renderFooter(all);
+    } catch (err) {
+      list.innerHTML = `<div class="banner err">${err.message}</div>`;
+    }
+  </script>
 </body>
 </html>

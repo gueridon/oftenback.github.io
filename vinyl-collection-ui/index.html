@@ -1,556 +1,263 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<title>Vinyl Collection — Editor</title>
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-
-<link rel="stylesheet" href="style.css">
-<script type="module" src="sync.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <meta charset="utf-8" />
+  <title>vinyl — edit</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="./style.css" />
 </head>
-
 <body>
+  <main class="page">
+    <div id="banner"></div>
 
-<h1>Vinyl Collection — Editor</h1>
+    <form id="form" class="form" autocomplete="off">
+      <label class="full">
+        artist
+        <input id="artist" list="artistOptions" required />
+      </label>
+      <label class="full">
+        title
+        <input id="title" required />
+      </label>
+      <label>
+        year
+        <input id="year" type="number" min="1800" max="2100" />
+      </label>
+      <label>
+        format
+        <input id="format" list="formatOptions" value="LP" />
+      </label>
+      <label>
+        genre
+        <input id="genre" list="genreOptions" />
+      </label>
+      <label>
+        barcode
+        <input id="barcode" readonly style="background: var(--bg); color: var(--muted);" />
+      </label>
+      <datalist id="artistOptions"></datalist>
+      <datalist id="genreOptions"></datalist>
+      <datalist id="formatOptions">
+        <option value="LP"></option>
+        <option value="12&quot; Single (33RPM)"></option>
+        <option value="12&quot; Single (45RPM)"></option>
+        <option value="LP 10&quot;"></option>
+      </datalist>
 
-<nav>
-  <a href="index.html">Editor</a>
-  <a href="view.html">Viewer</a>
-  <a href="stats.html">Statistics</a>
-  <a href="print-barcodes.html">Print Barcodes</a>
-  <a href="print-dividers.html">Print Dividers</a>
-</nav>
+      <div class="form-actions">
+        <button type="submit" class="primary" id="saveBtn">add record</button>
+        <button type="button" id="cancelBtn" style="display: none;">cancel edit</button>
+        <span class="spacer"></span>
+        <span id="formStatus" style="color: var(--muted); font-size: 13px;"></span>
+      </div>
+    </form>
 
-<!-- SYNC STATUS BADGE -->
-<div style="margin-bottom:16px;">
-  <span id="syncStatus" class="sync-status sync-none">Sync: Unknown</span>
-</div>
+    <div class="controls">
+      <input id="q" type="search" placeholder="filter…" autocomplete="off" />
+      <span id="count" style="color: var(--muted); font-size: 13px;"></span>
+    </div>
 
-<div class="card">
+    <div id="records" class="records"></div>
+  </main>
 
-  <!-- =============== FORM ================ -->
-  <form id="recordForm" class="form-row">
+  <script type="module">
+    import { renderShell, renderFooter } from "./js/shell.js";
+    import { loadRecords, coverUrl, matchesQuery, sortRecords, distinctValues, generateBarcode } from "./js/data.js";
+    import { saveRecords, saveAvailable, downloadAsJson } from "./js/save.js";
 
-  <div class="form-block">
-    <label>Artist</label>
-    <input id="artist" list="artistList" required autocomplete="off" />
-    <datalist id="artistList"></datalist>
-  </div>
+    renderShell("index.html");
 
-  <div class="form-block">
-    <label>Title</label>
-    <input id="title" required />
-  </div>
+    const banner = document.getElementById("banner");
+    const form = document.getElementById("form");
+    const artist = document.getElementById("artist");
+    const title = document.getElementById("title");
+    const year = document.getElementById("year");
+    const format = document.getElementById("format");
+    const genre = document.getElementById("genre");
+    const barcode = document.getElementById("barcode");
+    const artistOptions = document.getElementById("artistOptions");
+    const genreOptions = document.getElementById("genreOptions");
+    const saveBtn = document.getElementById("saveBtn");
+    const cancelBtn = document.getElementById("cancelBtn");
+    const formStatus = document.getElementById("formStatus");
+    const list = document.getElementById("records");
+    const countEl = document.getElementById("count");
+    const q = document.getElementById("q");
 
-  <div class="form-block narrow">
-    <label>Year</label>
-    <input id="year" type="number" min="1800" max="2100"/>
-  </div>
+    let records = [];
+    let editing = null;   // when set, the barcode being edited
+    let writable = false;
 
-  <div class="form-block">
-    <label>Genre</label>
-    <input id="genre" list="genreList"/>
-    <datalist id="genreList"></datalist>
-  </div>
-
-  <div class="form-block">
-    <label>Format</label>
-    <input id="format" list="formatList"/>
-    <datalist id="formatList"></datalist>
-  </div>
-
-  <div class="form-block">
-    <label>Barcode</label>
-    <input id="barcode" readonly style="background:#f0f0f0;"/>
-  </div>
-
-  <div class="form-actions">
-    <button class="primary" type="submit">Add / Update</button>
-    <button id="exportBtn" type="button">Export JSON</button>
-    <button id="importBtn" type="button">Import JSON</button>
-  </div>
-
-</form>
-
-
-  <!-- =============== REMOTE CONTROLS ================ -->
-  <div style="margin-top:20px; display:flex; gap:10px; align-items:center;">
-    <button id="pullBtn" class="orange small">Pull Data</button>
-    <button id="pushBtn" class="primary small">Push Data</button>
-  </div>
-
-  <!-- GitHub settings -->
-  <div style="margin-top:20px; display:flex; gap:12px; flex-wrap:wrap;">
-    <input id="owner" placeholder="GitHub owner"/>
-    <input id="repo" placeholder="Repo name"/>
-    <input id="token" placeholder="Access token" style="width:280px;"/>
-    <button id="saveTokenBtn" class="ghost small">Save</button>
-  </div>
-
-  <!-- =============== TABLE ================ -->
-  <div class="table-wrap" style="margin-top:18px;">
-    <table id="recordTable">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Cover</th>
-          <th>Artist</th>
-          <th>Title</th>
-          <th>Year</th>
-          <th>Genre</th>
-          <th>Format</th>
-          <th>Barcode</th>
-          <th style="min-width:120px">Actions</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
-
-</div>
-
-<script type="module">
-// =========================
-// INDEX.JS LOGIC START
-// =========================
-
-import { githubGetFile, githubCreateOrUpdateFile } from './sync.js';
-
-const LS_KEY = 'vinyl_records_v1';
-const LS_TOKEN = 'vinyl_token';
-const LS_OWNER = 'vinyl_owner';
-const LS_REPO = 'vinyl_repo';
-const REMOTE_FILE = 'vinyl.json';
-
-let records = [];
-let remoteCache = null;
-
-const syncBadge = document.getElementById("syncStatus");
-
-function setBadge(state, text) {
-  syncBadge.textContent = text;
-  syncBadge.className = "sync-status " + state;
-}
-
-/* -----------------------------------------
-   LOAD SETTINGS
------------------------------------------ */
-owner.value = localStorage.getItem(LS_OWNER) || "";
-repo.value = localStorage.getItem(LS_REPO) || "";
-token.value = localStorage.getItem(LS_TOKEN) || "";
-
-saveTokenBtn.onclick = () => {
-  localStorage.setItem(LS_OWNER, owner.value);
-  localStorage.setItem(LS_REPO, repo.value);
-  localStorage.setItem(LS_TOKEN, token.value);
-  alert("Saved GitHub settings.");
-};
-
-/* -----------------------------------------
-   LOCAL LOADING
------------------------------------------ */
-function loadLocal() {
-  try {
-    records = JSON.parse(localStorage.getItem(LS_KEY)) || [];
-  } catch { records = []; }
-
-  // Backfill dateAdded for existing records that lack it
-  let migrated = false;
-  records.forEach(r => {
-    if (!r.dateAdded) {
-      r.dateAdded = '2026-02-01T00:00:00.000Z';
-      migrated = true;
-    }
-  });
-  if (migrated) localStorage.setItem(LS_KEY, JSON.stringify(records, null, 2));
-
-  sortRecords();
-  updateDatalists();
-  renderTable();
-}
-
-function saveLocal() {
-  localStorage.setItem(LS_KEY, JSON.stringify(records, null, 2));
-}
-
-/* -----------------------------------------
-   BARCODE GENERATION
------------------------------------------ */
-function generateBarcode() {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let code = 'VNL-';
-  for (let i = 0; i < 6; i++) {
-    code += chars[Math.floor(Math.random() * chars.length)];
-  }
-  return code;
-}
-
-function generateUniqueBarcode() {
-  let barcode;
-  do {
-    barcode = generateBarcode();
-  } while (records.some(r => r.barcode === barcode));
-  return barcode;
-}
-
-/* -----------------------------------------
-   BASIC HELPERS
------------------------------------------ */
-function sortRecords() {
-  records.sort((a,b) => a.artist.localeCompare(b.artist));
-}
-
-function updateDatalist(records, field, el) {
-  const set = new Set(records.map(r => r[field]).filter(Boolean));
-  el.innerHTML = "";
-  [...set].sort().forEach(v => {
-    const o = document.createElement("option");
-    o.value = v;
-    el.appendChild(o);
-  });
-}
-
-function updateDatalists() {
-  updateDatalist(records, 'artist', artistList);
-  updateDatalist(records, 'genre', genreList);
-  updateDatalist(records, 'format', formatList);
-}
-
-function renderTable() {
-  const tbody = document.querySelector("#recordTable tbody");
-  tbody.innerHTML = "";
-  records.forEach((r, i) => {
-    const tr = document.createElement("tr");
-
-    // Row number
-    const numCell = document.createElement("td");
-    numCell.textContent = i + 1;
-    tr.appendChild(numCell);
-
-    // Cover image cell
-    const coverCell = document.createElement("td");
-    coverCell.style.textAlign = "center";
-    if (r.coverImage) {
-      const img = document.createElement("img");
-      img.src = r.coverImage;
-      img.className = "cover-thumbnail";
-      img.alt = "Album cover";
-      img.style.width = "60px";
-      img.style.height = "60px";
-      img.style.objectFit = "cover";
-      img.style.borderRadius = "4px";
-      coverCell.appendChild(img);
-    } else {
-      coverCell.innerHTML = '<span style="color:#999;">No cover</span>';
-    }
-    tr.appendChild(coverCell);
-
-    // Other fields
-    tr.innerHTML += `
-      <td>${r.artist}</td>
-      <td>${r.title}</td>
-      <td>${r.year||""}</td>
-      <td>${r.genre||""}</td>
-      <td>${r.format||""}</td>`;
-
-    // Create QR code cell
-    const qrCell = document.createElement("td");
-    qrCell.style.textAlign = "center";
-    const qrDiv = document.createElement("div");
-    qrDiv.style.display = "inline-block";
-    qrDiv.className = "qr-code-" + i;
-    qrCell.appendChild(qrDiv);
-
-    const barcodeText = document.createElement("div");
-    barcodeText.textContent = r.barcode || "N/A";
-    barcodeText.style.fontSize = "10px";
-    barcodeText.style.marginTop = "4px";
-    qrCell.appendChild(barcodeText);
-    tr.appendChild(qrCell);
-
-    // Actions cell
-    const actionsCell = document.createElement("td");
-    actionsCell.innerHTML = `
-      <button class="orange small" data-i="${i}" data-action="edit">Edit</button>
-      <button class="red small" data-i="${i}" data-action="delete">Delete</button>
-    `;
-    tr.appendChild(actionsCell);
-
-    tbody.appendChild(tr);
-
-    // Generate QR code after DOM is ready
-    if (r.barcode) {
-      setTimeout(() => {
-        new QRCode(qrDiv, {
-          text: r.barcode,
-          width: 64,
-          height: 64
-        });
-      }, 10);
-    }
-  });
-
-  // Edit button handlers
-  document.querySelectorAll("[data-action='edit']").forEach(btn =>
-    btn.onclick = () => {
-      const r = records[btn.dataset.i];
-      artist.value = r.artist;
-      title.value = r.title;
-      year.value = r.year;
-      genre.value = r.genre;
-      format.value = r.format;
-      barcode.value = r.barcode || "";
-      records.splice(btn.dataset.i, 1);
-      renderTable();
-    }
-  );
-
-  // Delete button handlers
-  document.querySelectorAll("[data-action='delete']").forEach(btn =>
-    btn.onclick = () => {
-      if (!confirm("Delete record?")) return;
-      records.splice(btn.dataset.i, 1);
-      saveLocal();
-      renderTable();
-      updateDatalists();
-      checkRemoteStatus(); // refresh badge
-    }
-  );
-}
-
-/* -----------------------------------------
-   ADD / UPDATE RECORD
------------------------------------------ */
-recordForm.onsubmit = e => {
-  e.preventDefault();
-
-  // Generate barcode if not present (new record) or keep existing
-  const barcodeValue = barcode.value.trim() || generateUniqueBarcode();
-
-  // Find existing record by barcode first, then by artist+title
-  let existingIndex = -1;
-
-  // Priority 1: Match by barcode
-  if (barcodeValue) {
-    existingIndex = records.findIndex(r => r.barcode === barcodeValue);
-  }
-
-  // Priority 2: Match by artist + title (if no barcode match)
-  if (existingIndex === -1) {
-    existingIndex = records.findIndex(r =>
-      r.artist.toLowerCase() === artist.value.trim().toLowerCase() &&
-      r.title.toLowerCase() === title.value.trim().toLowerCase()
-    );
-  }
-
-  const existing = existingIndex >= 0 ? records[existingIndex] : null;
-
-  const newRecord = {
-    artist: artist.value.trim(),
-    title: title.value.trim(),
-    year: year.value.trim(),
-    genre: genre.value.trim(),
-    format: format.value.trim(),
-    barcode: barcodeValue,
-    coverImage: existing ? existing.coverImage : undefined,
-    dateAdded: existing ? existing.dateAdded : new Date().toISOString(),
-    printed: existing ? existing.printed : false
-  };
-
-  if (existingIndex >= 0) records[existingIndex] = newRecord;
-  else records.push(newRecord);
-
-  sortRecords();
-  updateDatalists();
-  saveLocal();
-  renderTable();
-  recordForm.reset();
-  checkRemoteStatus(); // badge
-};
-
-/* -----------------------------------------
-   EXPORT JSON
------------------------------------------ */
-exportBtn.onclick = () => {
-  const blob = new Blob([JSON.stringify(records, null, 2)], {type:"application/json"});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "vinyl-export.json";
-  a.click();
-};
-
-/* -----------------------------------------
-   IMPORT JSON (merge)
------------------------------------------ */
-importBtn.onclick = () => {
-  const input = document.createElement("input");
-  input.type = "file";
-  input.accept = "application/json";
-
-  input.onchange = async () => {
-    const text = await input.files[0].text();
-    try {
-      const imported = JSON.parse(text);
-      records = mergeRecords(records, imported);
-      saveLocal();
-      updateDatalists();
-      renderTable();
-      checkRemoteStatus();
-    } catch (e) {
-      alert("Import failed: " + e.message);
-    }
-  };
-
-  input.click();
-};
-
-/* ============ MERGING LOGIC (used for Pull + Import) ============ */
-function mergeRecords(local, remote) {
-  const merged = [...local];
-
-  remote.forEach(remoteRecord => {
-    let existingIndex = -1;
-
-    // Priority 1: Match by barcode (if both have barcodes)
-    if (remoteRecord.barcode) {
-      existingIndex = merged.findIndex(r =>
-        r.barcode && r.barcode === remoteRecord.barcode
-      );
+    function escape(s) {
+      return String(s == null ? "" : s)
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     }
 
-    // Priority 2: Match by artist + title (if no barcode match)
-    if (existingIndex === -1) {
-      const remoteKey = remoteRecord.artist.toLowerCase() + "||" + remoteRecord.title.toLowerCase();
-      existingIndex = merged.findIndex(r =>
-        (r.artist.toLowerCase() + "||" + r.title.toLowerCase()) === remoteKey
-      );
+    function showBanner(level, text) {
+      banner.innerHTML = `<div class="banner ${level}">${escape(text)}</div>`;
+    }
+    function clearBanner() { banner.innerHTML = ""; }
+
+    function refreshDatalists() {
+      artistOptions.innerHTML = distinctValues(records, "artist").map(v => `<option value="${escape(v)}">`).join("");
+      genreOptions.innerHTML = distinctValues(records, "genre").map(v => `<option value="${escape(v)}">`).join("");
     }
 
-    if (existingIndex >= 0) {
-      // Record exists - merge fields
-      const existing = merged[existingIndex];
+    function newBarcodeForForm() {
+      barcode.value = generateBarcode(records.map(r => r.barcode));
+    }
 
-      // Update fields from remote if they have values (remote takes precedence for updates)
-      merged[existingIndex] = {
-        artist: remoteRecord.artist || existing.artist,
-        title: remoteRecord.title || existing.title,
-        year: remoteRecord.year || existing.year,
-        genre: remoteRecord.genre || existing.genre,
-        format: remoteRecord.format || existing.format,
-        barcode: remoteRecord.barcode || existing.barcode,
-        coverImage: remoteRecord.coverImage || existing.coverImage,
-        dateAdded: existing.dateAdded || remoteRecord.dateAdded || '2026-02-01T00:00:00.000Z',
-        printed: existing.printed !== undefined ? existing.printed : (remoteRecord.printed || false)
+    function resetForm() {
+      editing = null;
+      form.reset();
+      format.value = "LP";
+      newBarcodeForForm();
+      saveBtn.textContent = "add record";
+      cancelBtn.style.display = "none";
+      formStatus.textContent = "";
+    }
+
+    function startEdit(barcodeStr) {
+      const r = records.find(r => r.barcode === barcodeStr);
+      if (!r) return;
+      editing = barcodeStr;
+      artist.value = r.artist || "";
+      title.value = r.title || "";
+      year.value = r.year || "";
+      format.value = r.format || "LP";
+      genre.value = r.genre || "";
+      barcode.value = r.barcode;
+      saveBtn.textContent = "save changes";
+      cancelBtn.style.display = "";
+      formStatus.textContent = `editing ${barcodeStr}`;
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    cancelBtn.addEventListener("click", () => { resetForm(); render(); });
+
+    async function persist() {
+      if (!writable) {
+        downloadAsJson(records);
+        showBanner("warn", "saved as download — run `vinyl serve` locally to save directly to disk");
+        return;
+      }
+      try {
+        await saveRecords(records);
+        showBanner("ok", `saved (${records.length} records)`);
+      } catch (err) {
+        showBanner("err", `save failed: ${err.message}`);
+        throw err;
+      }
+    }
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const payload = {
+        artist: artist.value.trim(),
+        title: title.value.trim(),
+        year: year.value.trim() || null,
+        format: format.value.trim() || "LP",
+        genre: genre.value.trim() || "",
+        barcode: barcode.value.trim(),
       };
-    } else {
-      // New record - add it
-      const added = {...remoteRecord};
-      if (!added.dateAdded) added.dateAdded = new Date().toISOString();
-      if (added.printed === undefined) added.printed = false;
-      merged.push(added);
-    }
-  });
+      if (!payload.artist || !payload.title) {
+        showBanner("err", "artist and title are required");
+        return;
+      }
+      if (editing) {
+        const i = records.findIndex(r => r.barcode === editing);
+        if (i < 0) { showBanner("err", "edit target vanished"); return; }
+        records[i] = { ...records[i], ...payload };
+      } else {
+        payload.dateAdded = new Date().toISOString();
+        payload.printed = false;
+        records.push(payload);
+      }
+      try {
+        await persist();
+        resetForm();
+        refreshDatalists();
+        render();
+      } catch {
+        // banner already shown
+      }
+    });
 
-  return merged;
-}
-
-/* -----------------------------------------
-   REMOTE CHECK
------------------------------------------ */
-async function checkRemoteStatus() {
-  const o = owner.value.trim();
-  const r = repo.value.trim();
-  const t = token.value.trim();
-
-  if (!o || !r || !t) {
-    setBadge("sync-none","Remote: Not configured");
-    return;
-  }
-
-  try {
-    const remote = await githubGetFile(o, r, REMOTE_FILE, t);
-    if (!remote) {
-      setBadge("sync-none", "Remote: None");
-      return;
-    }
-
-    remoteCache = remote.content;
-
-    const remoteCount = remote.content.length;
-    const localCount = records.length;
-
-    if (localCount === remoteCount) {
-      setBadge("sync-ok", "Up to Date");
-    } else if (localCount > remoteCount) {
-      setBadge("sync-ahead", "Local Ahead");
-    } else if (remoteCount > localCount) {
-      setBadge("sync-remote", "Remote Ahead");
-    } else {
-      setBadge("sync-diverged", "Diverged");
+    async function deleteRecord(barcodeStr) {
+      const r = records.find(r => r.barcode === barcodeStr);
+      if (!r) return;
+      if (!confirm(`delete "${r.artist} - ${r.title}"?`)) return;
+      records = records.filter(r => r.barcode !== barcodeStr);
+      try {
+        await persist();
+        if (editing === barcodeStr) resetForm();
+        render();
+      } catch {
+        // re-add on failure
+        records.push(r);
+      }
     }
 
-  } catch (e) {
-    setBadge("sync-none", "Remote: Error");
-  }
-}
+    function render() {
+      const filtered = records.filter(r => matchesQuery(r, q.value.trim()));
+      const sorted = sortRecords(filtered, "artist", "asc");
 
-/* -----------------------------------------
-   PULL: remote → merge → local
------------------------------------------ */
-pullBtn.onclick = async () => {
-  const o = owner.value.trim();
-  const r = repo.value.trim();
-  const t = token.value.trim();
-  if (!o || !r || !t) return alert("Enter GitHub settings.");
+      countEl.textContent = filtered.length === records.length
+        ? `${records.length} records`
+        : `${filtered.length} of ${records.length}`;
 
-  try {
-    const remote = await githubGetFile(o, r, REMOTE_FILE, t);
-    if (!remote) return alert("No remote file found.");
+      list.innerHTML = sorted.map(r => {
+        const cov = coverUrl(r);
+        const img = cov
+          ? `<img class="cover" src="${escape(cov)}" alt="" loading="lazy" />`
+          : `<div class="cover placeholder">♪</div>`;
+        const isEditing = editing === r.barcode;
+        return `
+          <div class="record${isEditing ? " selected" : ""}">
+            ${img}
+            <div class="meta">
+              <div class="title">${escape(r.title)}</div>
+              <div class="artist">${escape(r.artist)}</div>
+              <div class="sub">
+                <span>${escape(r.year || "?")}</span>
+                <span>${escape(r.format || "")}</span>
+                <span>${escape(r.genre || "")}</span>
+                <span class="barcode">${escape(r.barcode)}</span>
+              </div>
+            </div>
+            <div class="actions">
+              <button data-action="edit" data-barcode="${escape(r.barcode)}">edit</button>
+              <button data-action="delete" data-barcode="${escape(r.barcode)}" class="danger">delete</button>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
 
-    records = mergeRecords(records, remote.content);
-    saveLocal();
-    updateDatalists();
-    renderTable();
-    setBadge("sync-ok","Up to Date");
-  } catch (e) {
-    alert("Pull failed: " + e.message);
-  }
-};
+    list.addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-action]");
+      if (!btn) return;
+      const barcodeStr = btn.dataset.barcode;
+      if (btn.dataset.action === "edit") startEdit(barcodeStr);
+      if (btn.dataset.action === "delete") deleteRecord(barcodeStr);
+    });
 
-/* -----------------------------------------
-   PUSH: local → overwrite → remote
------------------------------------------ */
-pushBtn.onclick = async () => {
-  const o = owner.value.trim();
-  const r = repo.value.trim();
-  const t = token.value.trim();
-  if (!o || !r || !t) return alert("Enter GitHub settings.");
+    q.addEventListener("input", render);
 
-  try {
-    await githubCreateOrUpdateFile(
-      o, r, REMOTE_FILE, t,
-      JSON.stringify(records,null,2),
-      `Overwrite remote from UI: ${new Date().toISOString()}`
-    );
-    setBadge("sync-ok","Up to Date");
-    alert("Pushed successfully.");
-  } catch (e) {
-    alert("Push failed: " + e.message);
-  }
-};
-
-/* -----------------------------------------
-   AUTO CHECK EVERY 30 SECONDS
------------------------------------------ */
-setInterval(checkRemoteStatus, 30000);
-
-/* initial load */
-loadLocal();
-checkRemoteStatus();
-
-</script>
-
+    try {
+      records = await loadRecords();
+      writable = await saveAvailable();
+      if (!writable) {
+        showBanner("warn", "read-only mode: run `vinyl serve` locally to enable edits. changes will be offered as a download.");
+      }
+      refreshDatalists();
+      newBarcodeForForm();
+      render();
+      renderFooter(records);
+    } catch (err) {
+      showBanner("err", err.message);
+    }
+  </script>
 </body>
 </html>

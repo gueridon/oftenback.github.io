@@ -1,144 +1,122 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<title>Vinyl Collection — Print Dividers</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" href="style.css">
-<style>
-  @media print {
-    nav, .no-print { display: none !important; }
-    body { background: white; margin: 0; }
-  }
-
-  .divider-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-    gap: 12px;
-    padding: 20px;
-  }
-
-  .divider-card {
-    border: 2px solid var(--color-2);
-    height: 104px;
-    display: flex;
-    flex-direction: column;
-    break-inside: avoid;
-    page-break-inside: avoid;
-    background: white;
-  }
-
-  .divider-half {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-  }
-
-  .divider-half:first-child {
-    border-bottom: 2px dashed #999;
-  }
-
-  .divider-text {
-    font-weight: 700;
-    font-size: 16px;
-    color: var(--color-5);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    padding: 0 12px;
-  }
-</style>
+  <meta charset="utf-8" />
+  <title>vinyl — print dividers</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="./style.css" />
+  <style>
+    .divider-sheet {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8mm;
+      padding: 8mm;
+      background: white;
+    }
+    .divider {
+      border: 1px dashed #bbb;
+      padding: 14mm 8mm 6mm;
+      height: 90mm;
+      page-break-inside: avoid;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
+      text-align: center;
+    }
+    .divider .glyph {
+      font-size: 56pt;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      line-height: 1;
+    }
+    .divider .sub {
+      margin-top: 8mm;
+      font-size: 10pt;
+      color: var(--muted);
+    }
+    @media print {
+      .controls, .topbar, .footer, .banner, .no-print { display: none !important; }
+      .divider-sheet { padding: 0; gap: 4mm; }
+    }
+  </style>
 </head>
-
 <body>
+  <main class="page">
+    <div class="controls no-print">
+      <label for="mode">mode:</label>
+      <select id="mode">
+        <option value="genre">by genre</option>
+        <option value="letter">by first letter of artist</option>
+        <option value="decade">by decade</option>
+      </select>
+      <button id="printBtn" type="button" class="primary">print</button>
+      <span id="count" style="color: var(--muted); font-size: 13px;"></span>
+    </div>
 
-<h1 class="no-print">Vinyl Collection — Print Dividers</h1>
+    <div id="sheet" class="divider-sheet"></div>
+  </main>
 
-<nav class="no-print">
-  <a href="index.html">Editor</a>
-  <a href="view.html">Viewer</a>
-  <a href="stats.html">Statistics</a>
-  <a href="print-barcodes.html">Print Barcodes</a>
-  <a href="print-dividers.html">Print Dividers</a>
-</nav>
+  <script type="module">
+    import { renderShell } from "./js/shell.js";
+    import { loadRecords } from "./js/data.js";
 
-<div class="card no-print">
-  <div style="display:flex; gap:12px; align-items:center; margin-bottom:16px; flex-wrap:wrap;">
-    <button id="printBtn" class="primary">Print Dividers</button>
-  </div>
-  <div style="color:#555; font-size:14px;">
-    <span id="artistCount">0</span> artist dividers (2+ records)
-  </div>
-</div>
+    renderShell("print-dividers.html");
 
-<div class="divider-grid" id="dividerGrid"></div>
+    const sheet = document.getElementById("sheet");
+    const mode = document.getElementById("mode");
+    const countEl = document.getElementById("count");
 
-<script>
-const LS_KEY = "vinyl_records_v1";
-let allRecords = [];
+    let records = [];
 
-const dividerGrid = document.getElementById("dividerGrid");
-const printBtn = document.getElementById("printBtn");
-const artistCountEl = document.getElementById("artistCount");
+    function escape(s) {
+      return String(s == null ? "" : s)
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
 
-function loadLocal() {
-  try {
-    const raw = localStorage.getItem(LS_KEY);
-    allRecords = raw ? JSON.parse(raw) : [];
-  } catch { allRecords = []; }
-  render();
-}
+    function decadeOf(r) {
+      const y = r.year;
+      if (!y || !/^\d{4}$/.test(y)) return null;
+      return `${Math.floor(parseInt(y, 10) / 10) * 10}s`;
+    }
+    function firstLetterOf(r) {
+      const m = (r.artist || "").match(/[A-Za-z0-9]/);
+      return m ? m[0].toUpperCase() : null;
+    }
 
-function buildDividers() {
-  const artistCounts = {};
+    function bucketCounts() {
+      const m = new Map();
+      const fn = mode.value === "genre" ? r => r.genre
+              : mode.value === "letter" ? firstLetterOf
+              : decadeOf;
+      for (const r of records) {
+        const k = fn(r);
+        if (!k) continue;
+        m.set(k, (m.get(k) || 0) + 1);
+      }
+      return [...m.entries()].sort((a, b) => a[0].localeCompare(b[0], undefined, { numeric: true }));
+    }
 
-  allRecords.forEach(r => {
-    if (!r.artist) return;
-    artistCounts[r.artist] = (artistCounts[r.artist] || 0) + 1;
-  });
+    function render() {
+      const buckets = bucketCounts();
+      countEl.textContent = `${buckets.length} dividers`;
+      sheet.innerHTML = buckets.map(([label, n]) => `
+        <div class="divider">
+          <div class="glyph">${escape(label)}</div>
+          <div class="sub">${n} record${n === 1 ? "" : "s"}</div>
+        </div>
+      `).join("");
+    }
 
-  return Object.entries(artistCounts)
-    .filter(([, count]) => count >= 2)
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([artist, count]) => ({ text: artist, count }));
-}
+    mode.addEventListener("change", render);
+    document.getElementById("printBtn").addEventListener("click", () => window.print());
 
-function render() {
-  const artists = buildDividers();
-  artistCountEl.textContent = artists.length;
-
-  dividerGrid.innerHTML = "";
-
-  artists.forEach(d => {
-    const card = document.createElement("div");
-    card.className = "divider-card";
-
-    const topHalf = document.createElement("div");
-    topHalf.className = "divider-half";
-    const topText = document.createElement("div");
-    topText.className = "divider-text";
-    topText.textContent = d.text;
-    topHalf.appendChild(topText);
-
-    const bottomHalf = document.createElement("div");
-    bottomHalf.className = "divider-half";
-    const bottomText = document.createElement("div");
-    bottomText.className = "divider-text";
-    bottomText.textContent = d.text;
-    bottomHalf.appendChild(bottomText);
-
-    card.appendChild(topHalf);
-    card.appendChild(bottomHalf);
-    dividerGrid.appendChild(card);
-  });
-}
-
-printBtn.onclick = () => window.print();
-
-loadLocal();
-</script>
-
+    try {
+      records = await loadRecords();
+      render();
+    } catch (err) {
+      sheet.innerHTML = `<div class="banner err">${err.message}</div>`;
+    }
+  </script>
 </body>
 </html>

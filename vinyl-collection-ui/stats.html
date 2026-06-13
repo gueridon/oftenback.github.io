@@ -1,350 +1,96 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Vinyl Collection — Statistics</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
-<link rel="stylesheet" href="style.css">
-
-<!-- Chart.js -->
-<script src="https://unpkg.com/chart.js@4.4.0/dist/chart.umd.js"></script>
-<script src="https://unpkg.com/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.js"></script>
-<script>Chart.register(ChartDataLabels);</script>
+  <meta charset="utf-8" />
+  <title>vinyl — stats</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="./style.css" />
 </head>
-
 <body>
+  <main class="page">
+    <div id="content"></div>
+  </main>
 
-<h1>Vinyl Collection — Statistics</h1>
+  <script type="module">
+    import { renderShell, renderFooter } from "./js/shell.js";
+    import { loadRecords } from "./js/data.js";
 
-<nav>
-  <a href="index.html">Editor</a>
-  <a href="view.html">Viewer</a>
-  <a href="stats.html">Statistics</a>
-  <a href="print-barcodes.html">Print Barcodes</a>
-  <a href="print-dividers.html">Print Dividers</a>
-</nav>
+    renderShell("stats.html");
 
-<!-- SUMMARY -->
-<div class="card">
-  <h3>Summary</h3>
-  <table id="summaryTable" class="stats-table"></table>
-</div>
+    const content = document.getElementById("content");
 
-<!-- CHART GRID -->
-<div class="grid two">
+    function escape(s) {
+      return String(s == null ? "" : s)
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
 
-  <div class="card no-title">
-    <canvas id="genresChart"></canvas>
-  </div>
-
-  <div class="card no-title">
-    <canvas id="formatsChart"></canvas>
-  </div>
-
-  <div class="card no-title">
-    <canvas id="decadesChart"></canvas>
-  </div>
-
-  <div class="card no-title">
-    <canvas id="yearsChart"></canvas>
-  </div>
-
-  <div class="card full no-title">
-    <canvas id="genreDecadeChart"></canvas>
-  </div>
-
-</div>
-
-
-<!-- TOP 10s -->
-<div class="card">
-  <h3>Top 10</h3>
-
-  <h4>Artists</h4>
-  <table id="topArtistsTable" class="stats-table"></table>
-
-  <h4>Genres</h4>
-  <table id="topGenresTable" class="stats-table"></table>
-
-  <h4>Formats</h4>
-  <table id="topFormatsTable" class="stats-table"></table>
-</div>
-
-
-<!-- COLLAPSIBLES -->
-<button class="collapsible">All Artists (with counts)</button>
-<div class="content">
-  <table id="allArtistsTable" class="stats-table"></table>
-</div>
-
-<button class="collapsible">All Genres (with counts)</button>
-<div class="content">
-  <table id="allGenresTable" class="stats-table"></table>
-</div>
-
-<script>
-/* --------------------------------------------
-   LOAD LOCAL DATA
--------------------------------------------- */
-const LS_KEY = "vinyl_records_v1";
-let records = [];
-
-try {
-  const raw = localStorage.getItem(LS_KEY);
-  records = raw ? JSON.parse(raw) : [];
-} catch {
-  records = [];
-}
-
-function countBy(key) {
-  const m = new Map();
-  records.forEach(r => {
-    const v = (r[key] || "").trim();
-    if (v) m.set(v, (m.get(v)||0)+1);
-  });
-  return m;
-}
-
-function sorted(map) {
-  return [...map.entries()].sort((a,b)=>b[1]-a[1]);
-}
-
-/* --------------------------------------------
-   SUMMARY
--------------------------------------------- */
-const years = records.map(r => Number(r.year)).filter(n => n>0).sort((a,b)=>a-b);
-const oldest = years[0] || "—";
-const newest = years[years.length-1] || "—";
-const median = years.length ? years[Math.floor(years.length/2)] : "—";
-
-const summaryRows = [
-  ["Total records", records.length],
-  ["Unique artists", countBy("artist").size],
-  ["Unique genres", countBy("genre").size],
-  ["Unique formats", countBy("format").size],
-  ["Oldest", oldest],
-  ["Newest", newest],
-  ["Median year", median],
-];
-
-summaryTable.innerHTML = summaryRows
-  .map(([label, value]) => `
-    <tr>
-      <td class="stats-left">${label}</td>
-      <td class="stats-right">${value}</td>
-    </tr>
-  `).join("");
-
-
-/* --------------------------------------------
-   CHARTS
--------------------------------------------- */
-
-/* Colors from your palette */
-const palette = [
-  "#d93a3a",
-  "#faa200",
-  "#3c709a",
-  "#2b3d50",
-  "#f2e9c5"
-];
-
-/* Genres donut */
-{
-  const map = countBy("genre");
-  const entries = sorted(map);
-
-  new Chart(genresChart, {
-    type:"doughnut",
-    data:{
-      labels: entries.map(e=>e[0]),
-      datasets:[{ data: entries.map(e=>e[1]), backgroundColor: palette }]
-    },
-    options:{
-      cutout:"55%",
-      plugins:{
-        legend:{display:false},
-        datalabels:{
-          color:"#000",
-          font:{size:11},
-          formatter:(v,ctx)=>ctx.chart.data.labels[ctx.dataIndex]
-        }
+    function counter(records, fn) {
+      const c = new Map();
+      for (const r of records) {
+        const v = fn(r);
+        if (v == null || v === "") continue;
+        c.set(v, (c.get(v) || 0) + 1);
       }
+      return [...c.entries()].sort((a, b) => b[1] - a[1]);
     }
-  });
-}
 
-/* Formats donut */
-{
-  const map = countBy("format");
-  const entries = sorted(map);
-
-  new Chart(formatsChart, {
-    type:"doughnut",
-    data:{
-      labels: entries.map(e=>e[0]),
-      datasets:[{ data: entries.map(e=>e[1]), backgroundColor: palette }]
-    },
-    options:{
-      cutout:"55%",
-      plugins:{
-        legend:{display:false},
-        datalabels:{
-          color:"#000",
-          font:{size:11},
-          formatter:(v,ctx)=>ctx.chart.data.labels[ctx.dataIndex]
-        }
-      }
+    function decadeOf(r) {
+      const y = r.year;
+      if (!y || !/^\d{4}$/.test(y)) return "(unknown)";
+      return `${Math.floor(parseInt(y, 10) / 10) * 10}s`;
     }
-  });
-}
 
-/* Decades */
-function decadeOf(year) {
-  const y = Number(year);
-  return y ? Math.floor(y/10)*10 + "s" : "Unknown";
-}
-
-{
-  const m = new Map();
-  records.forEach(r=>{
-    const d = decadeOf(r.year);
-    if (d !== "Unknown")
-      m.set(d,(m.get(d)||0)+1);
-  });
-
-  const entries = [...m.entries()].sort((a,b)=>parseInt(a[0])-parseInt(b[0]));
-
-  new Chart(decadesChart,{
-    type:"bar",
-    data:{
-      labels: entries.map(e=>e[0]),
-      datasets:[{
-        data:entries.map(e=>e[1]),
-        backgroundColor: palette[0]
-      }]
-    },
-    options:{
-      plugins:{legend:{display:false}, datalabels:{display:false}},
-      scales:{y:{beginAtZero:true}}
+    function renderCard(title, entries, { limit = null, sortBy = "count" } = {}) {
+      let items = entries.slice();
+      if (sortBy === "label") items.sort((a, b) => a[0].localeCompare(b[0]));
+      if (limit) items = items.slice(0, limit);
+      const max = Math.max(1, ...items.map(([, n]) => n));
+      const rows = items.map(([label, n]) => `
+        <div class="stats-row">
+          <span class="label">${escape(label)}</span>
+          <span class="bar"><span style="width: ${(n / max) * 100}%"></span></span>
+          <span class="count">${n}</span>
+        </div>
+      `).join("");
+      return `
+        <section class="stats-card">
+          <h2>${escape(title)}</h2>
+          ${rows || "<div class='stats-row'><span class='label'>(empty)</span></div>"}
+        </section>
+      `;
     }
-  });
-}
 
-/* Years timeline */
-{
-  const counts = new Map();
-  years.forEach(y=> counts.set(y,(counts.get(y)||0)+1));
-
-  new Chart(yearsChart,{
-    type:"line",
-    data:{
-      labels:[...counts.keys()],
-      datasets:[{
-        data:[...counts.values()],
-        borderColor: palette[3],
-        backgroundColor:"transparent",
-        tension:0.25
-      }]
-    },
-    options:{
-      plugins:{legend:{display:false}, datalabels:{display:false}},
-      scales:{y:{beginAtZero:true}}
+    function renderSummary(records) {
+      const total = records.length;
+      const missingCovers = records.filter(r => !r.coverImage).length;
+      const notPrinted = records.filter(r => !r.printed).length;
+      return `
+        <section class="stats-card">
+          <h2>summary</h2>
+          <div class="stats-row"><span class="label">records</span><span class="count">${total}</span></div>
+          <div class="stats-row"><span class="label">missing cover art</span><span class="count">${missingCovers}</span></div>
+          <div class="stats-row"><span class="label">not yet printed</span><span class="count">${notPrinted}</span></div>
+        </section>
+      `;
     }
-  });
-}
 
-/* Genre × Decade */
-{
-  const genres = [...countBy("genre").keys()];
-  const decades = [...new Set(records.map(r=>decadeOf(r.year)))].filter(x=>x!=="Unknown");
-  decades.sort((a,b)=>parseInt(a)-parseInt(b));
+    try {
+      const records = await loadRecords();
 
-  const datasets = genres.map((g,i)=>({
-    label:g,
-    data:decades.map(d=>records.filter(r=>r.genre===g && decadeOf(r.year)===d).length),
-    backgroundColor: palette[i % palette.length]
-  }));
+      content.innerHTML = `
+        <div class="stats-grid">
+          ${renderSummary(records)}
+          ${renderCard("formats", counter(records, r => r.format))}
+          ${renderCard("by decade", counter(records, decadeOf), { sortBy: "label" })}
+          ${renderCard("top genres", counter(records, r => r.genre), { limit: 12 })}
+          ${renderCard("top artists", counter(records, r => r.artist), { limit: 12 })}
+        </div>
+      `;
 
-  new Chart(genreDecadeChart,{
-    type:"bar",
-    data:{ labels:decades, datasets },
-    options:{
-      plugins:{legend:{position:"bottom"}, datalabels:{display:false}},
-      responsive:true,
-      scales:{x:{stacked:true}, y:{stacked:true}}
+      renderFooter(records);
+    } catch (err) {
+      content.innerHTML = `<div class="banner err">${err.message}</div>`;
     }
-  });
-}
-
-/* --------------------------------------------
-   TOP LISTS
--------------------------------------------- */
-function fillList(map, elId) {
-  const el = document.getElementById(elId);
-  el.innerHTML = "";
-  sorted(map).slice(0,10).forEach(([k,v])=>{
-    const li = document.createElement("li");
-    li.textContent = `${k} — ${v}`;
-    el.appendChild(li);
-  });
-}
-
-function fillTopTable(map, id) {
-  const table = document.getElementById(id);
-  table.innerHTML = "";
-
-  sorted(map).slice(0, 10).forEach(([k, v]) => {
-    table.innerHTML += `
-      <tr>
-        <td class="stats-left">${k}</td>
-        <td class="stats-right">${v}</td>
-      </tr>`;
-  });
-}
-
-fillTopTable(countBy("artist"), "topArtistsTable");
-fillTopTable(countBy("genre"), "topGenresTable");
-fillTopTable(countBy("format"), "topFormatsTable");
-
-/* --------------------------------------------
-   FULL LISTS
--------------------------------------------- */
-function fillFull(map, elId) {
-  const el = document.getElementById(elId);
-  el.innerHTML = "";
-  sorted(map).forEach(([k,v])=>{
-    const li = document.createElement("li");
-    li.textContent = `${k} — ${v}`;
-    el.appendChild(li);
-  });
-}
-
-function fillFullTable(map, id) {
-  const table = document.getElementById(id);
-  table.innerHTML = sorted(map)
-    .map(([k,v]) => `
-      <tr>
-        <td class="stats-left">${k}</td>
-        <td class="stats-right">${v}</td>
-      </tr>
-    `)
-    .join("");
-}
-
-fillFullTable(countBy("artist"), "allArtistsTable");
-fillFullTable(countBy("genre"), "allGenresTable");
-
-
-/* collapsibles */
-document.querySelectorAll(".collapsible").forEach(btn => {
-  btn.onclick = () => {
-    const panel = btn.nextElementSibling;
-    panel.style.display = panel.style.display === "block" ? "none" : "block";
-  };
-});
-</script>
-
+  </script>
 </body>
 </html>
