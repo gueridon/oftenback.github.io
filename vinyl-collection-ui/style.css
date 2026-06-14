@@ -41,7 +41,7 @@ a:hover { text-decoration: underline; }
   display: flex;
   align-items: baseline;
   gap: 24px;
-  padding: 12px 0 18px;
+  padding: 12px 16px 18px;
   border-bottom: 1px solid var(--line);
   margin-bottom: 24px;
 }
@@ -180,6 +180,14 @@ button:disabled {
   font-variant-numeric: tabular-nums;
 }
 .record .sub .barcode { font-family: var(--mono); font-size: 11px; }
+.record .sub .cube {
+  font-weight: 600;
+  color: var(--bg, #fff);
+  background: var(--accent, #a55a4a);
+  border-radius: 999px;
+  padding: 1px 8px;
+  letter-spacing: .02em;
+}
 .record .actions {
   display: flex;
   gap: 6px;
@@ -188,6 +196,47 @@ button:disabled {
 }
 .record:hover .actions, .record.selected .actions { opacity: 1; }
 .record .actions button { padding: 4px 9px; font-size: 12px; }
+
+/* grid (cover-wall) view: covers in a grid, details on hover */
+.records.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+  gap: 6px;
+  background: none;
+  border: 0;
+  box-shadow: none;
+  overflow: visible;
+}
+.grid .tile {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--surface, #f0e7d8);
+  border: 1px solid var(--line);
+}
+.grid .tile .cover { width: 100%; height: 100%; object-fit: cover; display: block; }
+.grid .tile .cover.placeholder {
+  display: flex; align-items: center; justify-content: center;
+  font-size: 30px; color: var(--muted);
+}
+.grid .tile .info {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; justify-content: flex-end; gap: 2px;
+  padding: 8px;
+  color: #fff;
+  background: linear-gradient(to top, rgba(0,0,0,.85), rgba(0,0,0,.25) 55%, transparent);
+  opacity: 0; transition: opacity .15s;
+}
+.grid .tile:hover .info { opacity: 1; }
+.grid .tile .info .title { font-weight: 600; font-size: 13px; line-height: 1.2; }
+.grid .tile .info .artist { font-size: 12px; opacity: .85; }
+.grid .tile .info .cube {
+  align-self: flex-start; margin-top: 4px;
+  font-weight: 600; font-size: 11px;
+  background: var(--accent, #a55a4a); color: #fff;
+  border-radius: 999px; padding: 1px 7px;
+}
 
 /* ----- meta / status banner ----- */
 

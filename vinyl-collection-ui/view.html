@@ -21,6 +21,12 @@
         <option value="asc">a → z</option>
         <option value="desc">z → a</option>
       </select>
+      <label for="genreFilter">genre:</label>
+      <select id="genreFilter"><option value="">all</option></select>
+      <label for="cubeFilter">cube:</label>
+      <select id="cubeFilter"><option value="">all</option></select>
+      <label for="view">view:</label>
+      <select id="view"><option value="list">list</option><option value="grid">grid</option></select>
       <span id="count" style="color: var(--muted); font-size: 13px;"></span>
     </div>
 
@@ -29,49 +35,78 @@
 
   <script type="module">
     import { renderShell, renderFooter } from "./js/shell.js";
-    import { loadRecords, coverUrl, matchesQuery, sortRecords } from "./js/data.js";
+    import { loadRecords, coverUrl, matchesQuery, sortRecords, distinctValues } from "./js/data.js";
 
     renderShell("view.html");
 
     const q = document.getElementById("q");
     const sortField = document.getElementById("sort");
     const sortDir = document.getElementById("direction");
+    const genreFilter = document.getElementById("genreFilter");
+    const cubeFilter = document.getElementById("cubeFilter");
+    const viewSel = document.getElementById("view");
     const list = document.getElementById("records");
     const countEl = document.getElementById("count");
 
     let all = [];
 
     function render() {
-      const filtered = all.filter(r => matchesQuery(r, q.value.trim()));
+      const g = genreFilter.value;
+      const cb = cubeFilter.value;
+      // a straddler like "5-6" counts as being in both cube 5 and cube 6
+      const inCube = r => !cb || (cb === "cabinet"
+        ? r.cube === "cabinet"
+        : String(r.cube || "").split("-").includes(cb));
+      const filtered = all.filter(r =>
+        (!g || r.genre === g) && inCube(r) && matchesQuery(r, q.value.trim()));
       const sorted = sortRecords(filtered, sortField.value, sortDir.value);
 
       countEl.textContent = filtered.length === all.length
         ? `${all.length} records`
         : `${filtered.length} of ${all.length}`;
 
-      // Render via HTML to keep this dependency-free; if we need finer control
-      // later (virtualization, animations), swap to DOM construction.
-      list.innerHTML = sorted.map(r => {
-        const cov = coverUrl(r);
-        const img = cov
-          ? `<img class="cover" src="${cov}" alt="" loading="lazy" />`
-          : `<div class="cover placeholder">♪</div>`;
-        return `
-          <div class="record">
-            ${img}
-            <div class="meta">
-              <div class="title">${escape(r.title)}</div>
-              <div class="artist">${escape(r.artist)}</div>
-              <div class="sub">
-                <span>${escape(r.year || "?")}</span>
-                <span>${escape(r.format || "")}</span>
-                <span>${escape(r.genre || "")}</span>
-                <span class="barcode">${escape(r.barcode)}</span>
-              </div>
+      const grid = viewSel.value === "grid";
+      list.className = grid ? "records grid" : "records";
+      list.innerHTML = sorted.map(grid ? gridTile : listRow).join("");
+    }
+
+    function cubeLabel(r) {
+      return r.cube === "cabinet" ? "dining cabinet"
+        : (r.cube ? "cube " + escape(r.cube) : "unshelved");
+    }
+    function cover(r) {
+      const cov = coverUrl(r);
+      return cov
+        ? `<img class="cover" src="${cov}" alt="" loading="lazy" />`
+        : `<div class="cover placeholder">♪</div>`;
+    }
+    function listRow(r) {
+      return `
+        <div class="record">
+          ${cover(r)}
+          <div class="meta">
+            <div class="title">${escape(r.title)}</div>
+            <div class="artist">${escape(r.artist)}</div>
+            <div class="sub">
+              <span class="cube">${cubeLabel(r)}</span>
+              <span>${escape(r.year || "?")}</span>
+              <span>${escape(r.format || "")}</span>
+              <span>${escape(r.genre || "")}</span>
+              <span class="barcode">${escape(r.barcode)}</span>
             </div>
           </div>
-        `;
-      }).join("");
+        </div>`;
+    }
+    function gridTile(r) {
+      return `
+        <div class="tile">
+          ${cover(r)}
+          <div class="info">
+            <div class="title">${escape(r.title)}</div>
+            <div class="artist">${escape(r.artist)}</div>
+            <span class="cube">${cubeLabel(r)}</span>
+          </div>
+        </div>`;
     }
 
     function escape(s) {
@@ -80,10 +115,21 @@
         .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     }
 
-    [q, sortField, sortDir].forEach(el => el.addEventListener("input", render));
+    [q, sortField, sortDir, genreFilter, cubeFilter, viewSel].forEach(el => el.addEventListener("input", render));
 
     try {
       all = await loadRecords();
+      for (const gv of distinctValues(all, "genre")) genreFilter.add(new Option(gv, gv));
+      // physical cubes: expand straddles ("5-6" -> 5, 6), cabinet last
+      const cubes = new Set();
+      for (const r of all) {
+        if (!r.cube) continue;
+        if (r.cube === "cabinet") { cubes.add("cabinet"); continue; }
+        for (const p of String(r.cube).split("-")) cubes.add(p);
+      }
+      [...cubes]
+        .sort((a, b) => a === "cabinet" ? 1 : b === "cabinet" ? -1 : Number(a) - Number(b))
+        .forEach(c => cubeFilter.add(new Option(c === "cabinet" ? "cabinet" : "cube " + c, c)));
       render();
       renderFooter(all);
     } catch (err) {

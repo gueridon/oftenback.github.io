@@ -28,6 +28,7 @@ export function matchesQuery(record, query) {
   const haystack = [
     record.artist, record.title, record.year,
     record.genre, record.format, record.barcode,
+    record.cube === "cabinet" ? "dining cabinet" : (record.cube ? "cube " + record.cube : ""),
   ].filter(Boolean).join("  ").toLowerCase();
   return haystack.includes(q);
 }
