@@ -48,6 +48,8 @@
     }
     .controls button.primary { background: var(--cl-spark); border-color: var(--cl-spark); color: #fff; font-weight: 600; }
     .controls button.primary:hover { filter: brightness(1.05); }
+    .controls button.batch { background: var(--cl-sage); border-color: var(--cl-sage); color: #fff; font-weight: 600; }
+    .controls button.batch:hover { filter: brightness(1.05); }
     .controls button:not(.primary):hover { background: #f4f1ea; }
     .controls .count { color: var(--muted); font-size: 13px; margin-left: auto; }
 
@@ -150,6 +152,7 @@
 
     <div class="controls no-print">
       <input id="q" type="search" placeholder="filter records…" autocomplete="off" />
+      <button id="selLatestBatch" type="button" class="batch" title="Select only the most recent batch (by date added) — for printing labels for just-added records">latest batch</button>
       <button id="selUnprinted" type="button">select unprinted</button>
       <button id="selVisible" type="button">select all visible</button>
       <button id="selNone" type="button">clear</button>
@@ -320,6 +323,29 @@
       const key = btn.dataset.grp;
       for (const r of visibleRecords()) if (genreKey(r) === key) selected.add(r.barcode);
       sheetStale = true; renderSelector();
+    });
+
+    // "latest batch": isolate the most recent addition group (by dateAdded day).
+    // Each import lands on its own day, so the newest day == the last batch.
+    // Clears first (the intent is ONLY the new arrivals), ignores the filter box.
+    function latestBatchDay() {
+      let latest = "";
+      for (const r of records) {
+        const d = String(r.dateAdded || "");
+        if (d > latest) latest = d;   // ISO 8601 sorts chronologically
+      }
+      return latest.slice(0, 10);     // YYYY-MM-DD
+    }
+    document.getElementById("selLatestBatch").addEventListener("click", () => {
+      const day = latestBatchDay();
+      if (!day) { statusEl.textContent = "no dateAdded on records — can't detect the latest batch."; return; }
+      selected.clear();
+      for (const r of records) if (String(r.dateAdded || "").slice(0, 10) === day) selected.add(r.barcode);
+      sheetStale = true;
+      // clear the filter so the whole batch is visible/selected, then re-render
+      q.value = "";
+      renderSelector();
+      statusEl.textContent = `selected ${selected.size} record(s) from the latest batch (added ${day}).`;
     });
 
     document.getElementById("selUnprinted").addEventListener("click", () => {
