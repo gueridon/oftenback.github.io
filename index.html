@@ -1,293 +1,308 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="fr">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>oftenback</title>
+<meta name="google" content="notranslate">
+<title>en marge</title>
 <style>
-  html, body { margin: 0; height: 100%; overflow: hidden; background: #E8D9BD; }
-  #stage { display: block; width: 100vw; height: 100vh; }
-  .brand {
-    position: fixed; left: 28px; top: 20px; z-index: 2; pointer-events: none;
-    display: flex; align-items: center; gap: 12px;
+  html, body { margin: 0; height: 100%; background: #141821; overflow: hidden; }
+  #c { display: block; width: 100vw; height: 100vh; }
+  /* a whisper of a mark, lower-left; nothing shouts (style.md) */
+  #mark {
+    position: fixed; left: 3.2vw; bottom: 3.0vh;
+    font: 300 12px/1.4 -apple-system, "Segoe UI", system-ui, sans-serif;
+    letter-spacing: 0.42em; text-transform: lowercase;
+    color: #b3a89c; user-select: none; pointer-events: none;
   }
-  .brand .logo { width: 46px; height: 46px; display: block; }
-  .brand .mark {
-    font: 500 18px/1 "Helvetica Neue", Arial, sans-serif;
-    letter-spacing: .14em; text-transform: lowercase; color: #3D3530; opacity: .72;
+  /* the "next space" the seuil opens onto (placeholder for the prototype) */
+  #next {
+    position: fixed; inset: 0; background: #141821;   /* = CONFIG.ground */
+    display: flex; align-items: center; justify-content: center; flex-direction: column;
+    opacity: 0; transition: opacity 0.8s ease; pointer-events: none;
+    color: #b3a89c; user-select: none; text-align: center;
+    font: 300 15px/1.6 -apple-system, "Segoe UI", system-ui, sans-serif;
+    letter-spacing: 0.32em; text-transform: lowercase;
   }
-  .tag {
-    position: fixed; left: 30px; bottom: 24px; pointer-events: none; z-index: 2;
-    font: 400 12px/1.5 "Helvetica Neue", Arial, sans-serif;
-    letter-spacing: .04em; color: #8E7F73;
-  }
+  #next.show { opacity: 1; }
+  #next .hint { margin-top: 22px; font-size: 11px; color: #6f6a64; letter-spacing: 0.4em; }
 </style>
 </head>
 <body>
-<canvas id="stage"></canvas>
-<div class="brand">
-  <img class="logo" src="face.svg" alt="oftenback">
-  <span class="mark">oftenback</span>
-</div>
-<div class="tag" id="tag"></div>
-
+<canvas id="c"></canvas>
+<div id="mark">en marge</div>
+<div id="next"><div>something will open here soon</div><div class="hint">click to return</div></div>
 <script>
-"use strict";
+// ===========================================================================
+// En marge — "flot", essai 2 (copy of flot.html, then pushed)
+//
+// Changes asked for, 2026-07-12:
+//   - slower;
+//   - a single, longer, softer crest (a swell that passes, not two blobs);
+//   - a more marked trail (soft comet), "doux mais relentless";
+//   - the ∞ is NO LONGER A LINE. It is a diffuse green haze that only *suggests*
+//     the lemniscate, fuzzy, indéfinissable, insaisissable. This is the day's
+//     "opening the hand" made visual: the fuzzy edge of a set, never the crisp
+//     boundary. No stroke; overlapping soft radial blobs, jittered off the exact
+//     path, low opacity, so there is a presence but nothing to grasp.
+//
+// The channel is still a Bernoulli lemniscate (∞): the ostinato, two lobes /
+// one fil, the crossing = the seuil the swell passes through each loop.
+// ===========================================================================
 
-/* ─────────────────────────────────────────────────────────────
-   oftenback landing — Co/Lab floating-shapes composition.
-   A homage to the Tab5 home display: the same forms, no data.
-   - Each cluster of shapes drifts as an island, bouncing off the
-     screen (inset by SCREEN_PAD) and off other clusters (CLUSTER_GAP),
-     never overlapping.
-   - Within a cluster, every shape also wanders on a light wind and
-     leans toward the cursor's gravity.
-   Tunable knobs are grouped just below.
-   ───────────────────────────────────────────────────────────── */
-
-// ── Co/Lab palette (from tab5-v4 Layout.h, substrate-validated 2026-05-29) ──
-const PAL = {
-  BG:"#E8D9BD", CARD:"#D8CAB0", BORDER:"#C4B79D", INK:"#3D3530",
-  DIM:"#8E7F73", SAGE:"#9AAB97", AMBER:"#C89A5E", CLAY:"#A55A4A",
+const CONFIG = {
+  ground: '#141821',       // cool-ink night ground (chosen 2026-07-12; was cream #f4ede2)
+  green:  [40, 235, 85],   // electric fluo green (brighter than the saver's #0fd23a)
+  shape:  'lemniscate',    // 'lemniscate' (∞) or 'circle'
+  samples: 260,            // soft blobs along the path (overlap -> continuous haze)
+  flow:   0.00085,         // slow current travel (loop fraction / frame), ~20s a loop
+  head:   0.045,           // short, brighter leading edge of the current
+  tail:   0.34,            // long soft trailing fade -> the flow melts fully into the ground
+  crestGreen: [130, 255, 100], // the current head peaks to a luminous neon green (not white)
+  baseA:  0.060,           // haze opacity per blob (a few hairs more; present, still soft)
+  crestA: 0.15,            // extra opacity at the current head (translucent, not solid)
+  baseR:  17,              // larger, softer blobs -> a diffuse band with no edge/line
+  crestR: 13,              // extra radius under the current
+  jitter: 12,              // perpendicular scatter; dissolves any consistent edge
+  wobbleAmp: 5,            // px of subtle perpendicular breathing (small = alive, not busy)
+  wobbleFreq: 0.046,       // undulation speed; livelier again (~2.3s period)
+  scaleF: 0.36,
+  offX:   0.00,
+  offY:  -0.04,
+  // -- seuil-porte (the door at the ∞ crossing) --
+  doorReachF: 0.34,        // approach-influence radius, fraction of min(W,H) (desktop gather)
+  doorCoreF:  0.13,        // core glow + click/tap zone radius, fraction of min(W,H)
+  pulseFreq:  0.028,       // self-pulse speed (touch always; desktop when idle)
+  idleFrames: 180,         // ~3s of stillness before the desktop door self-invites
 };
 
-// ── Motion + interaction knobs ──
-const VW = 1280, VH = 720;        // virtual composition space (Tab5 native)
-const FLOAT_AMP    = 7;           // px of idle per-shape drift (virtual units)
-const FLOAT_SPEED  = 0.55;        // drift tempo
-const GRAV_R       = 300;         // cursor influence radius (virtual units)
-const GRAV_MAX     = 55;          // strongest pull toward cursor (virtual units)
-const GRAV_FALLOFF = 1.5;         // >1 = pull concentrates near the cursor
-const EASE         = 0.075;       // per-shape position smoothing
-const PROX_TINT    = 0.45;        // how far a near shape warms toward AMBER (0..1)
-const SHADOW       = 0.10;        // soft drop-shadow alpha
-const SCREEN_PAD   = 20;          // invisible inset clusters bounce off (virtual px)
-const CLUSTER_GAP  = 20;          // invisible gap kept between clusters (virtual px)
-const CLUSTER_SPEED= 24;          // base cluster drift speed (virtual units / sec)
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+let W = 0, H = 0, DPR = 1, scale = 1, cx = 0, cy = 0;
+let bx = [], by = [], nx = [], ny = [], j0 = [], ph = [], rjit = []; // per-blob data
+let phase = 0, frame = 0;
+let seed = 20260712;        // deterministic pseudo-random (no Date/Math.random reliance)
+function rand() { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; }
 
-const reduced  = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-const floatAmp = reduced ? FLOAT_AMP * 0.25 : FLOAT_AMP;
-const gravMax  = reduced ? GRAV_MAX  * 0.4  : GRAV_MAX;
-const cluSpeed = reduced ? 0 : CLUSTER_SPEED;   // reduced motion -> islands hold still
+const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+if (reduced) { CONFIG.flow = 0.00045; CONFIG.wobbleAmp = 1.5; CONFIG.wobbleFreq = 0.008; }
 
-// ── Color helpers ──
-function hexToRgb(h){ const n=parseInt(h.slice(1),16); return [n>>16&255, n>>8&255, n&255]; }
-function lerpRgb(a,b,t){ return [a[0]+(b[0]-a[0])*t, a[1]+(b[1]-a[1])*t, a[2]+(b[2]-a[2])*t]; }
-function css(rgb){ return `rgb(${rgb[0]|0},${rgb[1]|0},${rgb[2]|0})`; }
-const AMBER_RGB = hexToRgb(PAL.AMBER), SAGE_RGB = hexToRgb(PAL.SAGE);
+// -- seuil-porte interaction state --
+// Mode by CAPABILITY, not user-agent: a real hovering pointer -> desktop behaviour
+// (light gathers toward the cursor); a coarse/no-hover pointer -> touch behaviour
+// (the door pulses on its own). ?mode=hover|touch forces it (for rendering both).
+const params = new URLSearchParams(location.search);
+const modeForced = params.has('mode');
+let mode = params.get('mode')
+  || (window.matchMedia('(hover: hover) and (pointer: fine)').matches ? 'hover' : 'touch');
+function setMode(m) { if (!modeForced) mode = m; }   // live-adapt for hybrids
+let mouseX = -1e5, mouseY = -1e5, mouseIn = false, lastMove = -1e9;
+let entering = false, entered = false, enterT = 0;
+// ?mx=&my= injects a virtual cursor (for rendering the hover states headless)
+if (params.has('mx')) { mouseIn = true; mouseX = +params.get('mx'); mouseY = +params.get('my'); lastMove = 1e9; setMode('hover'); }
 
-/* ── Shapes, in virtual 1280x720 coords (mirrors Tab5 Layout) ──
-   type: "disc" (r) | "stone" (w,h pebble) | "dot" (r, drawn on top)        */
-const SHAPES = [
-  { id:"w1", type:"disc",  x:185, y:215, r:78, fill:PAL.CARD },
-  { id:"w2", type:"disc",  x:305, y:335, r:52, fill:PAL.SAGE },
+function pathAt(t) {
+  if (CONFIG.shape === 'circle') return { x: Math.cos(t) * scale, y: Math.sin(t) * scale };
+  const s = Math.sin(t), c = Math.cos(t), d = 1 + s * s;   // Bernoulli lemniscate
+  return { x: (scale * c) / d, y: (scale * s * c) / d };
+}
 
-  { id:"yardL", type:"stone", x:512, y:300, w:82,  h:128, fill:PAL.BORDER },
-  { id:"house", type:"stone", x:640, y:300, w:172, h:150, fill:PAL.CARD   },
-  { id:"yardB", type:"stone", x:772, y:292, w:112, h:112, fill:PAL.BORDER },
-  { id:"pool",  type:"dot",   x:780, y:296, r:26, fill:PAL.SAGE },
-  { id:"yardF", type:"stone", x:640, y:444, w:150, h:70,  fill:PAL.BORDER },
+function rebuild() {
+  seed = 20260712;
+  const N = CONFIG.samples, TAU = Math.PI * 2;
 
-  { id:"cam",   type:"stone", x:640, y:566, w:172, h:86,  fill:PAL.CARD },
+  // 1) dense sample of the path + cumulative arc length
+  const M = 4000;
+  const dx = new Float64Array(M + 1), dy = new Float64Array(M + 1), cum = new Float64Array(M + 1);
+  let px = 0, py = 0;
+  for (let j = 0; j <= M; j++) {
+    const p = pathAt((j / M) * TAU);
+    dx[j] = p.x; dy[j] = p.y;
+    cum[j] = (j === 0) ? 0 : cum[j - 1] + Math.hypot(p.x - px, p.y - py);
+    px = p.x; py = p.y;
+  }
+  const total = cum[M];
 
-  { id:"m1", type:"disc", x:968,  y:250, r:46, fill:PAL.CARD   },
-  { id:"m2", type:"disc", x:1055, y:276, r:38, fill:PAL.BORDER },
-  { id:"m3", type:"disc", x:1140, y:256, r:42, fill:PAL.CARD   },
+  // 2) resample N base points at EQUAL ARC LENGTH -> even spatial spacing, so the
+  //    crest keeps a constant thickness and the current advances at a steady pace
+  const base = [];
+  let j = 0;
+  for (let i = 0; i < N; i++) {
+    const target = (i / N) * total;
+    while (j < M && cum[j + 1] < target) j++;
+    const seg = (cum[j + 1] - cum[j]) || 1;
+    const f = (target - cum[j]) / seg;
+    base.push({ x: dx[j] + (dx[j + 1] - dx[j]) * f, y: dy[j] + (dy[j + 1] - dy[j]) * f });
+  }
 
-  { id:"pd",  type:"disc", x:1150, y:600, r:52, fill:PAL.SAGE },
-  { id:"net", type:"dot",  x:1150, y:118, r:10, fill:PAL.SAGE, pulse:true },
+  // 3) for each blob store: base point, unit normal, a fixed jitter, a phase (for
+  //    the subtle living undulation), and a radius factor. Position is recomputed
+  //    every frame from base + normal * (jitter + wobble), so the ∞ can breathe.
+  bx.length = by.length = nx.length = ny.length = j0.length = ph.length = rjit.length = 0;
+  for (let i = 0; i < N; i++) {
+    const a = base[(i + 1) % N], b = base[(i - 1 + N) % N];
+    let tx = a.x - b.x, ty = a.y - b.y;
+    const L = Math.hypot(tx, ty) || 1; tx /= L; ty /= L;
+    bx.push(base[i].x); by.push(base[i].y);
+    nx.push(-ty); ny.push(tx);                       // unit normal to the path
+    j0.push((rand() * 2 - 1) * CONFIG.jitter);       // fixed perpendicular scatter
+    ph.push(i * 0.25 + rand() * Math.PI * 2);         // wobble phase (ripples along ∞)
+    rjit.push(0.8 + rand() * 0.5);
+  }
+}
+
+function resize() {
+  DPR = Math.min(window.devicePixelRatio || 1, 2);
+  W = window.innerWidth; H = window.innerHeight;
+  canvas.width = W * DPR; canvas.height = H * DPR;
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  scale = Math.min(W, H) * CONFIG.scaleF;
+  cx = W * 0.5 + W * CONFIG.offX;
+  cy = H * 0.5 + H * CONFIG.offY;
+  rebuild();
+  ctx.fillStyle = CONFIG.ground;
+  ctx.fillRect(0, 0, W, H);
+}
+window.addEventListener('resize', resize);
+
+function wrapDist(a, b) { const x = Math.abs(a - b) % 1; return Math.min(x, 1 - x); }
+
+// the current: a comet with a short bright head and a long soft tail that fades
+// all the way to zero, so the flow melts back into the ground behind it
+function crestAt(u) {
+  let d = u - phase;
+  d -= Math.round(d);                       // signed offset, wrapped to (-0.5, 0.5]
+  if (d > CONFIG.head || d < -CONFIG.tail) return 0;
+  if (d >= 0) return 1 - d / CONFIG.head;   // short leading edge (ahead of the head)
+  const t = 1 + d / CONFIG.tail;            // 1 at the head -> 0 at the tail's end
+  return t * t * t;                         // long cubic fade -> dissolves into nothing
+}
+
+// one soft radial blob, gaussian-ish falloff (extra stops) so there is no ring,
+// no edge, no line -- only a core melting to nothing
+function blob(x, y, r, col, a) {
+  const rgb = col[0] + ',' + col[1] + ',' + col[2] + ',';
+  const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+  g.addColorStop(0.00, 'rgba(' + rgb + a + ')');
+  g.addColorStop(0.35, 'rgba(' + rgb + (a * 0.5) + ')');
+  g.addColorStop(0.70, 'rgba(' + rgb + (a * 0.12) + ')');
+  g.addColorStop(1.00, 'rgba(' + rgb + '0)');
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+const lerp = (a, b, t) => [
+  Math.round(a[0] + (b[0] - a[0]) * t),
+  Math.round(a[1] + (b[1] - a[1]) * t),
+  Math.round(a[2] + (b[2] - a[2]) * t),
 ];
 
-// soft connectors drawn under the shapes (each links shapes in one cluster)
-const LINKS = [ ["w1","w2"], ["m1","m2"], ["m2","m3"], ["yardB","pool"] ];
+function loop() {
+  phase = (phase + CONFIG.flow) % 1;
+  frame++;
+  const N = bx.length;
+  if (entering) { enterT = Math.min(1, enterT + 0.02); if (enterT >= 1) entered = true; }
+  const vis = 1 - enterT;   // the ∞ fades as one passes through the seuil
 
-// clusters = islands that drift + bounce as rigid units
-const CLUSTERS = {
-  weather: ["w1","w2"],
-  house:   ["yardL","house","yardB","pool","yardF"],
-  cameras: ["cam"],
-  music:   ["m1","m2","m3"],
-  pool:    ["pd"],
-  net:     ["net"],
-};
+  // full clear to the exact ground colour: nothing persists, so no residual "shadow" ever
+  // builds up beside the ∞; the current's own long tail is the only trail
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = CONFIG.ground;
+  ctx.fillRect(0, 0, W, H);
 
-const byId = {}; SHAPES.forEach(s => byId[s.id] = s);
+  const A = CONFIG.wobbleAmp, F = CONFIG.wobbleFreq;
+  // one green pigment pass. The faint constant haze IS the fuzzy, insaisissable ∞;
+  // where the current passes, the green brightens (toward crestGreen, not white)
+  // and the blob swells -- luminous but still translucent, never solid paint.
+  for (let i = 0; i < N; i++) {
+    // subtle living undulation: a slow perpendicular wobble (two out-of-phase
+    // waves) makes the whole ∞ breathe and ripple instead of sitting frozen
+    const off = j0[i]
+      + A * Math.sin(frame * F + ph[i])
+      + A * 0.5 * Math.sin(frame * F * 0.53 + ph[i] * 1.7);
+    const x = cx + bx[i] + nx[i] * off;
+    const y = cy + by[i] + ny[i] * off;
 
-// deterministic PRNG so drift phases + headings are stable across reloads
-let seed = 1337;
-const rand = () => (seed = (seed*1103515245 + 12345) & 0x7fffffff) / 0x7fffffff;
+    const c = crestAt((i + 0.5) / N);
+    const a = (CONFIG.baseA + CONFIG.crestA * c) * vis;
+    const r = (CONFIG.baseR + CONFIG.crestR * c) * rjit[i]
+              * (1 + 0.08 * Math.sin(frame * F * 0.7 + ph[i]));   // faint size breathing
+    const col = c > 0 ? lerp(CONFIG.green, CONFIG.crestGreen, c) : CONFIG.green;
+    blob(x, y, r, col, a);
+  }
 
-// per-shape drift state + current rendered position
-SHAPES.forEach(s => {
-  s.cx = s.x; s.cy = s.y;
-  s.phx = rand()*Math.PI*2; s.phy = rand()*Math.PI*2;
-  s.fx = 0.6 + rand()*0.7;  s.fy = 0.6 + rand()*0.7;
+  // -- the seuil-porte: the door at the crossing of the ∞ --
+  const doorR = Math.min(W, H) * CONFIG.doorCoreF;
+  const reach = Math.hypot(W, H) * 0.5;              // proximity gradient spans most of the screen
+  const pulse = 0.5 + 0.5 * Math.sin(frame * CONFIG.pulseFreq);
+  let glow = 0;
+  if (mode === 'touch') {
+    glow = 0.55 + 0.35 * pulse;                      // no hover -> the door invites on its own
+  } else {
+    const dist = Math.hypot(mouseX - cx, mouseY - cy);
+    if (mouseIn) {
+      const prox = Math.max(0, 1 - dist / reach);    // 0 far -> 1 at the centre
+      glow = 0.50 + 0.50 * prox * prox;              // WAKES strongly on the first move, brightens on approach
+      if (!entered) blob(mouseX, mouseY, 84, CONFIG.green, 0.07);   // a bloom clearly follows the cursor
+    }
+    if (frame - lastMove > CONFIG.idleFrames)        // no pointer yet / idle -> the door self-invites
+      glow = Math.max(glow, 0.30 + 0.18 * pulse);
+    glow *= 0.9 + 0.1 * pulse;                       // a little life on the floor
+    canvas.style.cursor = (!entered && mouseIn && dist < doorR) ? 'pointer' : 'default';
+  }
+  glow *= vis;
+  if (glow > 0.001) {
+    blob(cx, cy, doorR * (0.5 + 1.1 * glow), CONFIG.crestGreen, 0.06 + 0.20 * glow);
+    if (glow > 0.5)   // a bright kiss right at the door when the cursor is close: obviously clickable
+      blob(cx, cy, doorR * 0.55 * glow, [205, 255, 185], 0.10 * (glow - 0.5) * 2);
+  }
+
+  // passing through: a green bloom floods outward from the seuil
+  if (entering)
+    blob(cx, cy, doorR + enterT * enterT * Math.hypot(W, H),
+         CONFIG.crestGreen, 0.10 + 0.35 * (1 - enterT));
+
+  requestAnimationFrame(loop);
+}
+
+// -- entering / returning through the seuil --
+function enter() {
+  if (entering || entered) return;
+  entering = true; enterT = 0;
+  const n = document.getElementById('next'); if (n) n.classList.add('show');
+}
+function reset() {
+  entering = false; entered = false; enterT = 0;
+  const n = document.getElementById('next'); if (n) n.classList.remove('show');
+}
+
+window.addEventListener('pointermove', e => {
+  mouseX = e.clientX; mouseY = e.clientY; mouseIn = true; lastMove = frame;
+  if (e.pointerType === 'mouse') setMode('hover');
+});
+window.addEventListener('pointerdown', e => {
+  if (entering || entered) { reset(); return; }        // click/tap anywhere returns
+  if (e.pointerType === 'touch') setMode('touch');
+  else if (e.pointerType === 'mouse') setMode('hover');
+  const doorR = Math.min(W, H) * CONFIG.doorCoreF;
+  const zone = (mode === 'touch') ? doorR * 1.5 : doorR;   // a slightly bigger tap target
+  if (Math.hypot(e.clientX - cx, e.clientY - cy) <= zone) enter();
+});
+window.addEventListener('touchstart', () => setMode('touch'), { passive: true });
+window.addEventListener('blur', () => { mouseIn = false; });
+
+window.addEventListener('keydown', e => {
+  if (e.key === 'Escape' || e.key === 'q' || e.key === 'Q') {
+    if (entering || entered) { reset(); return; }
+    try { window.close(); } catch (_) {}
+  }
 });
 
-// build cluster objects: bbox centre, half-extents, member local offsets, heading
-const clusters = [];
-for (const [cid, members] of Object.entries(CLUSTERS)){
-  let minX=1e9, minY=1e9, maxX=-1e9, maxY=-1e9;
-  for (const id of members){
-    const s = byId[id];
-    const ex = s.type === "stone" ? s.w/2 : s.r;
-    const ey = s.type === "stone" ? s.h/2 : s.r;
-    minX = Math.min(minX, s.x-ex); maxX = Math.max(maxX, s.x+ex);
-    minY = Math.min(minY, s.y-ey); maxY = Math.max(maxY, s.y+ey);
-  }
-  const cx0 = (minX+maxX)/2, cy0 = (minY+maxY)/2;
-  const ang = rand()*Math.PI*2;
-  const spd = cluSpeed * (0.7 + rand()*0.6);   // slight per-island speed variety
-  const c = { id:cid, members, cx:cx0, cy:cy0, hw:(maxX-minX)/2, hh:(maxY-minY)/2,
-              vx:Math.cos(ang)*spd, vy:Math.sin(ang)*spd };
-  for (const id of members){ const s = byId[id]; s.lx = s.x-cx0; s.ly = s.y-cy0; s.cluster = c; }
-  clusters.push(c);
-}
-
-// ── Cluster physics: drift, screen bounce, pairwise AABB bounce ──
-function stepClusters(dt){
-  for (const c of clusters){
-    c.cx += c.vx*dt; c.cy += c.vy*dt;
-    const minX = SCREEN_PAD + c.hw, maxX = VW - SCREEN_PAD - c.hw;
-    const minY = SCREEN_PAD + c.hh, maxY = VH - SCREEN_PAD - c.hh;
-    if (c.cx < minX){ c.cx = minX; c.vx =  Math.abs(c.vx); }
-    else if (c.cx > maxX){ c.cx = maxX; c.vx = -Math.abs(c.vx); }
-    if (c.cy < minY){ c.cy = minY; c.vy =  Math.abs(c.vy); }
-    else if (c.cy > maxY){ c.cy = maxY; c.vy = -Math.abs(c.vy); }
-  }
-  for (let i=0; i<clusters.length; i++){
-    for (let j=i+1; j<clusters.length; j++){
-      const a = clusters[i], b = clusters[j];
-      const ox = (a.hw + b.hw + CLUSTER_GAP) - Math.abs(a.cx - b.cx);
-      const oy = (a.hh + b.hh + CLUSTER_GAP) - Math.abs(a.cy - b.cy);
-      if (ox > 0 && oy > 0){                       // overlapping incl. gap
-        if (ox < oy){                              // separate on the shallower axis
-          const dir = a.cx < b.cx ? -1 : 1;
-          a.cx += dir*ox/2; b.cx -= dir*ox/2;
-          const t = a.vx; a.vx = b.vx; b.vx = t;   // equal-mass elastic swap
-        } else {
-          const dir = a.cy < b.cy ? -1 : 1;
-          a.cy += dir*oy/2; b.cy -= dir*oy/2;
-          const t = a.vy; a.vy = b.vy; b.vy = t;
-        }
-      }
-    }
-  }
-}
-
-// ── Canvas + scaling (contain the virtual space, centre it) ──
-const cv = document.getElementById("stage");
-const ctx = cv.getContext("2d");
-let scale = 1, offX = 0, offY = 0, dpr = 1;
-function resize(){
-  dpr = Math.min(window.devicePixelRatio || 1, 2);
-  const w = window.innerWidth, h = window.innerHeight;
-  cv.width = w*dpr; cv.height = h*dpr; cv.style.width = w+"px"; cv.style.height = h+"px";
-  scale = Math.min(w/VW, h/VH);
-  offX = (w - VW*scale)/2; offY = (h - VH*scale)/2;
-}
-window.addEventListener("resize", resize); resize();
-
-// ── Pointer (screen -> virtual), inactive until the cursor enters ──
-let mvx = 0, mvy = 0, active = false;
-function setPointer(px, py){ mvx = (px - offX)/scale; mvy = (py - offY)/scale; active = true; }
-window.addEventListener("mousemove", e => setPointer(e.clientX, e.clientY));
-window.addEventListener("mouseleave", () => active = false);
-window.addEventListener("touchmove", e => { const t=e.touches[0]; if(t) setPointer(t.clientX, t.clientY); }, {passive:true});
-window.addEventListener("touchend", () => active = false);
-
-// ── Time-of-day substrate tint (a subtle "condition") ──
-function timeOfDay(){
-  const h = new Date().getHours();
-  if (h >= 5  && h < 8)  return { name:"dawn",  bg:[0xF0,0xE2,0xC6] };
-  if (h >= 8  && h < 17) return { name:"day",   bg:hexToRgb(PAL.BG) };
-  if (h >= 17 && h < 20) return { name:"dusk",  bg:[0xE6,0xCF,0xAC] };
-  return                       { name:"night", bg:[0xD9,0xC9,0xAD] };
-}
-const tod = timeOfDay();
-const BG_RGB = tod.bg;
-document.getElementById("tag").textContent = tod.name;
-document.body.style.background = css(BG_RGB);
-
-// ── Drawing primitives ──
-function roundRect(cx, cy, w, h, r){
-  const x = cx - w/2, y = cy - h/2;
-  ctx.beginPath();
-  ctx.moveTo(x+r, y);
-  ctx.arcTo(x+w, y,   x+w, y+h, r);
-  ctx.arcTo(x+w, y+h, x,   y+h, r);
-  ctx.arcTo(x,   y+h, x,   y,   r);
-  ctx.arcTo(x,   y,   x+w, y,   r);
-  ctx.closePath();
-}
-function shapeFill(s, prox, t){
-  let base = hexToRgb(s.fill);
-  if (s.pulse){ const b = Math.sin(t*1.6)*0.5 + 0.5; base = lerpRgb(SAGE_RGB, AMBER_RGB, b); }
-  if (prox > 0) base = lerpRgb(base, AMBER_RGB, prox*PROX_TINT);
-  return css(base);
-}
-
-// ── Frame ──
-let t0 = null, lastTs = null;
-function frame(ts){
-  if (t0 === null){ t0 = ts; lastTs = ts; }
-  const t = (ts - t0)/1000 * FLOAT_SPEED;
-  let dt = (ts - lastTs)/1000; lastTs = ts; if (dt > 0.05) dt = 0.05;  // clamp tab-switch jumps
-
-  stepClusters(dt);
-
-  for (const s of SHAPES){
-    const hx = s.cluster.cx + s.lx;           // cluster-driven home
-    const hy = s.cluster.cy + s.ly;
-    const dxF = Math.sin(t*s.fx + s.phx) * floatAmp;
-    const dyF = Math.sin(t*s.fy + s.phy) * floatAmp;
-    let tx = hx + dxF, ty = hy + dyF;
-    s.prox = 0;
-    if (active){
-      const gx = mvx - tx, gy = mvy - ty;
-      const d = Math.hypot(gx, gy);
-      if (d < GRAV_R && d > 0.001){
-        const f = Math.pow(1 - d/GRAV_R, GRAV_FALLOFF);
-        s.prox = 1 - d/GRAV_R;
-        tx += (gx/d) * f * gravMax;
-        ty += (gy/d) * f * gravMax;
-      }
-    }
-    s.cx += (tx - s.cx) * EASE;
-    s.cy += (ty - s.cy) * EASE;
-  }
-
-  // render
-  const W = cv.width, H = cv.height;
-  ctx.setTransform(1,0,0,1,0,0);
-  ctx.clearRect(0,0,W,H);
-  ctx.fillStyle = css(BG_RGB); ctx.fillRect(0,0,W,H);
-  ctx.setTransform(dpr*scale, 0, 0, dpr*scale, offX*dpr, offY*dpr);
-
-  // connectors (under, no shadow)
-  ctx.lineCap = "round";
-  ctx.strokeStyle = css(hexToRgb(PAL.BORDER));
-  ctx.globalAlpha = 0.55; ctx.lineWidth = 3.5;
-  for (const [a,b] of LINKS){
-    const A = byId[a], B = byId[b];
-    ctx.beginPath(); ctx.moveTo(A.cx, A.cy); ctx.lineTo(B.cx, B.cy); ctx.stroke();
-  }
-  ctx.globalAlpha = 1;
-
-  // shapes (soft lifted shadow), stones then discs then dots
-  ctx.shadowColor = `rgba(61,53,48,${SHADOW})`;
-  ctx.shadowBlur = 22; ctx.shadowOffsetY = 7;
-  const order = { stone:0, disc:1, dot:2 };
-  for (const s of [...SHAPES].sort((p,q)=>order[p.type]-order[q.type])){
-    ctx.fillStyle = shapeFill(s, s.prox||0, t);
-    if (s.type === "stone"){ roundRect(s.cx, s.cy, s.w, s.h, Math.min(s.w,s.h)*0.32); ctx.fill(); }
-    else { ctx.beginPath(); ctx.arc(s.cx, s.cy, s.r, 0, Math.PI*2); ctx.fill(); }
-  }
-  ctx.shadowColor = "transparent"; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
-
-  requestAnimationFrame(frame);
-}
-requestAnimationFrame(frame);
+resize();
+requestAnimationFrame(loop);
+if (params.has('enter')) { entered = true; enterT = 1; document.getElementById('next').classList.add('show'); }
 </script>
 </body>
 </html>
