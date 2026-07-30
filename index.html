@@ -4,305 +4,100 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="google" content="notranslate">
-<title>en marge</title>
+<title>oftenback.io</title>
 <style>
-  html, body { margin: 0; height: 100%; background: #141821; overflow: hidden; }
-  #c { display: block; width: 100vw; height: 100vh; }
-  /* a whisper of a mark, lower-left; nothing shouts (style.md) */
+  /* the desktop Nakata Environment "nuage": cream ground, barely-visible
+     dithered clouds drifting on a slow wind, inside a uniform padding all
+     around (port of bin/co-lab-cloud-saver.py + bin/render-clouds.py). */
+  :root { --ground:#f4ede2; --pad:44px; --mark:#ff6a00; }  /* oftenback.io: bright fluorescent orange */
+  html, body { margin:0; height:100%; background:var(--ground); overflow:hidden; }
+  #c {
+    position:fixed; left:var(--pad); top:var(--pad);
+    width:calc(100vw - 2*var(--pad)); height:calc(100vh - 2*var(--pad));
+    display:block;
+  }
+  /* oftenback.io, a whisper under the lower-left corner (nothing shouts) */
   #mark {
-    position: fixed; left: 3.2vw; bottom: 3.0vh;
-    font: 300 12px/1.4 -apple-system, "Segoe UI", system-ui, sans-serif;
-    letter-spacing: 0.42em; text-transform: lowercase;
-    color: #b3a89c; user-select: none; pointer-events: none;
+    position:fixed; left:var(--pad); bottom:14px;
+    font:700 12px/1.4 -apple-system,"Segoe UI",system-ui,sans-serif;
+    letter-spacing:0.42em; text-transform:lowercase;
+    color:var(--mark); user-select:none; pointer-events:none;
   }
-  /* the "next space" the seuil opens onto (placeholder for the prototype) */
-  #next {
-    position: fixed; inset: 0; background: #141821;   /* = CONFIG.ground */
-    display: flex; align-items: center; justify-content: center; flex-direction: column;
-    opacity: 0; transition: opacity 0.8s ease; pointer-events: none;
-    color: #b3a89c; user-select: none; text-align: center;
-    font: 300 15px/1.6 -apple-system, "Segoe UI", system-ui, sans-serif;
-    letter-spacing: 0.32em; text-transform: lowercase;
-  }
-  #next.show { opacity: 1; }
-  #next .hint { margin-top: 22px; font-size: 11px; color: #6f6a64; letter-spacing: 0.4em; }
 </style>
 </head>
 <body>
-<canvas id="c"></canvas>
-<div id="mark">en marge</div>
-<div id="next"><div>something will open here soon</div><div class="hint">click to return</div></div>
+  <canvas id="c"></canvas>
+  <div id="mark">oftenback.io</div>
 <script>
-// ===========================================================================
-// En marge — "flot", essai 2 (copy of flot.html, then pushed)
-//
-// Changes asked for, 2026-07-12:
-//   - slower;
-//   - a single, longer, softer crest (a swell that passes, not two blobs);
-//   - a more marked trail (soft comet), "doux mais relentless";
-//   - the ∞ is NO LONGER A LINE. It is a diffuse green haze that only *suggests*
-//     the lemniscate, fuzzy, indéfinissable, insaisissable. This is the day's
-//     "opening the hand" made visual: the fuzzy edge of a set, never the crisp
-//     boundary. No stroke; overlapping soft radial blobs, jittered off the exact
-//     path, low opacity, so there is a presence but nothing to grasp.
-//
-// The channel is still a Bernoulli lemniscate (∞): the ostinato, two lobes /
-// one fil, the crossing = the seuil the swell passes through each loop.
-// ===========================================================================
+(function () {
+  const cv = document.getElementById('c');
+  const ctx = cv.getContext('2d');
 
-const CONFIG = {
-  ground: '#141821',       // cool-ink night ground (chosen 2026-07-12; was cream #f4ede2)
-  green:  [40, 235, 85],   // electric fluo green (brighter than the saver's #0fd23a)
-  shape:  'lemniscate',    // 'lemniscate' (∞) or 'circle'
-  samples: 260,            // soft blobs along the path (overlap -> continuous haze)
-  flow:   0.00085,         // slow current travel (loop fraction / frame), ~20s a loop
-  head:   0.045,           // short, brighter leading edge of the current
-  tail:   0.34,            // long soft trailing fade -> the flow melts fully into the ground
-  crestGreen: [130, 255, 100], // the current head peaks to a luminous neon green (not white)
-  baseA:  0.060,           // haze opacity per blob (a few hairs more; present, still soft)
-  crestA: 0.15,            // extra opacity at the current head (translucent, not solid)
-  baseR:  17,              // larger, softer blobs -> a diffuse band with no edge/line
-  crestR: 13,              // extra radius under the current
-  jitter: 12,              // perpendicular scatter; dissolves any consistent edge
-  wobbleAmp: 5,            // px of subtle perpendicular breathing (small = alive, not busy)
-  wobbleFreq: 0.046,       // undulation speed; livelier again (~2.3s period)
-  scaleF: 0.36,
-  offX:   0.00,
-  offY:  -0.04,
-  // -- seuil-porte (the door at the ∞ crossing) --
-  doorReachF: 0.34,        // approach-influence radius, fraction of min(W,H) (desktop gather)
-  doorCoreF:  0.13,        // core glow + click/tap zone radius, fraction of min(W,H)
-  pulseFreq:  0.028,       // self-pulse speed (touch always; desktop when idle)
-  idleFrames: 180,         // ~3s of stillness before the desktop door self-invites
-};
+  // cloud tint = ground * 0.40; a 1-on/1-off dither, periodic in x so it wraps
+  // seamlessly as it drifts. Same knobs as bin/render-clouds.py.
+  const GROUND = [244, 237, 226], DARKEN = 0.40, THRESH = 0.28, MAXA = 170;
+  const cr = Math.round(GROUND[0] * DARKEN),
+        cg = Math.round(GROUND[1] * DARKEN),
+        cb = Math.round(GROUND[2] * DARKEN);
+  const inv = 1 / (1 - THRESH), TAU = 2 * Math.PI;
+  let tex = null, tw = 0, th = 0;
 
-const canvas = document.getElementById('c');
-const ctx = canvas.getContext('2d');
-let W = 0, H = 0, DPR = 1, scale = 1, cx = 0, cy = 0;
-let bx = [], by = [], nx = [], ny = [], j0 = [], ph = [], rjit = []; // per-blob data
-let phase = 0, frame = 0;
-let seed = 20260712;        // deterministic pseudo-random (no Date/Math.random reliance)
-function rand() { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; }
-
-const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-if (reduced) { CONFIG.flow = 0.00045; CONFIG.wobbleAmp = 1.5; CONFIG.wobbleFreq = 0.008; }
-
-// -- seuil-porte interaction state --
-// Mode by CAPABILITY, not user-agent: a real hovering pointer -> desktop behaviour
-// (light gathers toward the cursor); a coarse/no-hover pointer -> touch behaviour
-// (the door pulses on its own). ?mode=hover|touch forces it (for rendering both).
-const params = new URLSearchParams(location.search);
-const modeForced = params.has('mode');
-let mode = params.get('mode')
-  || (window.matchMedia('(hover: hover) and (pointer: fine)').matches ? 'hover' : 'touch');
-function setMode(m) { if (!modeForced) mode = m; }   // live-adapt for hybrids
-let mouseX = -1e5, mouseY = -1e5, mouseIn = false, lastMove = -1e9;
-let entering = false, entered = false, enterT = 0;
-// ?mx=&my= injects a virtual cursor (for rendering the hover states headless)
-if (params.has('mx')) { mouseIn = true; mouseX = +params.get('mx'); mouseY = +params.get('my'); lastMove = 1e9; setMode('hover'); }
-
-function pathAt(t) {
-  if (CONFIG.shape === 'circle') return { x: Math.cos(t) * scale, y: Math.sin(t) * scale };
-  const s = Math.sin(t), c = Math.cos(t), d = 1 + s * s;   // Bernoulli lemniscate
-  return { x: (scale * c) / d, y: (scale * s * c) / d };
-}
-
-function rebuild() {
-  seed = 20260712;
-  const N = CONFIG.samples, TAU = Math.PI * 2;
-
-  // 1) dense sample of the path + cumulative arc length
-  const M = 4000;
-  const dx = new Float64Array(M + 1), dy = new Float64Array(M + 1), cum = new Float64Array(M + 1);
-  let px = 0, py = 0;
-  for (let j = 0; j <= M; j++) {
-    const p = pathAt((j / M) * TAU);
-    dx[j] = p.x; dy[j] = p.y;
-    cum[j] = (j === 0) ? 0 : cum[j - 1] + Math.hypot(p.x - px, p.y - py);
-    px = p.x; py = p.y;
-  }
-  const total = cum[M];
-
-  // 2) resample N base points at EQUAL ARC LENGTH -> even spatial spacing, so the
-  //    crest keeps a constant thickness and the current advances at a steady pace
-  const base = [];
-  let j = 0;
-  for (let i = 0; i < N; i++) {
-    const target = (i / N) * total;
-    while (j < M && cum[j + 1] < target) j++;
-    const seg = (cum[j + 1] - cum[j]) || 1;
-    const f = (target - cum[j]) / seg;
-    base.push({ x: dx[j] + (dx[j + 1] - dx[j]) * f, y: dy[j] + (dy[j + 1] - dy[j]) * f });
-  }
-
-  // 3) for each blob store: base point, unit normal, a fixed jitter, a phase (for
-  //    the subtle living undulation), and a radius factor. Position is recomputed
-  //    every frame from base + normal * (jitter + wobble), so the ∞ can breathe.
-  bx.length = by.length = nx.length = ny.length = j0.length = ph.length = rjit.length = 0;
-  for (let i = 0; i < N; i++) {
-    const a = base[(i + 1) % N], b = base[(i - 1 + N) % N];
-    let tx = a.x - b.x, ty = a.y - b.y;
-    const L = Math.hypot(tx, ty) || 1; tx /= L; ty /= L;
-    bx.push(base[i].x); by.push(base[i].y);
-    nx.push(-ty); ny.push(tx);                       // unit normal to the path
-    j0.push((rand() * 2 - 1) * CONFIG.jitter);       // fixed perpendicular scatter
-    ph.push(i * 0.25 + rand() * Math.PI * 2);         // wobble phase (ripples along ∞)
-    rjit.push(0.8 + rand() * 0.5);
-  }
-}
-
-function resize() {
-  DPR = Math.min(window.devicePixelRatio || 1, 2);
-  W = window.innerWidth; H = window.innerHeight;
-  canvas.width = W * DPR; canvas.height = H * DPR;
-  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-  scale = Math.min(W, H) * CONFIG.scaleF;
-  cx = W * 0.5 + W * CONFIG.offX;
-  cy = H * 0.5 + H * CONFIG.offY;
-  rebuild();
-  ctx.fillStyle = CONFIG.ground;
-  ctx.fillRect(0, 0, W, H);
-}
-window.addEventListener('resize', resize);
-
-function wrapDist(a, b) { const x = Math.abs(a - b) % 1; return Math.min(x, 1 - x); }
-
-// the current: a comet with a short bright head and a long soft tail that fades
-// all the way to zero, so the flow melts back into the ground behind it
-function crestAt(u) {
-  let d = u - phase;
-  d -= Math.round(d);                       // signed offset, wrapped to (-0.5, 0.5]
-  if (d > CONFIG.head || d < -CONFIG.tail) return 0;
-  if (d >= 0) return 1 - d / CONFIG.head;   // short leading edge (ahead of the head)
-  const t = 1 + d / CONFIG.tail;            // 1 at the head -> 0 at the tail's end
-  return t * t * t;                         // long cubic fade -> dissolves into nothing
-}
-
-// one soft radial blob, gaussian-ish falloff (extra stops) so there is no ring,
-// no edge, no line -- only a core melting to nothing
-function blob(x, y, r, col, a) {
-  const rgb = col[0] + ',' + col[1] + ',' + col[2] + ',';
-  const g = ctx.createRadialGradient(x, y, 0, x, y, r);
-  g.addColorStop(0.00, 'rgba(' + rgb + a + ')');
-  g.addColorStop(0.35, 'rgba(' + rgb + (a * 0.5) + ')');
-  g.addColorStop(0.70, 'rgba(' + rgb + (a * 0.12) + ')');
-  g.addColorStop(1.00, 'rgba(' + rgb + '0)');
-  ctx.fillStyle = g;
-  ctx.beginPath();
-  ctx.arc(x, y, r, 0, Math.PI * 2);
-  ctx.fill();
-}
-
-const lerp = (a, b, t) => [
-  Math.round(a[0] + (b[0] - a[0]) * t),
-  Math.round(a[1] + (b[1] - a[1]) * t),
-  Math.round(a[2] + (b[2] - a[2]) * t),
-];
-
-function loop() {
-  phase = (phase + CONFIG.flow) % 1;
-  frame++;
-  const N = bx.length;
-  if (entering) { enterT = Math.min(1, enterT + 0.02); if (enterT >= 1) entered = true; }
-  const vis = 1 - enterT;   // the ∞ fades as one passes through the seuil
-
-  // full clear to the exact ground colour: nothing persists, so no residual "shadow" ever
-  // builds up beside the ∞; the current's own long tail is the only trail
-  ctx.globalAlpha = 1;
-  ctx.fillStyle = CONFIG.ground;
-  ctx.fillRect(0, 0, W, H);
-
-  const A = CONFIG.wobbleAmp, F = CONFIG.wobbleFreq;
-  // one green pigment pass. The faint constant haze IS the fuzzy, insaisissable ∞;
-  // where the current passes, the green brightens (toward crestGreen, not white)
-  // and the blob swells -- luminous but still translucent, never solid paint.
-  for (let i = 0; i < N; i++) {
-    // subtle living undulation: a slow perpendicular wobble (two out-of-phase
-    // waves) makes the whole ∞ breathe and ripple instead of sitting frozen
-    const off = j0[i]
-      + A * Math.sin(frame * F + ph[i])
-      + A * 0.5 * Math.sin(frame * F * 0.53 + ph[i] * 1.7);
-    const x = cx + bx[i] + nx[i] * off;
-    const y = cy + by[i] + ny[i] * off;
-
-    const c = crestAt((i + 0.5) / N);
-    const a = (CONFIG.baseA + CONFIG.crestA * c) * vis;
-    const r = (CONFIG.baseR + CONFIG.crestR * c) * rjit[i]
-              * (1 + 0.08 * Math.sin(frame * F * 0.7 + ph[i]));   // faint size breathing
-    const col = c > 0 ? lerp(CONFIG.green, CONFIG.crestGreen, c) : CONFIG.green;
-    blob(x, y, r, col, a);
-  }
-
-  // -- the seuil-porte: the door at the crossing of the ∞ --
-  const doorR = Math.min(W, H) * CONFIG.doorCoreF;
-  const reach = Math.hypot(W, H) * 0.5;              // proximity gradient spans most of the screen
-  const pulse = 0.5 + 0.5 * Math.sin(frame * CONFIG.pulseFreq);
-  let glow = 0;
-  if (mode === 'touch') {
-    glow = 0.55 + 0.35 * pulse;                      // no hover -> the door invites on its own
-  } else {
-    const dist = Math.hypot(mouseX - cx, mouseY - cy);
-    if (mouseIn) {
-      const prox = Math.max(0, 1 - dist / reach);    // 0 far -> 1 at the centre
-      glow = 0.50 + 0.50 * prox * prox;              // WAKES strongly on the first move, brightens on approach
-      if (!entered) blob(mouseX, mouseY, 84, CONFIG.green, 0.07);   // a bloom clearly follows the cursor
+  function build(w, h) {
+    tw = Math.max(1, w | 0); th = Math.max(1, h | 0);
+    const sx1 = new Float32Array(tw), sx2 = new Float32Array(tw), sx3 = new Float32Array(tw);
+    for (let x = 0; x < tw; x++) {
+      sx1[x] = Math.sin(TAU * x / tw);
+      sx2[x] = Math.sin(2 * TAU * x / tw + 2.0);
+      sx3[x] = Math.sin(3 * TAU * x / tw + 4.0);
     }
-    if (frame - lastMove > CONFIG.idleFrames)        // no pointer yet / idle -> the door self-invites
-      glow = Math.max(glow, 0.30 + 0.18 * pulse);
-    glow *= 0.9 + 0.1 * pulse;                       // a little life on the floor
-    canvas.style.cursor = (!entered && mouseIn && dist < doorR) ? 'pointer' : 'default';
+    const off = document.createElement('canvas');
+    off.width = tw; off.height = th;
+    const octx = off.getContext('2d');
+    const img = octx.createImageData(tw, th), d = img.data;
+    for (let y = 0; y < th; y++) {
+      const c1 = Math.cos(1.3 * TAU * y / th + 1.1),
+            c2 = Math.cos(0.7 * TAU * y / th + 0.3),
+            c3 = Math.cos(1.8 * TAU * y / th + 2.5),
+            ybit = y & 1;
+      for (let x = 0; x < tw; x++) {
+        if ((x & 1) === ybit) {
+          let v = 0.55 * sx1[x] * c1 + 0.30 * sx2[x] * c2 + 0.20 * sx3[x] + 0.20 * c3;
+          v = 0.5 + 0.5 * (v > 1 ? 1 : v < -1 ? -1 : v);
+          if (v > THRESH) {
+            const a = (MAXA * (v - THRESH) * inv) | 0;
+            if (a) { const i = (y * tw + x) * 4; d[i] = cr; d[i+1] = cg; d[i+2] = cb; d[i+3] = a; }
+          }
+        }
+      }
+    }
+    octx.putImageData(img, 0, 0);
+    tex = off;
   }
-  glow *= vis;
-  if (glow > 0.001) {
-    blob(cx, cy, doorR * (0.5 + 1.1 * glow), CONFIG.crestGreen, 0.06 + 0.20 * glow);
-    if (glow > 0.5)   // a bright kiss right at the door when the cursor is close: obviously clickable
-      blob(cx, cy, doorR * 0.55 * glow, [205, 255, 185], 0.10 * (glow - 0.5) * 2);
+
+  function resize() {
+    const w = cv.clientWidth, h = cv.clientHeight;
+    cv.width = w; cv.height = h;
+    build(w, h);
   }
+  window.addEventListener('resize', resize);
+  resize();
 
-  // passing through: a green bloom floods outward from the seuil
-  if (entering)
-    blob(cx, cy, doorR + enterT * enterT * Math.hypot(W, H),
-         CONFIG.crestGreen, 0.10 + 0.35 * (1 - enterT));
-
-  requestAnimationFrame(loop);
-}
-
-// -- entering / returning through the seuil --
-function enter() {
-  if (entering || entered) return;
-  entering = true; enterT = 0;
-  const n = document.getElementById('next'); if (n) n.classList.add('show');
-}
-function reset() {
-  entering = false; entered = false; enterT = 0;
-  const n = document.getElementById('next'); if (n) n.classList.remove('show');
-}
-
-window.addEventListener('pointermove', e => {
-  mouseX = e.clientX; mouseY = e.clientY; mouseIn = true; lastMove = frame;
-  if (e.pointerType === 'mouse') setMode('hover');
-});
-window.addEventListener('pointerdown', e => {
-  if (entering || entered) { reset(); return; }        // click/tap anywhere returns
-  if (e.pointerType === 'touch') setMode('touch');
-  else if (e.pointerType === 'mouse') setMode('hover');
-  const doorR = Math.min(W, H) * CONFIG.doorCoreF;
-  const zone = (mode === 'touch') ? doorR * 1.5 : doorR;   // a slightly bigger tap target
-  if (Math.hypot(e.clientX - cx, e.clientY - cy) <= zone) enter();
-});
-window.addEventListener('touchstart', () => setMode('touch'), { passive: true });
-window.addEventListener('blur', () => { mouseIn = false; });
-
-window.addEventListener('keydown', e => {
-  if (e.key === 'Escape' || e.key === 'q' || e.key === 'Q') {
-    if (entering || entered) { reset(); return; }
-    try { window.close(); } catch (_) {}
+  // slow wind: 1 px / 120 ms in the saver -> ~8.3 px/s
+  const SPEED = 1000 / 120;
+  let off = 0, last = performance.now();
+  function frame(now) {
+    const dt = (now - last) / 1000; last = now;
+    off = (off + SPEED * dt) % tw;
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    if (tex) {
+      const o = Math.floor(off);
+      ctx.drawImage(tex, o, 0, tw - o, th, 0, 0, tw - o, th);
+      if (o > 0) ctx.drawImage(tex, 0, 0, o, th, tw - o, 0, o, th);
+    }
+    requestAnimationFrame(frame);
   }
-});
-
-resize();
-requestAnimationFrame(loop);
-if (params.has('enter')) { entered = true; enterT = 1; document.getElementById('next').classList.add('show'); }
+  requestAnimationFrame(frame);
+})();
 </script>
 </body>
 </html>
