@@ -1,158 +1,77 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>vinyl — print labels</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="./style.css" />
-  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
-  <style>
-    /* =========================================================
-       Avery 5160 / 8160 layout (= FirstZi B07NY7QQJ6):
-       US Letter, 30 labels, 3 cols x 10 rows, label 2.625" x 1".
-       Standard metrics, exposed as variables so they can be
-       nudged if a given sheet brand is off by a hair.
-       ========================================================= */
-    :root {
-      --pg-w: 8.5in;  --pg-h: 11in;
-      --pg-top: 0.5in;       /* top margin to first row */
-      --pg-left: 0.1875in;   /* left margin to first column (3/16") */
-      --lbl-w: 2.625in;      /* 2-5/8" */
-      --lbl-h: 1in;
-      --col-gap: 0.125in;    /* 1/8" between columns; rows have no gap */
-      --cols: 3;
-      --qr: 21mm;
-      /* whole-sheet alignment nudge (calibration), default none */
-      --nudge-x: 0mm;
-      --nudge-y: 0mm;
-      /* co/lab tint for the on-screen chrome only */
-      --cl-cream: #f4ede2;
-      --cl-ink: #3d3530;
-      --cl-spark: #d97757;
-      --cl-sage: #7a8f6f;
-    }
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>The Collection — labels</title>
+<link rel="stylesheet" href="./nakata.css" />
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<style>
+  /* Avery 5160/8160: US Letter, 30 labels, 3 cols x 10 rows, 2.625" x 1". */
+  :root{
+    --pg-w:8.5in; --pg-h:11in; --pg-top:0.5in; --pg-left:0.1875in;
+    --lbl-w:2.625in; --lbl-h:1in; --col-gap:0.125in; --cols:3; --qr:21mm;
+    --nudge-x:0mm; --nudge-y:0mm;
+  }
+  .hint{background:var(--badge-bg);border-left:3px solid var(--accent);
+    padding:10px 14px;border-radius:6px;font-size:13px;color:var(--ink-soft);
+    margin-bottom:14px;line-height:1.5;}
+  .hint b{color:var(--accent-dark);letter-spacing:.03em;}
+  .controls button.batch{background:var(--sage);border-color:var(--sage);color:var(--ink);font-weight:600;}
+  .advanced{margin-bottom:14px;font-size:13px;color:var(--muted);}
+  .advanced summary{cursor:pointer;padding:4px 0;}
+  .advanced .row{display:flex;gap:16px;flex-wrap:wrap;align-items:center;padding:8px 0 2px;}
+  .advanced label{display:flex;gap:6px;align-items:center;}
+  .advanced input[type=number]{width:64px;padding:4px 6px;border:1px solid var(--separator);border-radius:4px;background:var(--surface-light);}
+  .selector{max-height:46vh;overflow-y:auto;border:1px solid var(--separator);border-radius:var(--radius);
+    background:var(--surface-light);padding:6px 8px;margin-bottom:18px;}
+  .grp-head{display:flex;align-items:center;gap:8px;position:sticky;top:0;background:var(--surface-light);
+    padding:8px 4px 4px;border-bottom:1px solid var(--separator);font-weight:700;font-size:13px;z-index:1;}
+  .grp-head .gcount{color:var(--muted);font-weight:400;}
+  .grp-head .gsel{margin-left:auto;font-size:12px;color:var(--accent);cursor:pointer;background:none;border:none;padding:2px 6px;}
+  .selector .item{display:flex;gap:8px;padding:3px 6px 3px 18px;font-size:13px;align-items:center;}
+  .selector .item:hover{background:var(--badge-bg);}
+  .selector .item .bc{font-family:var(--mono);font-size:11px;color:var(--muted);}
+  .selector .item .pr{color:var(--accent);font-size:11px;}
 
-    /* ---- on-screen controls (co/lab tinted) ---- */
-    .controls {
-      display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
-      margin-bottom: 14px;
-    }
-    .controls input[type="search"] {
-      flex: 1 1 220px; min-width: 180px;
-      padding: 7px 10px; border: 1px solid var(--line); border-radius: var(--radius);
-      font-size: 14px;
-    }
-    .controls button {
-      padding: 7px 12px; border: 1px solid var(--line); border-radius: var(--radius);
-      background: #fff; cursor: pointer; font-size: 13px;
-    }
-    .controls button.primary { background: var(--cl-spark); border-color: var(--cl-spark); color: #fff; font-weight: 600; }
-    .controls button.primary:hover { filter: brightness(1.05); }
-    .controls button.batch { background: var(--cl-sage); border-color: var(--cl-sage); color: #fff; font-weight: 600; }
-    .controls button.batch:hover { filter: brightness(1.05); }
-    .controls button:not(.primary):hover { background: #f4f1ea; }
-    .controls .count { color: var(--muted); font-size: 13px; margin-left: auto; }
-
-    .hint {
-      background: rgba(122,143,111,0.10); border-left: 3px solid var(--cl-sage);
-      padding: 10px 14px; border-radius: 4px; font-size: 13px; color: #4f4a44;
-      margin-bottom: 14px; line-height: 1.5;
-    }
-    .hint b { color: var(--cl-sage); font-variant: small-caps; letter-spacing: 0.04em; }
-    .advanced { margin-bottom: 14px; font-size: 13px; color: var(--muted); }
-    .advanced summary { cursor: pointer; padding: 4px 0; }
-    .advanced .row { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; padding: 8px 0 2px; }
-    .advanced label { display: flex; gap: 6px; align-items: center; }
-    .advanced input[type="number"] { width: 64px; padding: 4px 6px; border: 1px solid var(--line); border-radius: 4px; }
-
-    /* ---- selector (grouped by shelf order) ---- */
-    .selector {
-      max-height: 46vh; overflow-y: auto;
-      border: 1px solid var(--line); border-radius: var(--radius);
-      background: var(--surface); padding: 6px 8px; margin-bottom: 18px;
-    }
-    .grp-head {
-      display: flex; align-items: center; gap: 8px;
-      position: sticky; top: 0; background: var(--surface);
-      padding: 8px 4px 4px; border-bottom: 1px solid var(--line);
-      font-weight: 600; font-size: 13px; z-index: 1;
-    }
-    .grp-head .gcount { color: var(--muted); font-weight: 400; }
-    .grp-head .gsel { margin-left: auto; font-size: 12px; color: var(--cl-spark); cursor: pointer; background: none; border: none; padding: 2px 6px; }
-    .selector .item {
-      display: flex; gap: 8px; padding: 3px 6px 3px 18px; font-size: 13px; align-items: center;
-    }
-    .selector .item:hover { background: #f4f1ea; }
-    .selector .item .bc { font-family: var(--mono); font-size: 11px; color: var(--muted); }
-    .selector .item .pr { color: var(--cl-sage); font-size: 11px; }
-
-    /* ---- the printable sheets ---- */
-    #sheets { display: flex; flex-direction: column; align-items: center; gap: 24px; }
-    .sheet {
-      width: var(--pg-w);
-      /* nudge lives in the padding, NOT a transform: a CSS transform on a
-         paginated box makes Chrome mis-paginate (offset + blank pages). */
-      padding: calc(var(--pg-top) + var(--nudge-y)) 0 0 calc(var(--pg-left) + var(--nudge-x));
-      background: #fff;
-      display: grid;
-      grid-template-columns: repeat(var(--cols), var(--lbl-w));
-      column-gap: var(--col-gap);
-      grid-auto-rows: var(--lbl-h);
-      row-gap: 0;
-      box-sizing: border-box;
-    }
-    /* fixed page height + shadow are screen-preview only. In print the sheet
-       sizes to its content (~10.5in < 11in), so the page-break does not spill
-       a blank page, which an exact-11in height would. */
-    @media screen {
-      .sheet { height: var(--pg-h); box-shadow: 0 2px 10px rgba(0,0,0,0.12); }
-    }
-    .label {
-      width: var(--lbl-w); height: var(--lbl-h);
-      display: flex; align-items: center; gap: 2mm;
-      padding: 1.4mm 2mm; box-sizing: border-box;
-      overflow: hidden; page-break-inside: avoid;
-    }
-    .label.calib { outline: 0.3pt dashed #c9b9a3; outline-offset: -0.3pt; }
-    .label .qr { flex: 0 0 auto; }
-    .label .qr canvas, .label .qr img {
-      display: block; width: var(--qr) !important; height: var(--qr) !important;
-    }
-    .label .meta { flex: 1 1 auto; min-width: 0; line-height: 1.12; }
-    .label .meta .artist {
-      font: 600 7.6pt/1.12 system-ui, sans-serif; color: #111;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
-    .label .meta .title {
-      font: 7pt/1.12 system-ui, sans-serif; color: #222;
-      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-    .label .meta .sub { font: 6pt/1.2 system-ui, sans-serif; color: #777; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 0.6mm; }
-    .label .meta .bc { font-family: var(--mono); font-size: 5.6pt; color: #999; }
-
-    @page { size: 8.5in 11in; margin: 0; }
-    @media print {
-      /* hide the whole controls wrapper, not just its children: the empty
-         .page element's own padding was pushing the first sheet down ~1cm. */
-      .page, .topbar, .footer, .banner, .no-print { display: none !important; }
-      html, body { background: #fff; margin: 0; padding: 0; }
-      #sheets { display: block; gap: 0; }       /* block, not flex: flex+breaks mis-paginate */
-      .sheet { height: auto; box-shadow: none; page-break-after: always; }
-      .sheet:last-child { page-break-after: auto; }
-      .label.calib { outline: none; }   /* never print calibration guides */
-    }
-  </style>
+  /* printable sheets (black on white, scannable) */
+  #sheets{display:flex;flex-direction:column;align-items:center;gap:24px;margin:0 auto;}
+  .sheet{width:var(--pg-w);padding:calc(var(--pg-top) + var(--nudge-y)) 0 0 calc(var(--pg-left) + var(--nudge-x));
+    background:#fff;display:grid;grid-template-columns:repeat(var(--cols),var(--lbl-w));
+    column-gap:var(--col-gap);grid-auto-rows:var(--lbl-h);row-gap:0;box-sizing:border-box;}
+  @media screen{.sheet{height:var(--pg-h);box-shadow:0 2px 10px rgba(0,0,0,.12);}}
+  .label{width:var(--lbl-w);height:var(--lbl-h);display:flex;align-items:center;gap:2mm;
+    padding:1.4mm 2mm;box-sizing:border-box;overflow:hidden;page-break-inside:avoid;}
+  .label.calib{outline:.3pt dashed #c9b9a3;outline-offset:-.3pt;}
+  .label .qr{flex:0 0 auto;}
+  .label .qr canvas,.label .qr img{display:block;width:var(--qr) !important;height:var(--qr) !important;}
+  .label .meta{flex:1 1 auto;min-width:0;line-height:1.12;}
+  .label .meta .artist{font:600 7.6pt/1.12 system-ui,sans-serif;color:#111;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .label .meta .title{font:7pt/1.12 system-ui,sans-serif;color:#222;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+  .label .meta .sub{font:6pt/1.2 system-ui,sans-serif;color:#777;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:.6mm;}
+  .label .meta .bc{font-family:var(--mono);font-size:5.6pt;color:#999;}
+  @page{size:8.5in 11in;margin:0;}
+  @media print{
+    .band,.wrap{display:none !important;}
+    html,body{background:#fff;margin:0;padding:0;}
+    #sheets{display:block;gap:0;}
+    .sheet{height:auto;box-shadow:none;page-break-after:always;}
+    .sheet:last-child{page-break-after:auto;}
+    .label.calib{outline:none;}
+  }
+</style>
+<script src="/oftenback-nav.js" defer></script>
 </head>
 <body>
-  <main class="page">
+  <div class="band"><span>VINYL</span></div>
+  <div class="wrap">
+    <div id="shell"></div>
     <div class="hint no-print">
-      <b>before printing</b> &nbsp;set the browser print dialog to: paper <b>Letter</b>, margins <b>None</b>, scale <b>100%</b> (not "Fit to page"), and turn <b>off</b> headers/footers. Run one sheet on plain paper first and hold it over a label sheet to check alignment; nudge below if needed.
+      <b>before printing</b> &nbsp;set the print dialog to: paper <b>Letter</b>, margins <b>None</b>, scale <b>100%</b> (not "fit to page"), headers/footers <b>off</b>. Run one sheet on plain paper and hold it over a label sheet to check alignment; nudge below if needed.
     </div>
-
     <div class="controls no-print">
       <input id="q" type="search" placeholder="filter records…" autocomplete="off" />
-      <button id="selLatestBatch" type="button" class="batch" title="Select only the most recent batch (by date added) — for printing labels for just-added records">latest batch</button>
+      <button id="selLatestBatch" type="button" class="batch">latest batch</button>
       <button id="selUnprinted" type="button">select unprinted</button>
       <button id="selVisible" type="button">select all visible</button>
       <button id="selNone" type="button">clear</button>
@@ -161,7 +80,6 @@
       <button id="markPrinted" type="button" title="needs vinyl serve">mark selected printed</button>
       <span id="count" class="count"></span>
     </div>
-
     <details class="advanced no-print">
       <summary>alignment nudge (if labels print slightly off)</summary>
       <div class="row">
@@ -170,240 +88,99 @@
         <label><input id="calib" type="checkbox"> show label outlines (screen only)</label>
       </div>
     </details>
-
-    <details class="no-print" open style="margin-bottom: 18px;">
-      <summary style="cursor: pointer; padding: 6px 0;">choose records (shelf order: genre, then artist; compilations last)</summary>
+    <details class="no-print" open style="margin-bottom:18px;">
+      <summary style="cursor:pointer;padding:6px 0;">choose records (shelf order: genre, then artist; compilations last)</summary>
       <div id="selector" class="selector"></div>
     </details>
-
     <div id="status" class="no-print" style="font-size:13px;color:var(--muted);margin-bottom:12px;"></div>
-  </main>
-
+  </div>
   <div id="sheets"></div>
 
-  <script type="module">
-    import { renderShell } from "./js/shell.js";
-    import { loadRecords, matchesQuery } from "./js/data.js";
-    import { saveRecords, saveAvailable } from "./js/save.js";
+<script type="module">
+import { renderShell, setTag } from "./js/shell.js";
+import { loadRecords, matchesQuery } from "./js/data.js";
+import { saveRecords, saveAvailable } from "./js/save.js";
+renderShell("print-barcodes.html");
 
-    renderShell("print-barcodes.html");
-
-    const PER_PAGE = 30;
-    const q = document.getElementById("q");
-    const sheets = document.getElementById("sheets");
-    const selector = document.getElementById("selector");
-    const countEl = document.getElementById("count");
-    const statusEl = document.getElementById("status");
-
-    let records = [];
-    let selected = new Set();   // barcodes to print
-    let sheetStale = true;
-    let canSave = false;
-
-    const collator = new Intl.Collator(undefined, { sensitivity: "base", numeric: true });
-    const esc = s => String(s == null ? "" : s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-
-    const isComp = r => /^various\b/i.test(String(r.artist || "").trim());
-    // normalize genre for SORT/GROUP only (non-destructive): merges
-    // "Funk / Soul" vs "Funk/Soul", "Synth Pop" vs "Synth-pop", etc.
-    function genreKey(r) {
-      if (isComp(r)) return "zzzz2~compilations";   // sorts last
-      const g = String(r.genre || "").toLowerCase()
-        .replace(/\s*\/\s*/g, "/").replace(/\s*-\s*/g, " ").replace(/\s+/g, " ").trim();
-      return g || "zzzz1~no-genre";
-    }
-    const groupName = r => isComp(r) ? "Compilations" : (r.genre || "(no genre)");
-
-    function sortKey(r) {
-      return [genreKey(r), String(r.artist||"").toLowerCase(), String(r.title||"").toLowerCase()];
-    }
-    function orderedRecords(list) {
-      return [...list].sort((a, b) => {
-        const ka = sortKey(a), kb = sortKey(b);
-        for (let i = 0; i < 3; i++) {
-          const c = collator.compare(ka[i], kb[i]);
-          if (c) return c;
-        }
-        return 0;
-      });
-    }
-    // group ordered records into [{key, name, records}], display name = the
-    // most common original genre spelling for that normalized key.
-    function groupedOrdered(list) {
-      const ordered = orderedRecords(list);
-      const groups = [];
-      const nameVotes = {};
-      let cur = null;
-      for (const r of ordered) {
-        const k = genreKey(r);
-        nameVotes[k] = nameVotes[k] || {};
-        const n = groupName(r);
-        nameVotes[k][n] = (nameVotes[k][n] || 0) + 1;
-        if (!cur || cur.key !== k) { cur = { key: k, records: [] }; groups.push(cur); }
-        cur.records.push(r);
-      }
-      for (const g of groups) {
-        g.name = Object.entries(nameVotes[g.key]).sort((a,b)=>b[1]-a[1])[0][0];
-      }
-      return groups;
-    }
-
-    function visibleRecords() {
-      const f = q.value.trim();
-      return records.filter(r => matchesQuery(r, f));
-    }
-
-    function renderSelector() {
-      const groups = groupedOrdered(visibleRecords());
-      selector.innerHTML = groups.map(g => {
-        const items = g.records.map(r => `
-          <div class="item">
-            <input type="checkbox" data-bc="${esc(r.barcode)}" ${selected.has(r.barcode) ? "checked" : ""}>
-            <span class="bc">${esc(r.barcode)}</span>
-            <span>${esc(r.artist)} — ${esc(r.title)}</span>
-            ${r.printed ? '<span class="pr">· printed</span>' : ""}
-          </div>`).join("");
-        return `
-          <div class="grp-head">
-            <span>${esc(g.name)}</span><span class="gcount">${g.records.length}</span>
-            <button class="gsel" data-grp="${esc(g.key)}">select group</button>
-          </div>${items}`;
-      }).join("") || `<div style="padding:12px;color:var(--muted)">no matches</div>`;
-      updateCount();
-    }
-
-    function updateCount() {
-      const n = selected.size;
-      const pages = Math.ceil(n / PER_PAGE) || 0;
-      countEl.textContent = `${n} selected · ${pages} sheet${pages === 1 ? "" : "s"} (30/sheet)`;
-    }
-
-    function buildSheets() {
-      sheets.innerHTML = "";
-      const toPrint = orderedRecords(records.filter(r => selected.has(r.barcode)));
-      for (let i = 0; i < toPrint.length; i += PER_PAGE) {
-        const page = document.createElement("div");
-        page.className = "sheet";
-        const chunk = toPrint.slice(i, i + PER_PAGE);
-        for (const r of chunk) {
-          const lbl = document.createElement("div");
-          lbl.className = "label" + (document.getElementById("calib").checked ? " calib" : "");
-          lbl.innerHTML = `
-            <div class="qr"></div>
-            <div class="meta">
-              <div class="artist">${esc(r.artist)}</div>
-              <div class="title">${esc(r.title)}</div>
-              <div class="sub">${esc(groupName(r))}${r.format ? " · " + esc(r.format) : ""}</div>
-              <div class="bc">${esc(r.barcode)}</div>
-            </div>`;
-          page.appendChild(lbl);
-          new window.QRCode(lbl.querySelector(".qr"), {
-            text: r.barcode, width: 96, height: 96,
-            correctLevel: window.QRCode.CorrectLevel.H,
-          });
-        }
-        sheets.appendChild(page);
-      }
-      sheetStale = false;
-    }
-
-    // ---- events ----
-    q.addEventListener("input", renderSelector);
-
-    selector.addEventListener("change", (e) => {
-      const cb = e.target.closest("input[type=checkbox]");
-      if (!cb) return;
-      const b = cb.dataset.bc;
-      if (cb.checked) selected.add(b); else selected.delete(b);
-      sheetStale = true; updateCount();
-    });
-    selector.addEventListener("click", (e) => {
-      const btn = e.target.closest(".gsel");
-      if (!btn) return;
-      const key = btn.dataset.grp;
-      for (const r of visibleRecords()) if (genreKey(r) === key) selected.add(r.barcode);
-      sheetStale = true; renderSelector();
-    });
-
-    // "latest batch": isolate the most recent addition group (by dateAdded day).
-    // Each import lands on its own day, so the newest day == the last batch.
-    // Clears first (the intent is ONLY the new arrivals), ignores the filter box.
-    function latestBatchDay() {
-      let latest = "";
-      for (const r of records) {
-        const d = String(r.dateAdded || "");
-        if (d > latest) latest = d;   // ISO 8601 sorts chronologically
-      }
-      return latest.slice(0, 10);     // YYYY-MM-DD
-    }
-    document.getElementById("selLatestBatch").addEventListener("click", () => {
-      const day = latestBatchDay();
-      if (!day) { statusEl.textContent = "no dateAdded on records — can't detect the latest batch."; return; }
-      selected.clear();
-      for (const r of records) if (String(r.dateAdded || "").slice(0, 10) === day) selected.add(r.barcode);
-      sheetStale = true;
-      // clear the filter so the whole batch is visible/selected, then re-render
-      q.value = "";
-      renderSelector();
-      statusEl.textContent = `selected ${selected.size} record(s) from the latest batch (added ${day}).`;
-    });
-
-    document.getElementById("selUnprinted").addEventListener("click", () => {
-      for (const r of visibleRecords()) if (!r.printed) selected.add(r.barcode);
-      sheetStale = true; renderSelector();
-    });
-    document.getElementById("selVisible").addEventListener("click", () => {
-      for (const r of visibleRecords()) selected.add(r.barcode);
-      sheetStale = true; renderSelector();
-    });
-    document.getElementById("selNone").addEventListener("click", () => {
-      selected.clear(); sheetStale = true; renderSelector();
-    });
-    document.getElementById("build").addEventListener("click", buildSheets);
-    document.getElementById("printBtn").addEventListener("click", () => {
-      if (selected.size === 0) { alert("nothing selected"); return; }
-      if (sheetStale) buildSheets();
-      setTimeout(() => window.print(), 50);
-    });
-
-    document.getElementById("markPrinted").addEventListener("click", async () => {
-      if (!canSave) { alert("Marking printed needs `vinyl serve` running (the deployed site is read-only)."); return; }
-      if (selected.size === 0) { alert("nothing selected"); return; }
-      if (!confirm(`Mark ${selected.size} record(s) as printed? Do this only after the labels actually printed.`)) return;
-      let n = 0;
-      for (const r of records) if (selected.has(r.barcode) && !r.printed) { r.printed = true; n++; }
-      try {
-        await saveRecords(records);
-        statusEl.textContent = `marked ${n} record(s) printed and saved.`;
-        renderSelector();
-      } catch (err) {
-        statusEl.textContent = `save failed: ${err.message}`;
-      }
-    });
-
-    // alignment nudge + calibration
-    const nx = document.getElementById("nudgeX"), ny = document.getElementById("nudgeY");
-    const applyNudge = () => {
-      document.documentElement.style.setProperty("--nudge-x", (parseFloat(nx.value)||0) + "mm");
-      document.documentElement.style.setProperty("--nudge-y", (parseFloat(ny.value)||0) + "mm");
-    };
-    nx.addEventListener("input", applyNudge);
-    ny.addEventListener("input", applyNudge);
-    document.getElementById("calib").addEventListener("change", () => { if (!sheetStale) buildSheets(); });
-
-    // ---- load ----
-    try {
-      records = await loadRecords();
-      canSave = await saveAvailable();
-      const mp = document.getElementById("markPrinted");
-      if (!canSave) { mp.disabled = true; mp.title = "needs `vinyl serve`"; }
-      // pre-select the unprinted ones, since labeling new arrivals is the task
-      for (const r of records) if (!r.printed) selected.add(r.barcode);
-      renderSelector();
-      statusEl.textContent = `${records.length} records loaded · ${records.filter(r=>!r.printed).length} unprinted (pre-selected).`;
-    } catch (err) {
-      statusEl.textContent = err.message;
-    }
-  </script>
+const PER_PAGE=30;
+const q=document.getElementById("q"), sheets=document.getElementById("sheets"),
+  selector=document.getElementById("selector"), countEl=document.getElementById("count"),
+  statusEl=document.getElementById("status");
+let records=[], selected=new Set(), sheetStale=true, canSave=false;
+const collator=new Intl.Collator(undefined,{sensitivity:"base",numeric:true});
+const esc=s=>String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+const isComp=r=>/^various\b/i.test(String(r.artist||"").trim());
+function genreKey(r){if(isComp(r))return "zzzz2~compilations";
+  const g=String(r.genre||"").toLowerCase().replace(/\s*\/\s*/g,"/").replace(/\s*-\s*/g," ").replace(/\s+/g," ").trim();
+  return g||"zzzz1~no-genre";}
+const groupName=r=>isComp(r)?"Compilations":(r.genre||"(no genre)");
+const sortKey=r=>[genreKey(r),String(r.artist||"").toLowerCase(),String(r.title||"").toLowerCase()];
+function orderedRecords(list){return [...list].sort((a,b)=>{const ka=sortKey(a),kb=sortKey(b);
+  for(let i=0;i<3;i++){const c=collator.compare(ka[i],kb[i]);if(c)return c;}return 0;});}
+function groupedOrdered(list){const ordered=orderedRecords(list);const groups=[];const nameVotes={};let cur=null;
+  for(const r of ordered){const k=genreKey(r);nameVotes[k]=nameVotes[k]||{};const n=groupName(r);
+    nameVotes[k][n]=(nameVotes[k][n]||0)+1;if(!cur||cur.key!==k){cur={key:k,records:[]};groups.push(cur);}cur.records.push(r);}
+  for(const g of groups)g.name=Object.entries(nameVotes[g.key]).sort((a,b)=>b[1]-a[1])[0][0];return groups;}
+const visibleRecords=()=>records.filter(r=>matchesQuery(r,q.value.trim()));
+function renderSelector(){
+  const groups=groupedOrdered(visibleRecords());
+  selector.innerHTML=groups.map(g=>{
+    const items=g.records.map(r=>`<div class="item"><input type="checkbox" data-bc="${esc(r.barcode)}" ${selected.has(r.barcode)?"checked":""}>
+      <span class="bc">${esc(r.barcode)}</span><span>${esc(r.artist)} — ${esc(r.title)}</span>${r.printed?'<span class="pr">· printed</span>':""}</div>`).join("");
+    return `<div class="grp-head"><span>${esc(g.name)}</span><span class="gcount">${g.records.length}</span>
+      <button class="gsel" data-grp="${esc(g.key)}">select group</button></div>${items}`;
+  }).join("")||`<div style="padding:12px;color:var(--muted)">no matches</div>`;
+  updateCount();
+}
+function updateCount(){const n=selected.size,pages=Math.ceil(n/PER_PAGE)||0;
+  countEl.textContent=`${n} selected · ${pages} sheet${pages===1?"":"s"} (30/sheet)`;}
+function buildSheets(){
+  sheets.innerHTML="";const toPrint=orderedRecords(records.filter(r=>selected.has(r.barcode)));
+  for(let i=0;i<toPrint.length;i+=PER_PAGE){const page=document.createElement("div");page.className="sheet";
+    for(const r of toPrint.slice(i,i+PER_PAGE)){const lbl=document.createElement("div");
+      lbl.className="label"+(document.getElementById("calib").checked?" calib":"");
+      lbl.innerHTML=`<div class="qr"></div><div class="meta"><div class="artist">${esc(r.artist)}</div>
+        <div class="title">${esc(r.title)}</div><div class="sub">${esc(groupName(r))}${r.format?" · "+esc(r.format):""}</div>
+        <div class="bc">${esc(r.barcode)}</div></div>`;
+      page.appendChild(lbl);
+      new window.QRCode(lbl.querySelector(".qr"),{text:r.barcode,width:96,height:96,correctLevel:window.QRCode.CorrectLevel.H});}
+    sheets.appendChild(page);}
+  sheetStale=false;
+}
+q.addEventListener("input",renderSelector);
+selector.addEventListener("change",e=>{const cb=e.target.closest("input[type=checkbox]");if(!cb)return;
+  const b=cb.dataset.bc;if(cb.checked)selected.add(b);else selected.delete(b);sheetStale=true;updateCount();});
+selector.addEventListener("click",e=>{const btn=e.target.closest(".gsel");if(!btn)return;
+  for(const r of visibleRecords())if(genreKey(r)===btn.dataset.grp)selected.add(r.barcode);sheetStale=true;renderSelector();});
+function latestBatchDay(){let latest="";for(const r of records){const d=String(r.dateAdded||"");if(d>latest)latest=d;}return latest.slice(0,10);}
+document.getElementById("selLatestBatch").addEventListener("click",()=>{const day=latestBatchDay();
+  if(!day){statusEl.textContent="no dateAdded — can't detect the latest batch.";return;}
+  selected.clear();for(const r of records)if(String(r.dateAdded||"").slice(0,10)===day)selected.add(r.barcode);
+  sheetStale=true;q.value="";renderSelector();statusEl.textContent=`selected ${selected.size} record(s) from the latest batch (added ${day}).`;});
+document.getElementById("selUnprinted").addEventListener("click",()=>{for(const r of visibleRecords())if(!r.printed)selected.add(r.barcode);sheetStale=true;renderSelector();});
+document.getElementById("selVisible").addEventListener("click",()=>{for(const r of visibleRecords())selected.add(r.barcode);sheetStale=true;renderSelector();});
+document.getElementById("selNone").addEventListener("click",()=>{selected.clear();sheetStale=true;renderSelector();});
+document.getElementById("build").addEventListener("click",buildSheets);
+document.getElementById("printBtn").addEventListener("click",()=>{if(selected.size===0){alert("nothing selected");return;}if(sheetStale)buildSheets();setTimeout(()=>window.print(),50);});
+document.getElementById("markPrinted").addEventListener("click",async()=>{
+  if(!canSave){alert("Marking printed needs `vinyl serve` (the deployed site is read-only).");return;}
+  if(selected.size===0){alert("nothing selected");return;}
+  if(!confirm(`Mark ${selected.size} record(s) as printed?`))return;let n=0;
+  for(const r of records)if(selected.has(r.barcode)&&!r.printed){r.printed=true;n++;}
+  try{await saveRecords(records);statusEl.textContent=`marked ${n} record(s) printed and saved.`;renderSelector();}
+  catch(err){statusEl.textContent=`save failed: ${err.message}`;}});
+const nx=document.getElementById("nudgeX"),ny=document.getElementById("nudgeY");
+const applyNudge=()=>{document.documentElement.style.setProperty("--nudge-x",(parseFloat(nx.value)||0)+"mm");
+  document.documentElement.style.setProperty("--nudge-y",(parseFloat(ny.value)||0)+"mm");};
+nx.addEventListener("input",applyNudge);ny.addEventListener("input",applyNudge);
+document.getElementById("calib").addEventListener("change",()=>{if(!sheetStale)buildSheets();});
+try{
+  records=await loadRecords();canSave=await saveAvailable();
+  const mp=document.getElementById("markPrinted");if(!canSave){mp.disabled=true;mp.title="needs `vinyl serve`";}
+  for(const r of records)if(!r.printed)selected.add(r.barcode);
+  setTag(`${records.length} records`);renderSelector();
+  statusEl.textContent=`${records.length} records loaded · ${records.filter(r=>!r.printed).length} unprinted (pre-selected).`;
+}catch(err){statusEl.textContent=err.message;}
+</script>
 </body>
 </html>

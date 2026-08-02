@@ -1,96 +1,62 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>vinyl — stats</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="./style.css" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>The Collection — stats</title>
+<link rel="stylesheet" href="./nakata.css" />
+<script src="/oftenback-nav.js" defer></script>
 </head>
 <body>
-  <main class="page">
+  <div class="band"><span>VINYL</span></div>
+  <div class="wrap">
+    <div id="shell"></div>
     <div id="content"></div>
-  </main>
+  </div>
 
-  <script type="module">
-    import { renderShell, renderFooter } from "./js/shell.js";
-    import { loadRecords } from "./js/data.js";
+<script type="module">
+import { renderShell, setTag } from "./js/shell.js";
+import { loadRecords } from "./js/data.js";
 
-    renderShell("stats.html");
+renderShell("stats.html");
+const esc = s => String(s ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+const content = document.getElementById("content");
 
-    const content = document.getElementById("content");
+function counter(records, fn){
+  const c = new Map();
+  for (const r of records){ const v = fn(r); if (v==null||v==="") continue; c.set(v,(c.get(v)||0)+1); }
+  return [...c.entries()].sort((a,b)=>b[1]-a[1]);
+}
+function decadeOf(r){ const y=r.year; if(!y||!/^\d{4}$/.test(y))return "(unknown)";
+  return `${Math.floor(parseInt(y,10)/10)*10}s`; }
+function card(title, entries, {limit=null, sortBy="count"}={}){
+  let items=entries.slice();
+  if(sortBy==="label")items.sort((a,b)=>a[0].localeCompare(b[0]));
+  if(limit)items=items.slice(0,limit);
+  const max=Math.max(1,...items.map(([,n])=>n));
+  const rows=items.map(([l,n])=>`<div class="stats-row"><span class="label">${esc(l)}</span>
+    <span class="bar"><span style="width:${(n/max)*100}%"></span></span><span class="count">${n}</span></div>`).join("");
+  return `<section class="stats-card"><h2>${esc(title)}</h2>${rows||"<div class='stats-row'><span class='label'>(empty)</span></div>"}</section>`;
+}
+function summary(records){
+  const total=records.length, missing=records.filter(r=>!r.coverImage).length, notP=records.filter(r=>!r.printed).length;
+  return `<section class="stats-card"><h2>summary</h2>
+    <div class="stats-row"><span class="label">records</span><span class="count">${total}</span></div>
+    <div class="stats-row"><span class="label">missing cover art</span><span class="count">${missing}</span></div>
+    <div class="stats-row"><span class="label">not yet printed</span><span class="count">${notP}</span></div></section>`;
+}
 
-    function escape(s) {
-      return String(s == null ? "" : s)
-        .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    }
-
-    function counter(records, fn) {
-      const c = new Map();
-      for (const r of records) {
-        const v = fn(r);
-        if (v == null || v === "") continue;
-        c.set(v, (c.get(v) || 0) + 1);
-      }
-      return [...c.entries()].sort((a, b) => b[1] - a[1]);
-    }
-
-    function decadeOf(r) {
-      const y = r.year;
-      if (!y || !/^\d{4}$/.test(y)) return "(unknown)";
-      return `${Math.floor(parseInt(y, 10) / 10) * 10}s`;
-    }
-
-    function renderCard(title, entries, { limit = null, sortBy = "count" } = {}) {
-      let items = entries.slice();
-      if (sortBy === "label") items.sort((a, b) => a[0].localeCompare(b[0]));
-      if (limit) items = items.slice(0, limit);
-      const max = Math.max(1, ...items.map(([, n]) => n));
-      const rows = items.map(([label, n]) => `
-        <div class="stats-row">
-          <span class="label">${escape(label)}</span>
-          <span class="bar"><span style="width: ${(n / max) * 100}%"></span></span>
-          <span class="count">${n}</span>
-        </div>
-      `).join("");
-      return `
-        <section class="stats-card">
-          <h2>${escape(title)}</h2>
-          ${rows || "<div class='stats-row'><span class='label'>(empty)</span></div>"}
-        </section>
-      `;
-    }
-
-    function renderSummary(records) {
-      const total = records.length;
-      const missingCovers = records.filter(r => !r.coverImage).length;
-      const notPrinted = records.filter(r => !r.printed).length;
-      return `
-        <section class="stats-card">
-          <h2>summary</h2>
-          <div class="stats-row"><span class="label">records</span><span class="count">${total}</span></div>
-          <div class="stats-row"><span class="label">missing cover art</span><span class="count">${missingCovers}</span></div>
-          <div class="stats-row"><span class="label">not yet printed</span><span class="count">${notPrinted}</span></div>
-        </section>
-      `;
-    }
-
-    try {
-      const records = await loadRecords();
-
-      content.innerHTML = `
-        <div class="stats-grid">
-          ${renderSummary(records)}
-          ${renderCard("formats", counter(records, r => r.format))}
-          ${renderCard("by decade", counter(records, decadeOf), { sortBy: "label" })}
-          ${renderCard("top genres", counter(records, r => r.genre), { limit: 12 })}
-          ${renderCard("top artists", counter(records, r => r.artist), { limit: 12 })}
-        </div>
-      `;
-
-      renderFooter(records);
-    } catch (err) {
-      content.innerHTML = `<div class="banner err">${err.message}</div>`;
-    }
-  </script>
+try{
+  const records=await loadRecords();
+  setTag(`${records.length} records`);
+  content.innerHTML=`<div class="stats-grid">
+    ${summary(records)}
+    ${card("formats", counter(records,r=>r.format))}
+    ${card("by decade", counter(records,decadeOf),{sortBy:"label"})}
+    ${card("top genres", counter(records,r=>r.genre),{limit:12})}
+    ${card("top artists", counter(records,r=>r.artist),{limit:12})}
+  </div>`;
+}catch(err){content.innerHTML=`<div class="banner err">${err.message}</div>`;}
+</script>
 </body>
 </html>

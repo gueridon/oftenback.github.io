@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>The Collection — add</title>
+<link rel="stylesheet" href="./nakata.css" />
+<style>
+  .add-intro{color:var(--dim);font-size:14px;margin:2px 0 18px;max-width:660px;line-height:1.6;}
+  .drop{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+    border:2px dashed var(--separator);border-radius:12px;background:var(--surface-light);
+    padding:34px 20px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s;}
+  .drop:hover,.drop.over{border-color:var(--accent);background:var(--badge-bg);}
+  .drop .big{font-weight:700;color:var(--ink);font-size:16px;}
+  .drop .sub{color:var(--dim);font-size:13px;}
+  #photos{display:none;}
+  .cand{display:grid;grid-template-columns:118px 1fr auto;gap:16px;align-items:start;
+    background:var(--surface-light);border:1px solid var(--separator);border-radius:10px;
+    padding:16px;margin-bottom:14px;}
+  .cand .cov{width:118px;height:118px;object-fit:cover;border-radius:6px;background:var(--surface);}
+  .cand .cov.ph{display:flex;align-items:center;justify-content:center;font-size:30px;color:var(--dim);background:var(--surface);}
+  .cand .fields{display:grid;grid-template-columns:repeat(2,1fr);gap:9px 12px;min-width:0;}
+  .cand .fields label{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--dim);}
+  .cand .fields label.full{grid-column:1/-1;}
+  .cand .fields input{font:13px var(--sans);color:var(--ink);background:var(--ground);
+    border:1px solid var(--separator);border-radius:6px;padding:7px 9px;outline:none;}
+  .cand .fields input:focus{border-color:var(--accent);}
+  .cand .fields input.missing{border-color:var(--clay);background:rgba(226,45,58,.06);}
+  .cand .notes{grid-column:1/-1;font-size:12px;color:var(--muted);font-style:italic;}
+  .cand .side{display:flex;flex-direction:column;gap:8px;align-items:flex-end;white-space:nowrap;}
+  .cand .conf{font-size:12px;color:var(--dim);font-variant-numeric:tabular-nums;}
+  .cand.added{opacity:.5;}
+  .cand .err{grid-column:1/-1;color:var(--clay);font-size:13px;}
+</style>
+</head>
+<body>
+  <div class="band"><span>VINYL</span></div>
+  <div class="wrap">
+    <div id="shell"></div>
+    <p class="add-intro">Take photos of your new records (front covers), then choose them here, all at once. Claude identifies each one and Discogs fills the cover and details. Check what's flagged in red, then add.</p>
+
+    <label class="drop" id="drop" for="photos">
+      <div class="big" id="dropTitle">Choose photos</div>
+      <div class="sub">click to pick your cover photos, or drop them here</div>
+      <input type="file" id="photos" accept="image/*" multiple />
+    </label>
+
+    <div class="controls" style="margin-top:16px;">
+      <button class="primary" id="go">Identify</button>
+      <span class="count" id="status"></span>
+    </div>
+    <div id="results"></div>
+  </div>
+
+<script type="module">
+import { renderShell, setTag } from "./js/shell.js";
+renderShell("add.html");
+setTag("add records by photo");
+
+const esc = s => String(s ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+const $ = id => document.getElementById(id);
+const input = $("photos"), drop = $("drop"), dropTitle = $("dropTitle"),
+      results = $("results"), status = $("status"), go = $("go");
+let files = [];
+
+function setFiles(list){
+  files = Array.from(list).filter(f => f.type.startsWith("image/"));
+  dropTitle.textContent = files.length ? `${files.length} photo${files.length===1?"":"s"} selected` : "Choose photos";
+}
+input.addEventListener("change", () => setFiles(input.files));
+["dragover","dragenter"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add("over"); }));
+["dragleave","drop"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove("over"); }));
+drop.addEventListener("drop", e => { if(e.dataTransfer?.files?.length) setFiles(e.dataTransfer.files); });
+
+go.addEventListener("click", identify);
+async function identify(){
+  if(!files.length){ status.textContent = "choose at least one photo"; return; }
+  const fd = new FormData();
+  for(const f of files.slice(0,20)) fd.append("photos", f, f.name);
+  status.textContent = `identifying ${Math.min(files.length,20)}… (vision can take a moment)`;
+  go.disabled = true;
+  try{
+    const r = await fetch("/vinyl/api/ingest", {method:"POST", body:fd});
+    if(!r.ok) throw new Error(await r.text());
+    const {candidates} = await r.json();
+    results.innerHTML = candidates.map(card).join("");
+    status.textContent = `${candidates.length} result${candidates.length===1?"":"s"} — review and add`;
+  }catch(e){ status.textContent = "failed: " + e.message; }
+  go.disabled = false;
+}
+
+function card(c){
+  if(c.error) return `<div class="cand"><div class="err">${esc(c.source||"photo")} — ${esc(c.error)}</div></div>`;
+  const cov = c.cover_url ? `<img class="cov" src="${esc(c.cover_url)}" alt="">` : `<div class="cov ph">♪</div>`;
+  const miss = new Set(c.missing || []);
+  const inp = (f,label,val,full)=>`<label class="${full?"full":""}">${label}<input data-f="${f}" value="${esc(val||"")}" class="${miss.has(f)?"missing":""}"></label>`;
+  const conf = (c.confidence!=null) ? `<span class="conf">confidence ${Math.round(c.confidence*100)}%</span>` : "";
+  return `<div class="cand" data-cover="${esc(c.cover_url||"")}">
+    ${cov}
+    <div class="fields">
+      ${inp("artist","artist",c.artist,true)}
+      ${inp("title","title",c.title,true)}
+      ${inp("year","year",c.year)}
+      ${inp("genre","genre",c.genre)}
+      ${inp("format","format",c.format)}
+      ${inp("cube","cube (shelf)",c.cube)}
+      ${c.notes?`<div class="notes">${esc(c.notes)}</div>`:""}
+    </div>
+    <div class="side">${conf}<button class="primary add">Add</button></div>
+  </div>`;
+}
+
+results.addEventListener("click", async e=>{
+  const btn = e.target.closest("button.add"); if(!btn) return;
+  const card = btn.closest(".cand");
+  const rec = {}; card.querySelectorAll("input[data-f]").forEach(i=>rec[i.dataset.f]=i.value.trim());
+  if(!rec.artist || !rec.title){ alert("artist and title are required"); return; }
+  btn.disabled = true; btn.textContent = "…";
+  try{
+    const r = await fetch("/vinyl/api/ingest-add", {method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({record: rec, cover_url: card.dataset.cover || null})});
+    if(!r.ok) throw new Error(await r.text());
+    const res = await r.json();
+    card.classList.add("added"); btn.textContent = "Added ✓";
+    status.textContent = `added ${rec.artist} — ${rec.title}  ·  ${res.records} records total`;
+  }catch(err){ btn.disabled=false; btn.textContent="Add"; alert("add failed: " + err.message); }
+});
+</script>
+</body>
+</html>

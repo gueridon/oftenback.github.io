@@ -1,8 +1,4 @@
 // data.js — load vinyl.json and expose helpers shared across pages.
-//
-// All paths are relative to the page (./vinyl.json, ./covers/X.jpg) so the
-// same code works in dev (served by `vinyl serve`) and in production (served
-// by GitHub Pages under oftenback.io/vinyl-collection-ui/).
 
 export async function loadRecords() {
   const res = await fetch("./vinyl.json", { cache: "no-store" });
@@ -12,24 +8,16 @@ export async function loadRecords() {
 
 export function coverUrl(record) {
   if (!record.coverImage) return null;
-  // coverImage is stored as "covers/VNL-XXX.jpg" relative to data/.
-  // Our HTTP layout puts /covers/ as a virtual mount; same in prod.
   return "./" + record.coverImage;
 }
 
-export function recordKey(r) {
-  return r.barcode;
-}
-
-// Search across all printable fields. Case-insensitive substring match.
 export function matchesQuery(record, query) {
   if (!query) return true;
   const q = query.toLowerCase();
   const haystack = [
     record.artist, record.title, record.year,
     record.genre, record.format, record.barcode,
-    record.cube === "cabinet" ? "dining cabinet" : (record.cube ? "cube " + record.cube : ""),
-  ].filter(Boolean).join("  ").toLowerCase();
+  ].filter(Boolean).join("  ").toLowerCase();
   return haystack.includes(q);
 }
 
@@ -37,24 +25,16 @@ const collator = new Intl.Collator(undefined, { sensitivity: "base", numeric: tr
 
 export function sortRecords(records, field, direction = "asc") {
   const mul = direction === "desc" ? -1 : 1;
-  return [...records].sort((a, b) => {
-    const av = a[field] ?? "";
-    const bv = b[field] ?? "";
-    return collator.compare(String(av), String(bv)) * mul;
-  });
+  return [...records].sort((a, b) =>
+    collator.compare(String(a[field] ?? ""), String(b[field] ?? "")) * mul);
 }
 
-// Build distinct, sorted suggestion lists (used by autocomplete in the editor).
 export function distinctValues(records, field) {
   const seen = new Set();
-  for (const r of records) {
-    const v = r[field];
-    if (v) seen.add(v);
-  }
+  for (const r of records) if (r[field]) seen.add(r[field]);
   return [...seen].sort(collator.compare);
 }
 
-// Generate a VNL-XXXXXX barcode that doesn't collide with `existing`.
 const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 export function generateBarcode(existing) {
   const taken = new Set(existing);
@@ -64,4 +44,11 @@ export function generateBarcode(existing) {
     if (!taken.has(s)) return s;
   }
   throw new Error("barcode generator: exhausted attempts");
+}
+
+export function cubeTag(r) {
+  return r.cube === "cabinet" ? "cabinet" : (r.cube || "·");
+}
+export function cubeLabel(r) {
+  return r.cube === "cabinet" ? "cabinet" : (r.cube ? "cube " + r.cube : "unshelved");
 }

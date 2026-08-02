@@ -1,263 +1,87 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>vinyl — edit</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="./style.css" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>The Collection — browse</title>
+<link rel="stylesheet" href="./nakata.css" />
+<style>
+  /* Keep the search/filter bar pinned below the global nav while scrolling (browse only). */
+  .controls{position:sticky;top:43px;z-index:50;background:var(--ground,#f4ede2);
+    margin-bottom:18px;padding:14px 0;box-shadow:0 8px 12px -9px rgba(61,53,48,.28);}
+</style>
+<script src="/oftenback-nav.js" defer></script>
 </head>
 <body>
-  <main class="page">
-    <div id="banner"></div>
-
-    <form id="form" class="form" autocomplete="off">
-      <label class="full">
-        artist
-        <input id="artist" list="artistOptions" required />
-      </label>
-      <label class="full">
-        title
-        <input id="title" required />
-      </label>
-      <label>
-        year
-        <input id="year" type="number" min="1800" max="2100" />
-      </label>
-      <label>
-        format
-        <input id="format" list="formatOptions" value="LP" />
-      </label>
-      <label>
-        genre
-        <input id="genre" list="genreOptions" />
-      </label>
-      <label>
-        barcode
-        <input id="barcode" readonly style="background: var(--bg); color: var(--muted);" />
-      </label>
-      <datalist id="artistOptions"></datalist>
-      <datalist id="genreOptions"></datalist>
-      <datalist id="formatOptions">
-        <option value="LP"></option>
-        <option value="12&quot; Single (33RPM)"></option>
-        <option value="12&quot; Single (45RPM)"></option>
-        <option value="LP 10&quot;"></option>
-      </datalist>
-
-      <div class="form-actions">
-        <button type="submit" class="primary" id="saveBtn">add record</button>
-        <button type="button" id="cancelBtn" style="display: none;">cancel edit</button>
-        <span class="spacer"></span>
-        <span id="formStatus" style="color: var(--muted); font-size: 13px;"></span>
-      </div>
-    </form>
+  <div class="band"><span>VINYL</span></div>
+  <div class="wrap">
+    <div id="shell"></div>
 
     <div class="controls">
-      <input id="q" type="search" placeholder="filter…" autocomplete="off" />
-      <span id="count" style="color: var(--muted); font-size: 13px;"></span>
+      <input id="q" type="search" placeholder="search artist, title, year…" autofocus />
+      <span class="lbl">sort</span>
+      <select id="sort">
+        <option value="artist">artist</option>
+        <option value="title">title</option>
+        <option value="year">year</option>
+        <option value="dateAdded">recently added</option>
+      </select>
+      <span class="lbl">genre</span>
+      <select id="genre"><option value="">all</option></select>
+      <span class="lbl">cube</span>
+      <select id="cube"><option value="">all</option></select>
+      <span class="count" id="count"></span>
     </div>
 
-    <div id="records" class="records"></div>
-  </main>
+    <div class="wall" id="wall"></div>
+    <footer>A collection kept by hand.</footer>
+  </div>
 
-  <script type="module">
-    import { renderShell, renderFooter } from "./js/shell.js";
-    import { loadRecords, coverUrl, matchesQuery, sortRecords, distinctValues, generateBarcode } from "./js/data.js";
-    import { saveRecords, saveAvailable, downloadAsJson } from "./js/save.js";
+<script type="module">
+import { renderShell, setTag } from "./js/shell.js";
+import { loadRecords, coverUrl, matchesQuery, sortRecords, distinctValues, cubeTag } from "./js/data.js";
 
-    renderShell("index.html");
+renderShell("index.html");
 
-    const banner = document.getElementById("banner");
-    const form = document.getElementById("form");
-    const artist = document.getElementById("artist");
-    const title = document.getElementById("title");
-    const year = document.getElementById("year");
-    const format = document.getElementById("format");
-    const genre = document.getElementById("genre");
-    const barcode = document.getElementById("barcode");
-    const artistOptions = document.getElementById("artistOptions");
-    const genreOptions = document.getElementById("genreOptions");
-    const saveBtn = document.getElementById("saveBtn");
-    const cancelBtn = document.getElementById("cancelBtn");
-    const formStatus = document.getElementById("formStatus");
-    const list = document.getElementById("records");
-    const countEl = document.getElementById("count");
-    const q = document.getElementById("q");
+const esc = s => String(s ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+const wall = document.getElementById("wall"), q = document.getElementById("q"),
+  sortSel = document.getElementById("sort"), genreSel = document.getElementById("genre"),
+  cubeSel = document.getElementById("cube"), countEl = document.getElementById("count");
+let all = [];
 
-    let records = [];
-    let editing = null;   // when set, the barcode being edited
-    let writable = false;
+function render() {
+  const g = genreSel.value, cb = cubeSel.value;
+  const inCube = r => !cb || (cb === "cabinet" ? r.cube === "cabinet" : String(r.cube || "").split("-").includes(cb));
+  const list = sortRecords(
+    all.filter(r => (!g || r.genre === g) && inCube(r) && matchesQuery(r, q.value.trim())),
+    sortSel.value, sortSel.value === "dateAdded" ? "desc" : "asc");
+  countEl.textContent = list.length === all.length ? `${all.length} records` : `${list.length} of ${all.length}`;
+  wall.innerHTML = list.map(r => {
+    const cov = coverUrl(r);
+    const cover = cov ? `<img src="${esc(cov)}" alt="" loading="lazy">` : `<div class="ph">♪</div>`;
+    return `<div class="tile"><div class="sleeve">${cover}<span class="cube">${esc(cubeTag(r))}</span></div>
+      <div class="cap"><div class="t">${esc(r.title)}</div><div class="a">${esc(r.artist)}</div>
+      <div class="y">${esc(r.year||"")}${r.genre?" · "+esc(r.genre):""}</div></div></div>`;
+  }).join("");
+}
+[q, sortSel, genreSel, cubeSel].forEach(e => e.addEventListener("input", render));
 
-    function escape(s) {
-      return String(s == null ? "" : s)
-        .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-    }
-
-    function showBanner(level, text) {
-      banner.innerHTML = `<div class="banner ${level}">${escape(text)}</div>`;
-    }
-    function clearBanner() { banner.innerHTML = ""; }
-
-    function refreshDatalists() {
-      artistOptions.innerHTML = distinctValues(records, "artist").map(v => `<option value="${escape(v)}">`).join("");
-      genreOptions.innerHTML = distinctValues(records, "genre").map(v => `<option value="${escape(v)}">`).join("");
-    }
-
-    function newBarcodeForForm() {
-      barcode.value = generateBarcode(records.map(r => r.barcode));
-    }
-
-    function resetForm() {
-      editing = null;
-      form.reset();
-      format.value = "LP";
-      newBarcodeForForm();
-      saveBtn.textContent = "add record";
-      cancelBtn.style.display = "none";
-      formStatus.textContent = "";
-    }
-
-    function startEdit(barcodeStr) {
-      const r = records.find(r => r.barcode === barcodeStr);
-      if (!r) return;
-      editing = barcodeStr;
-      artist.value = r.artist || "";
-      title.value = r.title || "";
-      year.value = r.year || "";
-      format.value = r.format || "LP";
-      genre.value = r.genre || "";
-      barcode.value = r.barcode;
-      saveBtn.textContent = "save changes";
-      cancelBtn.style.display = "";
-      formStatus.textContent = `editing ${barcodeStr}`;
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-
-    cancelBtn.addEventListener("click", () => { resetForm(); render(); });
-
-    async function persist() {
-      if (!writable) {
-        downloadAsJson(records);
-        showBanner("warn", "saved as download — run `vinyl serve` locally to save directly to disk");
-        return;
-      }
-      try {
-        await saveRecords(records);
-        showBanner("ok", `saved (${records.length} records)`);
-      } catch (err) {
-        showBanner("err", `save failed: ${err.message}`);
-        throw err;
-      }
-    }
-
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const payload = {
-        artist: artist.value.trim(),
-        title: title.value.trim(),
-        year: year.value.trim() || null,
-        format: format.value.trim() || "LP",
-        genre: genre.value.trim() || "",
-        barcode: barcode.value.trim(),
-      };
-      if (!payload.artist || !payload.title) {
-        showBanner("err", "artist and title are required");
-        return;
-      }
-      if (editing) {
-        const i = records.findIndex(r => r.barcode === editing);
-        if (i < 0) { showBanner("err", "edit target vanished"); return; }
-        records[i] = { ...records[i], ...payload };
-      } else {
-        payload.dateAdded = new Date().toISOString();
-        payload.printed = false;
-        records.push(payload);
-      }
-      try {
-        await persist();
-        resetForm();
-        refreshDatalists();
-        render();
-      } catch {
-        // banner already shown
-      }
-    });
-
-    async function deleteRecord(barcodeStr) {
-      const r = records.find(r => r.barcode === barcodeStr);
-      if (!r) return;
-      if (!confirm(`delete "${r.artist} - ${r.title}"?`)) return;
-      records = records.filter(r => r.barcode !== barcodeStr);
-      try {
-        await persist();
-        if (editing === barcodeStr) resetForm();
-        render();
-      } catch {
-        // re-add on failure
-        records.push(r);
-      }
-    }
-
-    function render() {
-      const filtered = records.filter(r => matchesQuery(r, q.value.trim()));
-      const sorted = sortRecords(filtered, "artist", "asc");
-
-      countEl.textContent = filtered.length === records.length
-        ? `${records.length} records`
-        : `${filtered.length} of ${records.length}`;
-
-      list.innerHTML = sorted.map(r => {
-        const cov = coverUrl(r);
-        const img = cov
-          ? `<img class="cover" src="${escape(cov)}" alt="" loading="lazy" />`
-          : `<div class="cover placeholder">♪</div>`;
-        const isEditing = editing === r.barcode;
-        return `
-          <div class="record${isEditing ? " selected" : ""}">
-            ${img}
-            <div class="meta">
-              <div class="title">${escape(r.title)}</div>
-              <div class="artist">${escape(r.artist)}</div>
-              <div class="sub">
-                <span>${escape(r.year || "?")}</span>
-                <span>${escape(r.format || "")}</span>
-                <span>${escape(r.genre || "")}</span>
-                <span class="barcode">${escape(r.barcode)}</span>
-              </div>
-            </div>
-            <div class="actions">
-              <button data-action="edit" data-barcode="${escape(r.barcode)}">edit</button>
-              <button data-action="delete" data-barcode="${escape(r.barcode)}" class="danger">delete</button>
-            </div>
-          </div>
-        `;
-      }).join("");
-    }
-
-    list.addEventListener("click", (e) => {
-      const btn = e.target.closest("button[data-action]");
-      if (!btn) return;
-      const barcodeStr = btn.dataset.barcode;
-      if (btn.dataset.action === "edit") startEdit(barcodeStr);
-      if (btn.dataset.action === "delete") deleteRecord(barcodeStr);
-    });
-
-    q.addEventListener("input", render);
-
-    try {
-      records = await loadRecords();
-      writable = await saveAvailable();
-      if (!writable) {
-        showBanner("warn", "read-only mode: run `vinyl serve` locally to enable edits. changes will be offered as a download.");
-      }
-      refreshDatalists();
-      newBarcodeForForm();
-      render();
-      renderFooter(records);
-    } catch (err) {
-      showBanner("err", err.message);
-    }
-  </script>
+try {
+  all = await loadRecords();
+  for (const g of distinctValues(all, "genre")) genreSel.add(new Option(g, g));
+  const cubes = new Set();
+  for (const r of all) {
+    if (!r.cube) continue;
+    if (r.cube === "cabinet") { cubes.add("cabinet"); continue; }
+    for (const p of String(r.cube).split("-")) cubes.add(p);
+  }
+  [...cubes].sort((a,b) => a==="cabinet"?1:b==="cabinet"?-1:Number(a)-Number(b))
+    .forEach(c => cubeSel.add(new Option(c==="cabinet"?"cabinet":"cube "+c, c)));
+  setTag(`${all.length} records, arranged by cube`);
+  render();
+} catch (err) {
+  wall.innerHTML = `<div class="banner err">${err.message}</div>`;
+}
+</script>
 </body>
 </html>

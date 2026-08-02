@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>The Collection — covers</title>
+<link rel="stylesheet" href="./nakata.css" />
+<script src="/oftenback-nav.js" defer></script>
+<style>
+  .intro{color:var(--dim);font-size:14px;margin:2px 0 18px;max-width:680px;line-height:1.6;}
+  .mlist{display:flex;flex-direction:column;gap:12px;}
+  .mrow{display:grid;grid-template-columns:64px 1fr auto;gap:14px;align-items:center;
+    background:var(--surface-light);border:1px solid var(--separator);border-radius:10px;padding:12px 14px;}
+  .mrow .thumb{width:64px;height:64px;border-radius:6px;object-fit:cover;background:var(--surface);
+    display:flex;align-items:center;justify-content:center;font-size:24px;color:var(--dim);}
+  .mrow .meta{min-width:0;}
+  .mrow .t{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink);}
+  .mrow .a{color:var(--dim);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .mrow .sub{color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums;}
+  .mrow.done{opacity:.6;}
+  .upbtn{display:inline-block;background:var(--surface);border:1px solid var(--separator);border-radius:8px;
+    padding:8px 14px;cursor:pointer;font-size:13px;font-weight:600;color:var(--ink);white-space:nowrap;}
+  .upbtn:hover{border-color:var(--accent);}
+  .upbtn input{display:none;}
+  .empty{color:var(--dim);padding:24px;text-align:center;font-style:italic;}
+</style>
+</head>
+<body>
+  <div class="band"><span>VINYL</span></div>
+  <div class="wrap">
+    <div id="shell"></div>
+    <p class="intro">Records without cover art. Find the cover online, then upload it here. It's converted, saved, and shown across the collection right away.</p>
+    <div class="controls">
+      <input id="q" type="search" placeholder="filter artist, title…" />
+      <span class="count" id="count"></span>
+    </div>
+    <div class="mlist" id="list"></div>
+  </div>
+
+<script type="module">
+import { renderShell, setTag } from "./js/shell.js";
+renderShell("covers.html");
+const esc = s => String(s ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+const list = document.getElementById("list"), q = document.getElementById("q"), countEl = document.getElementById("count");
+let missing = [];
+
+function render(){
+  const f = q.value.trim().toLowerCase();
+  const shown = missing.filter(r => !f || [r.artist,r.title,r.year].filter(Boolean).join(" ").toLowerCase().includes(f));
+  countEl.textContent = missing.length ? `${missing.length} without cover${f?` · ${shown.length} shown`:""}` : "";
+  if(!missing.length){ list.innerHTML = `<div class="empty">Every record has cover art. 🎉</div>`; return; }
+  list.innerHTML = shown.map(r => `<div class="mrow" data-bc="${esc(r.barcode)}">
+    <div class="thumb">♪</div>
+    <div class="meta"><div class="t">${esc(r.title)}</div><div class="a">${esc(r.artist)}</div>
+      <div class="sub">${esc(r.year||"?")}${r.genre?" · "+esc(r.genre):""} · ${esc(r.barcode)}</div></div>
+    <label class="upbtn">upload cover<input type="file" accept="image/*" class="cover-in"></label>
+  </div>`).join("");
+}
+q.addEventListener("input", render);
+
+list.addEventListener("change", async e => {
+  const inp = e.target.closest("input.cover-in"); if(!inp || !inp.files[0]) return;
+  const row = inp.closest(".mrow"), bc = row.dataset.bc, label = inp.closest(".upbtn");
+  label.textContent = "uploading…";
+  const fd = new FormData(); fd.append("barcode", bc); fd.append("cover", inp.files[0], inp.files[0].name);
+  try{
+    const r = await fetch("/vinyl/api/set-cover", {method:"POST", body:fd});
+    if(!r.ok) throw new Error(await r.text());
+    const res = await r.json();
+    row.querySelector(".thumb").outerHTML = `<img class="thumb" src="./${esc(res.coverImage)}?t=${Date.now()}" alt="">`;
+    row.classList.add("done");
+    label.outerHTML = `<span style="color:var(--sage);font-weight:700;font-size:13px;">added ✓</span>`;
+    countEl.textContent = `${missing.length - document.querySelectorAll(".mrow.done").length} without cover`;
+  }catch(err){ label.textContent = "upload cover"; alert("failed: " + err.message); }
+});
+
+try{
+  const all = await (await fetch("./vinyl.json", {cache:"no-store"})).json();
+  missing = all.filter(r => !r.coverImage)
+    .sort((a,b) => String(a.artist||"").localeCompare(String(b.artist||"")));
+  setTag(`${missing.length} without cover art`);
+  render();
+}catch(e){ list.innerHTML = `<div class="banner err">${e.message}</div>`; }
+</script>
+</body>
+</html>

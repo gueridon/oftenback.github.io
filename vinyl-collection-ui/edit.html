@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>The Collection — edit</title>
+<link rel="stylesheet" href="./nakata.css" />
+<script src="/oftenback-nav.js" defer></script>
+</head>
+<body>
+  <div class="band"><span>VINYL</span></div>
+  <div class="wrap">
+    <div id="shell"></div>
+    <div id="banner"></div>
+
+    <form id="form" class="form" autocomplete="off">
+      <label class="full">artist<input id="artist" list="artistOptions" required /></label>
+      <label class="full">title<input id="title" required /></label>
+      <label>year<input id="year" type="number" min="1800" max="2100" /></label>
+      <label>format<input id="format" list="formatOptions" value="LP" /></label>
+      <label>genre<input id="genre" list="genreOptions" /></label>
+      <label>cube<input id="cube" list="cubeOptions" placeholder="shelf" /></label>
+      <label>barcode<input id="barcode" readonly /></label>
+      <datalist id="artistOptions"></datalist>
+      <datalist id="genreOptions"></datalist>
+      <datalist id="cubeOptions"></datalist>
+      <datalist id="formatOptions">
+        <option value="LP"></option><option value="12&quot; Single (33RPM)"></option>
+        <option value="12&quot; Single (45RPM)"></option><option value="LP 10&quot;"></option>
+      </datalist>
+      <div class="form-actions">
+        <button type="submit" class="primary" id="saveBtn">add record</button>
+        <button type="button" id="cancelBtn" style="display:none;">cancel</button>
+        <span class="spacer"></span>
+        <span class="status" id="formStatus"></span>
+      </div>
+    </form>
+
+    <div class="controls">
+      <input id="q" type="search" placeholder="filter…" />
+      <span class="count" id="count"></span>
+    </div>
+
+    <div id="records" class="records"></div>
+  </div>
+
+<script type="module">
+import { renderShell, setTag } from "./js/shell.js";
+import { loadRecords, coverUrl, matchesQuery, sortRecords, distinctValues, generateBarcode, cubeTag } from "./js/data.js";
+import { saveRecords, saveAvailable, downloadAsJson } from "./js/save.js";
+
+renderShell("edit.html");
+
+const esc = s => String(s ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+const $ = id => document.getElementById(id);
+const banner=$("banner"), form=$("form"), artist=$("artist"), title=$("title"), year=$("year"),
+  format=$("format"), genre=$("genre"), cube=$("cube"), barcode=$("barcode"), artistOptions=$("artistOptions"),
+  genreOptions=$("genreOptions"), cubeOptions=$("cubeOptions"), saveBtn=$("saveBtn"), cancelBtn=$("cancelBtn"),
+  formStatus=$("formStatus"), list=$("records"), countEl=$("count"), q=$("q");
+let records=[], editing=null, writable=false;
+
+const showBanner=(lvl,t)=>banner.innerHTML=`<div class="banner ${lvl}">${esc(t)}</div>`;
+function refreshDatalists(){
+  artistOptions.innerHTML=distinctValues(records,"artist").map(v=>`<option value="${esc(v)}">`).join("");
+  genreOptions.innerHTML=distinctValues(records,"genre").map(v=>`<option value="${esc(v)}">`).join("");
+  cubeOptions.innerHTML=distinctValues(records,"cube").map(v=>`<option value="${esc(v)}">`).join("");
+}
+function resetForm(){editing=null;form.reset();format.value="LP";barcode.value=generateBarcode(records.map(r=>r.barcode));
+  saveBtn.textContent="add record";cancelBtn.style.display="none";formStatus.textContent="";}
+function startEdit(bc){const r=records.find(r=>r.barcode===bc);if(!r)return;editing=bc;
+  artist.value=r.artist||"";title.value=r.title||"";year.value=r.year||"";format.value=r.format||"LP";
+  genre.value=r.genre||"";cube.value=r.cube||"";barcode.value=r.barcode;saveBtn.textContent="save changes";
+  cancelBtn.style.display="";formStatus.textContent=`editing ${bc}`;window.scrollTo({top:0,behavior:"smooth"});}
+cancelBtn.addEventListener("click",()=>{resetForm();render();});
+
+async function persist(){
+  if(!writable){downloadAsJson(records);showBanner("warn","saved as download — run `vinyl serve` locally to write to disk");return;}
+  try{await saveRecords(records);showBanner("ok",`saved (${records.length} records)`);}catch(e){showBanner("err",`save failed: ${e.message}`);throw e;}
+}
+form.addEventListener("submit",async e=>{e.preventDefault();
+  const p={artist:artist.value.trim(),title:title.value.trim(),year:year.value.trim()||null,
+    format:format.value.trim()||"LP",genre:genre.value.trim()||"",cube:cube.value.trim(),barcode:barcode.value.trim()};
+  if(!p.artist||!p.title){showBanner("err","artist and title are required");return;}
+  if(editing){const i=records.findIndex(r=>r.barcode===editing);if(i<0){showBanner("err","edit target vanished");return;}records[i]={...records[i],...p};}
+  else{p.dateAdded=new Date().toISOString();p.printed=false;records.push(p);}
+  try{await persist();resetForm();refreshDatalists();render();}catch{}
+});
+async function del(bc){const r=records.find(r=>r.barcode===bc);if(!r)return;
+  if(!confirm(`delete "${r.artist} - ${r.title}"?`))return;records=records.filter(r=>r.barcode!==bc);
+  try{await persist();if(editing===bc)resetForm();render();}catch{records.push(r);}}
+
+function render(){
+  const filtered=sortRecords(records.filter(r=>matchesQuery(r,q.value.trim())),"artist","asc");
+  countEl.textContent=filtered.length===records.length?`${records.length} records`:`${filtered.length} of ${records.length}`;
+  list.innerHTML=filtered.map(r=>{
+    const cov=coverUrl(r);
+    const img=cov?`<img class="cover" src="${esc(cov)}" alt="" loading="lazy">`:`<div class="cover placeholder">♪</div>`;
+    return `<div class="record${editing===r.barcode?" selected":""}">${img}
+      <div class="meta"><div class="title">${esc(r.title)}</div><div class="artist">${esc(r.artist)}</div>
+      <div class="sub"><span class="cube-tag">${esc(cubeTag(r))}</span><span>${esc(r.year||"?")}</span>
+      <span>${esc(r.format||"")}</span><span>${esc(r.genre||"")}</span><span class="barcode">${esc(r.barcode)}</span></div></div>
+      <div class="actions"><button data-action="edit" data-bc="${esc(r.barcode)}">edit</button>
+      <button data-action="delete" data-bc="${esc(r.barcode)}" class="danger">delete</button></div></div>`;
+  }).join("");
+}
+list.addEventListener("click",e=>{const b=e.target.closest("button[data-action]");if(!b)return;
+  if(b.dataset.action==="edit")startEdit(b.dataset.bc);if(b.dataset.action==="delete")del(b.dataset.bc);});
+q.addEventListener("input",render);
+
+try{
+  records=await loadRecords();
+  writable=await saveAvailable();
+  if(!writable)showBanner("warn","read-only mode: run `vinyl serve` locally to enable edits (changes offered as a download).");
+  refreshDatalists();resetForm();setTag(`${records.length} records`);render();
+}catch(err){showBanner("err",err.message);}
+</script>
+</body>
+</html>
