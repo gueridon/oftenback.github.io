@@ -21,7 +21,6 @@
 <script src="/oftenback-nav.js" defer></script>
 </head>
 <body>
-  <div class="band"><span>VINYL</span></div>
   <div class="wrap">
     <div id="shell"></div>
     <div class="controls no-print">
@@ -38,7 +37,7 @@
   </div>
 
 <script type="module">
-import { renderShell, setTag } from "./js/shell.js";
+import { renderShell, setTag } from "./js/shell.js?v=2";
 import { loadRecords } from "./js/data.js";
 renderShell("print-dividers.html");
 const esc = s => String(s ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");

@@ -10,10 +10,9 @@
   .controls{position:sticky;top:43px;z-index:50;background:var(--ground,#f4ede2);
     margin-bottom:18px;padding:14px 0;box-shadow:0 8px 12px -9px rgba(61,53,48,.28);}
 </style>
-<script src="/oftenback-nav.js" defer></script>
+<script src="/oftenback-nav.js?v=4" defer></script>
 </head>
 <body>
-  <div class="band"><span>VINYL</span></div>
   <div class="wrap">
     <div id="shell"></div>
 
@@ -38,7 +37,7 @@
   </div>
 
 <script type="module">
-import { renderShell, setTag } from "./js/shell.js";
+import { renderShell, setTag } from "./js/shell.js?v=2";
 import { loadRecords, coverUrl, matchesQuery, sortRecords, distinctValues, cubeTag } from "./js/data.js";
 
 renderShell("index.html");

@@ -34,7 +34,6 @@
 </style>
 </head>
 <body>
-  <div class="band"><span>VINYL</span></div>
   <div class="wrap">
     <div id="shell"></div>
     <p class="add-intro">Take photos of your new records (front covers), then choose them here, all at once. Claude identifies each one and Discogs fills the cover and details. Check what's flagged in red, then add.</p>
@@ -53,7 +52,7 @@
   </div>
 
 <script type="module">
-import { renderShell, setTag } from "./js/shell.js";
+import { renderShell, setTag } from "./js/shell.js?v=2";
 renderShell("add.html");
 setTag("add records by photo");
 

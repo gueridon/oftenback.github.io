@@ -16,16 +16,7 @@ export function renderShell(active) {
     `<a href="./${p.href}"${here.endsWith(p.href) ? ' class="active"' : ""}>${p.label}</a>`
   ).join("");
   const html = `
-    <header class="masthead">
-      <svg class="enso" width="50" height="50" viewBox="0 0 100 100" aria-hidden="true">
-        <circle cx="50" cy="50" r="37" fill="none" stroke="var(--accent)" stroke-width="7.5"
-          stroke-linecap="round" stroke-dasharray="205 40" transform="rotate(-28 50 50)"/>
-      </svg>
-      <div class="words">
-        <h1>The Collection</h1>
-        <div class="tag" id="tag">records</div>
-      </div>
-      <nav>${nav}</nav>
+    <header class="masthead"><nav>${nav}</nav>
     </header>
     <div class="rule"></div>`;
   const host = document.getElementById("shell");

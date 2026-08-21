@@ -63,7 +63,6 @@
 <script src="/oftenback-nav.js" defer></script>
 </head>
 <body>
-  <div class="band"><span>VINYL</span></div>
   <div class="wrap">
     <div id="shell"></div>
     <div class="hint no-print">
@@ -97,7 +96,7 @@
   <div id="sheets"></div>
 
 <script type="module">
-import { renderShell, setTag } from "./js/shell.js";
+import { renderShell, setTag } from "./js/shell.js?v=2";
 import { loadRecords, matchesQuery } from "./js/data.js";
 import { saveRecords, saveAvailable } from "./js/save.js";
 renderShell("print-barcodes.html");

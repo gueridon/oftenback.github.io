@@ -8,7 +8,6 @@
 <script src="/oftenback-nav.js" defer></script>
 </head>
 <body>
-  <div class="band"><span>VINYL</span></div>
   <div class="wrap">
     <div id="shell"></div>
     <div id="banner"></div>
@@ -45,7 +44,7 @@
   </div>
 
 <script type="module">
-import { renderShell, setTag } from "./js/shell.js";
+import { renderShell, setTag } from "./js/shell.js?v=2";
 import { loadRecords, coverUrl, matchesQuery, sortRecords, distinctValues, generateBarcode, cubeTag } from "./js/data.js";
 import { saveRecords, saveAvailable, downloadAsJson } from "./js/save.js";
 
