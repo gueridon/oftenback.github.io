@@ -38,9 +38,20 @@ export function renderShell(active) {
 //   behind    accent   "not published: 3 records, 2 new covers"
 //   unknown   muted    "publish state unknown"
 //
-// On GitHub Pages there is no backend, so it settles on "unknown", which is
-// honest: from there we genuinely cannot see the publish state.
+// Shown only on the EDITING copy. On the public site the notion is meaningless,
+// because that page IS the publication, and a visitor to oftenback.io should not
+// be reading our internal plumbing. Gated on the HOST rather than on the state:
+// hiding when a state is unknown would bring back the ambiguity above, whereas
+// hiding where the concept does not apply does not.
+function isEditingCopy() {
+  const h = location.hostname;
+  return h === "localhost" || h === "127.0.0.1" || h.endsWith(".local") ||
+         /^192\.168\./.test(h) || /^10\./.test(h) ||
+         /^172\.(1[6-9]|2\d|3[01])\./.test(h);
+}
+
 async function showPublishState(host) {
+  if (!isEditingCopy()) return;
   const nav = host.querySelector("nav");
   if (!nav) return;
 
