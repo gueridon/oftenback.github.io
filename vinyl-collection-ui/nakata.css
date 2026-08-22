@@ -58,6 +58,15 @@ body::before{
 .masthead nav a{color:var(--dim);font-size:14px;font-weight:500;}
 .masthead nav a.active{color:var(--accent);}
 .masthead nav a:hover{color:var(--ink);text-decoration:none;}
+/* Publish state. Always present, never silent: an indicator that disappears
+   when healthy is indistinguishable from one that is broken. Accent only for
+   "behind", which is the one state asking to be acted on. */
+.masthead nav .pubstate{font-size:14px;font-weight:500;cursor:help;}
+.masthead nav .pubstate.ok{color:var(--dim);}
+.masthead nav .pubstate.ok::before{content:"\2713\00a0";}
+.masthead nav .pubstate.behind{color:var(--accent);font-weight:600;}
+.masthead nav .pubstate.behind::before{content:"\25CF\00a0";}
+.masthead nav .pubstate.unknown{color:var(--dim);opacity:.65;font-style:italic;}
 /* the hard rule is gone — breathing room instead of a line */
 .rule{height:0;margin:28px 0 0;}
 
