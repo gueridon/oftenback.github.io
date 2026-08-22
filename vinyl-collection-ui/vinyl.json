@@ -9034,5 +9034,101 @@
     "cube": "4",
     "dateAdded": "2026-08-01T00:45:39.445Z",
     "printed": false
+  },
+  {
+    "artist": "Various",
+    "title": "Disco Madness",
+    "year": "1979",
+    "format": "LP",
+    "genre": "Disco",
+    "barcode": "VNL-0D617Y",
+    "coverImage": null,
+    "cube": "1",
+    "dateAdded": "2026-08-03T17:37:28.175Z",
+    "printed": false
+  },
+  {
+    "artist": "Grace Jones",
+    "title": "Living My Life",
+    "year": "1982",
+    "format": "LP",
+    "genre": "New Wave",
+    "barcode": "VNL-HDZE9C",
+    "coverImage": "covers/VNL-HDZE9C.jpg",
+    "cube": "",
+    "dateAdded": "2026-08-03T17:37:40.804Z",
+    "printed": false
+  },
+  {
+    "artist": "Citi",
+    "title": "Roller Disco",
+    "year": "1979",
+    "format": "LP",
+    "genre": "Disco",
+    "barcode": "VNL-0ZMZOD",
+    "coverImage": null,
+    "cube": "1",
+    "dateAdded": "2026-08-03T17:37:58.204Z",
+    "printed": false
+  },
+  {
+    "artist": "Tomita",
+    "title": "Firebird",
+    "year": "1976",
+    "format": "LP",
+    "genre": "Electronic",
+    "barcode": "VNL-SSSZ2X",
+    "coverImage": "covers/VNL-SSSZ2X.jpg",
+    "cube": "4",
+    "dateAdded": "2026-08-03T17:38:11.942Z",
+    "printed": false
+  },
+  {
+    "artist": "Gordon, Dexter",
+    "title": "Ca'purange",
+    "year": "1973",
+    "format": "LP",
+    "genre": "Jazz",
+    "barcode": "VNL-0VAJWY",
+    "coverImage": null,
+    "cube": "12",
+    "dateAdded": "2026-08-03T17:39:29.947Z",
+    "printed": false
+  },
+  {
+    "artist": "The Atlanta Disco Band",
+    "title": "Bad Luck",
+    "year": "1975",
+    "format": "LP",
+    "genre": "Disco",
+    "barcode": "VNL-UUDGOF",
+    "coverImage": "covers/VNL-UUDGOF.jpg",
+    "cube": "1",
+    "dateAdded": "2026-08-03T17:39:45.058Z",
+    "printed": false
+  },
+  {
+    "artist": "Vangelis",
+    "title": "Direct",
+    "year": "1988",
+    "format": "LP",
+    "genre": "Electronic",
+    "barcode": "VNL-PH42P0",
+    "coverImage": "covers/VNL-PH42P0.jpg",
+    "cube": "4",
+    "dateAdded": "2026-08-03T17:39:59.864Z",
+    "printed": false
+  },
+  {
+    "artist": "Hisaishi, Joe",
+    "title": "My Neighbor Totoro (Sound Track Collection)",
+    "year": "1988",
+    "format": "LP",
+    "genre": "Soundtrack",
+    "barcode": "VNL-2I13U4",
+    "coverImage": null,
+    "cube": "8",
+    "dateAdded": "2026-08-03T17:40:17.654Z",
+    "printed": false
   }
 ]

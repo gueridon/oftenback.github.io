@@ -7,7 +7,6 @@ const PAGES = [
   { href: "covers.html", label: "covers" },
   { href: "stats.html", label: "stats" },
   { href: "print-barcodes.html", label: "barcodes" },
-  { href: "print-dividers.html", label: "dividers" },
 ];
 
 export function renderShell(active) {
