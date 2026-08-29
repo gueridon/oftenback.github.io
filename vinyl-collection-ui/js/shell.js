@@ -5,6 +5,7 @@ const PAGES = [
   { href: "edit.html", label: "edit" },
   { href: "add.html", label: "add" },
   { href: "covers.html", label: "covers" },
+  { href: "cubes.html", label: "cubes" },
   { href: "stats.html", label: "stats" },
   { href: "print-barcodes.html", label: "barcodes" },
 ];
