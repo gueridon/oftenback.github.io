@@ -93,7 +93,7 @@
     "coverImage": "covers/VNL-CWSTWD.jpg",
     "dateAdded": "2026-02-01T00:00:00.000Z",
     "printed": false,
-    "cube": "13"
+    "cube": "cabinet"
   },
   {
     "artist": "B.T. Express",
@@ -2337,7 +2337,7 @@
     "coverImage": "covers/VNL-SAFJQL.jpg",
     "dateAdded": "2026-02-01T00:00:00.000Z",
     "printed": true,
-    "cube": "11"
+    "cube": "cabinet"
   },
   {
     "artist": "Lear, Amanda",
@@ -2373,7 +2373,7 @@
     "coverImage": "covers/VNL-GNVVAB.jpg",
     "dateAdded": "2026-02-01T00:00:00.000Z",
     "printed": true,
-    "cube": "9"
+    "cube": "cabinet"
   },
   {
     "artist": "Lipps Inc",
@@ -4485,7 +4485,7 @@
     "coverImage": "covers/VNL-9EPCYS.jpg",
     "dateAdded": "2026-02-01T00:00:00.000Z",
     "printed": true,
-    "cube": "8"
+    "cube": "cabinet"
   },
   {
     "artist": "Sumac, Yma",
@@ -4953,7 +4953,7 @@
     "coverImage": "covers/VNL-JNKSFE.jpg",
     "dateAdded": "2026-02-01T00:00:00.000Z",
     "printed": true,
-    "cube": "11"
+    "cube": "cabinet"
   },
   {
     "artist": "Art Van Damme Quintette, The",
@@ -4965,7 +4965,7 @@
     "coverImage": "covers/VNL-Z65WZP.jpg",
     "dateAdded": "2026-02-01T00:00:00.000Z",
     "printed": true,
-    "cube": "8"
+    "cube": "cabinet"
   },
   {
     "artist": "Bee Gees, The",
@@ -5793,7 +5793,7 @@
     "coverImage": "covers/VNL-7JJM2Z.jpg",
     "dateAdded": "2026-02-01T00:00:00.000Z",
     "printed": false,
-    "cube": "14"
+    "cube": "cabinet"
   },
   {
     "artist": "Various",

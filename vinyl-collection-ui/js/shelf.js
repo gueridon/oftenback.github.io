@@ -83,7 +83,42 @@ export function shelfKey(record) {
     .toLowerCase();
 }
 
-const byKey = (a, b) => shelfKey(a).localeCompare(shelfKey(b));
+// Genres are NOT interleaved inside a shared cube. Each genre is its own block,
+// alphabetised separately (Nicolas's rule, 2026-08-29). Cube 11 is Jazz then
+// Contemporary, not one merged A-Z run.
+//
+// Worth recording that this REVERSES what the old shelf did: measured on 2026-08-29,
+// every mixed cube was interleaved, and the layout was built on that observation. It
+// was an observation, not a rule, and the rule wins.
+//
+// The rank is the wall's own genre sequence, so a shared cube reads in the same order
+// the wall does.
+export const GENRE_ORDER = [
+  'Disco', 'Electronic', 'Funk / Soul', 'Synth Pop', 'Easy Listening',
+  'Classical', 'Jazz', 'Contemporary', 'Soundtrack', 'Pop/Rock',
+  'Chanson', 'Folk', 'Others', 'World',
+];
+const genreRank = g => {
+  const i = GENRE_ORDER.indexOf(g);
+  return i === -1 ? GENRE_ORDER.length : i;   // an unlisted genre sorts last, visibly
+};
+
+// Ten-inch records are filed together as their own stash, genre irrelevant, wherever
+// they live -- they are a different physical size and do not belong in a 12" run.
+export const TEN_INCH = 'LP 10"';
+
+const isTen = r => r.format === TEN_INCH;
+
+// Ten-inch records form their own block at the END of wherever they live, sorted by
+// artist alone -- genre is deliberately ignored for them, because the stash is small
+// and being able to run one finger down one alphabet beats splitting seven records
+// across seven genres.
+const byKey = (a, b) => {
+  const ta = isTen(a) ? 1 : 0, tb = isTen(b) ? 1 : 0;
+  if (ta !== tb) return ta - tb;
+  if (ta) return shelfKey(a).localeCompare(shelfKey(b));
+  return (genreRank(a.genre) - genreRank(b.genre)) || shelfKey(a).localeCompare(shelfKey(b));
+};
 
 export function recordsInCube(records, cube) {
   return records.filter(r => String(r.cube ?? '') === String(cube));
