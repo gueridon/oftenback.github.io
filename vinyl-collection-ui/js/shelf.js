@@ -25,6 +25,24 @@ export const CABINET_INNER_MM = 700;   // the dining cabinet, measured 2026-08-2
 // Not every shelf is a cube. Drawing the cabinet against 330mm reported it as 82% full
 // when it is 39%, which is the difference between "nearly out of room" and "the emptiest
 // space in the house" -- and it is where the box sets go, so that number matters.
+// The wall, as it physically stands (2026-08-29). Shelf 1 is the original 4x2 standing
+// up, so four rows of two. Shelf 2 is the new unit, two rows of four, and its LEFTMOST
+// COLUMN is cubes 15 and 16 -- 15 holds the computer, 16 is free. Records therefore live
+// in 1-14, which is exactly what the layout allocates.
+//
+// Kept as data rather than baked into the page so the map is one edit away from correct
+// if the numbering reads differently from how it looks here.
+export const WALL = [
+  { name: 'Shelf 1', note: 'the original 4x2, standing', rows: [[1, 2], [3, 4], [5, 6], [7, 8]] },
+  { name: 'Shelf 2', note: 'the new unit, 2 rows of 4', rows: [[15, 9, 10, 11], [16, 12, 13, 14]] },
+];
+
+// Cubes that hold no records, and why.
+export const RESERVED = {
+  15: 'computer / server',
+  16: 'free — growth space',
+};
+
 export function innerMmFor(cube) {
   return String(cube) === 'cabinet' ? CABINET_INNER_MM : CUBE_INNER_MM;
 }

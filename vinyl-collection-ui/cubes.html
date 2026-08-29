@@ -3,25 +3,39 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>The Collection — cubes</title>
+<title>The Collection — the wall</title>
 <link rel="stylesheet" href="./nakata.css" />
 <style>
-  .cubebar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:20px;}
-  .cubebar button{border:1px solid var(--separator);background:var(--ground);color:var(--dim);
-    border-radius:var(--radius);padding:7px 15px;font:500 14px var(--sans);cursor:pointer;}
-  .cubebar button.on{background:var(--accent);border-color:var(--accent);color:var(--on-accent);}
-  .cubebar .spacer{flex:1;}
+  /* ---- the wall map: two shelves, drawn as the grids they physically are ---- */
+  .wall{display:flex;flex-wrap:wrap;gap:34px;margin:6px 0 24px;}
+  .shelf .cap{font:600 11px var(--mono);color:var(--dim);text-transform:uppercase;
+    letter-spacing:.07em;margin-bottom:7px;}
+  .shelf .cap i{font-weight:400;text-transform:none;letter-spacing:0;font-style:normal;}
+  .grid{display:grid;gap:5px;border:3px solid var(--border);border-radius:5px;padding:5px;
+    background:var(--surface-light);}
+  .cell{position:relative;width:104px;height:74px;border-radius:3px;background:var(--ground);
+    border:1px solid var(--separator);cursor:pointer;overflow:hidden;
+    display:flex;flex-direction:column;justify-content:space-between;padding:5px 6px;}
+  .cell:hover{border-color:var(--accent);}
+  .cell.on{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);}
+  .cell .num{font:700 13px var(--mono);color:var(--ink);}
+  .cell.on .num{color:var(--accent);}
+  .cell .gen{font-size:9.5px;line-height:1.25;color:var(--muted);}
+  .cell .bar{position:absolute;left:0;bottom:0;height:4px;background:var(--accent);opacity:.55;}
+  .cell.res{background:repeating-linear-gradient(45deg,transparent,transparent 5px,
+    rgba(142,127,115,.14) 5px,rgba(142,127,115,.14) 10px);cursor:default;}
+  .cell.res .num{color:var(--dim);}
+  .cell.res:hover{border-color:var(--separator);}
+  .cell .pin{position:absolute;top:5px;right:6px;font:700 9px var(--mono);color:var(--accent);}
 
-  /* The cube drawn to scale: 330mm of inner width mapped to the full box width, so a
-     spine's on-screen width is proportional to its real thickness. */
+  /* ---- the selected cube, to scale ---- */
   .cube{position:relative;border:2px solid var(--separator);border-radius:6px;
-    background:var(--surface-light);height:190px;display:flex;align-items:stretch;
+    background:var(--surface-light);height:170px;display:flex;align-items:stretch;
     overflow:hidden;box-shadow:var(--float);}
   .spine{position:relative;border-right:1px solid rgba(61,53,48,.16);cursor:pointer;
-    background:var(--surface);transition:background .12s;min-width:1px;}
+    background:var(--surface);min-width:1px;}
   .spine:nth-child(even){background:var(--surface-hover);}
-  .spine:hover{background:var(--accent);}
-  .spine.hit{background:var(--accent);}
+  .spine:hover,.spine.hit{background:var(--accent);}
   .spine .lab{position:absolute;inset:0;writing-mode:vertical-rl;text-orientation:mixed;
     font:600 9px var(--sans);color:var(--ink);padding:6px 0;overflow:hidden;
     white-space:nowrap;text-overflow:ellipsis;opacity:.85;}
@@ -30,23 +44,30 @@
     rgba(142,127,115,.13) 6px,rgba(142,127,115,.13) 12px);}
   .ruler{display:flex;justify-content:space-between;font:500 11px var(--mono);
     color:var(--dim);margin-top:5px;}
+  .meta{margin:12px 0 4px;font-size:14px;color:var(--muted);}
+  .meta b{color:var(--ink);} .warn{color:var(--accent);font-weight:600;}
 
-  .meta{margin:14px 0 6px;font-size:14px;color:var(--muted);}
-  .meta b{color:var(--ink);}
-  .warn{color:var(--accent);font-weight:600;}
-
-  .panel{border:1px solid var(--separator);border-radius:var(--radius);padding:16px 18px;
-    margin-top:22px;background:var(--ground);}
-  .panel h3{margin:0 0 12px;font-size:15px;color:var(--ink);}
-  .panel .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:10px;}
+  .panel{border:1px solid var(--separator);border-radius:var(--radius);padding:15px 17px;
+    margin-top:20px;background:var(--ground);}
+  .panel h3{margin:0 0 10px;font-size:15px;color:var(--ink);}
+  .panel .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:9px;}
   .panel select{max-width:420px;}
   .panel .note{font-size:12.5px;color:var(--dim);line-height:1.55;margin-top:8px;}
-  table.rec{border-collapse:collapse;width:100%;font-size:13px;margin-top:6px;}
+
+  /* ---- the ordered list (what wall.html used to be) ---- */
+  table.ord{border-collapse:collapse;width:100%;font-size:13px;margin-top:4px;}
+  table.ord td{padding:3px 8px 3px 0;border-bottom:1px solid var(--separator);}
+  table.ord td.i{color:var(--dim);font:600 11px var(--mono);width:1%;text-align:right;}
+  table.ord td.mm{color:var(--dim);font:400 11px var(--mono);width:1%;text-align:right;padding-right:13px;}
+  table.ord td.a{font-weight:600;color:var(--ink);white-space:nowrap;}
+  table.ord td.t{color:var(--muted);} table.ord td.g{color:var(--dim);font-size:11px;white-space:nowrap;}
+  table.ord tr.hit td{background:rgba(227,66,52,.10);}
+  table.rec{border-collapse:collapse;width:100%;font-size:13px;}
   table.rec td{padding:4px 8px 4px 0;border-bottom:1px solid var(--separator);color:var(--ink-soft);}
   table.rec td.k{color:var(--dim);font:600 11px var(--mono);white-space:nowrap;}
-
-  #found{margin-top:10px;font-size:14px;color:var(--ink);}
+  #found{margin:8px 0 14px;font-size:14px;}
   #found .where{color:var(--accent);font-weight:700;}
+  @media print{ .wall{gap:20px} .cell{width:86px;height:64px} }
 </style>
 <script src="/oftenback-nav.js?v=4" defer></script>
 </head>
@@ -57,187 +78,173 @@
     <div class="controls">
       <input id="q" type="search" placeholder="find a disc — artist, title, barcode…" />
       <span class="lbl">LP mm</span>
-      <input id="lpmm" type="number" step="0.1" min="2" max="8" value="4.3" style="width:70px" />
+      <input id="lpmm" type="number" step="0.1" min="2" max="8" value="4.3" style="width:66px" />
       <span class="count" id="count"></span>
     </div>
     <div id="found"></div>
 
-    <div class="cubebar" id="cubebar"></div>
+    <div class="wall" id="wall"></div>
 
     <div class="cube" id="cube"></div>
     <div class="ruler"><span>0 mm</span><span id="rmid"></span><span id="rmax">330 mm</span></div>
     <div class="meta" id="meta"></div>
 
+    <div class="panel" id="detailpanel" hidden>
+      <h3 id="detailtitle">Disc</h3><table class="rec" id="detail"></table>
+    </div>
+
     <div class="panel">
       <h3>Ends of this cube</h3>
-      <div class="row">
-        <span class="lbl">first</span>
-        <select id="first"></select>
-      </div>
-      <div class="row">
-        <span class="lbl">last</span>
-        <select id="last"></select>
-      </div>
+      <div class="row"><span class="lbl">first</span><select id="first"></select></div>
+      <div class="row"><span class="lbl">last</span><select id="last"></select></div>
       <div class="row"><button id="save">save ends</button><span id="savemsg" class="lbl"></span></div>
       <div class="note" id="recmsg"></div>
     </div>
 
-    <div class="panel" id="detailpanel" hidden>
-      <h3 id="detailtitle">Disc</h3>
-      <table class="rec" id="detail"></table>
+    <div class="panel">
+      <h3 id="ordtitle">In order, left to right</h3>
+      <table class="ord" id="ord"></table>
     </div>
 
     <footer>A collection kept by hand.</footer>
   </div>
 
 <script type="module">
-import { renderShell } from "./js/shell.js?v=2";
+import { renderShell } from "./js/shell.js?v=3";
 import { loadRecords, matchesQuery } from "./js/data.js?v=2";
 import { saveRecords } from "./js/save.js?v=2";
-import * as shelf from "./js/shelf.js?v=1";
+import * as shelf from "./js/shelf.js?v=3";
 
 renderShell("cubes.html");
-
 let records = await loadRecords();
-let cube = null;
-let hitBarcode = null;
-
+let cube = null, hitBarcode = null;
 const el = id => document.getElementById(id);
 const lpMm = () => parseFloat(el("lpmm").value) || shelf.LP_MM;
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
-function drawCubeBar() {
-  const cubes = shelf.cubeList(records);
-  if (cube === null) cube = cubes[0];
-  el("cubebar").innerHTML = cubes.map(c =>
-    `<button data-c="${c}" class="${String(c) === String(cube) ? "on" : ""}">${c}</button>`).join("");
-  el("cubebar").querySelectorAll("button").forEach(b =>
-    b.onclick = () => { cube = b.dataset.c; hitBarcode = null; draw(); });
+// ---- the wall map -----------------------------------------------------------
+function drawWall() {
+  el("wall").innerHTML = shelf.WALL.map(sh => {
+    const cols = Math.max(...sh.rows.map(r => r.length));
+    const cells = sh.rows.flat().map(c => {
+      const reserved = shelf.RESERVED[c];
+      if (reserved)
+        return `<div class="cell res"><span class="num">${c}</span><span class="gen">${esc(reserved)}</span></div>`;
+      const L = shelf.cubeLayout(records, c, { lpMm: lpMm() });
+      const gs = [...new Set(L.items.map(i => i.record.genre))].sort().join(", ");
+      const pct = Math.round(L.occupancy * 100);
+      return `<div class="cell${String(c)===String(cube)?" on":""}" data-c="${c}">
+        <span class="num">${c}</span>
+        ${L.count ? `<span class="pin">${pct}%</span>` : ""}
+        <span class="gen">${esc(gs) || "—"}</span>
+        <span class="bar" style="width:${Math.min(100,pct)}%"></span></div>`;
+    }).join("");
+    return `<div class="shelf"><div class="cap">${esc(sh.name)} <i>· ${esc(sh.note)}</i></div>
+      <div class="grid" style="grid-template-columns:repeat(${cols},auto)">${cells}</div></div>`;
+  }).join("");
+  el("wall").querySelectorAll(".cell[data-c]").forEach(d =>
+    d.onclick = () => { cube = d.dataset.c; hitBarcode = null; draw(); });
 }
 
+// ---- the selected cube ------------------------------------------------------
 function draw() {
-  drawCubeBar();
+  if (cube === null) cube = shelf.cubeList(records)[0];
+  drawWall();
   const L = shelf.cubeLayout(records, cube, { lpMm: lpMm() });
-
-  // Widths are a percentage of the cube's INNER width, not of the occupied width, so a
-  // half-empty cube draws half empty instead of stretching its spines across the box.
-  const pct = mm => (mm / L.innerMm) * 100;
+  const pct = v => (v / L.innerMm) * 100;
   el("cube").innerHTML = L.items.map(i => {
-    const label = `${i.record.artist || "?"} — ${i.record.title || ""}`;
-    return `<div class="spine${i.record.barcode === hitBarcode ? " hit" : ""}"
-      style="flex:0 0 ${pct(i.widthMm)}%" data-b="${i.record.barcode}"
-      title="${label.replace(/"/g, "&quot;")} · ${Math.round(i.centerMm)}mm"
-      ><span class="lab">${label}</span></div>`;
+    const lab = `${i.record.artist || "?"} — ${i.record.title || ""}`;
+    return `<div class="spine${i.record.barcode===hitBarcode?" hit":""}"
+      style="flex:0 0 ${pct(i.widthMm)}%" data-b="${esc(i.record.barcode)}"
+      title="${esc(lab)} · ${Math.round(i.centerMm)}mm"><span class="lab">${esc(lab)}</span></div>`;
   }).join("") + (L.occupancy < 0.995 ? `<div class="empty"></div>` : "");
-
   el("cube").querySelectorAll(".spine").forEach(s =>
     s.onclick = () => { hitBarcode = s.dataset.b; draw(); });
 
   el("rmid").textContent = `${Math.round(L.occupiedMm)} mm used`;
   el("rmax").textContent = `${L.innerMm} mm`;
-  el("meta").innerHTML =
-    `<b>${L.count}</b> discs · <b>${Math.round(L.occupiedMm)} mm</b> of ${L.innerMm} mm · ` +
-    `<b>${(L.occupancy * 100).toFixed(0)}%</b> full` +
-    (L.overfull ? ` · <span class="warn">over 330 mm — the thickness estimate is too high, or the cube really is overfull</span>` : "");
-
-  drawEnds(L);
-  drawDetail();
+  const gs = [...new Set(L.items.map(i => i.record.genre))].sort().join(", ");
+  el("meta").innerHTML = `<b>Cube ${cube}</b> · ${esc(gs) || "empty"} · <b>${L.count}</b> discs · ` +
+    `<b>${Math.round(L.occupiedMm)} mm</b> of ${L.innerMm} · <b>${(L.occupancy*100).toFixed(0)}%</b>` +
+    (L.overfull ? ` · <span class="warn">over ${L.innerMm} mm</span>` : "");
+  drawEnds(L); drawDetail(); drawOrder(L);
 }
 
-function optionsFor(L, selected) {
+function opts(L, sel) {
   return [`<option value="">— not set —</option>`].concat(L.items.map(i =>
-    `<option value="${i.record.barcode}"${i.record.barcode === selected ? " selected" : ""}>` +
-    `${i.index + 1}. ${(i.record.artist || "?")} — ${(i.record.title || "")}</option>`)).join("");
+    `<option value="${esc(i.record.barcode)}"${i.record.barcode===sel?" selected":""}>` +
+    `${i.index+1}. ${esc(i.record.artist||"?")} — ${esc(i.record.title||"")}</option>`)).join("");
 }
-
 function drawEnds(L) {
   const a = shelf.anchorsFor(records, cube);
-  el("first").innerHTML = optionsFor(L, a.first?.barcode);
-  el("last").innerHTML = optionsFor(L, a.last?.barcode);
-
+  el("first").innerHTML = opts(L, a.first?.barcode);
+  el("last").innerHTML = opts(L, a.last?.barcode);
   const rec = shelf.reconcile(records, cube);
   if (!rec.ready) {
-    el("recmsg").innerHTML =
-      `Set both ends and this cube stops being a guess. The <code>cube</code> field is ` +
-      `computed from genre by <code>cube.py place()</code> and was never observed; the two ` +
-      `ends are the only facts actually seen on the shelf, so they are what makes the ` +
-      `positions above trustworthy — and any disagreement between them becomes a list of ` +
-      `discs to check.`;
-    return;
+    el("recmsg").innerHTML = `Set both ends and this cube stops being a guess. The ` +
+      `<code>cube</code> field is derived, not observed; the two ends are the only facts ` +
+      `actually seen on the shelf, and any disagreement between them becomes a list of discs to check.`;
+  } else if (rec.agrees) {
+    el("recmsg").innerHTML = `<b>Ends agree.</b> Everything alphabetically between ` +
+      `<b>${esc(rec.first.artist)}</b> and <b>${esc(rec.last.artist)}</b> is here, and nothing else is.`;
+  } else {
+    const list = rs => rs.map(r => `<li>${esc(r.artist||"?")} — ${esc(r.title||"")} <span class="lbl">(cube ${esc(r.cube??"—")})</span></li>`).join("");
+    el("recmsg").innerHTML = `<b class="warn">Ends disagree with the tags.</b> Between ` +
+      `<b>${esc(rec.first.artist)}</b> and <b>${esc(rec.last.artist)}</b> the shelf should hold ` +
+      `<b>${rec.expected}</b>; <b>${rec.tagged}</b> are tagged here.` +
+      (rec.shouldBeHere.length?`<div style="margin-top:7px">In the interval, tagged elsewhere:<ul>${list(rec.shouldBeHere)}</ul></div>`:"") +
+      (rec.shouldNotBeHere.length?`<div style="margin-top:7px">Tagged here, outside the interval:<ul>${list(rec.shouldNotBeHere)}</ul></div>`:"");
   }
-  if (rec.agrees) {
-    el("recmsg").innerHTML =
-      `<b>Ends agree with the tags.</b> Every disc alphabetically between ` +
-      `<b>${rec.first.artist}</b> and <b>${rec.last.artist}</b> is tagged to this cube, and ` +
-      `nothing tagged here falls outside. The positions above are anchored to the shelf.`;
-    return;
-  }
-  const list = rs => rs.map(r =>
-    `<li>${r.artist || "?"} — ${r.title || ""} <span class="lbl">(tagged cube ${r.cube ?? "—"})</span></li>`).join("");
-  el("recmsg").innerHTML =
-    `<b class="warn">Ends disagree with the tags.</b> Between <b>${rec.first.artist}</b> and ` +
-    `<b>${rec.last.artist}</b> the shelf should hold <b>${rec.expected}</b> discs; ` +
-    `<b>${rec.tagged}</b> are tagged to this cube.` +
-    (rec.shouldBeHere.length ? `<div style="margin-top:8px">In the interval but tagged elsewhere — either misfiled, or the tag is stale:<ul>${list(rec.shouldBeHere)}</ul></div>` : "") +
-    (rec.shouldNotBeHere.length ? `<div style="margin-top:8px">Tagged here but outside the interval:<ul>${list(rec.shouldNotBeHere)}</ul></div>` : "");
 }
-
 function drawDetail() {
   const r = records.find(x => x.barcode === hitBarcode);
-  el("detailpanel").hidden = !r;
-  if (!r) return;
+  el("detailpanel").hidden = !r; if (!r) return;
   const loc = shelf.locate(records, r, { lpMm: lpMm() });
   el("detailtitle").textContent = `${r.artist || "?"} — ${r.title || ""}`;
-  const rows = [
+  el("detail").innerHTML = [
     ["cube", r.cube ?? "—"],
-    ["position", loc ? `${loc.positionMm} mm from the left · ${loc.fromRightMm} mm from the right edge of the run` : "—"],
+    ["position", loc ? `${loc.positionMm} mm from the left · ${loc.fromRightMm} mm from the end of the run` : "—"],
     ["order", loc ? `${loc.index} of ${loc.of}` : "—"],
-    ["format", `${r.format || "—"} · ${shelf.thicknessMm(r, lpMm()).toFixed(1)} mm thick`],
-    ["genre", r.genre || "—"],
-    ["year", r.year || "—"],
-    ["barcode", r.barcode],
-  ];
-  el("detail").innerHTML = rows.map(([k, v]) => `<tr><td class="k">${k}</td><td>${v}</td></tr>`).join("");
+    ["format", `${r.format || "—"} · ${shelf.thicknessMm(r, lpMm()).toFixed(1)} mm`],
+    ["genre", r.genre || "—"], ["year", r.year || "—"], ["barcode", r.barcode],
+  ].map(([k,v]) => `<tr><td class="k">${k}</td><td>${esc(v)}</td></tr>`).join("");
+}
+// this is what wall.html used to be, now folded in per cube
+function drawOrder(L) {
+  el("ordtitle").textContent = `Cube ${cube} in order, left to right`;
+  el("ord").innerHTML = L.items.map(i =>
+    `<tr class="${i.record.barcode===hitBarcode?"hit":""}"><td class="i">${i.index+1}</td>` +
+    `<td class="mm">${Math.round(i.startMm)}</td><td class="a">${esc(i.record.artist||"?")}</td>` +
+    `<td class="t">${esc(i.record.title||"")}</td><td class="g">${esc(i.record.format||"")}</td></tr>`).join("")
+    || `<tr><td class="t">empty</td></tr>`;
 }
 
-// Search the WHOLE collection, not just this cube: the point is to be told where a disc
-// is when you do not know which cube it is in.
 el("q").oninput = () => {
   const q = el("q").value.trim();
-  if (!q) { el("found").innerHTML = ""; el("count").textContent = ""; return; }
+  if (!q) { el("found").innerHTML=""; el("count").textContent=""; return; }
   const hits = records.filter(r => matchesQuery(r, q)).slice(0, 6);
   el("count").textContent = `${hits.length} shown`;
   el("found").innerHTML = hits.map(r => {
     const loc = shelf.locate(records, r, { lpMm: lpMm() });
-    const where = loc
-      ? `<span class="where">cube ${loc.cube} · ${loc.positionMm} mm from the left · ${loc.index} of ${loc.of}</span>`
-      : `<span class="lbl">no cube recorded</span>`;
-    return `<div><a href="#" data-b="${r.barcode}" data-c="${r.cube ?? ""}">${r.artist || "?"} — ${r.title || ""}</a> · ${where}</div>`;
+    const where = loc ? `<span class="where">cube ${loc.cube} · ${loc.positionMm} mm from the left · ${loc.index} of ${loc.of}</span>`
+                      : `<span class="lbl">no cube recorded</span>`;
+    return `<div><a href="#" data-b="${esc(r.barcode)}" data-c="${esc(r.cube??"")}">${esc(r.artist||"?")} — ${esc(r.title||"")}</a> · ${where}</div>`;
   }).join("");
   el("found").querySelectorAll("a").forEach(a => a.onclick = ev => {
     ev.preventDefault();
     if (a.dataset.c) cube = a.dataset.c;
-    hitBarcode = a.dataset.b;
-    draw();
+    hitBarcode = a.dataset.b; draw();
   });
 };
-
 el("lpmm").oninput = draw;
-
 el("save").onclick = async () => {
   let next = records;
   next = shelf.setAnchor(next, cube, "first", el("first").value || null);
   next = shelf.setAnchor(next, cube, "last", el("last").value || null);
   el("savemsg").textContent = "saving…";
-  try {
-    await saveRecords(next);
-    records = next;
-    el("savemsg").textContent = "saved";
-    draw();
-  } catch (e) {
-    el("savemsg").textContent = `not saved: ${e.message}`;
-  }
+  try { await saveRecords(next); records = next; el("savemsg").textContent = "saved"; draw(); }
+  catch (e) { el("savemsg").textContent = `not saved: ${e.message}`; }
 };
-
 draw();
 </script>
 </body>
