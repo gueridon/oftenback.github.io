@@ -167,7 +167,10 @@ function drawWall() {
       if (reserved)
         return `<div class="cell res"><span class="num">${c}</span><span class="gen">${esc(reserved)}</span></div>`;
       const L = shelf.cubeLayout(records, c, { lpMm: lpMm() });
-      const gs = [...new Set(L.items.map(i => i.record.genre))].sort().join(", ");
+      // Label by the tag the ordering uses, so the 10-inch stash reads as "10-inch"
+      // rather than as the five unrelated genres those seven records happen to carry --
+      // genre is explicitly irrelevant for them.
+      const gs = [...new Set(L.items.map(i => i.record.format === shelf.TEN_INCH ? "10-inch" : i.record.genre))].sort().join(", ");
       const pct = Math.round(L.occupancy * 100);
       const nd = L.items.filter(i => done.has(i.record.barcode)).length;
       const all = L.count > 0 && nd === L.count;
@@ -215,7 +218,7 @@ function draw() {
 
   el("rmid").textContent = `${Math.round(L.occupiedMm)} mm used`;
   el("rmax").textContent = `${L.innerMm} mm`;
-  const gs = [...new Set(L.items.map(i => i.record.genre))].sort().join(", ");
+  const gs = [...new Set(L.items.map(i => i.record.format === shelf.TEN_INCH ? "10-inch" : i.record.genre))].sort().join(", ");
   const where = String(cube) === shelf.OVERFLOW ? "Overflow"
               : String(cube) === "cabinet" ? "Cabinet" : `Cube ${cube}`;
   el("meta").innerHTML = `<b>${where}</b> · ${esc(gs) || "empty"} · <b>${L.count}</b> discs · ` +
