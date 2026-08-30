@@ -205,7 +205,7 @@
     "cube": "14"
   },
   {
-    "artist": "Beethoven, Ludwig",
+    "artist": "Beethoven, Ludwig van",
     "title": "Appassionata - Lars Roos",
     "barcode": "VNL-JM8RXF",
     "format": "LP",
@@ -217,7 +217,7 @@
     "cube": "9"
   },
   {
-    "artist": "Beethoven, Ludwig",
+    "artist": "Beethoven, Ludwig van",
     "title": "Concerto No. 5 In E Flat Major, Op. 73 (\"Emperor\")",
     "barcode": "VNL-PTATWJ",
     "format": "LP",
@@ -229,7 +229,7 @@
     "cube": "9"
   },
   {
-    "artist": "Beethoven, Ludwig",
+    "artist": "Beethoven, Ludwig van",
     "title": "Emperor Concerto - Rubinstein",
     "barcode": "VNL-YYDAAQ",
     "format": "LP",
@@ -241,7 +241,7 @@
     "cube": "9"
   },
   {
-    "artist": "Beethoven, Ludwig",
+    "artist": "Beethoven, Ludwig van",
     "title": "Klaviersonaten 8, 22, 23 - Kempf",
     "barcode": "VNL-CBGGWY",
     "format": "LP",
@@ -253,7 +253,7 @@
     "cube": "9"
   },
   {
-    "artist": "Beethoven, Ludwig",
+    "artist": "Beethoven, Ludwig van",
     "title": "Piano Concertos Nos.2&4",
     "barcode": "VNL-V8H8RH",
     "format": "LP",
@@ -265,7 +265,7 @@
     "cube": "9"
   },
   {
-    "artist": "Beethoven, Ludwig",
+    "artist": "Beethoven, Ludwig van",
     "title": "Sonatas 23, 21, 14 - Gulda",
     "barcode": "VNL-XK6TXB",
     "format": "LP",
@@ -277,7 +277,7 @@
     "cube": "9"
   },
   {
-    "artist": "Beethoven, Ludwig",
+    "artist": "Beethoven, Ludwig van",
     "title": "Symphonies 8 & 9",
     "barcode": "VNL-DY3E52",
     "format": "LP",
@@ -289,7 +289,7 @@
     "cube": "9"
   },
   {
-    "artist": "Beethoven, Ludwig",
+    "artist": "Beethoven, Ludwig van",
     "title": "Symphony 3 Eroica",
     "barcode": "VNL-DSWGWM",
     "format": "LP",
@@ -301,7 +301,7 @@
     "cube": "9"
   },
   {
-    "artist": "Beethoven, Ludwig",
+    "artist": "Beethoven, Ludwig van",
     "title": "Symphony No. 5 / Coriolan Overture",
     "barcode": "VNL-MGBNXD",
     "format": "LP",
@@ -313,7 +313,7 @@
     "cube": "9"
   },
   {
-    "artist": "Beethoven, Ludwig",
+    "artist": "Beethoven, Ludwig van",
     "title": "Symphony No.9 Choral",
     "barcode": "VNL-T8WD2F",
     "format": "LP",
@@ -325,7 +325,7 @@
     "cube": "9"
   },
   {
-    "artist": "Beethoven, Ludwig",
+    "artist": "Beethoven, Ludwig van",
     "title": "The Budapest String Quartet – Quartet No. 16 In F Major, Op. 135 - Grosse Fuge In B-Flat Major, Op. 133",
     "barcode": "VNL-5PCN9R",
     "format": "LP",
@@ -337,7 +337,7 @@
     "cube": "9"
   },
   {
-    "artist": "Beethoven, Ludwig",
+    "artist": "Beethoven, Ludwig van",
     "title": "Violin Concerto In D, Op.61",
     "barcode": "VNL-FC368T",
     "format": "LP",
@@ -2956,7 +2956,7 @@
     "cube": "14"
   },
   {
-    "artist": "Mozart, W.A.",
+    "artist": "Mozart, Wolfgang Amadeus",
     "title": "Die Zauberflote",
     "barcode": "VNL-29FVUL",
     "format": "LP",
@@ -3640,7 +3640,7 @@
     "cube": "13"
   },
   {
-    "artist": "Puccini",
+    "artist": "Puccini, Giacomo",
     "title": "Il Tabarro",
     "barcode": "VNL-VL3FW9",
     "format": "LP",
@@ -3652,7 +3652,7 @@
     "cube": "cabinet"
   },
   {
-    "artist": "Puccini",
+    "artist": "Puccini, Giacomo",
     "title": "Madama Butterfly",
     "barcode": "VNL-5XA5AA",
     "format": "LP",
@@ -3664,7 +3664,7 @@
     "cube": "cabinet"
   },
   {
-    "artist": "Puccini",
+    "artist": "Puccini, Giacomo",
     "title": "Suor Angelica",
     "barcode": "VNL-FNLSZX",
     "format": "LP",
@@ -7039,7 +7039,7 @@
     "cube": "cabinet"
   },
   {
-    "artist": "Bach, J.S.",
+    "artist": "Bach, Johann Sebastian",
     "title": "Suites for Orchestra BWV 1066-1069",
     "barcode": "VNL-7EWJYD",
     "format": "Box",
@@ -7076,7 +7076,7 @@
     "cube": "cabinet"
   },
   {
-    "artist": "Bach, J.S.",
+    "artist": "Bach, Johann Sebastian",
     "title": "Brandenburg Concertos",
     "barcode": "VNL-7HOYMD",
     "format": "Box",
@@ -7280,7 +7280,7 @@
     "cube": "10"
   },
   {
-    "artist": "Bach, J.S.",
+    "artist": "Bach, Johann Sebastian",
     "title": "Coffee Cantata BWV 211 / Peasant Cantata BWV 212",
     "barcode": "VNL-FLUYX6",
     "format": "LP",
@@ -7292,7 +7292,7 @@
     "cube": "9"
   },
   {
-    "artist": "Bach, J.S.",
+    "artist": "Bach, Johann Sebastian",
     "title": "Trio Sonatas (4)",
     "barcode": "VNL-4UZQRS",
     "format": "LP",
@@ -7377,7 +7377,7 @@
     "cubeAnchor": "first"
   },
   {
-    "artist": "Bach, J.S.",
+    "artist": "Bach, Johann Sebastian",
     "title": "Magnificat in D Major",
     "barcode": "VNL-QK84OW",
     "format": "LP",
@@ -7461,7 +7461,7 @@
     "cube": "10"
   },
   {
-    "artist": "Bach, J.S.",
+    "artist": "Bach, Johann Sebastian",
     "title": "Cantatas No. 100 & 175",
     "barcode": "VNL-N1N3ZP",
     "format": "LP",
@@ -7473,7 +7473,7 @@
     "cube": "9"
   },
   {
-    "artist": "Bach, J.S.",
+    "artist": "Bach, Johann Sebastian",
     "title": "Cantata No. 76 (Die Himmel erzählen die Ehre Gottes)",
     "barcode": "VNL-O9NTMU",
     "format": "LP",

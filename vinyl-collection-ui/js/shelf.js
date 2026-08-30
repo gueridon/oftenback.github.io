@@ -118,6 +118,20 @@ const genreRank = g => {
 // they live -- they are a different physical size and do not belong in a 12" run.
 export const TEN_INCH = 'LP 10"';
 
+// Within one artist, order by title. Until 2026-08-30 the sort was artist-only, so ties
+// kept whatever order they sat in the JSON file -- meaning all seven Bach records appeared
+// in no sequence at all, and their millimetre positions would shift if the file were ever
+// rewritten. That is also how a position read off the screen came to disagree with a
+// position computed here, which nearly sent six wrong discs to the cabinet.
+export function titleKey(record) {
+  return (record.title || '')
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[\u200e\u200f\u200b]/g, '')
+    .trim()
+    .toLowerCase();
+}
+
 const isTen = r => r.format === TEN_INCH;
 
 // Ten-inch records form their own block at the END of wherever they live, sorted by
@@ -127,8 +141,11 @@ const isTen = r => r.format === TEN_INCH;
 const byKey = (a, b) => {
   const ta = isTen(a) ? 1 : 0, tb = isTen(b) ? 1 : 0;
   if (ta !== tb) return ta - tb;
-  if (ta) return shelfKey(a).localeCompare(shelfKey(b));
-  return (genreRank(a.genre) - genreRank(b.genre)) || shelfKey(a).localeCompare(shelfKey(b));
+  if (ta) return shelfKey(a).localeCompare(shelfKey(b))
+           || titleKey(a).localeCompare(titleKey(b));
+  return (genreRank(a.genre) - genreRank(b.genre))
+      || shelfKey(a).localeCompare(shelfKey(b))
+      || titleKey(a).localeCompare(titleKey(b));
 };
 
 export function recordsInCube(records, cube) {
