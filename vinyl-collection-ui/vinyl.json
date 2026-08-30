@@ -382,7 +382,7 @@
     "coverImage": "covers/VNL-7SDH8T.jpg",
     "dateAdded": "2026-02-26T11:58:02.292Z",
     "printed": true,
-    "cube": "9"
+    "cube": "cabinet"
   },
   {
     "artist": "Berlioz, Hector",
@@ -418,7 +418,7 @@
     "coverImage": "covers/VNL-ZWT2XS.jpg",
     "dateAdded": "2026-02-26T11:59:55.828Z",
     "printed": true,
-    "cube": "9"
+    "cube": "cabinet"
   },
   {
     "artist": "Black Sun",
@@ -2640,7 +2640,7 @@
     "coverImage": "covers/VNL-RKSFN2.jpg",
     "dateAdded": "2026-02-26T11:59:12.635Z",
     "printed": true,
-    "cube": "9"
+    "cube": "cabinet"
   },
   {
     "artist": "Mauriat, Paul",
@@ -2965,7 +2965,7 @@
     "coverImage": "covers/VNL-29FVUL.jpg",
     "dateAdded": "2026-02-26T12:01:05.458Z",
     "printed": true,
-    "cube": "9"
+    "cube": "cabinet"
   },
   {
     "artist": "Munich Machine",
@@ -3001,8 +3001,7 @@
     "coverImage": "covers/VNL-LSWG9M.jpg",
     "dateAdded": "2026-02-26T11:57:08.202Z",
     "printed": true,
-    "cube": "9",
-    "cubeAnchor": "last"
+    "cube": "cabinet"
   },
   {
     "artist": "New Order",
@@ -3086,7 +3085,7 @@
     "coverImage": "covers/VNL-XT93HC.jpg",
     "dateAdded": "2026-04-01T11:01:46.607Z",
     "printed": true,
-    "cube": "10"
+    "cube": "cabinet"
   },
   {
     "artist": "Orbison, Roy",
@@ -3650,7 +3649,7 @@
     "coverImage": "covers/VNL-VL3FW9.jpg",
     "dateAdded": "2026-02-26T12:03:22.748Z",
     "printed": true,
-    "cube": "10"
+    "cube": "cabinet"
   },
   {
     "artist": "Puccini",
@@ -3662,7 +3661,7 @@
     "coverImage": "covers/VNL-5XA5AA.jpg",
     "dateAdded": "2026-02-01T00:00:00.000Z",
     "printed": true,
-    "cube": "10"
+    "cube": "cabinet"
   },
   {
     "artist": "Puccini",
@@ -3674,7 +3673,7 @@
     "coverImage": "covers/VNL-FNLSZX.jpg",
     "dateAdded": "2026-02-26T12:02:09.270Z",
     "printed": true,
-    "cube": "10"
+    "cube": "cabinet"
   },
   {
     "artist": "Purcell, Henry",
@@ -3686,7 +3685,7 @@
     "coverImage": "covers/VNL-U9EA7M.jpg",
     "dateAdded": "2026-02-01T00:00:00.000Z",
     "printed": true,
-    "cube": "10"
+    "cube": "cabinet"
   },
   {
     "artist": "Rachmaninoff",
@@ -4250,7 +4249,7 @@
     "coverImage": "covers/VNL-GGKM8K.jpg",
     "dateAdded": "2026-02-26T11:54:38.187Z",
     "printed": true,
-    "cube": "10"
+    "cube": "cabinet"
   },
   {
     "artist": "Strauss, Richard",
@@ -4262,7 +4261,7 @@
     "coverImage": "covers/VNL-9LBNJA.jpg",
     "dateAdded": "2026-02-26T11:53:48.348Z",
     "printed": true,
-    "cube": "10"
+    "cube": "cabinet"
   },
   {
     "artist": "Strauss, Richard",
@@ -4274,7 +4273,7 @@
     "coverImage": "covers/VNL-3M2VR4.jpg",
     "dateAdded": "2026-02-01T00:00:00.000Z",
     "printed": true,
-    "cube": "10"
+    "cube": "cabinet"
   },
   {
     "artist": "Strauss, Richard",
@@ -4310,7 +4309,7 @@
     "coverImage": "covers/VNL-KN52PD.jpg",
     "dateAdded": "2026-02-26T11:55:22.421Z",
     "printed": true,
-    "cube": "10"
+    "cube": "cabinet"
   },
   {
     "artist": "Strauss, Richard",
@@ -4370,7 +4369,7 @@
     "coverImage": "covers/VNL-G3XPVS.jpg",
     "dateAdded": "2026-02-26T12:04:05.017Z",
     "printed": true,
-    "cube": "10"
+    "cube": "cabinet"
   },
   {
     "artist": "Strauss, Richard",
@@ -7037,7 +7036,7 @@
     "coverImage": "covers/VNL-67GZ7Z.jpg",
     "dateAdded": "2026-05-28T23:55:43.256Z",
     "printed": false,
-    "cube": "10"
+    "cube": "cabinet"
   },
   {
     "artist": "Bach, J.S.",
@@ -7049,7 +7048,8 @@
     "coverImage": null,
     "dateAdded": "2026-05-28T23:55:43.256Z",
     "printed": true,
-    "cube": "9"
+    "cube": "9",
+    "cubeAnchor": "first"
   },
   {
     "artist": "Massenet, Jules",
@@ -7085,8 +7085,7 @@
     "coverImage": null,
     "dateAdded": "2026-05-28T23:55:43.256Z",
     "printed": true,
-    "cube": "9",
-    "cubeAnchor": "first"
+    "cube": "9"
   },
   {
     "artist": "Morricone, Ennio",
@@ -7374,7 +7373,8 @@
     "coverImage": "covers/VNL-LPUOKN.jpg",
     "dateAdded": "2026-05-28T23:55:43.256Z",
     "printed": true,
-    "cube": "10"
+    "cube": "10",
+    "cubeAnchor": "first"
   },
   {
     "artist": "Bach, J.S.",
@@ -7807,7 +7807,8 @@
     "coverImage": "covers/VNL-RNCY36.jpg",
     "dateAdded": "2026-06-27T01:24:51.183Z",
     "printed": false,
-    "cube": "9"
+    "cube": "9",
+    "cubeAnchor": "last"
   },
   {
     "artist": "Various",
@@ -9090,7 +9091,7 @@
     "genre": "Classical",
     "barcode": "VNL-LV82GZ",
     "coverImage": null,
-    "cube": "9",
+    "cube": "cabinet",
     "dateAdded": "2026-08-29T17:21:32.653Z",
     "printed": false
   },
@@ -9222,7 +9223,7 @@
     "genre": "Classical",
     "barcode": "VNL-2KYD01",
     "coverImage": null,
-    "cube": "10",
+    "cube": "cabinet",
     "dateAdded": "2026-08-29T17:29:23.145Z",
     "printed": false
   },
@@ -9236,8 +9237,7 @@
     "coverImage": null,
     "cube": "10",
     "dateAdded": "2026-08-29T17:30:16.259Z",
-    "printed": false,
-    "cubeAnchor": "first"
+    "printed": false
   },
   {
     "artist": "Bach, Johann Sebastian",
