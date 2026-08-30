@@ -828,7 +828,7 @@
     "cube": "1"
   },
   {
-    "artist": "Count Basie Orchestra",
+    "artist": "Basie, Count",
     "title": "The Count",
     "barcode": "VNL-59P5NR",
     "format": "LP",
@@ -2040,7 +2040,7 @@
     "cube": "8"
   },
   {
-    "artist": "John Lennon / Plastic Ono Band",
+    "artist": "Lennon, John / Plastic Ono Band",
     "title": "Heart Play - unfinished dialogue",
     "barcode": "VNL-P9J5KZ",
     "format": "LP",
@@ -2052,7 +2052,7 @@
     "cube": "13"
   },
   {
-    "artist": "John Lennon / Plastic Ono Band",
+    "artist": "Lennon, John / Plastic Ono Band",
     "title": "John Lennon / Plastic Ono Band",
     "barcode": "VNL-38ENM2",
     "format": "LP",
@@ -2700,7 +2700,7 @@
     "cube": "8"
   },
   {
-    "artist": "McCoy , Van",
+    "artist": "McCoy, Van",
     "title": "Rhythms of the World",
     "barcode": "VNL-ZT84WN",
     "format": "12\" Single (45RPM)",
@@ -2712,7 +2712,7 @@
     "cube": "3"
   },
   {
-    "artist": "McCoy , Van",
+    "artist": "McCoy, Van",
     "title": "The Hustle And Best Of Van McCoy",
     "barcode": "VNL-BUE6PF",
     "format": "LP",
@@ -6384,7 +6384,7 @@
     "cube": "12"
   },
   {
-    "artist": "Van McCoy",
+    "artist": "McCoy, Van",
     "title": "Van McCoy And His Magnificent Movie Machine",
     "barcode": "VNL-L2T9ZU",
     "format": "LP",
@@ -7392,18 +7392,6 @@
     "cube": "9"
   },
   {
-    "artist": "Houellebecq, Michel / Lo, Frédéric",
-    "title": "Souvenez-vous de l'Homme",
-    "barcode": "VNL-7C2NG4",
-    "format": "LP",
-    "genre": "Chanson",
-    "year": "2023",
-    "coverImage": "covers/VNL-7C2NG4.jpg",
-    "dateAdded": "2026-05-28T23:55:43.256Z",
-    "printed": true,
-    "cube": "14"
-  },
-  {
     "artist": "Lear, Amanda",
     "title": "I Am A Photograph",
     "barcode": "VNL-DZMJBN",
@@ -7632,7 +7620,7 @@
     "cube": "10"
   },
   {
-    "artist": "John Williams",
+    "artist": "Williams, John",
     "title": "Star Wars (Original Soundtrack)",
     "barcode": "VNL-2P0Z69",
     "format": "2xLP",
@@ -7644,7 +7632,7 @@
     "cube": "12"
   },
   {
-    "artist": "John Williams",
+    "artist": "Williams, John",
     "title": "Star Wars (Original Soundtrack) (copy 2)",
     "barcode": "VNL-YM90UR",
     "format": "2xLP",
@@ -8424,7 +8412,7 @@
     "cube": "7"
   },
   {
-    "artist": "Bee Gees",
+    "artist": "Bee Gees, The",
     "title": "Spirits Having Flown",
     "barcode": "VNL-GEQV9S",
     "format": "LP",
@@ -8676,7 +8664,7 @@
     "cube": "13"
   },
   {
-    "artist": "Donna Summer",
+    "artist": "Summer, Donna",
     "title": "MacArthur Park Suite",
     "barcode": "VNL-EVVH8W",
     "format": "LP",
@@ -8724,7 +8712,7 @@
     "cube": "12"
   },
   {
-    "artist": "Eagles",
+    "artist": "Eagles, The",
     "title": "Hotel California",
     "barcode": "VNL-MI01M0",
     "format": "LP",
@@ -8820,7 +8808,7 @@
     "printed": false
   },
   {
-    "artist": "Dexter Gordon",
+    "artist": "Gordon, Dexter",
     "title": "Blues Walk! (The Montmartre Collection Vol. II)",
     "year": "1974",
     "format": "LP",
@@ -8832,7 +8820,7 @@
     "printed": false
   },
   {
-    "artist": "Dexter Gordon",
+    "artist": "Gordon, Dexter",
     "title": "The Montmartre Collection Vol. 1",
     "year": "1973",
     "format": "LP",
@@ -8856,7 +8844,7 @@
     "printed": false
   },
   {
-    "artist": "Jean Michel Jarre",
+    "artist": "Jarre, Jean-Michel",
     "title": "Rendez-Vous",
     "year": "1986",
     "format": "LP",
@@ -9048,7 +9036,7 @@
     "printed": false
   },
   {
-    "artist": "Grace Jones",
+    "artist": "Jones, Grace",
     "title": "Living My Life",
     "year": "1982",
     "format": "LP",

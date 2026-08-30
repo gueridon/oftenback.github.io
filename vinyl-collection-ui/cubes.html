@@ -62,6 +62,18 @@
   table.ord td.a{font-weight:600;color:var(--ink);white-space:nowrap;}
   table.ord td.t{color:var(--muted);} table.ord td.g{color:var(--dim);font-size:11px;white-space:nowrap;}
   table.ord tr.hit td{background:rgba(227,66,52,.10);}
+  table.ord td.ck{width:1%;padding-right:10px;}
+  table.ord td.ck input{width:17px;height:17px;accent-color:var(--accent);cursor:pointer;
+    margin:0;vertical-align:middle;}
+  table.ord tr.done td.a,table.ord tr.done td.t{color:var(--dim);text-decoration:line-through;
+    text-decoration-thickness:1px;}
+  table.ord tr.done td.i,table.ord tr.done td.mm,table.ord tr.done td.g{opacity:.5;}
+  .prog{font:600 12px var(--mono);color:var(--dim);margin-left:8px;}
+  .prog b{color:var(--accent);}
+  .clr{font-size:12px;color:var(--dim);background:none;border:none;cursor:pointer;
+    text-decoration:underline;padding:0;margin-left:12px;}
+  .cell .done{position:absolute;left:6px;bottom:7px;font:700 9px var(--mono);color:var(--accent);}
+  .cell.alldone{background:rgba(45,226,104,.10);}
   table.rec{border-collapse:collapse;width:100%;font-size:13px;}
   table.rec td{padding:4px 8px 4px 0;border-bottom:1px solid var(--separator);color:var(--ink-soft);}
   table.rec td.k{color:var(--dim);font:600 11px var(--mono);white-space:nowrap;}
@@ -103,6 +115,7 @@
 
     <div class="panel">
       <h3 id="ordtitle">In order, left to right</h3>
+      <div style="margin:-4px 0 8px"><span class="prog" id="prog"></span><button class="clr" id="clr">clear this cube</button></div>
       <table class="ord" id="ord"></table>
     </div>
 
@@ -120,6 +133,16 @@ let records = await loadRecords();
 let cube = null, hitBarcode = null;
 const el = id => document.getElementById(id);
 const lpMm = () => parseFloat(el("lpmm").value) || shelf.LP_MM;
+// Ticks live in localStorage, not in vinyl.json. This is progress through a physical
+// job, not a fact about the record: it should not be published, should not sync to the
+// scanner, and should cost nothing to change. The trade is that it is per-browser --
+// tick on the phone at the shelf and the desk machine will not know.
+const DONE_KEY = "nakata.vinyl.done";
+const loadDone = () => { try { return new Set(JSON.parse(localStorage.getItem(DONE_KEY) || "[]")); }
+                         catch { return new Set(); } };
+let done = loadDone();
+const saveDone = () => localStorage.setItem(DONE_KEY, JSON.stringify([...done]));
+
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
 // ---- the wall map -----------------------------------------------------------
@@ -133,10 +156,13 @@ function drawWall() {
       const L = shelf.cubeLayout(records, c, { lpMm: lpMm() });
       const gs = [...new Set(L.items.map(i => i.record.genre))].sort().join(", ");
       const pct = Math.round(L.occupancy * 100);
-      return `<div class="cell${String(c)===String(cube)?" on":""}" data-c="${c}">
+      const nd = L.items.filter(i => done.has(i.record.barcode)).length;
+      const all = L.count > 0 && nd === L.count;
+      return `<div class="cell${String(c)===String(cube)?" on":""}${all?" alldone":""}" data-c="${c}">
         <span class="num">${c}</span>
         ${L.count ? `<span class="pin">${pct}%</span>` : ""}
         <span class="gen">${esc(gs) || "-"}</span>
+        ${nd ? `<span class="done">${all ? "done" : nd + "/" + L.count}</span>` : ""}
         <span class="bar" style="width:${Math.min(100,pct)}%"></span></div>`;
     }).join("");
     return `<div class="shelf"><div class="cap">${esc(sh.name)} <i>· ${esc(sh.note)}</i></div>
@@ -212,11 +238,26 @@ function drawDetail() {
 // this is what wall.html used to be, now folded in per cube
 function drawOrder(L) {
   el("ordtitle").textContent = `Cube ${cube} in order, left to right`;
-  el("ord").innerHTML = L.items.map(i =>
-    `<tr class="${i.record.barcode===hitBarcode?"hit":""}"><td class="i">${i.index+1}</td>` +
-    `<td class="mm">${Math.round(i.startMm)}</td><td class="a">${esc(i.record.artist||"?")}</td>` +
-    `<td class="t">${esc(i.record.title||"")}</td><td class="g">${esc(i.record.format||"")}</td></tr>`).join("")
-    || `<tr><td class="t">empty</td></tr>`;
+  const n = L.items.filter(i => done.has(i.record.barcode)).length;
+  el("prog").innerHTML = L.count ? `<b>${n}</b> of ${L.count} done` : "";
+  el("ord").innerHTML = L.items.map(i => {
+    const d = done.has(i.record.barcode);
+    return `<tr class="${i.record.barcode===hitBarcode?"hit ":""}${d?"done":""}">` +
+      `<td class="ck"><input type="checkbox" data-b="${esc(i.record.barcode)}"${d?" checked":""}></td>` +
+      `<td class="i">${i.index+1}</td><td class="mm">${Math.round(i.startMm)}</td>` +
+      `<td class="a">${esc(i.record.artist||"?")}</td>` +
+      `<td class="t">${esc(i.record.title||"")}</td><td class="g">${esc(i.record.format||"")}</td></tr>`;
+  }).join("") || `<tr><td class="t">empty</td></tr>`;
+  // Redraw only what changed: re-rendering the whole page on every tick would scroll you
+  // back to the top, which is useless when you are twenty rows down a cube.
+  el("ord").querySelectorAll("input[data-b]").forEach(cb => cb.onchange = () => {
+    cb.checked ? done.add(cb.dataset.b) : done.delete(cb.dataset.b);
+    saveDone();
+    cb.closest("tr").classList.toggle("done", cb.checked);
+    const m = L.items.filter(i => done.has(i.record.barcode)).length;
+    el("prog").innerHTML = `<b>${m}</b> of ${L.count} done`;
+    drawWall();
+  });
 }
 
 el("q").oninput = () => {
@@ -235,6 +276,14 @@ el("q").oninput = () => {
     if (a.dataset.c) cube = a.dataset.c;
     hitBarcode = a.dataset.b; draw();
   });
+};
+el("clr").onclick = () => {
+  const L = shelf.cubeLayout(records, cube, { lpMm: lpMm() });
+  const n = L.items.filter(i => done.has(i.record.barcode)).length;
+  if (!n) return;
+  if (!confirm(`Clear ${n} tick(s) on cube ${cube}?`)) return;
+  for (const i of L.items) done.delete(i.record.barcode);
+  saveDone(); draw();
 };
 el("lpmm").oninput = draw;
 el("save").onclick = async () => {
