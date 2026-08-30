@@ -48,10 +48,20 @@ export const RESERVED = {
 // OUT of the collection during the 2026-08-30 reorganisation: duplicates, and discs that
 // need a decision. Giving it a width would invite treating it as somewhere things live.
 export const OVERFLOW = 'overflow';
+// `label` is what Nicolas calls the place; `cube` is what the data stores. The cabinet
+// is the one under the turntable, so that is what it is called on screen. The note used
+// to read "box sets and the 10-inch stash" and went stale the moment the ten-inch moved
+// to cube 1 -- it is opera sets and nothing else now.
 export const ELSEWHERE = [
-  { cube: 'cabinet', label: 'Cabinet', note: 'box sets and the 10-inch stash' },
+  { cube: 'cabinet', label: 'turntable', note: 'opera sets' },
   { cube: OVERFLOW, label: 'Overflow', note: 'out of the collection: duplicates, undecided' },
 ];
+
+// One place to turn a stored location into the name for it.
+export function locationLabel(cube) {
+  const e = ELSEWHERE.find(x => String(x.cube) === String(cube));
+  return e ? e.label : `Cube ${cube}`;
+}
 
 export function innerMmFor(cube) {
   if (String(cube) === OVERFLOW) return null;      // no width: not a shelf

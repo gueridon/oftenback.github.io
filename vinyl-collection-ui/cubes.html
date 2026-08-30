@@ -194,8 +194,9 @@ function drawWall() {
         ${L.count ? `<span class="pin">${pctTxt}</span>` : ""}
         <span class="gen">${esc(e.note)}</span></div>`;
     }).join("");
-    return `<div class="shelf"><div class="cap">Elsewhere</div>
-      <div class="grid" style="grid-template-columns:repeat(2,auto)">${cells}</div></div>`;
+    // No caption: the two cells name themselves, and "Elsewhere" was a word about the
+    // layout rather than about the records.
+    return `<div class="shelf"><div class="grid" style="grid-template-columns:repeat(2,auto)">${cells}</div></div>`;
   })();
   el("wall").querySelectorAll(".cell[data-c]").forEach(d =>
     d.onclick = () => { cube = d.dataset.c; hitBarcode = null; draw(); });
@@ -219,8 +220,7 @@ function draw() {
   el("rmid").textContent = `${Math.round(L.occupiedMm)} mm used`;
   el("rmax").textContent = `${L.innerMm} mm`;
   const gs = [...new Set(L.items.map(i => i.record.format === shelf.TEN_INCH ? "10-inch" : i.record.genre))].sort().join(", ");
-  const where = String(cube) === shelf.OVERFLOW ? "Overflow"
-              : String(cube) === "cabinet" ? "Cabinet" : `Cube ${cube}`;
+  const where = shelf.locationLabel(cube);
   el("meta").innerHTML = `<b>${where}</b> · ${esc(gs) || "empty"} · <b>${L.count}</b> discs · ` +
     (L.innerMm
       ? `<b>${Math.round(L.occupiedMm)} mm</b> of ${L.innerMm} · <b>${(L.occupancy*100).toFixed(0)}%</b>`
@@ -272,7 +272,7 @@ function drawDetail() {
 function drawOrder(L) {
   const inOverflow = String(cube) === shelf.OVERFLOW;
   el("ordtitle").textContent = inOverflow ? "Overflow, alphabetical"
-    : `${String(cube)==="cabinet" ? "Cabinet" : "Cube " + cube} in order, left to right`;
+    : `${shelf.locationLabel(cube)} in order, left to right`;
   const n = L.items.filter(i => done.has(i.record.barcode)).length;
   el("prog").innerHTML = L.count ? `<b>${n}</b> of ${L.count} done` : "";
   el("ord").innerHTML = L.items.map(i => {
