@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>The Collection — edit</title>
+<title>The Collection - edit</title>
 <link rel="stylesheet" href="./nakata.css" />
 <script src="/oftenback-nav.js" defer></script>
 </head>
@@ -73,7 +73,7 @@ function startEdit(bc){const r=records.find(r=>r.barcode===bc);if(!r)return;edit
 cancelBtn.addEventListener("click",()=>{resetForm();render();});
 
 async function persist(){
-  if(!writable){downloadAsJson(records);showBanner("warn","saved as download — run `vinyl serve` locally to write to disk");return;}
+  if(!writable){downloadAsJson(records);showBanner("warn","saved as download - run `vinyl serve` locally to write to disk");return;}
   try{await saveRecords(records);showBanner("ok",`saved (${records.length} records)`);}catch(e){showBanner("err",`save failed: ${e.message}`);throw e;}
 }
 form.addEventListener("submit",async e=>{e.preventDefault();

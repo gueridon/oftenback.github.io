@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>The Collection — the wall</title>
+<title>The Collection - the wall</title>
 <link rel="stylesheet" href="./nakata.css" />
 <style>
   /* ---- the wall map: two shelves, drawn as the grids they physically are ---- */
@@ -76,7 +76,7 @@
     <div id="shell"></div>
 
     <div class="controls">
-      <input id="q" type="search" placeholder="find a disc — artist, title, barcode…" />
+      <input id="q" type="search" placeholder="find a disc - artist, title, barcode…" />
       <span class="lbl">LP mm</span>
       <input id="lpmm" type="number" step="0.1" min="2" max="8" value="4.3" style="width:66px" />
       <span class="count" id="count"></span>
@@ -136,7 +136,7 @@ function drawWall() {
       return `<div class="cell${String(c)===String(cube)?" on":""}" data-c="${c}">
         <span class="num">${c}</span>
         ${L.count ? `<span class="pin">${pct}%</span>` : ""}
-        <span class="gen">${esc(gs) || "—"}</span>
+        <span class="gen">${esc(gs) || "-"}</span>
         <span class="bar" style="width:${Math.min(100,pct)}%"></span></div>`;
     }).join("");
     return `<div class="shelf"><div class="cap">${esc(sh.name)} <i>· ${esc(sh.note)}</i></div>
@@ -153,7 +153,7 @@ function draw() {
   const L = shelf.cubeLayout(records, cube, { lpMm: lpMm() });
   const pct = v => (v / L.innerMm) * 100;
   el("cube").innerHTML = L.items.map(i => {
-    const lab = `${i.record.artist || "?"} — ${i.record.title || ""}`;
+    const lab = `${i.record.artist || "?"} - ${i.record.title || ""}`;
     return `<div class="spine${i.record.barcode===hitBarcode?" hit":""}"
       style="flex:0 0 ${pct(i.widthMm)}%" data-b="${esc(i.record.barcode)}"
       title="${esc(lab)} · ${Math.round(i.centerMm)}mm"><span class="lab">${esc(lab)}</span></div>`;
@@ -171,9 +171,9 @@ function draw() {
 }
 
 function opts(L, sel) {
-  return [`<option value="">— not set —</option>`].concat(L.items.map(i =>
+  return [`<option value="">- not set -</option>`].concat(L.items.map(i =>
     `<option value="${esc(i.record.barcode)}"${i.record.barcode===sel?" selected":""}>` +
-    `${i.index+1}. ${esc(i.record.artist||"?")} — ${esc(i.record.title||"")}</option>`)).join("");
+    `${i.index+1}. ${esc(i.record.artist||"?")} - ${esc(i.record.title||"")}</option>`)).join("");
 }
 function drawEnds(L) {
   const a = shelf.anchorsFor(records, cube);
@@ -188,7 +188,7 @@ function drawEnds(L) {
     el("recmsg").innerHTML = `<b>Ends agree.</b> Everything alphabetically between ` +
       `<b>${esc(rec.first.artist)}</b> and <b>${esc(rec.last.artist)}</b> is here, and nothing else is.`;
   } else {
-    const list = rs => rs.map(r => `<li>${esc(r.artist||"?")} — ${esc(r.title||"")} <span class="lbl">(cube ${esc(r.cube??"—")})</span></li>`).join("");
+    const list = rs => rs.map(r => `<li>${esc(r.artist||"?")} - ${esc(r.title||"")} <span class="lbl">(cube ${esc(r.cube??"-")})</span></li>`).join("");
     el("recmsg").innerHTML = `<b class="warn">Ends disagree with the tags.</b> Between ` +
       `<b>${esc(rec.first.artist)}</b> and <b>${esc(rec.last.artist)}</b> the shelf should hold ` +
       `<b>${rec.expected}</b>; <b>${rec.tagged}</b> are tagged here.` +
@@ -200,13 +200,13 @@ function drawDetail() {
   const r = records.find(x => x.barcode === hitBarcode);
   el("detailpanel").hidden = !r; if (!r) return;
   const loc = shelf.locate(records, r, { lpMm: lpMm() });
-  el("detailtitle").textContent = `${r.artist || "?"} — ${r.title || ""}`;
+  el("detailtitle").textContent = `${r.artist || "?"} - ${r.title || ""}`;
   el("detail").innerHTML = [
-    ["cube", r.cube ?? "—"],
-    ["position", loc ? `${loc.positionMm} mm from the left · ${loc.fromRightMm} mm from the end of the run` : "—"],
-    ["order", loc ? `${loc.index} of ${loc.of}` : "—"],
-    ["format", `${r.format || "—"} · ${shelf.thicknessMm(r, lpMm()).toFixed(1)} mm`],
-    ["genre", r.genre || "—"], ["year", r.year || "—"], ["barcode", r.barcode],
+    ["cube", r.cube ?? "-"],
+    ["position", loc ? `${loc.positionMm} mm from the left · ${loc.fromRightMm} mm from the end of the run` : "-"],
+    ["order", loc ? `${loc.index} of ${loc.of}` : "-"],
+    ["format", `${r.format || "-"} · ${shelf.thicknessMm(r, lpMm()).toFixed(1)} mm`],
+    ["genre", r.genre || "-"], ["year", r.year || "-"], ["barcode", r.barcode],
   ].map(([k,v]) => `<tr><td class="k">${k}</td><td>${esc(v)}</td></tr>`).join("");
 }
 // this is what wall.html used to be, now folded in per cube
@@ -228,7 +228,7 @@ el("q").oninput = () => {
     const loc = shelf.locate(records, r, { lpMm: lpMm() });
     const where = loc ? `<span class="where">cube ${loc.cube} · ${loc.positionMm} mm from the left · ${loc.index} of ${loc.of}</span>`
                       : `<span class="lbl">no cube recorded</span>`;
-    return `<div><a href="#" data-b="${esc(r.barcode)}" data-c="${esc(r.cube??"")}">${esc(r.artist||"?")} — ${esc(r.title||"")}</a> · ${where}</div>`;
+    return `<div><a href="#" data-b="${esc(r.barcode)}" data-c="${esc(r.cube??"")}">${esc(r.artist||"?")} - ${esc(r.title||"")}</a> · ${where}</div>`;
   }).join("");
   el("found").querySelectorAll("a").forEach(a => a.onclick = ev => {
     ev.preventDefault();

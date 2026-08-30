@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>The Collection — labels</title>
+<title>The Collection - labels</title>
 <link rel="stylesheet" href="./nakata.css" />
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <style>
@@ -125,7 +125,7 @@ function renderSelector(){
   const groups=groupedOrdered(visibleRecords());
   selector.innerHTML=groups.map(g=>{
     const items=g.records.map(r=>`<div class="item"><input type="checkbox" data-bc="${esc(r.barcode)}" ${selected.has(r.barcode)?"checked":""}>
-      <span class="bc">${esc(r.barcode)}</span><span>${esc(r.artist)} — ${esc(r.title)}</span>${r.printed?'<span class="pr">· printed</span>':""}</div>`).join("");
+      <span class="bc">${esc(r.barcode)}</span><span>${esc(r.artist)} - ${esc(r.title)}</span>${r.printed?'<span class="pr">· printed</span>':""}</div>`).join("");
     return `<div class="grp-head"><span>${esc(g.name)}</span><span class="gcount">${g.records.length}</span>
       <button class="gsel" data-grp="${esc(g.key)}">select group</button></div>${items}`;
   }).join("")||`<div style="padding:12px;color:var(--muted)">no matches</div>`;
@@ -153,7 +153,7 @@ selector.addEventListener("click",e=>{const btn=e.target.closest(".gsel");if(!bt
   for(const r of visibleRecords())if(genreKey(r)===btn.dataset.grp)selected.add(r.barcode);sheetStale=true;renderSelector();});
 function latestBatchDay(){let latest="";for(const r of records){const d=String(r.dateAdded||"");if(d>latest)latest=d;}return latest.slice(0,10);}
 document.getElementById("selLatestBatch").addEventListener("click",()=>{const day=latestBatchDay();
-  if(!day){statusEl.textContent="no dateAdded — can't detect the latest batch.";return;}
+  if(!day){statusEl.textContent="no dateAdded - can't detect the latest batch.";return;}
   selected.clear();for(const r of records)if(String(r.dateAdded||"").slice(0,10)===day)selected.add(r.barcode);
   sheetStale=true;q.value="";renderSelector();statusEl.textContent=`selected ${selected.size} record(s) from the latest batch (added ${day}).`;});
 document.getElementById("selUnprinted").addEventListener("click",()=>{for(const r of visibleRecords())if(!r.printed)selected.add(r.barcode);sheetStale=true;renderSelector();});

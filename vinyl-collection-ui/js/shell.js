@@ -1,4 +1,4 @@
-// shell.js — the shared Nakata masthead + nav, injected into #shell on each page.
+// shell.js - the shared Nakata masthead + nav, injected into #shell on each page.
 
 const PAGES = [
   { href: "index.html", label: "browse" },

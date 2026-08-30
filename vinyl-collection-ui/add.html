@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>The Collection — add</title>
+<title>The Collection - add</title>
 <link rel="stylesheet" href="./nakata.css" />
 <style>
   .add-intro{color:var(--dim);font-size:14px;margin:2px 0 18px;max-width:660px;line-height:1.6;}
@@ -83,13 +83,13 @@ async function identify(){
     if(!r.ok) throw new Error(await r.text());
     const {candidates} = await r.json();
     results.innerHTML = candidates.map(card).join("");
-    status.textContent = `${candidates.length} result${candidates.length===1?"":"s"} — review and add`;
+    status.textContent = `${candidates.length} result${candidates.length===1?"":"s"} - review and add`;
   }catch(e){ status.textContent = "failed: " + e.message; }
   go.disabled = false;
 }
 
 function card(c){
-  if(c.error) return `<div class="cand"><div class="err">${esc(c.source||"photo")} — ${esc(c.error)}</div></div>`;
+  if(c.error) return `<div class="cand"><div class="err">${esc(c.source||"photo")} - ${esc(c.error)}</div></div>`;
   const cov = c.cover_url ? `<img class="cov" src="${esc(c.cover_url)}" alt="">` : `<div class="cov ph">♪</div>`;
   const miss = new Set(c.missing || []);
   const inp = (f,label,val,full)=>`<label class="${full?"full":""}">${label}<input data-f="${f}" value="${esc(val||"")}" class="${miss.has(f)?"missing":""}"></label>`;
@@ -121,7 +121,7 @@ results.addEventListener("click", async e=>{
     if(!r.ok) throw new Error(await r.text());
     const res = await r.json();
     card.classList.add("added"); btn.textContent = "Added ✓";
-    status.textContent = `added ${rec.artist} — ${rec.title}  ·  ${res.records} records total`;
+    status.textContent = `added ${rec.artist} - ${rec.title}  ·  ${res.records} records total`;
   }catch(err){ btn.disabled=false; btn.textContent="Add"; alert("add failed: " + err.message); }
 });
 </script>

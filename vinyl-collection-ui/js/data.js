@@ -1,4 +1,4 @@
-// data.js — load vinyl.json and expose helpers shared across pages.
+// data.js - load vinyl.json and expose helpers shared across pages.
 
 export async function loadRecords() {
   const res = await fetch("./vinyl.json", { cache: "no-store" });

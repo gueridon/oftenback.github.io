@@ -1,4 +1,4 @@
-// save.js — persist changes via the local `vinyl serve` endpoint, or fall back
+// save.js - persist changes via the local `vinyl serve` endpoint, or fall back
 // to a JSON download when viewed on the read-only static host.
 
 export async function saveRecords(records) {

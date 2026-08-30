@@ -1,4 +1,4 @@
-// shelf.js — where a disc physically sits inside its cube.
+// shelf.js - where a disc physically sits inside its cube.
 //
 // Two facts underpin this, both discovered from the data on 2026-08-29 rather than
 // assumed, and both load-bearing:
@@ -40,7 +40,7 @@ export const WALL = [
 // Cubes that hold no records, and why.
 export const RESERVED = {
   15: 'computer / server',
-  16: 'free — growth space',
+  16: 'free - growth space',
 };
 
 export function innerMmFor(cube) {
