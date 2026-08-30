@@ -373,18 +373,6 @@
     "cube": "14"
   },
   {
-    "artist": "Berg, Alan",
-    "title": "Wozzeck",
-    "barcode": "VNL-7SDH8T",
-    "format": "Box",
-    "genre": "Classical",
-    "year": "1967",
-    "coverImage": "covers/VNL-7SDH8T.jpg",
-    "dateAdded": "2026-02-26T11:58:02.292Z",
-    "printed": true,
-    "cube": "cabinet"
-  },
-  {
     "artist": "Berlioz, Hector",
     "title": "Symphonie Fantastique - Daniel Barenboim",
     "barcode": "VNL-2KQU6F",
@@ -407,18 +395,6 @@
     "dateAdded": "2026-02-01T00:00:00.000Z",
     "printed": true,
     "cube": "9"
-  },
-  {
-    "artist": "Bizet, Georges",
-    "title": "Carmen",
-    "barcode": "VNL-ZWT2XS",
-    "format": "Box",
-    "genre": "Classical",
-    "year": "1978",
-    "coverImage": "covers/VNL-ZWT2XS.jpg",
-    "dateAdded": "2026-02-26T11:59:55.828Z",
-    "printed": true,
-    "cube": "cabinet"
   },
   {
     "artist": "Black Sun",
@@ -1648,18 +1624,6 @@
   },
   {
     "artist": "Glass, Philip",
-    "title": "Akhnaten",
-    "barcode": "VNL-UUTQ42",
-    "format": "Box",
-    "genre": "Contemporary",
-    "year": "1987",
-    "coverImage": "covers/VNL-UUTQ42.jpg",
-    "dateAdded": "2026-02-01T00:00:00.000Z",
-    "printed": true,
-    "cube": "cabinet"
-  },
-  {
-    "artist": "Glass, Philip",
     "title": "Koyaanisqatsi",
     "barcode": "VNL-ZAFQQC",
     "format": "LP",
@@ -2631,18 +2595,6 @@
     "cube": "7"
   },
   {
-    "artist": "Massenet, Jules",
-    "title": "Thais",
-    "barcode": "VNL-RKSFN2",
-    "format": "Box",
-    "genre": "Classical",
-    "year": "1952",
-    "coverImage": "covers/VNL-RKSFN2.jpg",
-    "dateAdded": "2026-02-26T11:59:12.635Z",
-    "printed": true,
-    "cube": "cabinet"
-  },
-  {
     "artist": "Mauriat, Paul",
     "title": "Blooming Hits",
     "barcode": "VNL-F3ZTSA",
@@ -2956,18 +2908,6 @@
     "cube": "14"
   },
   {
-    "artist": "Mozart, Wolfgang Amadeus",
-    "title": "Die Zauberflote",
-    "barcode": "VNL-29FVUL",
-    "format": "Box",
-    "genre": "Classical",
-    "year": "1965",
-    "coverImage": "covers/VNL-29FVUL.jpg",
-    "dateAdded": "2026-02-26T12:01:05.458Z",
-    "printed": true,
-    "cube": "cabinet"
-  },
-  {
     "artist": "Munich Machine",
     "title": "Munich Machine",
     "barcode": "VNL-H8MBYM",
@@ -2990,18 +2930,6 @@
     "dateAdded": "2026-02-01T00:00:00.000Z",
     "printed": true,
     "cube": "4"
-  },
-  {
-    "artist": "Mussorgsky, Modest",
-    "title": "Boris Godounov",
-    "barcode": "VNL-LSWG9M",
-    "format": "Box",
-    "genre": "Classical",
-    "year": "1977",
-    "coverImage": "covers/VNL-LSWG9M.jpg",
-    "dateAdded": "2026-02-26T11:57:08.202Z",
-    "printed": true,
-    "cube": "cabinet"
   },
   {
     "artist": "New Order",
@@ -3080,7 +3008,7 @@
     "title": "La Périchole",
     "barcode": "VNL-XT93HC",
     "format": "LP",
-    "genre": "Classical",
+    "genre": "Opera",
     "year": "1957",
     "coverImage": "covers/VNL-XT93HC.jpg",
     "dateAdded": "2026-04-01T11:01:46.607Z",
@@ -3641,37 +3569,13 @@
   },
   {
     "artist": "Puccini, Giacomo",
-    "title": "Il Tabarro",
-    "barcode": "VNL-VL3FW9",
-    "format": "Box",
-    "genre": "Classical",
-    "year": "1962",
-    "coverImage": "covers/VNL-VL3FW9.jpg",
-    "dateAdded": "2026-02-26T12:03:22.748Z",
-    "printed": true,
-    "cube": "cabinet"
-  },
-  {
-    "artist": "Puccini, Giacomo",
     "title": "Madama Butterfly",
     "barcode": "VNL-5XA5AA",
     "format": "LP",
-    "genre": "Classical",
+    "genre": "Opera",
     "year": "1978",
     "coverImage": "covers/VNL-5XA5AA.jpg",
     "dateAdded": "2026-02-01T00:00:00.000Z",
-    "printed": true,
-    "cube": "cabinet"
-  },
-  {
-    "artist": "Puccini, Giacomo",
-    "title": "Suor Angelica",
-    "barcode": "VNL-FNLSZX",
-    "format": "Box",
-    "genre": "Classical",
-    "year": "1962",
-    "coverImage": "covers/VNL-FNLSZX.jpg",
-    "dateAdded": "2026-02-26T12:02:09.270Z",
     "printed": true,
     "cube": "cabinet"
   },
@@ -3680,7 +3584,7 @@
     "title": "Dido and Aeneas",
     "barcode": "VNL-U9EA7M",
     "format": "LP",
-    "genre": "Classical",
+    "genre": "Opera",
     "year": "1985",
     "coverImage": "covers/VNL-U9EA7M.jpg",
     "dateAdded": "2026-02-01T00:00:00.000Z",
@@ -4241,42 +4145,6 @@
   },
   {
     "artist": "Strauss, Richard",
-    "title": "Arabella",
-    "barcode": "VNL-GGKM8K",
-    "format": "Box",
-    "genre": "Classical",
-    "year": "1969",
-    "coverImage": "covers/VNL-GGKM8K.jpg",
-    "dateAdded": "2026-02-26T11:54:38.187Z",
-    "printed": true,
-    "cube": "cabinet"
-  },
-  {
-    "artist": "Strauss, Richard",
-    "title": "Ariadne Auf Naxos",
-    "barcode": "VNL-9LBNJA",
-    "format": "Box",
-    "genre": "Classical",
-    "year": "1960",
-    "coverImage": "covers/VNL-9LBNJA.jpg",
-    "dateAdded": "2026-02-26T11:53:48.348Z",
-    "printed": true,
-    "cube": "cabinet"
-  },
-  {
-    "artist": "Strauss, Richard",
-    "title": "Capriccio",
-    "barcode": "VNL-3M2VR4",
-    "format": "Box",
-    "genre": "Classical",
-    "year": "1972",
-    "coverImage": "covers/VNL-3M2VR4.jpg",
-    "dateAdded": "2026-02-01T00:00:00.000Z",
-    "printed": true,
-    "cube": "cabinet"
-  },
-  {
-    "artist": "Strauss, Richard",
     "title": "Death And Transfiguration - Jascha Horenstein",
     "barcode": "VNL-8SAUXH",
     "format": "LP",
@@ -4298,18 +4166,6 @@
     "dateAdded": "2026-02-01T00:00:00.000Z",
     "printed": true,
     "cube": "10"
-  },
-  {
-    "artist": "Strauss, Richard",
-    "title": "Elektra",
-    "barcode": "VNL-KN52PD",
-    "format": "Box",
-    "genre": "Classical",
-    "year": "1967",
-    "coverImage": "covers/VNL-KN52PD.jpg",
-    "dateAdded": "2026-02-26T11:55:22.421Z",
-    "printed": true,
-    "cube": "cabinet"
   },
   {
     "artist": "Strauss, Richard",
@@ -4358,18 +4214,6 @@
     "dateAdded": "2026-04-01T10:59:47.345Z",
     "printed": true,
     "cube": "10"
-  },
-  {
-    "artist": "Strauss, Richard",
-    "title": "Salome",
-    "barcode": "VNL-G3XPVS",
-    "format": "Box",
-    "genre": "Classical",
-    "year": "1978",
-    "coverImage": "covers/VNL-G3XPVS.jpg",
-    "dateAdded": "2026-02-26T12:04:05.017Z",
-    "printed": true,
-    "cube": "cabinet"
   },
   {
     "artist": "Strauss, Richard",
@@ -6883,42 +6727,6 @@
     "cube": "11"
   },
   {
-    "artist": "Strauss, Richard",
-    "title": "Der Rosenkavalier",
-    "barcode": "VNL-VP1SZF",
-    "format": "Box",
-    "genre": "Classical",
-    "year": "1956",
-    "coverImage": "covers/VNL-VP1SZF.jpg",
-    "dateAdded": "2026-05-28T23:55:43.256Z",
-    "printed": false,
-    "cube": "cabinet"
-  },
-  {
-    "artist": "Strauss, Richard",
-    "title": "Die Frau Ohne Schatten",
-    "barcode": "VNL-LS0XV6",
-    "format": "Box",
-    "genre": "Classical",
-    "year": "1977",
-    "coverImage": "covers/VNL-LS0XV6.jpg",
-    "dateAdded": "2026-05-28T23:55:43.256Z",
-    "printed": false,
-    "cube": "cabinet"
-  },
-  {
-    "artist": "Glass, Philip",
-    "title": "Satyagraha",
-    "barcode": "VNL-4LTRFH",
-    "format": "Box",
-    "genre": "Contemporary",
-    "year": "1985",
-    "coverImage": "covers/VNL-4LTRFH.jpg",
-    "dateAdded": "2026-05-28T23:55:43.256Z",
-    "printed": false,
-    "cube": "cabinet"
-  },
-  {
     "artist": "Telemann, Georg Philipp",
     "title": "Thirty-six Fantasias for Harpsichord (Complete)",
     "barcode": "VNL-MOY712",
@@ -6929,90 +6737,6 @@
     "dateAdded": "2026-05-28T23:55:43.256Z",
     "printed": true,
     "cube": "10"
-  },
-  {
-    "artist": "Bellini, Vincenzo",
-    "title": "I Puritani",
-    "barcode": "VNL-JWSNQB",
-    "format": "Box",
-    "genre": "Classical",
-    "year": null,
-    "coverImage": "covers/VNL-JWSNQB.jpg",
-    "dateAdded": "2026-05-28T23:55:43.256Z",
-    "printed": false,
-    "cube": "cabinet"
-  },
-  {
-    "artist": "Gilbert & Sullivan",
-    "title": "H.M.S. Pinafore",
-    "barcode": "VNL-6L34NM",
-    "format": "Box",
-    "genre": "Classical",
-    "year": null,
-    "coverImage": null,
-    "dateAdded": "2026-05-28T23:55:43.256Z",
-    "printed": false,
-    "cube": "cabinet"
-  },
-  {
-    "artist": "Verdi, Giuseppe",
-    "title": "Macbeth",
-    "barcode": "VNL-YJTDVX",
-    "format": "Box",
-    "genre": "Classical",
-    "year": "1976",
-    "coverImage": "covers/VNL-YJTDVX.jpg",
-    "dateAdded": "2026-05-28T23:55:43.256Z",
-    "printed": false,
-    "cube": "cabinet"
-  },
-  {
-    "artist": "Donizetti, Gaetano",
-    "title": "Lucia di Lammermoor",
-    "barcode": "VNL-SHH0T2",
-    "format": "Box",
-    "genre": "Classical",
-    "year": null,
-    "coverImage": "covers/VNL-SHH0T2.jpg",
-    "dateAdded": "2026-05-28T23:55:43.256Z",
-    "printed": false,
-    "cube": "cabinet"
-  },
-  {
-    "artist": "Stravinsky, Igor",
-    "title": "The Rake's Progress",
-    "barcode": "VNL-BHQ4O0",
-    "format": "Box",
-    "genre": "Classical",
-    "year": "1984",
-    "coverImage": "covers/VNL-BHQ4O0.jpg",
-    "dateAdded": "2026-05-28T23:55:43.256Z",
-    "printed": false,
-    "cube": "cabinet"
-  },
-  {
-    "artist": "Puccini, Giacomo",
-    "title": "Le Villi",
-    "barcode": "VNL-2YDR7X",
-    "format": "Box",
-    "genre": "Classical",
-    "year": null,
-    "coverImage": "covers/VNL-2YDR7X.jpg",
-    "dateAdded": "2026-05-28T23:55:43.256Z",
-    "printed": false,
-    "cube": "cabinet"
-  },
-  {
-    "artist": "Puccini, Giacomo",
-    "title": "Manon Lescaut",
-    "barcode": "VNL-D9Z13T",
-    "format": "Box",
-    "genre": "Classical",
-    "year": null,
-    "coverImage": "covers/VNL-D9Z13T.jpg",
-    "dateAdded": "2026-05-28T23:55:43.256Z",
-    "printed": false,
-    "cube": "cabinet"
   },
   {
     "artist": "Chopin, Frédéric",
@@ -7027,18 +6751,6 @@
     "cube": "9"
   },
   {
-    "artist": "Strauss, Richard",
-    "title": "Feuersnot",
-    "barcode": "VNL-67GZ7Z",
-    "format": "Box",
-    "genre": "Classical",
-    "year": null,
-    "coverImage": "covers/VNL-67GZ7Z.jpg",
-    "dateAdded": "2026-05-28T23:55:43.256Z",
-    "printed": false,
-    "cube": "cabinet"
-  },
-  {
     "artist": "Bach, Johann Sebastian",
     "title": "Suites for Orchestra BWV 1066-1069",
     "barcode": "VNL-7EWJYD",
@@ -7050,30 +6762,6 @@
     "printed": true,
     "cube": "9",
     "cubeAnchor": "first"
-  },
-  {
-    "artist": "Massenet, Jules",
-    "title": "Le Cid",
-    "barcode": "VNL-UBXM1L",
-    "format": "Box",
-    "genre": "Classical",
-    "year": null,
-    "coverImage": "covers/VNL-UBXM1L.jpg",
-    "dateAdded": "2026-05-28T23:55:43.256Z",
-    "printed": false,
-    "cube": "cabinet"
-  },
-  {
-    "artist": "Offenbach, Jacques",
-    "title": "La Belle Hélène",
-    "barcode": "VNL-XXMY4B",
-    "format": "Box",
-    "genre": "Classical",
-    "year": null,
-    "coverImage": "covers/VNL-XXMY4B.jpg",
-    "dateAdded": "2026-05-28T23:55:43.256Z",
-    "printed": false,
-    "cube": "cabinet"
   },
   {
     "artist": "Bach, Johann Sebastian",
@@ -7664,30 +7352,6 @@
     "dateAdded": "2026-05-28T23:55:43.257Z",
     "printed": false,
     "cube": "overflow"
-  },
-  {
-    "artist": "Offenbach, Jacques",
-    "title": "La Périchole (1959 EMI Pathe / Markevitch)",
-    "barcode": "VNL-3V3LXS",
-    "format": "Box",
-    "genre": "Classical",
-    "year": "1959",
-    "coverImage": null,
-    "dateAdded": "2026-05-28T23:55:43.257Z",
-    "printed": false,
-    "cube": "cabinet"
-  },
-  {
-    "artist": "Bizet, Georges",
-    "title": "Carmen (Solti / London OSA 13115)",
-    "barcode": "VNL-NWJRLD",
-    "format": "Box",
-    "genre": "Classical",
-    "year": "1976",
-    "coverImage": "covers/VNL-NWJRLD.jpg",
-    "dateAdded": "2026-05-28T23:55:43.257Z",
-    "printed": false,
-    "cube": "cabinet"
   },
   {
     "artist": "Lennon, John / Plastic Ono Band",
@@ -9084,18 +8748,6 @@
     "printed": false
   },
   {
-    "artist": "Mozart, Wolfgang Amadeus",
-    "title": "Cosi Fan Tutte (Complete) - Leinsdorf / New Philharmonia Orchestra",
-    "year": "1968",
-    "format": "Box",
-    "genre": "Classical",
-    "barcode": "VNL-LV82GZ",
-    "coverImage": null,
-    "cube": "cabinet",
-    "dateAdded": "2026-08-29T17:21:32.653Z",
-    "printed": false
-  },
-  {
     "artist": "Dowland, John",
     "title": "Lachrimae or Seaven Teares and Fourteen Other Dances - Muller-Dombois / Viola da gamba Quintet",
     "year": "1968",
@@ -9213,18 +8865,6 @@
     "coverImage": "covers/VNL-V9BFDW.jpg",
     "cube": "13",
     "dateAdded": "2026-08-29T17:26:43.778Z",
-    "printed": false
-  },
-  {
-    "artist": "Offenbach, Jacques",
-    "title": "Pomme d'Api - Koch / Les Solistes de Liege",
-    "year": "1983",
-    "format": "Box",
-    "genre": "Classical",
-    "barcode": "VNL-2KYD01",
-    "coverImage": null,
-    "cube": "cabinet",
-    "dateAdded": "2026-08-29T17:29:23.145Z",
     "printed": false
   },
   {

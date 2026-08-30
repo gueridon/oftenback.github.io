@@ -116,7 +116,7 @@ export function shelfKey(record) {
 // the wall does.
 export const GENRE_ORDER = [
   'Disco', 'Electronic', 'Funk / Soul', 'Synth Pop', 'Easy Listening',
-  'Classical', 'Jazz', 'Contemporary', 'Soundtrack', 'Pop/Rock',
+  'Classical', 'Opera', 'Jazz', 'Contemporary', 'Soundtrack', 'Pop/Rock',
   'Chanson', 'Folk', 'Others', 'World',
 ];
 const genreRank = g => {
