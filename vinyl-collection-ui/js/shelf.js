@@ -43,7 +43,18 @@ export const RESERVED = {
   16: 'free - growth space',
 };
 
+// Places that are not cubes on the wall. The cabinet has a measured width; OVERFLOW
+// deliberately has none, because it is not a shelf -- it is the pile of records that came
+// OUT of the collection during the 2026-08-30 reorganisation: duplicates, and discs that
+// need a decision. Giving it a width would invite treating it as somewhere things live.
+export const OVERFLOW = 'overflow';
+export const ELSEWHERE = [
+  { cube: 'cabinet', label: 'Cabinet', note: 'box sets and the 10-inch stash' },
+  { cube: OVERFLOW, label: 'Overflow', note: 'out of the collection: duplicates, undecided' },
+];
+
 export function innerMmFor(cube) {
+  if (String(cube) === OVERFLOW) return null;      // no width: not a shelf
   return String(cube) === 'cabinet' ? CABINET_INNER_MM : CUBE_INNER_MM;
 }
 export const LP_MM = 4.3;
@@ -156,7 +167,7 @@ export function cubeLayout(records, cube, opts = {}) {
     occupiedMm: x,
     innerMm,
     occupancy: innerMm ? x / innerMm : 0,
-    overfull: x > innerMm,
+    overfull: innerMm ? x > innerMm : false,
   };
 }
 
@@ -219,6 +230,16 @@ export function reconcile(records, cube, opts = {}) {
 // Set or clear an anchor, returning a NEW records array. Only one first and one last
 // per cube: setting either clears any previous holder in that cube, so the data cannot
 // drift into two firsts.
+// Move a record to another location (a cube, the cabinet, or overflow). Clears any end
+// anchor it held, since an anchor is a statement about a cube it is leaving.
+export function setLocation(records, barcode, cube) {
+  return records.map(r => {
+    if (r.barcode !== barcode) return r;
+    const { cubeAnchor, ...rest } = r;
+    return { ...rest, cube: String(cube) };
+  });
+}
+
 export function setAnchor(records, cube, which, barcode) {
   return records.map(r => {
     const inThisCube = String(r.cube ?? '') === String(cube);

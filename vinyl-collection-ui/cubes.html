@@ -74,6 +74,16 @@
     text-decoration:underline;padding:0;margin-left:12px;}
   .cell .done{position:absolute;left:6px;bottom:7px;font:700 9px var(--mono);color:var(--accent);}
   .cell.alldone{background:rgba(45,226,104,.10);}
+  .cell.wide{width:150px;}
+  .cell.ovf{background:repeating-linear-gradient(45deg,transparent,transparent 5px,
+    rgba(227,66,52,.10) 5px,rgba(227,66,52,.10) 10px);}
+  table.ord td.mv{width:1%;padding-left:4px;}
+  table.ord td.mv button{font:600 10px var(--mono);color:var(--dim);background:none;
+    border:1px solid var(--separator);border-radius:4px;padding:2px 6px;cursor:pointer;}
+  table.ord td.mv button:hover{color:var(--on-accent);background:var(--accent);
+    border-color:var(--accent);}
+  .bulk{font-size:12px;color:var(--dim);background:none;border:none;cursor:pointer;
+    text-decoration:underline;padding:0;margin-left:12px;}
   table.rec{border-collapse:collapse;width:100%;font-size:13px;}
   table.rec td{padding:4px 8px 4px 0;border-bottom:1px solid var(--separator);color:var(--ink-soft);}
   table.rec td.k{color:var(--dim);font:600 11px var(--mono);white-space:nowrap;}
@@ -115,7 +125,7 @@
 
     <div class="panel">
       <h3 id="ordtitle">In order, left to right</h3>
-      <div style="margin:-4px 0 8px"><span class="prog" id="prog"></span><button class="clr" id="clr">clear this cube</button></div>
+      <div style="margin:-4px 0 8px"><span class="prog" id="prog"></span><button class="clr" id="clr">clear this cube</button><button class="bulk" id="bulkovf">move unticked to overflow</button></div>
       <table class="ord" id="ord"></table>
     </div>
 
@@ -167,7 +177,20 @@ function drawWall() {
     }).join("");
     return `<div class="shelf"><div class="cap">${esc(sh.name)} <i>· ${esc(sh.note)}</i></div>
       <div class="grid" style="grid-template-columns:repeat(${cols},auto)">${cells}</div></div>`;
-  }).join("");
+  }).join("") + (() => {
+    // Not on the wall: the cabinet, and the overflow pile. Shown here so they are
+    // reachable and countable rather than only findable by search.
+    const cells = shelf.ELSEWHERE.map(e => {
+      const L = shelf.cubeLayout(records, e.cube, { lpMm: lpMm() });
+      const pctTxt = L.innerMm ? `${Math.round(L.occupancy*100)}%` : `${L.count}`;
+      return `<div class="cell wide${e.cube===shelf.OVERFLOW?" ovf":""}${String(e.cube)===String(cube)?" on":""}" data-c="${e.cube}">
+        <span class="num">${esc(e.label)}</span>
+        ${L.count ? `<span class="pin">${pctTxt}</span>` : ""}
+        <span class="gen">${esc(e.note)}</span></div>`;
+    }).join("");
+    return `<div class="shelf"><div class="cap">Elsewhere</div>
+      <div class="grid" style="grid-template-columns:repeat(2,auto)">${cells}</div></div>`;
+  })();
   el("wall").querySelectorAll(".cell[data-c]").forEach(d =>
     d.onclick = () => { cube = d.dataset.c; hitBarcode = null; draw(); });
 }
@@ -190,9 +213,13 @@ function draw() {
   el("rmid").textContent = `${Math.round(L.occupiedMm)} mm used`;
   el("rmax").textContent = `${L.innerMm} mm`;
   const gs = [...new Set(L.items.map(i => i.record.genre))].sort().join(", ");
-  el("meta").innerHTML = `<b>Cube ${cube}</b> · ${esc(gs) || "empty"} · <b>${L.count}</b> discs · ` +
-    `<b>${Math.round(L.occupiedMm)} mm</b> of ${L.innerMm} · <b>${(L.occupancy*100).toFixed(0)}%</b>` +
-    (L.overfull ? ` · <span class="warn">over ${L.innerMm} mm</span>` : "");
+  const where = String(cube) === shelf.OVERFLOW ? "Overflow"
+              : String(cube) === "cabinet" ? "Cabinet" : `Cube ${cube}`;
+  el("meta").innerHTML = `<b>${where}</b> · ${esc(gs) || "empty"} · <b>${L.count}</b> discs · ` +
+    (L.innerMm
+      ? `<b>${Math.round(L.occupiedMm)} mm</b> of ${L.innerMm} · <b>${(L.occupancy*100).toFixed(0)}%</b>`
+        + (L.overfull ? ` · <span class="warn">over ${L.innerMm} mm</span>` : "")
+      : `<b>${Math.round(L.occupiedMm)} mm</b> of spine, no fixed width`);
   drawEnds(L); drawDetail(); drawOrder(L);
 }
 
@@ -237,7 +264,9 @@ function drawDetail() {
 }
 // this is what wall.html used to be, now folded in per cube
 function drawOrder(L) {
-  el("ordtitle").textContent = `Cube ${cube} in order, left to right`;
+  const inOverflow = String(cube) === shelf.OVERFLOW;
+  el("ordtitle").textContent = inOverflow ? "Overflow, alphabetical"
+    : `${String(cube)==="cabinet" ? "Cabinet" : "Cube " + cube} in order, left to right`;
   const n = L.items.filter(i => done.has(i.record.barcode)).length;
   el("prog").innerHTML = L.count ? `<b>${n}</b> of ${L.count} done` : "";
   el("ord").innerHTML = L.items.map(i => {
@@ -246,8 +275,10 @@ function drawOrder(L) {
       `<td class="ck"><input type="checkbox" data-b="${esc(i.record.barcode)}"${d?" checked":""}></td>` +
       `<td class="i">${i.index+1}</td><td class="mm">${Math.round(i.startMm)}</td>` +
       `<td class="a">${esc(i.record.artist||"?")}</td>` +
-      `<td class="t">${esc(i.record.title||"")}</td><td class="g">${esc(i.record.format||"")}</td></tr>`;
+      `<td class="t">${esc(i.record.title||"")}</td><td class="g">${esc(i.record.format||"")}</td>` +
+      `<td class="mv"><button data-mv="${esc(i.record.barcode)}">${inOverflow ? "shelve" : "overflow"}</button></td></tr>`;
   }).join("") || `<tr><td class="t">empty</td></tr>`;
+  el("ord").querySelectorAll("button[data-mv]").forEach(b => b.onclick = () => move(b.dataset.mv));
   // Redraw only what changed: re-rendering the whole page on every tick would scroll you
   // back to the top, which is useless when you are twenty rows down a cube.
   el("ord").querySelectorAll("input[data-b]").forEach(cb => cb.onchange = () => {
@@ -277,6 +308,41 @@ el("q").oninput = () => {
     hitBarcode = a.dataset.b; draw();
   });
 };
+// Moving to overflow is a write to the collection, unlike a tick. Coming back, the
+// record returns to wherever its genre now says it belongs rather than where it was,
+// because the wall may have changed while it sat in the pile.
+async function move(barcode, to) {
+  const r = records.find(x => x.barcode === barcode);
+  if (!r) return;
+  const out = String(r.cube) !== shelf.OVERFLOW;
+  let dest = to;
+  if (!dest) {
+    if (out) dest = shelf.OVERFLOW;
+    else {
+      const cubes = shelf.cubeList(records).filter(c => /^\d+$/.test(c));
+      const same = records.filter(x => x.genre === r.genre && /^\d+$/.test(String(x.cube)));
+      dest = same.length ? String(Math.min(...same.map(x => +x.cube))) : (cubes[0] || "1");
+      if (!confirm(`Shelve "${r.artist} - ${r.title}" back into cube ${dest}?`)) return;
+    }
+  }
+  const next = shelf.setLocation(records, barcode, dest);
+  try { await saveRecords(next); records = next; hitBarcode = null; draw(); }
+  catch (e) { alert(`not saved: ${e.message}`); }
+}
+
+el("bulkovf").onclick = async () => {
+  const L = shelf.cubeLayout(records, cube, { lpMm: lpMm() });
+  const un = L.items.filter(i => !done.has(i.record.barcode)).map(i => i.record);
+  if (!un.length) { alert("everything here is ticked"); return; }
+  const names = un.slice(0, 12).map(r => `  ${r.artist} - ${r.title}`).join("\n");
+  if (!confirm(`Move ${un.length} UNTICKED record(s) out of cube ${cube} into overflow?\n\n`
+    + names + (un.length > 12 ? `\n  ... and ${un.length - 12} more` : ""))) return;
+  let next = records;
+  for (const r of un) next = shelf.setLocation(next, r.barcode, shelf.OVERFLOW);
+  try { await saveRecords(next); records = next; draw(); }
+  catch (e) { alert(`not saved: ${e.message}`); }
+};
+
 el("clr").onclick = () => {
   const L = shelf.cubeLayout(records, cube, { lpMm: lpMm() });
   const n = L.items.filter(i => done.has(i.record.barcode)).length;
