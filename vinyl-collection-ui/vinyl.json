@@ -982,7 +982,7 @@
     "coverImage": "covers/VNL-WEKLAY.jpg",
     "dateAdded": "2026-02-01T00:00:00.000Z",
     "printed": true,
-    "cube": "14"
+    "cube": "overflow"
   },
   {
     "artist": "Delerm, Vincent",
@@ -1462,7 +1462,7 @@
     "coverImage": "covers/VNL-M4MV4E.jpg",
     "dateAdded": "2026-02-01T00:00:00.000Z",
     "printed": true,
-    "cube": "7"
+    "cube": "overflow"
   },
   {
     "artist": "Flack, Roberta",
@@ -1656,7 +1656,7 @@
     "coverImage": "covers/VNL-UUTQ42.jpg",
     "dateAdded": "2026-02-01T00:00:00.000Z",
     "printed": true,
-    "cube": "11"
+    "cube": "cabinet"
   },
   {
     "artist": "Glass, Philip",
@@ -1992,7 +1992,7 @@
     "coverImage": "covers/VNL-BD9MQ8.jpg",
     "dateAdded": "2026-02-01T00:00:00.000Z",
     "printed": true,
-    "cube": "3"
+    "cube": "overflow"
   },
   {
     "artist": "Jackson, Michael",
@@ -2544,7 +2544,7 @@
     "coverImage": "covers/VNL-BKRD43.jpg",
     "dateAdded": "2026-02-01T00:00:00.000Z",
     "printed": true,
-    "cube": "3"
+    "cube": "overflow"
   },
   {
     "artist": "Malcolm McLaren & The Bootzilla Orchestra",
@@ -3181,7 +3181,7 @@
     "coverImage": "covers/VNL-3439SX.jpg",
     "dateAdded": "2026-02-01T00:00:00.000Z",
     "printed": true,
-    "cube": "8"
+    "cube": "overflow"
   },
   {
     "artist": "Pet Shop Boys",
@@ -3253,7 +3253,7 @@
     "coverImage": "covers/VNL-FCN7L9.jpg",
     "dateAdded": "2026-02-01T00:00:00.000Z",
     "printed": true,
-    "cube": "8"
+    "cube": "overflow"
   },
   {
     "artist": "Pet Shop Boys",
@@ -3337,7 +3337,7 @@
     "coverImage": "covers/VNL-925J2N.jpg",
     "dateAdded": "2026-02-25T00:08:07.621Z",
     "printed": true,
-    "cube": "8"
+    "cube": "overflow"
   },
   {
     "artist": "Pet Shop Boys",
@@ -3443,18 +3443,6 @@
     "genre": "Synth Pop",
     "year": "1986",
     "coverImage": "covers/VNL-VV8DZE.jpg",
-    "dateAdded": "2026-02-01T00:00:00.000Z",
-    "printed": true,
-    "cube": "8"
-  },
-  {
-    "artist": "Pet Shop Boys",
-    "title": "Please",
-    "barcode": "VNL-KAXJ4W",
-    "format": "LP",
-    "genre": "Synth Pop",
-    "year": "1986",
-    "coverImage": "covers/VNL-KAXJ4W.jpg",
     "dateAdded": "2026-02-01T00:00:00.000Z",
     "printed": true,
     "cube": "8"
@@ -4117,7 +4105,7 @@
     "coverImage": "covers/VNL-XTJ95Q.jpg",
     "dateAdded": "2026-02-01T00:00:00.000Z",
     "printed": true,
-    "cube": "14"
+    "cube": "overflow"
   },
   {
     "artist": "Stevens, Cat",
@@ -4621,7 +4609,7 @@
     "coverImage": "covers/VNL-PYAWSU.jpg",
     "dateAdded": "2026-02-01T00:00:00.000Z",
     "printed": true,
-    "cube": "4"
+    "cube": "overflow"
   },
   {
     "artist": "Summer, Donna",
@@ -4778,7 +4766,7 @@
     "coverImage": "covers/VNL-9ZYCDL.jpg",
     "dateAdded": "2026-02-01T00:00:00.000Z",
     "printed": true,
-    "cube": "5"
+    "cube": "overflow"
   },
   {
     "artist": "Sylvester",
@@ -4826,7 +4814,7 @@
     "coverImage": "covers/VNL-XR9FSK.jpg",
     "dateAdded": "2026-02-01T00:00:00.000Z",
     "printed": true,
-    "cube": "5"
+    "cube": "overflow"
   },
   {
     "artist": "Sylvester",
@@ -4838,7 +4826,7 @@
     "coverImage": "covers/VNL-NKG43W.jpg",
     "dateAdded": "2026-02-01T00:00:00.000Z",
     "printed": true,
-    "cube": "5"
+    "cube": "overflow"
   },
   {
     "artist": "Sylvester",
@@ -4862,7 +4850,7 @@
     "coverImage": "covers/VNL-B9GYVU.jpg",
     "dateAdded": "2026-02-01T00:00:00.000Z",
     "printed": true,
-    "cube": "5"
+    "cube": "overflow"
   },
   {
     "artist": "T.S. Eliot",
@@ -5738,7 +5726,7 @@
     "coverImage": "covers/VNL-QF2PZP.jpg",
     "dateAdded": "2026-02-01T00:00:00.000Z",
     "printed": true,
-    "cube": "12"
+    "cube": "overflow"
   },
   {
     "artist": "Various",
@@ -5865,12 +5853,12 @@
     "title": "Russian Balalaika",
     "barcode": "VNL-UXHD2E",
     "format": "LP",
-    "genre": "Folk",
+    "genre": "Classical",
     "year": "1969",
     "coverImage": "covers/VNL-UXHD2E.jpg",
     "dateAdded": "2026-02-26T12:26:10.127Z",
     "printed": true,
-    "cube": "14"
+    "cube": "10"
   },
   {
     "artist": "Various",
@@ -7672,7 +7660,7 @@
     "coverImage": "covers/VNL-3SW8C4.jpg",
     "dateAdded": "2026-05-28T23:55:43.257Z",
     "printed": false,
-    "cube": "7"
+    "cube": "overflow"
   },
   {
     "artist": "Offenbach, Jacques",
@@ -7948,7 +7936,7 @@
     "coverImage": "covers/VNL-ZDKGLH.jpg",
     "dateAdded": "2026-06-27T01:24:51.183Z",
     "printed": false,
-    "cube": "6"
+    "cube": "overflow"
   },
   {
     "artist": "Young, John Paul",
@@ -8116,7 +8104,7 @@
     "coverImage": "covers/VNL-HWA5QJ.jpg",
     "dateAdded": "2026-06-27T01:24:51.183Z",
     "printed": false,
-    "cube": "8"
+    "cube": "overflow"
   },
   {
     "artist": "Gaynor, Gloria",
@@ -8297,7 +8285,7 @@
     "coverImage": "covers/VNL-6SDY5R.jpg",
     "dateAdded": "2026-06-27T01:24:51.183Z",
     "printed": false,
-    "cube": "4"
+    "cube": "overflow"
   },
   {
     "artist": "Modern Rocketry",
@@ -8345,7 +8333,7 @@
     "coverImage": "covers/VNL-1PJR40.jpg",
     "dateAdded": "2026-06-27T01:24:51.183Z",
     "printed": false,
-    "cube": "5"
+    "cube": "overflow"
   },
   {
     "artist": "Various",
@@ -8430,18 +8418,6 @@
     "dateAdded": "2026-06-27T01:24:51.184Z",
     "printed": false,
     "cube": "2"
-  },
-  {
-    "artist": "Cornelius",
-    "title": "Fantasma",
-    "barcode": "VNL-B2T6QW",
-    "format": "LP",
-    "genre": "Electronic",
-    "year": "1997",
-    "coverImage": "covers/VNL-B2T6QW.jpg",
-    "dateAdded": "2026-06-27T01:24:51.184Z",
-    "printed": false,
-    "cube": "6"
   },
   {
     "artist": "Morricone, Ennio",
@@ -8681,7 +8657,7 @@
     "coverImage": "covers/VNL-EVVH8W.jpg",
     "dateAdded": "2026-07-12T03:09:01.932Z",
     "printed": false,
-    "cube": "4"
+    "cube": "overflow"
   },
   {
     "artist": "Bronski Beat",
@@ -8840,18 +8816,6 @@
     "printed": false
   },
   {
-    "artist": "Tomita, Isao",
-    "title": "Firebird",
-    "year": "1974",
-    "format": "LP",
-    "genre": "Contemporary",
-    "barcode": "VNL-CFMMRL",
-    "coverImage": null,
-    "cube": "11",
-    "dateAdded": "2026-07-18T22:14:19.227Z",
-    "printed": false
-  },
-  {
     "artist": "Jarre, Jean-Michel",
     "title": "Rendez-Vous",
     "year": "1986",
@@ -8933,18 +8897,6 @@
     "coverImage": null,
     "cube": "6",
     "dateAdded": "2026-08-01T00:41:57.323Z",
-    "printed": false
-  },
-  {
-    "artist": "Size",
-    "title": "Nadir Puede Vivir Con Un Monstruo",
-    "year": "1984",
-    "format": "LP",
-    "genre": "Electronic",
-    "barcode": "VNL-S2WSNS",
-    "coverImage": null,
-    "cube": "6",
-    "dateAdded": "2026-08-01T00:43:11.315Z",
     "printed": false
   },
   {
@@ -9051,7 +9003,7 @@
     "genre": "Disco",
     "barcode": "VNL-HDZE9C",
     "coverImage": "covers/VNL-HDZE9C.jpg",
-    "cube": "3",
+    "cube": "overflow",
     "dateAdded": "2026-08-03T17:37:40.804Z",
     "printed": false
   },
@@ -9099,7 +9051,7 @@
     "genre": "Disco",
     "barcode": "VNL-UUDGOF",
     "coverImage": "covers/VNL-UUDGOF.jpg",
-    "cube": "2",
+    "cube": "overflow",
     "dateAdded": "2026-08-03T17:39:45.058Z",
     "printed": false
   },
