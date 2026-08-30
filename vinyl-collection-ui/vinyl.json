@@ -3001,7 +3001,8 @@
     "coverImage": "covers/VNL-LSWG9M.jpg",
     "dateAdded": "2026-02-26T11:57:08.202Z",
     "printed": true,
-    "cube": "9"
+    "cube": "9",
+    "cubeAnchor": "last"
   },
   {
     "artist": "New Order",
@@ -6134,7 +6135,8 @@
     "coverImage": "covers/VNL-TNCWBN.jpg",
     "dateAdded": "2026-02-01T00:00:00.000Z",
     "printed": true,
-    "cube": "10"
+    "cube": "10",
+    "cubeAnchor": "last"
   },
   {
     "artist": "War",
@@ -6927,7 +6929,7 @@
     "coverImage": null,
     "dateAdded": "2026-05-28T23:55:43.256Z",
     "printed": true,
-    "cube": "cabinet"
+    "cube": "10"
   },
   {
     "artist": "Bellini, Vincenzo",
@@ -7023,7 +7025,7 @@
     "coverImage": "covers/VNL-I0TWS3.jpg",
     "dateAdded": "2026-05-28T23:55:43.256Z",
     "printed": true,
-    "cube": "cabinet"
+    "cube": "9"
   },
   {
     "artist": "Strauss, Richard",
@@ -7047,7 +7049,7 @@
     "coverImage": null,
     "dateAdded": "2026-05-28T23:55:43.256Z",
     "printed": true,
-    "cube": "cabinet"
+    "cube": "9"
   },
   {
     "artist": "Massenet, Jules",
@@ -7083,7 +7085,8 @@
     "coverImage": null,
     "dateAdded": "2026-05-28T23:55:43.256Z",
     "printed": true,
-    "cube": "cabinet"
+    "cube": "9",
+    "cubeAnchor": "first"
   },
   {
     "artist": "Morricone, Ennio",
@@ -7371,7 +7374,7 @@
     "coverImage": "covers/VNL-LPUOKN.jpg",
     "dateAdded": "2026-05-28T23:55:43.256Z",
     "printed": true,
-    "cube": "9"
+    "cube": "10"
   },
   {
     "artist": "Bach, J.S.",
@@ -9231,9 +9234,10 @@
     "genre": "Classical",
     "barcode": "VNL-6A07QZ",
     "coverImage": null,
-    "cube": "9",
+    "cube": "10",
     "dateAdded": "2026-08-29T17:30:16.259Z",
-    "printed": false
+    "printed": false,
+    "cubeAnchor": "first"
   },
   {
     "artist": "Bach, Johann Sebastian",
