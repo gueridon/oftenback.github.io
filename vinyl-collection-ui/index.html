@@ -40,7 +40,7 @@
 
   /* ---- the selected cube, to scale ---- */
   .cube{position:relative;border:2px solid var(--separator);border-radius:6px;
-    background:var(--surface-light);height:170px;display:flex;align-items:stretch;
+    background:var(--surface-light);height:227px;display:flex;align-items:stretch;
     overflow:hidden;box-shadow:var(--float);}
   .spine{position:relative;border-right:1px solid rgba(61,53,48,.16);cursor:pointer;
     background:var(--surface);min-width:1px;}
@@ -53,7 +53,7 @@
   .empty{flex:1;background:repeating-linear-gradient(45deg,transparent,transparent 6px,
     rgba(142,127,115,.13) 6px,rgba(142,127,115,.13) 12px);}
   .ruler{display:flex;justify-content:space-between;font:500 11px var(--mono);
-    color:var(--dim);margin-top:5px;}
+    color:var(--dim);margin-top:10px;}
   .meta{margin:12px 0 4px;font-size:14px;color:var(--muted);}
   .meta b{color:var(--ink);} .warn{color:var(--accent);font-weight:600;}
 
@@ -120,7 +120,7 @@
     <div class="wall" id="wall"></div>
 
     <div class="cube" id="cube"></div>
-    <div class="ruler"><span>0 mm</span><span id="rmid"></span><span id="rmax">330 mm</span></div>
+    <div class="ruler" id="ruler"><span>0 mm</span><span id="rmid"></span><span id="rmax">330 mm</span></div>
     <div class="meta" id="meta"></div>
 
     <div class="panel" id="detailpanel" hidden>
@@ -250,6 +250,24 @@ function drawWall() {
 
   el("wall").querySelectorAll(".cell[data-c]").forEach(d =>
     d.onclick = () => { cube = d.dataset.c; hitBarcode = null; draw(); });
+
+  // The spine view below draws ONE cube, but it belongs to the same object as this map,
+  // so it takes the map's exact span: Shelf 1's left edge to Shelf 2's right edge.
+  //
+  // MEASURED, never written down. That width is a consequence of how many cubes each
+  // unit carries (229 + 34 + 447 today), so a literal would be silently wrong the first
+  // time a shelf changed, and the two drawings would drift apart with nothing saying so.
+  // Reading the union of the blocks also survives the flex wrapping on a narrow screen,
+  // where the answer becomes the widest row instead.
+  const boxes = [...el("wall").children].map(c => c.getBoundingClientRect());
+  if (boxes.length) {
+    const span = Math.round(Math.max(...boxes.map(b => b.right))
+                          - Math.min(...boxes.map(b => b.left)));
+    // box-sizing is border-box globally, so this includes the cube's own 2px frame and
+    // the edges land on the same pixels as the shelves.
+    el("cube").style.width = `${span}px`;
+    el("ruler").style.width = `${span}px`;
+  }
 }
 
 // ---- the selected cube ------------------------------------------------------
