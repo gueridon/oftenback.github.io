@@ -32,9 +32,12 @@ export const CABINET_INNER_MM = 700;   // the dining cabinet, measured 2026-08-2
 //
 // Kept as data rather than baked into the page so the map is one edit away from correct
 // if the numbering reads differently from how it looks here.
+// Names only, deliberately: no descriptions. A description of the furniture ("the
+// original 4x2, standing") is not checked by anything and ages silently, which is worse
+// than absent -- the wall itself is the drawing, and it is generated from the rows below.
 export const WALL = [
-  { name: 'Shelf 1', note: 'the original 4x2, standing', rows: [[1, 2], [3, 4], [5, 6], [7, 8]] },
-  { name: 'Shelf 2', note: 'the new unit, 2 rows of 4', rows: [[15, 9, 10, 11], [16, 12, 13, 14]] },
+  { name: 'Shelf 1', rows: [[1, 2], [3, 4], [5, 6], [7, 8]] },
+  { name: 'Shelf 2', rows: [[15, 9, 10, 11], [16, 12, 13, 14]] },
 ];
 
 // Cubes that hold no records, and why.
@@ -53,8 +56,8 @@ export const OVERFLOW = 'overflow';
 // to read "box sets and the 10-inch stash" and went stale the moment the ten-inch moved
 // to cube 1 -- it is opera sets and nothing else now.
 export const ELSEWHERE = [
-  { cube: 'cabinet', label: 'turntable', note: 'opera sets' },
-  { cube: OVERFLOW, label: 'Overflow', note: 'out of the collection: duplicates, undecided' },
+  { cube: 'cabinet', label: 'turntable' },
+  { cube: OVERFLOW, label: 'Overflow' },
 ];
 
 // One place to turn a stored location into the name for it.

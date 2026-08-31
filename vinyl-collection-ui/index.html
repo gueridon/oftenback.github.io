@@ -8,9 +8,12 @@
 <style>
   /* ---- the wall map: two shelves, drawn as the grids they physically are ---- */
   .wall{display:flex;flex-wrap:wrap;gap:34px;margin:6px 0 24px;}
+  /* Names only. A caption is a flex item's widest child when it is longer than the grid
+     below it, so it stretches the block and leaves dead space beside the cells: that is
+     what the descriptions did to SHELF 1, TURNTABLE and OVERFLOW, and not to SHELF 2,
+     whose four cells are wider than any caption. Keep these short. */
   .shelf .cap{font:600 11px var(--mono);color:var(--dim);text-transform:uppercase;
     letter-spacing:.07em;margin-bottom:7px;}
-  .shelf .cap i{font-weight:400;text-transform:none;letter-spacing:0;font-style:normal;}
   .grid{display:grid;gap:5px;border:3px solid var(--border);border-radius:5px;padding:5px;
     background:var(--surface-light);}
   .cell{position:relative;width:104px;height:74px;border-radius:3px;background:var(--ground);
@@ -196,7 +199,7 @@ function drawWall() {
         ${nd ? `<span class="done">${all ? "done" : nd + "/" + L.count}</span>` : ""}
         <span class="bar" style="width:${Math.min(100,pct)}%"></span></div>`;
     }).join("");
-    return `<div class="shelf"><div class="cap">${esc(sh.name)} <i>· ${esc(sh.note)}</i></div>
+    return `<div class="shelf"><div class="cap">${esc(sh.name)}</div>
       <div class="grid" style="grid-template-columns:repeat(${cols},auto)">${cells}</div></div>`;
   }).join("") + shelf.ELSEWHERE.map(e => {
     // The turntable and the overflow pile are not on the wall, but they ARE places
@@ -214,7 +217,7 @@ function drawWall() {
     // the top slot is labelled "discs" so it cannot be misread as a cube number, the
     // one thing that slot means everywhere else on this map.
     const pct = L.innerMm ? Math.round(L.occupancy * 100) : null;
-    return `<div class="shelf"><div class="cap">${esc(e.label)} <i>· ${esc(e.note)}</i></div>
+    return `<div class="shelf"><div class="cap">${esc(e.label)}</div>
       <div class="grid" style="grid-template-columns:repeat(1,auto)">
         <div class="cell${e.cube===shelf.OVERFLOW?" ovf":""}${String(e.cube)===String(cube)?" on":""}${all?" alldone":""}" data-c="${e.cube}">
           <span class="num">${L.count} <i>discs</i></span>
