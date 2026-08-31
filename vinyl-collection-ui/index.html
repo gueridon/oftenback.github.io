@@ -46,9 +46,14 @@
     background:var(--surface);min-width:1px;}
   .spine:nth-child(even){background:var(--surface-hover);}
   .spine:hover,.spine.hit{background:var(--accent);}
+  /* line-height:1 is load-bearing, not tidying. In vertical-rl the line box's thickness
+     runs ACROSS the spine, so a normal line-height of ~1.2 needs 10.8px for 9px text
+     while an LP spine offers 9.7px inside its 1px border: the glyphs were being clipped
+     on both edges. At 1, the line box is exactly the font size, and draw() then sets
+     that size per spine from the spine's own measured width. */
   .spine .lab{position:absolute;inset:0;writing-mode:vertical-rl;text-orientation:mixed;
-    font:600 9px var(--sans);color:var(--ink);padding:6px 0;overflow:hidden;
-    white-space:nowrap;text-overflow:ellipsis;opacity:.85;}
+    font:600 9px var(--sans);line-height:1;color:var(--ink);padding:6px 0;overflow:hidden;
+    white-space:nowrap;text-overflow:ellipsis;}
   .spine:hover .lab,.spine.hit .lab{color:var(--on-accent);opacity:1;}
   .empty{flex:1;background:repeating-linear-gradient(45deg,transparent,transparent 6px,
     rgba(142,127,115,.13) 6px,rgba(142,127,115,.13) 12px);}
@@ -112,7 +117,7 @@
     <div class="controls">
       <input id="q" type="search" placeholder="find a disc - artist, title, barcode…" />
       <span class="lbl">LP mm</span>
-      <input id="lpmm" type="number" step="0.1" min="2" max="8" value="4.3" style="width:66px" />
+      <input id="lpmm" type="number" step="0.1" min="2" max="12" style="width:66px" />
       <span class="count" id="count"></span>
     </div>
     <div id="found"></div>
@@ -145,16 +150,19 @@
   </div>
 
 <script type="module">
-import { renderShell } from "./js/shell.js?v=4";
-import { loadRecords, matchesQuery } from "./js/data.js?v=2";
-import { saveRecords } from "./js/save.js?v=2";
-import * as shelf from "./js/shelf.js?v=3";
+import { renderShell } from "./js/shell.js?v=5";
+import { loadRecords, matchesQuery } from "./js/data.js?v=5";
+import { saveRecords } from "./js/save.js?v=5";
+import * as shelf from "./js/shelf.js?v=5";
 
 renderShell("index.html");
 let records = await loadRecords();
 let cube = null, hitBarcode = null;
 const el = id => document.getElementById(id);
 const lpMm = () => parseFloat(el("lpmm").value) || shelf.LP_MM;
+// Seeded from the model rather than written into the HTML, which is how the field came
+// to still say 4.3 after the model had moved on.
+el("lpmm").value = shelf.LP_MM;
 // Ticks live in localStorage, not in vinyl.json. This is progress through a physical
 // job, not a fact about the record: it should not be published, should not sync to the
 // scanner, and should cost nothing to change. The trade is that it is per-browser --
@@ -275,18 +283,33 @@ function draw() {
   if (cube === null) cube = shelf.cubeList(records)[0];
   drawWall();
   const L = shelf.cubeLayout(records, cube, { lpMm: lpMm() });
-  const pct = v => (v / L.innerMm) * 100;
+  // The overflow pile has no fixed width by design, so there is nothing to scale
+  // against and it falls back to what is actually there. Before this, innerMm was null:
+  // every percentage came out Infinity, the whole flex declaration was dropped as
+  // invalid, all 25 spines collapsed to hairlines and the ruler read "null mm".
+  const scaleMm = L.innerMm || L.occupiedMm || 1;
+  const pct = v => (v / scaleMm) * 100;
   el("cube").innerHTML = L.items.map(i => {
     const lab = `${i.record.artist || "?"} - ${i.record.title || ""}`;
     return `<div class="spine${i.record.barcode===hitBarcode?" hit":""}"
       style="flex:0 0 ${pct(i.widthMm)}%" data-b="${esc(i.record.barcode)}"
       title="${esc(lab)} · ${Math.round(i.centerMm)}mm"><span class="lab">${esc(lab)}</span></div>`;
-  }).join("") + (L.occupancy < 0.995 ? `<div class="empty"></div>` : "");
+  }).join("") + (L.innerMm && L.occupancy < 0.995 ? `<div class="empty"></div>` : "");
   el("cube").querySelectorAll(".spine").forEach(s =>
     s.onclick = () => { hitBarcode = s.dataset.b; draw(); });
 
+  // A spine is exactly as wide as its record is thick, so one font size for all of them
+  // has to be small enough for the thinnest or it gets clipped. Sized per spine instead,
+  // from the width the browser actually gave it: a box gets 11px where a 12" single gets
+  // 6.5px, and each one is legible at its own scale. Measured, not predicted, because the
+  // width depends on the box's own width, which is itself measured off the wall map.
+  el("cube").querySelectorAll(".spine .lab").forEach(lab => {
+    const avail = lab.parentElement.clientWidth - 0.5;   // 0.5 so rounding cannot clip
+    lab.style.fontSize = `${Math.max(6, Math.min(11, avail)).toFixed(1)}px`;
+  });
+
   el("rmid").textContent = `${Math.round(L.occupiedMm)} mm used`;
-  el("rmax").textContent = `${L.innerMm} mm`;
+  el("rmax").textContent = L.innerMm ? `${L.innerMm} mm` : `${Math.round(L.occupiedMm)} mm`;
   const gs = genresOf(L.items).join(", ");
   const where = shelf.locationLabel(cube);
   el("meta").innerHTML = `<b>${where}</b> · ${esc(gs) || "empty"} · <b>${L.count}</b> discs · ` +

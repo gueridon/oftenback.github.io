@@ -37,8 +37,8 @@
   </div>
 
 <script type="module">
-import { renderShell, setTag } from "./js/shell.js?v=4";
-import { loadRecords } from "./js/data.js";
+import { renderShell, setTag } from "./js/shell.js?v=5";
+import { loadRecords } from "./js/data.js?v=5";
 renderShell("print-dividers.html");
 const esc = s => String(s ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
 const sheet=document.getElementById("sheet"), mode=document.getElementById("mode"), countEl=document.getElementById("count");

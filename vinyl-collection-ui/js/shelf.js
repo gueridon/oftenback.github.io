@@ -70,7 +70,10 @@ export function innerMmFor(cube) {
   if (String(cube) === OVERFLOW) return null;      // no width: not a shelf
   return String(cube) === 'cabinet' ? CABINET_INNER_MM : CUBE_INNER_MM;
 }
-export const LP_MM = 4.3;
+// One LP is 5mm of spine, and a box is double that (2026-08-30, Nicolas). Measured
+// against the shelf: the turntable's 52 boxes come to 645mm of its 700, which is the
+// figure to sanity-check this against if it ever looks wrong.
+export const LP_MM = 5.0;
 
 // Multiples of one LP. Deliberately coarse: these are sleeve thicknesses, and being
 // right to half a millimetre per disc matters less than being right about which
@@ -83,9 +86,14 @@ export const FORMAT_THICKNESS = {
   '12" Single (45RPM)': 0.75,
   '12" EP': 0.75,
   '12" Promo': 0.63,
-  'Box': 3.0,
-  '2xLP Box': 2.5,
-  '3xLP Box': 3.75,
+  // Every box is one thickness, 2x an LP. The three box formats collapse to the same
+  // figure because the collection stopped recording how many discs a box holds: the
+  // turntable was re-entered as plain "Box" on 2026-08-30, and neither 2xLP Box nor
+  // 3xLP Box appears in the data any more. They stay mapped so that re-introducing one
+  // does not silently fall through to DEFAULT_THICKNESS and get drawn as a single LP.
+  'Box': 2.0,
+  '2xLP Box': 2.0,
+  '3xLP Box': 2.0,
 };
 export const DEFAULT_THICKNESS = 1.0;
 
