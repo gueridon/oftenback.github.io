@@ -42,8 +42,8 @@ export const WALL = [
 
 // Cubes that hold no records, and why.
 export const RESERVED = {
-  15: 'computer / server',
-  16: 'free - growth space',
+  15: 'free - growth space',
+  16: 'computer / server',
 };
 
 // Places that are not cubes on the wall. The cabinet has a measured width; OVERFLOW
