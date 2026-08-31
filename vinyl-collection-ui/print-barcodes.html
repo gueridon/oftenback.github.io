@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>The Collection - labels</title>
-<link rel="stylesheet" href="./nakata.css" />
+<link rel="stylesheet" href="./nakata.css?v=4" />
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <style>
   /* Avery 5160/8160: US Letter, 30 labels, 3 cols x 10 rows, 2.625" x 1". */
@@ -96,7 +96,7 @@
   <div id="sheets"></div>
 
 <script type="module">
-import { renderShell, setTag } from "./js/shell.js?v=2";
+import { renderShell, setTag } from "./js/shell.js?v=4";
 import { loadRecords, matchesQuery } from "./js/data.js";
 import { saveRecords, saveAvailable } from "./js/save.js";
 renderShell("print-barcodes.html");

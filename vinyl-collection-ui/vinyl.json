@@ -9028,7 +9028,7 @@
     "genre": "Opera",
     "barcode": "VNL-LTE448",
     "coverImage": null,
-    "cube": "cabinet",
+    "cube": "overflow",
     "dateAdded": "2026-08-30T19:18:38.027Z",
     "printed": false
   },
@@ -9100,7 +9100,7 @@
     "genre": "Opera",
     "barcode": "VNL-SYMC4K",
     "coverImage": null,
-    "cube": "cabinet",
+    "cube": "overflow",
     "dateAdded": "2026-08-30T19:25:59.081Z",
     "printed": false
   },
@@ -9568,7 +9568,7 @@
     "genre": "Opera",
     "barcode": "VNL-RO4LKX",
     "coverImage": null,
-    "cube": "cabinet",
+    "cube": "overflow",
     "dateAdded": "2026-08-30T20:15:17.474Z",
     "printed": false
   },

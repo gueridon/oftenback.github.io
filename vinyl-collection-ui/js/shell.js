@@ -93,11 +93,77 @@ async function showPublishState(host) {
     if (s.unpushed > 0) bits.push(s.unpushed + " unpushed commits");
     set("behind", "not published: " + (bits.join(", ") || "changes pending"),
         "The public site is behind this one, so the Tab5 and the QR scanner are " +
-        "showing stale data. Run: vinyl publish");
+        "showing stale data. Click to publish.");
+    arm(tag, host);
   } catch (e) {
     set("unknown", "publish state unknown",
         "Could not reach the backend: " + e.message);
   }
+}
+
+// The chip named the drift and then told you to go and run a command. Now it is the
+// command. Armed ONLY in the "behind" state: there is nothing to press when the sites
+// already match, and pressing it when the state is unknown would be acting on a reading
+// we do not have.
+//
+// The confirm is deliberate. This chip sits among the nav links, and a stray click here
+// pushes the collection to a PUBLIC website. One keystroke is a fair price for that.
+function arm(tag, host) {
+  tag.classList.add("act");
+  tag.setAttribute("role", "button");
+  tag.tabIndex = 0;
+
+  const go = async () => {
+    if (tag.dataset.busy) return;
+    if (!confirm("Publish now?\n\nMirrors to the LAN site, commits, and pushes to "
+               + "oftenback.io, which is public.")) return;
+
+    tag.dataset.busy = "1";
+    tag.className = "pubstate unknown";
+    tag.textContent = "publishing...";
+    tag.title = "Mirroring to the LAN site, committing all three repos, pushing.";
+
+    // Report per step, because the steps fail differently: a dead network fails the
+    // pushes while the LAN mirror still succeeds, and "publish failed" alone would
+    // hide the fact that the local site is in fact current.
+    const detail = steps => steps.map(st =>
+      (st.ok ? "ok   " : "FAIL ") + st.name
+      + (st.output ? "\n       " + st.output.replace(/\n/g, "\n       ") : "")).join("\n\n");
+
+    try {
+      const res = await fetch("/vinyl/api/publish", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      const r = await res.json().catch(() => ({}));
+      const steps = r.steps || [];
+      if (r.ok) {
+        tag.className = "pubstate ok";
+        tag.textContent = "published";
+        tag.title = detail(steps) + "\n\nGitHub Pages rebuilds in about a minute.";
+        // Ask the instrument again rather than trust what we just did.
+        setTimeout(() => { tag.remove(); showPublishState(host); }, 2000);
+      } else {
+        const bad = steps.filter(st => !st.ok);
+        tag.className = "pubstate behind act";
+        tag.textContent = "publish failed" + (bad.length ? ": " + bad[0].name : "");
+        tag.title = (r.error ? r.error + "\n\n" : "") + (detail(steps) || "no detail")
+                  + "\n\nClick to try again.";
+      }
+    } catch (e) {
+      tag.className = "pubstate behind act";
+      tag.textContent = "publish failed";
+      tag.title = "Could not reach the backend: " + e.message + "\n\nClick to try again.";
+    } finally {
+      delete tag.dataset.busy;
+    }
+  };
+
+  tag.onclick = go;
+  tag.onkeydown = ev => {
+    if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); go(); }
+  };
 }
 
 export function setTag(text) {

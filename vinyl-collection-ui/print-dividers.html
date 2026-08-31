@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>The Collection - dividers</title>
-<link rel="stylesheet" href="./nakata.css" />
+<link rel="stylesheet" href="./nakata.css?v=4" />
 <style>
   .divider-sheet{display:grid;grid-template-columns:repeat(2,1fr);gap:8mm;padding:8mm 0;}
   .divider{border:1px dashed var(--separator);padding:14mm 8mm 6mm;height:90mm;
@@ -37,7 +37,7 @@
   </div>
 
 <script type="module">
-import { renderShell, setTag } from "./js/shell.js?v=2";
+import { renderShell, setTag } from "./js/shell.js?v=4";
 import { loadRecords } from "./js/data.js";
 renderShell("print-dividers.html");
 const esc = s => String(s ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
