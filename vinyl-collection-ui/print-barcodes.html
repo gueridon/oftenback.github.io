@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>The Collection - labels</title>
-<link rel="stylesheet" href="./nakata.css?v=4" />
+<link rel="stylesheet" href="./nakata.css?v=5" />
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <style>
   /* Avery 5160/8160: US Letter, 30 labels, 3 cols x 10 rows, 2.625" x 1". */
@@ -14,7 +14,7 @@
     --nudge-x:0mm; --nudge-y:0mm;
   }
   .hint{background:var(--badge-bg);border-left:3px solid var(--accent);
-    padding:10px 14px;border-radius:6px;font-size:13px;color:var(--ink-soft);
+    padding:10px 14px;border-radius:var(--radius);font-size:13px;color:var(--ink-soft);
     margin-bottom:14px;line-height:1.5;}
   .hint b{color:var(--accent-dark);letter-spacing:.03em;}
   .controls button.batch{background:var(--sage);border-color:var(--sage);color:var(--ink);font-weight:600;}
@@ -22,7 +22,7 @@
   .advanced summary{cursor:pointer;padding:4px 0;}
   .advanced .row{display:flex;gap:16px;flex-wrap:wrap;align-items:center;padding:8px 0 2px;}
   .advanced label{display:flex;gap:6px;align-items:center;}
-  .advanced input[type=number]{width:64px;padding:4px 6px;border:1px solid var(--separator);border-radius:4px;background:var(--surface-light);}
+  .advanced input[type=number]{width:64px;padding:4px 6px;border:1px solid var(--separator);border-radius:var(--radius);background:var(--surface-light);}
   .selector{max-height:46vh;overflow-y:auto;border:1px solid var(--separator);border-radius:var(--radius);
     background:var(--surface-light);padding:6px 8px;margin-bottom:18px;}
   .grp-head{display:flex;align-items:center;gap:8px;position:sticky;top:0;background:var(--surface-light);

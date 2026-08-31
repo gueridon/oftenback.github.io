@@ -4,21 +4,21 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>The Collection - covers</title>
-<link rel="stylesheet" href="./nakata.css?v=4" />
+<link rel="stylesheet" href="./nakata.css?v=5" />
 <script src="/oftenback-nav.js" defer></script>
 <style>
   .intro{color:var(--dim);font-size:14px;margin:2px 0 18px;max-width:680px;line-height:1.6;}
   .mlist{display:flex;flex-direction:column;gap:12px;}
   .mrow{display:grid;grid-template-columns:64px 1fr auto;gap:14px;align-items:center;
-    background:var(--surface-light);border:1px solid var(--separator);border-radius:10px;padding:12px 14px;}
-  .mrow .thumb{width:64px;height:64px;border-radius:6px;object-fit:cover;background:var(--surface);
+    background:var(--surface-light);border:1px solid var(--separator);border-radius:var(--radius);padding:12px 14px;}
+  .mrow .thumb{width:64px;height:64px;border-radius:var(--radius);object-fit:cover;background:var(--surface);
     display:flex;align-items:center;justify-content:center;font-size:24px;color:var(--dim);}
   .mrow .meta{min-width:0;}
   .mrow .t{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink);}
   .mrow .a{color:var(--dim);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .mrow .sub{color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums;}
   .mrow.done{opacity:.6;}
-  .upbtn{display:inline-block;background:var(--surface);border:1px solid var(--separator);border-radius:8px;
+  .upbtn{display:inline-block;background:var(--surface);border:1px solid var(--separator);border-radius:var(--radius);
     padding:8px 14px;cursor:pointer;font-size:13px;font-weight:600;color:var(--ink);white-space:nowrap;}
   .upbtn:hover{border-color:var(--accent);}
   .upbtn input{display:none;}
