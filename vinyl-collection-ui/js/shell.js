@@ -1,17 +1,25 @@
 // shell.js - the shared Nakata masthead + nav, injected into #shell on each page.
 
+// The wall is the front page as of 2026-08-30: index.html IS the wall, and browse
+// moved to browse.html. It had to be a real file rename and not an nginx `index`
+// directive, because GitHub Pages serves index.html for a directory and gives no way
+// to change that. A config change would have worked on the LAN and silently failed in
+// public, which is the worst of the available outcomes.
 const PAGES = [
-  { href: "index.html", label: "browse" },
+  { href: "index.html", label: "the wall" },
+  { href: "browse.html", label: "browse" },
   { href: "edit.html", label: "edit" },
   { href: "add.html", label: "add" },
   { href: "covers.html", label: "covers" },
-  { href: "cubes.html", label: "the wall" },
   { href: "stats.html", label: "stats" },
   { href: "print-barcodes.html", label: "barcodes" },
 ];
 
 export function renderShell(active) {
-  const here = active || location.pathname.split("/").pop() || "browse.html";
+  // Visiting /vinyl/ leaves nothing to pop, so the fallback must name the page the
+  // server actually serves for a bare directory. Otherwise the front page highlights
+  // some other nav entry than the one you are looking at.
+  const here = active || location.pathname.split("/").pop() || "index.html";
   const nav = PAGES.map(p =>
     `<a href="./${p.href}"${here.endsWith(p.href) ? ' class="active"' : ""}>${p.label}</a>`
   ).join("");

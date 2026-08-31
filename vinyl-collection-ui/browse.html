@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>The Collection - browse</title>
+<link rel="stylesheet" href="./nakata.css?v=4" />
+<style>
+  /* Keep the search/filter bar pinned below the global nav while scrolling (browse only). */
+  .controls{position:sticky;top:43px;z-index:50;background:var(--ground,#f4ede2);
+    margin-bottom:18px;padding:14px 0;box-shadow:0 8px 12px -9px rgba(61,53,48,.28);}
+</style>
+<script src="/oftenback-nav.js?v=4" defer></script>
+</head>
+<body>
+  <div class="wrap">
+    <div id="shell"></div>
+
+    <div class="controls">
+      <input id="q" type="search" placeholder="search artist, title, year…" />
+      <span class="lbl">sort</span>
+      <select id="sort">
+        <option value="artist">artist</option>
+        <option value="title">title</option>
+        <option value="year">year</option>
+        <option value="dateAdded">recently added</option>
+      </select>
+      <span class="lbl">genre</span>
+      <select id="genre"><option value="">all</option></select>
+      <span class="lbl">cube</span>
+      <select id="cube"><option value="">all</option></select>
+      <span class="count" id="count"></span>
+    </div>
+
+    <div class="wall" id="wall"></div>
+    <footer>A collection kept by hand.</footer>
+  </div>
+
+<script type="module">
+import { renderShell, setTag } from "./js/shell.js?v=4";
+import { loadRecords, coverUrl, matchesQuery, sortRecords, distinctValues, cubeTag } from "./js/data.js";
+
+renderShell("browse.html");
+
+const esc = s => String(s ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+const wall = document.getElementById("wall"), q = document.getElementById("q"),
+  sortSel = document.getElementById("sort"), genreSel = document.getElementById("genre"),
+  cubeSel = document.getElementById("cube"), countEl = document.getElementById("count");
+let all = [];
+
+function render() {
+  const g = genreSel.value, cb = cubeSel.value;
+  const inCube = r => !cb || (cb === "cabinet" ? r.cube === "cabinet" : String(r.cube || "").split("-").includes(cb));
+  const list = sortRecords(
+    all.filter(r => (!g || r.genre === g) && inCube(r) && matchesQuery(r, q.value.trim())),
+    sortSel.value, sortSel.value === "dateAdded" ? "desc" : "asc");
+  countEl.textContent = list.length === all.length ? `${all.length} records` : `${list.length} of ${all.length}`;
+  wall.innerHTML = list.map(r => {
+    const cov = coverUrl(r);
+    const cover = cov ? `<img src="${esc(cov)}" alt="" loading="lazy">` : `<div class="ph">♪</div>`;
+    return `<div class="tile"><div class="sleeve">${cover}<span class="cube">${esc(cubeTag(r))}</span></div>
+      <div class="cap"><div class="t">${esc(r.title)}</div><div class="a">${esc(r.artist)}</div>
+      <div class="y">${esc(r.year||"")}${r.genre?" · "+esc(r.genre):""}</div></div></div>`;
+  }).join("");
+}
+[q, sortSel, genreSel, cubeSel].forEach(e => e.addEventListener("input", render));
+
+try {
+  all = await loadRecords();
+  for (const g of distinctValues(all, "genre")) genreSel.add(new Option(g, g));
+  const cubes = new Set();
+  for (const r of all) {
+    if (!r.cube) continue;
+    if (r.cube === "cabinet") { cubes.add("cabinet"); continue; }
+    for (const p of String(r.cube).split("-")) cubes.add(p);
+  }
+  [...cubes].sort((a,b) => a==="cabinet"?1:b==="cabinet"?-1:Number(a)-Number(b))
+    .forEach(c => cubeSel.add(new Option(c==="cabinet"?"cabinet":"cube "+c, c)));
+  setTag(`${all.length} records, arranged by cube`);
+  render();
+} catch (err) {
+  wall.innerHTML = `<div class="banner err">${err.message}</div>`;
+}
+</script>
+</body>
+</html>
