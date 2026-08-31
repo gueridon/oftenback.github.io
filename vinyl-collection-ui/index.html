@@ -7,7 +7,13 @@
 <link rel="stylesheet" href="./nakata.css?v=4" />
 <style>
   /* ---- the wall map: two shelves, drawn as the grids they physically are ---- */
-  .wall{display:flex;flex-wrap:wrap;gap:34px;margin:6px 0 24px;}
+  .wall{display:flex;flex-wrap:wrap;gap:34px;margin:6px 0 24px;align-items:flex-start;}
+  /* Shelf 2 and the two loose places share a column to the right of Shelf 1, which is
+     four rows tall against Shelf 2's two. The stack gap is 26px rather than 34px because
+     each caption already carries 7px of margin above its grid, so the space you actually
+     see between blocks matches the 34px used horizontally. */
+  .stack{display:flex;flex-direction:column;gap:26px;}
+  .pair{display:flex;gap:34px;}
   /* Names only. A caption is a flex item's widest child when it is longer than the grid
      below it, so it stretches the block and leaves dead space beside the cells: that is
      what the descriptions did to SHELF 1, TURNTABLE and OVERFLOW, and not to SHELF 2,
@@ -181,7 +187,7 @@ const genresLabel = items => {
 };
 
 function drawWall() {
-  el("wall").innerHTML = shelf.WALL.map(sh => {
+  const shelfBlock = sh => {
     const cols = Math.max(...sh.rows.map(r => r.length));
     const cells = sh.rows.flat().map(c => {
       const reserved = shelf.RESERVED[c];
@@ -201,7 +207,9 @@ function drawWall() {
     }).join("");
     return `<div class="shelf"><div class="cap">${esc(sh.name)}</div>
       <div class="grid" style="grid-template-columns:repeat(${cols},auto)">${cells}</div></div>`;
-  }).join("") + shelf.ELSEWHERE.map(e => {
+  };
+
+  const elseBlock = e => {
     // The turntable and the overflow pile are not on the wall, but they ARE places
     // records live, so each is drawn as its own piece of furniture: the name sits over
     // the block exactly as "Shelf 1" does, and the cell inside carries the same facts
@@ -226,7 +234,20 @@ function drawWall() {
           ${nd ? `<span class="done">${all ? "done" : nd + "/" + L.count}</span>` : ""}
           ${pct !== null ? `<span class="bar" style="width:${Math.min(100,pct)}%"></span>` : ""}
         </div></div></div>`;
-  }).join("");
+  };
+
+  // The drawing mirrors the room: the tall standing unit on the left, the wide low unit
+  // beside it. The low unit leaves real space beneath it, and the turntable and the
+  // overflow pile go there. That is a decision about the DRAWING and not a claim about
+  // the house, because neither of them is on the wall at all.
+  //
+  // Written against the shape of WALL rather than against two known shelves, so a third
+  // unit joins the stack instead of sending someone back here to lay it out again.
+  const [tall, ...rest] = shelf.WALL;
+  el("wall").innerHTML = shelfBlock(tall) +
+    `<div class="stack">${rest.map(shelfBlock).join("")}` +
+    `<div class="pair">${shelf.ELSEWHERE.map(elseBlock).join("")}</div></div>`;
+
   el("wall").querySelectorAll(".cell[data-c]").forEach(d =>
     d.onclick = () => { cube = d.dataset.c; hitBarcode = null; draw(); });
 }
