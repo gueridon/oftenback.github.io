@@ -20,6 +20,7 @@
   .cell.on{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);}
   .cell .num{font:700 13px var(--mono);color:var(--ink);}
   .cell.on .num{color:var(--accent);}
+  .cell .num i{font:400 9px var(--mono);color:var(--dim);font-style:normal;}
   .cell .gen{font-size:9.5px;line-height:1.25;color:var(--muted);}
   .cell .bar{position:absolute;left:0;bottom:0;height:4px;background:var(--accent);opacity:.55;}
   .cell.res{background:repeating-linear-gradient(45deg,transparent,transparent 5px,
@@ -77,7 +78,6 @@
   .cell .done{position:absolute;top:18px;right:6px;font:700 9px var(--mono);
     color:var(--accent);text-align:right;}
   .cell.alldone{background:rgba(45,226,104,.10);}
-  .cell.wide{width:150px;}
   .cell.ovf{background:repeating-linear-gradient(45deg,transparent,transparent 5px,
     rgba(227,66,52,.10) 5px,rgba(227,66,52,.10) 10px);}
   table.ord td.mv{width:1%;padding-left:4px;}
@@ -159,6 +159,24 @@ const saveDone = () => localStorage.setItem(DONE_KEY, JSON.stringify([...done]))
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
 // ---- the wall map -----------------------------------------------------------
+// One place that decides how a location's genres are named, because this was written
+// out three times and three copies of a rule always drift apart.
+//
+// The 10-inch stash is labelled by the tag the ordering uses rather than by the five
+// unrelated genres those seven records happen to carry: genre is explicitly irrelevant
+// for them, so listing it would be worse than saying nothing.
+const genresOf = items =>
+  [...new Set(items.map(i => i.record.format === shelf.TEN_INCH ? "10-inch" : i.record.genre))].sort();
+
+// For a cell, which is 104px wide. Past three genres the list is clipped mid-word by
+// overflow:hidden, and a truncated word reads as a rendering fault rather than as
+// information, so it becomes a count. Only the overflow pile hits this today (8 genres);
+// the fullest cube is 14, with exactly three.
+const genresLabel = items => {
+  const g = genresOf(items);
+  return g.length > 3 ? `${g.length} genres` : g.join(", ");
+};
+
 function drawWall() {
   el("wall").innerHTML = shelf.WALL.map(sh => {
     const cols = Math.max(...sh.rows.map(r => r.length));
@@ -167,10 +185,7 @@ function drawWall() {
       if (reserved)
         return `<div class="cell res"><span class="num">${c}</span><span class="gen">${esc(reserved)}</span></div>`;
       const L = shelf.cubeLayout(records, c, { lpMm: lpMm() });
-      // Label by the tag the ordering uses, so the 10-inch stash reads as "10-inch"
-      // rather than as the five unrelated genres those seven records happen to carry --
-      // genre is explicitly irrelevant for them.
-      const gs = [...new Set(L.items.map(i => i.record.format === shelf.TEN_INCH ? "10-inch" : i.record.genre))].sort().join(", ");
+      const gs = genresLabel(L.items);
       const pct = Math.round(L.occupancy * 100);
       const nd = L.items.filter(i => done.has(i.record.barcode)).length;
       const all = L.count > 0 && nd === L.count;
@@ -183,21 +198,32 @@ function drawWall() {
     }).join("");
     return `<div class="shelf"><div class="cap">${esc(sh.name)} <i>· ${esc(sh.note)}</i></div>
       <div class="grid" style="grid-template-columns:repeat(${cols},auto)">${cells}</div></div>`;
-  }).join("") + (() => {
-    // Not on the wall: the cabinet, and the overflow pile. Shown here so they are
-    // reachable and countable rather than only findable by search.
-    const cells = shelf.ELSEWHERE.map(e => {
-      const L = shelf.cubeLayout(records, e.cube, { lpMm: lpMm() });
-      const pctTxt = L.innerMm ? `${Math.round(L.occupancy*100)}%` : `${L.count}`;
-      return `<div class="cell wide${e.cube===shelf.OVERFLOW?" ovf":""}${String(e.cube)===String(cube)?" on":""}" data-c="${e.cube}">
-        <span class="num">${esc(e.label)}</span>
-        ${L.count ? `<span class="pin">${pctTxt}</span>` : ""}
-        <span class="gen">${esc(e.note)}</span></div>`;
-    }).join("");
-    // No caption: the two cells name themselves, and "Elsewhere" was a word about the
-    // layout rather than about the records.
-    return `<div class="shelf"><div class="grid" style="grid-template-columns:repeat(2,auto)">${cells}</div></div>`;
-  })();
+  }).join("") + shelf.ELSEWHERE.map(e => {
+    // The turntable and the overflow pile are not on the wall, but they ARE places
+    // records live, so each is drawn as its own piece of furniture: the name sits over
+    // the block exactly as "Shelf 1" does, and the cell inside carries the same facts
+    // as any cube cell. Previously the name sat INSIDE the cell in cube-number style
+    // and the block had no caption, so these two read as a different kind of object
+    // than the shelves they sit beside.
+    const L = shelf.cubeLayout(records, e.cube, { lpMm: lpMm() });
+    const gs = genresLabel(L.items);
+    const nd = L.items.filter(i => done.has(i.record.barcode)).length;
+    const all = L.count > 0 && nd === L.count;
+    // Overflow has no measured width on purpose, so it gets no percentage and no fill
+    // bar: a fullness figure would imply it is a place where things fit. The count in
+    // the top slot is labelled "discs" so it cannot be misread as a cube number, the
+    // one thing that slot means everywhere else on this map.
+    const pct = L.innerMm ? Math.round(L.occupancy * 100) : null;
+    return `<div class="shelf"><div class="cap">${esc(e.label)} <i>· ${esc(e.note)}</i></div>
+      <div class="grid" style="grid-template-columns:repeat(1,auto)">
+        <div class="cell${e.cube===shelf.OVERFLOW?" ovf":""}${String(e.cube)===String(cube)?" on":""}${all?" alldone":""}" data-c="${e.cube}">
+          <span class="num">${L.count} <i>discs</i></span>
+          ${pct !== null && L.count ? `<span class="pin">${pct}%</span>` : ""}
+          <span class="gen">${esc(gs) || "-"}</span>
+          ${nd ? `<span class="done">${all ? "done" : nd + "/" + L.count}</span>` : ""}
+          ${pct !== null ? `<span class="bar" style="width:${Math.min(100,pct)}%"></span>` : ""}
+        </div></div></div>`;
+  }).join("");
   el("wall").querySelectorAll(".cell[data-c]").forEach(d =>
     d.onclick = () => { cube = d.dataset.c; hitBarcode = null; draw(); });
 }
@@ -219,7 +245,7 @@ function draw() {
 
   el("rmid").textContent = `${Math.round(L.occupiedMm)} mm used`;
   el("rmax").textContent = `${L.innerMm} mm`;
-  const gs = [...new Set(L.items.map(i => i.record.format === shelf.TEN_INCH ? "10-inch" : i.record.genre))].sort().join(", ");
+  const gs = genresOf(L.items).join(", ");
   const where = shelf.locationLabel(cube);
   el("meta").innerHTML = `<b>${where}</b> · ${esc(gs) || "empty"} · <b>${L.count}</b> discs · ` +
     (L.innerMm
