@@ -3008,12 +3008,12 @@
     "title": "La Périchole",
     "barcode": "VNL-XT93HC",
     "format": "LP",
-    "genre": "Opera",
+    "genre": "Operetta",
     "year": "1957",
     "coverImage": "covers/VNL-XT93HC.jpg",
     "dateAdded": "2026-04-01T11:01:46.607Z",
     "printed": true,
-    "cube": "cabinet"
+    "cube": "10"
   },
   {
     "artist": "Orbison, Roy",
@@ -5393,7 +5393,7 @@
     "cube": "11"
   },
   {
-    "artist": "Two Tons O'Fun (Weather Girls)",
+    "artist": "Weather Girls, The",
     "title": "Two Tons O'Fun",
     "barcode": "VNL-TRWDGM",
     "format": "LP",
@@ -5402,7 +5402,7 @@
     "coverImage": "covers/VNL-TRWDGM.jpg",
     "dateAdded": "2026-02-01T00:00:00.000Z",
     "printed": true,
-    "cube": "7"
+    "cube": "5"
   },
   {
     "artist": "Vangelis",
@@ -9073,10 +9073,10 @@
     "title": "La Belle Helene - Plasson / Norman / Orchestre du Capitole de Toulouse",
     "year": "1985",
     "format": "Box",
-    "genre": "Opera",
+    "genre": "Operetta",
     "barcode": "VNL-575GKA",
     "coverImage": null,
-    "cube": "cabinet",
+    "cube": "10",
     "dateAdded": "2026-08-30T19:24:34.877Z",
     "printed": false
   },
@@ -9241,10 +9241,10 @@
     "title": "Monsieur Choufleuri / Mesdames de la Halle / Pomme d'Api - Rosenthal / Orchestre Philharmonique de Monte-Carlo",
     "year": "1983",
     "format": "Box",
-    "genre": "Opera",
+    "genre": "Operetta",
     "barcode": "VNL-7S2HYC",
     "coverImage": "covers/VNL-7S2HYC.jpg",
-    "cube": "cabinet",
+    "cube": "10",
     "dateAdded": "2026-08-30T19:47:19.006Z",
     "printed": false
   },
@@ -9253,10 +9253,10 @@
     "title": "Orpheus In The Underworld - Plasson / Orchestra & Chorus of the Capitole de Toulouse (3LP Box)",
     "year": "1979",
     "format": "Box",
-    "genre": "Opera",
+    "genre": "Operetta",
     "barcode": "VNL-C60A8U",
     "coverImage": null,
-    "cube": "cabinet",
+    "cube": "10",
     "dateAdded": "2026-08-30T19:50:47.856Z",
     "printed": false
   },
@@ -9373,10 +9373,10 @@
     "title": "The Tales Of Hoffmann - Bonynge / L'Orchestre de la Suisse Romande (Sutherland, Domingo, Bacquier)",
     "year": "1972",
     "format": "Box",
-    "genre": "Opera",
+    "genre": "Operetta",
     "barcode": "VNL-FJQEIF",
     "coverImage": null,
-    "cube": "cabinet",
+    "cube": "10",
     "dateAdded": "2026-08-30T20:01:25.805Z",
     "printed": false
   },
@@ -9469,10 +9469,10 @@
     "title": "The Secret of Susanna (Il Segreto di Susanna) - Gardelli / Orchestra of the Royal Opera House, Covent Garden",
     "year": "1976",
     "format": "Box",
-    "genre": "Opera",
+    "genre": "Operetta",
     "barcode": "VNL-XND5VD",
     "coverImage": null,
-    "cube": "cabinet",
+    "cube": "10",
     "dateAdded": "2026-08-30T20:07:27.808Z",
     "printed": false
   },
@@ -9517,10 +9517,10 @@
     "title": "H.M.S. Pinafore - Sargent / Glyndebourne Festival Chorus / Pro Arte Orchestra",
     "year": "1959",
     "format": "Box",
-    "genre": "Opera",
+    "genre": "Operetta",
     "barcode": "VNL-FQ1K96",
     "coverImage": null,
-    "cube": "cabinet",
+    "cube": "10",
     "dateAdded": "2026-08-30T20:12:26.589Z",
     "printed": false
   },
