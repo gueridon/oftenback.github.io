@@ -1143,7 +1143,101 @@
           return face;
         },
       },
-      { key: "futaoki", jp: "蓋置", rom: "futaoki", soon: true },
+      {
+        key: "futaoki", jp: "蓋置", rom: "futaoki",
+        desc: "The rest, and the smallest thing in the room. The lid of the " +
+              "kettle is set on it, and the ladle after that. A ring of bamboo " +
+              "cut so that a node falls inside it, which is why it has a floor " +
+              "without anyone having given it one.",
+        build() {
+          // Measured off the photograph marked for the ro: as tall as it is
+          // wide, the node three tenths of the way down from the rim, and the
+          // node's ridge standing 6 per cent proud of the diameter.
+          //
+          // The node is also the FLOOR. That is the whole idea of the object:
+          // a length of culm cut above and below one node needs nothing added
+          // to hold a wet ladle, and you can see straight down onto it.
+          const R = 0.0230, HT = 0.0480, WALL = 0.0042, NODE = 0.0333;
+          // One continuous path makes the whole solid: out along the node's
+          // underside, down the inside of the lower tube, across the cut base,
+          // up the outside past the node's ridge, over the rim, down the inside
+          // of the upper cup, and in across the node's top face.
+          const g = lathe([
+            [NODE - 0.0003, 0.0000], [NODE - 0.0001, 0.0140], [NODE + 0.0001, 0.0186],
+            [0.0320, 0.0188], [0.0250, 0.0187], [0.0120, 0.0186],
+            [0.0000, 0.0184], [0.0000, 0.0184],
+            [0.0000, 0.0222], [0.0000, 0.0222],
+            [0.0015, 0.0228], [0.0120, 0.0229], [0.0250, 0.0230],
+            [0.0300, 0.0234], [NODE, 0.0244], [0.0362, 0.0235],
+            [0.0412, 0.0229], [0.0462, 0.0227],
+            [HT, R - 0.0004], [HT, R - 0.0004],
+            [HT, R - WALL], [HT, R - WALL],
+            [0.0450, 0.0187], [0.0400, 0.0186], [0.0362, 0.0184],
+            [0.0350, 0.0150], [NODE + 0.0014, 0.0000],
+          // 120 sides, and the count is forced by the fibre below: a mesh of N
+          // sides carries at most N/2 cycles round the circumference, and past
+          // that a fine stripe folds into a broad soft band. At 72 sides my 61
+          // cycle fibre aliased into exactly that.
+          ], 120, 6.8, 0.10);
+
+          // The colour is where this object is decided. Four surfaces on one
+          // turned line: a warm golden skin below the node, a paler and greener
+          // one above it (two internodes never weather alike), a brown scarred
+          // ring at the node itself, and a pale cream interior.
+          (function paint(geo) {
+            const pa = geo.attributes.position;
+            const rgb = new Float32Array(pa.count * 3);
+            const LO = [0.735, 0.615, 0.310], HI = [0.800, 0.710, 0.415];
+            const BAND = [0.430, 0.300, 0.130], SCAR = [0.235, 0.150, 0.070];
+            const IN = [0.885, 0.845, 0.735];
+            const mix = (a, b, t) => [a[0] + (b[0] - a[0]) * t,
+                                      a[1] + (b[1] - a[1]) * t,
+                                      a[2] + (b[2] - a[2]) * t];
+            for (let i = 0; i < pa.count; i++) {
+              const x = pa.getX(i), y = pa.getY(i), z = pa.getZ(i);
+              const r = Math.hypot(x, z), A = Math.atan2(z, x);
+              const inside = r < R - WALL * 0.55;
+              let c;
+              if (inside) {
+                // the bore, pale, and darker the deeper it lies: the upper cup
+                // measures its depth from the rim, the lower tube from the base
+                const up = y > NODE;
+                const d = up ? (HT - y) / (HT - NODE) : y / NODE;
+                // and only lightly: the well is 15mm deep in a 38mm bore, so it
+                // is a saucer, not a shaft, and it should look like one
+                c = mix(IN, [0.300, 0.262, 0.205], Math.min(1, d * 0.52));
+              } else {
+                c = mix(LO, HI, Math.max(0, Math.min(1, (y - NODE + 0.010) / 0.020)));
+                // the fibre, running lengthwise as it must
+                const fib = 0.011 * Math.sin(A * 37 + 1.2) + 0.006 * Math.sin(A * 53);
+                c = [c[0] + fib, c[1] + fib * 0.95, c[2] + fib * 0.70];
+              }
+              // the node ring, uneven all the way round, with darker scars
+              const nb = Math.max(0, 1 - Math.abs(y - NODE) / 0.0036);
+              if (nb > 0 && !inside) {
+                const w = 0.5 + 0.5 * Math.sin(A * 9 + 0.6) * Math.sin(A * 23 + 2.2);
+                c = mix(c, mix(BAND, SCAR, w * w), Math.pow(nb, 0.65) * (0.55 + 0.42 * w));
+              }
+              for (let ch = 0; ch < 3; ch++)
+                rgb[i * 3 + ch] = toLin(Math.max(0, Math.min(1, c[ch])));
+            }
+            geo.setAttribute("color", new THREE.BufferAttribute(rgb, 3));
+          })(g);
+
+          const m = new THREE.Mesh(g, new THREE.MeshStandardMaterial({
+            color: 0xffffff, vertexColors: true, roughness: 0.40,
+            metalness: 0.0, side: THREE.DoubleSide,
+          }));
+          // Tipped toward the viewer, because the inside is the object. The
+          // camera these objects share sits only nine degrees above the
+          // horizon, and a rim seen from nine degrees is a sliver: the well is
+          // shallow and wide, so the cone within which it can be looked into is
+          // nearly seventy degrees, and it was being missed by a hair. Twenty
+          // degrees of lean spends almost nothing and opens it.
+          const tip = new THREE.Group(); tip.add(m); tip.rotation.x = 0.34;
+          return tip;
+        },
+      },
       {
         key: "mizusashi", jp: "水指", rom: "mizusashi",
         desc: "The fresh water, and the only cold thing in the room. It is " +
