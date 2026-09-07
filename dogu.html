@@ -55,8 +55,15 @@
       text-transform:uppercase;color:var(--soft);font-weight:600;}
 
     /* the rack, in the writing the chashitsu chapter found */
-    .rack{margin-top:34px;}
+    /* The rack is a wrapping row of GROUPS, not a stack of them. The set, the
+       two things already standing in the room and the one thing worn make
+       three short groups that were each taking a line of their own and leaving
+       most of it empty; side by side they fill one. The long group, what is
+       carried in, claims a whole line to itself. */
+    .rack{margin-top:34px;display:flex;flex-wrap:wrap;align-items:flex-start;
+      column-gap:34px;}
     .rack .grp{margin-bottom:16px;}
+    .rack .grp.wide{flex-basis:100%;}
     .rack .glab{display:block;font-size:9px;letter-spacing:.26em;
       text-transform:uppercase;color:var(--soft);font-weight:600;
       margin:0 0 4px 12px;}
@@ -151,25 +158,19 @@
     // Sorted by key rather than written in order, so that the one object with a
     // hundred lines of geometry can stay where it is in the file while the rack
     // reads the way the tea is actually made.
-    const ORDER = ["set",
+    const ORDER = ["set", "kama", "mizusashi", "fukusa",
                    "natsume", "chawan", "chasen", "chashaku",
-                   "kensui", "hishaku", "futaoki",
-                   "kama", "mizusashi", "fukusa"];
+                   "kensui", "hishaku", "futaoki"];
     OBJECTS.sort((a, b) => ORDER.indexOf(a.key) - ORDER.indexOf(b.key));
     const mark = (key, f) => Object.assign(OBJECTS.find((o) => o.key === key), f);
-    mark("set", { grp: "at their true sizes" });
-    mark("natsume", { grp: "carried in, in this order" });
-    mark("chawan", { tie: true });
-    mark("kensui", { tie: true });
-    // The RO is not here, and the reason is worth stating: it is not a dogu.
-    // A hearth is cut into the floor. It cannot be carried in, chosen for an
-    // occasion, or put away, and those are the things a utensil does. The
-    // kettle standing over it is a dogu, and this page's own epigraph settles
-    // that, since the kettles are Sadler's example of objects with names. The
-    // hearth belongs to the room, and the chashitsu chapter is built on it:
-    // the eight rooms are eight positions of that one square.
+    // The set needs no heading: 一式 says it. The two short groups join it on
+    // the same line, and what is carried in takes the line below, whole.
+    mark("set", { grp: "" });
     mark("kama", { grp: "already in the room" });
     mark("fukusa", { grp: "on the host" });
+    mark("natsume", { grp: "carried in, in this order", wide: true });
+    mark("chawan", { tie: true });
+    mark("kensui", { tie: true });
 
     // ---- the field of nothing ----------------------------------------------
     const canvas = document.getElementById("stage");
@@ -325,10 +326,13 @@
     const rack = document.getElementById("rack");
     let row = null;
     OBJECTS.forEach((o, i) => {
-      if (o.grp) {
+      if (o.grp !== undefined) {
         const g = document.createElement("div");
         g.className = "grp";
-        g.innerHTML = '<span class="glab">' + o.grp + "</span>";
+        // An empty label still occupies its line: the set needs no heading but
+        // its buttons must sit level with the ones beside it.
+        g.innerHTML = '<span class="glab">' + (o.grp.trim() || "&nbsp;") + "</span>";
+        if (o.wide) g.classList.add("wide");
         row = document.createElement("div");
         row.className = "row";
         g.appendChild(row);
