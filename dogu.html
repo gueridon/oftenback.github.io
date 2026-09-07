@@ -1574,6 +1574,22 @@
       if (!o || o.soon) return;
       cur = i;
       holder.clear();
+      // BACK TO THE DESIGNED POSE, and this fixes two faults at once.
+      //
+      // The first is visible: the holder keeps whatever rotation the last
+      // object's idle turn left it at, so every object after the first arrived
+      // at an arbitrary angle. Each of these objects has a pose chosen for it
+      // (the scoop leans, the futaoki tips, the ladle turns its mouth to the
+      // camera), and all of that was being thrown away on arrival.
+      //
+      // The second is arithmetic and was the one making things resize. The
+      // framing below reads a world space bounding box, and an AXIS ALIGNED box
+      // of a ROTATED object depends on the rotation: measured, the same bowl
+      // gave 143mm across at one visit and 160 at the next. Worse, the centring
+      // then subtracted a world vector from a local position, which is only the
+      // same thing when the parent is unrotated. Resetting first makes both
+      // true rather than papering over either.
+      holder.quaternion.identity();
       const obj = o.build();
       holder.add(obj);
       holder.updateMatrixWorld(true);
