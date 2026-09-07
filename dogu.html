@@ -1144,12 +1144,84 @@
         },
       },
       { key: "futaoki", jp: "蓋置", rom: "futaoki", soon: true },
-      { key: "mizusashi", jp: "水指", rom: "mizusashi", soon: true },
-      { key: "ro", jp: "炉", rom: "ro", soon: true },
+      {
+        key: "mizusashi", jp: "水指", rom: "mizusashi",
+        desc: "The fresh water, and the only cold thing in the room. It is " +
+              "already standing when the guests come in, and everything after " +
+              "that is drawn from it: the kettle is topped up from it, the " +
+              "bowl is rinsed from it. Stoneware, under a flat lacquer lid.",
+        build() {
+          // Straight-sided, which is the plain form. A mizusashi is the biggest
+          // object in the set and the least demonstrative: it stands at the
+          // back and is opened once.
+          const R = 0.0875, HT = 0.1500;
+          const g = new THREE.Group();
+
+          const bg = lathe([
+            [0.0000, 0.0000], [0.0000, 0.0700], [0.0000, 0.0700],
+            [0.0040, 0.0762], [0.0200, 0.0822], [0.0500, 0.0860],
+            [0.0850, R], [0.1150, 0.0868], [0.1380, 0.0845],
+            [HT, 0.0838], [HT, 0.0838],
+            [HT, 0.0788], [HT, 0.0788],
+            [0.1400, 0.0784], [0.1000, 0.0800], [0.0500, 0.0790],
+            [0.0140, 0.0740], [0.0080, 0.0400], [0.0080, 0.0000],
+          ], 80, 4.2, 0.18);
+          // Ash glazed stoneware: a warm grey buff, thinner and paler over the
+          // shoulder where it was pulled, and speckled with iron.
+          // The mottle has to be SMALL here. glaze's blobs are about 35mm
+          // across, which on a raku bowl of 116 is a cloud or two and on a jar
+          // of 175 is camouflage. Turned right down, and the character is
+          // carried by the iron speckle instead, which is fine enough to read
+          // as a surface rather than as a pattern.
+          glaze(bg, 5.6, [0.345, 0.315, 0.258], [0.650, 0.615, 0.522], 0.12,
+                undefined, 0, 0, 0.34, 0.60);
+          // and the inside is darker, the same reason as the ladle: a jar's
+          // mouth looks up into a bright ceiling and would otherwise come out
+          // lighter than its own wall
+          (function inside(geo) {
+            const pa = geo.attributes.position, ca = geo.attributes.color;
+            for (let i = 0; i < pa.count; i++) {
+              const x = pa.getX(i), y = pa.getY(i), z = pa.getZ(i);
+              if (Math.hypot(x, z) > 0.0812) continue;
+              if (y > HT - 0.0006) continue;
+              const deep = Math.max(0, Math.min(1, (HT - y) / HT));
+              const k = 0.72 - 0.46 * Math.pow(deep, 1.2);
+              ca.setXYZ(i, ca.getX(i) * k, ca.getY(i) * k * 0.94, ca.getZ(i) * k * 0.86);
+            }
+          })(bg);
+          g.add(new THREE.Mesh(bg, new THREE.MeshStandardMaterial({
+            color: 0xffffff, vertexColors: true, roughness: 0.62,
+            metalness: 0.0, side: THREE.DoubleSide,
+          })));
+
+          // The lid is BLACK LACQUER, a nuri-buta, and that pairing is a real
+          // thing in the room rather than a decision of mine: the coldest,
+          // plainest, heaviest object in the set wears the same finish as the
+          // smallest and most refined one. It is flat and a hair wider than the
+          // mouth, and it carries a small waisted knob, because the lid has to
+          // be lifted and there is nothing else to take hold of. The profile
+          // simply keeps going instead of closing at the centre: the knob is
+          // not a second piece, it is the same turned line continuing upward.
+          const lg = lathe([
+            [0.1508, 0.0000], [0.1508, 0.0600], [0.1508, 0.0872],
+            [0.1508, 0.0872], [0.1560, 0.0884], [0.1560, 0.0884],
+            [0.1598, 0.0872], [0.1622, 0.0800], [0.1638, 0.0600],
+            [0.1646, 0.0300], [0.1650, 0.0140],
+            [0.1654, 0.0104], [0.1690, 0.0081], [0.1730, 0.0100],
+            [0.1752, 0.0113], [0.1763, 0.0098], [0.1769, 0.0058],
+            [0.1771, 0.0000],
+          ], 80, 4.2, 0);
+          g.add(new THREE.Mesh(lg, new THREE.MeshStandardMaterial({
+            color: 0x0e0d0f, roughness: 0.085, metalness: 0.0,
+            side: THREE.DoubleSide,
+          })));
+          return g;
+        },
+      },
       { key: "kama", jp: "釜", rom: "kama", soon: true },
       { key: "fukusa", jp: "帛紗", rom: "fukusa", soon: true },
     ];
-    // The order is not Sadler's, it is the one this group works in: the natsume
+    // The order is not Sadler's: the natsume
     // first, then the bowl with the whisk and the scoop standing in it, then the
     // waste water with the ladle and its rest. That is the whole of what is
     // carried in.
@@ -1166,13 +1238,20 @@
     // reads the way the tea is actually made.
     const ORDER = ["natsume", "chawan", "chasen", "chashaku",
                    "kensui", "hishaku", "futaoki",
-                   "ro", "kama", "mizusashi", "fukusa"];
+                   "kama", "mizusashi", "fukusa"];
     OBJECTS.sort((a, b) => ORDER.indexOf(a.key) - ORDER.indexOf(b.key));
     const mark = (key, f) => Object.assign(OBJECTS.find((o) => o.key === key), f);
     mark("natsume", { grp: "carried in, in this order" });
     mark("chawan", { tie: true });
     mark("kensui", { tie: true });
-    mark("ro", { grp: "already in the room" });
+    // The RO is not here, and the reason is worth stating: it is not a dogu.
+    // A hearth is cut into the floor. It cannot be carried in, chosen for an
+    // occasion, or put away, and those are the things a utensil does. The
+    // kettle standing over it is a dogu, and this page's own epigraph settles
+    // that, since the kettles are Sadler's example of objects with names. The
+    // hearth belongs to the room, and the chashitsu chapter is built on it:
+    // the eight rooms are eight positions of that one square.
+    mark("kama", { grp: "already in the room" });
     mark("fukusa", { grp: "on the host" });
 
     // ---- the field of nothing ----------------------------------------------
