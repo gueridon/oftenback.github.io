@@ -1145,23 +1145,28 @@
         // The node is also the FLOOR. That is the whole idea of the object:
         // a length of culm cut above and below one node needs nothing added
         // to hold a wet ladle, and you can see straight down onto it.
-        const R = 0.0230, HT = 0.0480, WALL = 0.0042, NODE = 0.0333;
+        // The node sits near the MIDDLE. My first photograph, the one marked
+        // for the ro, put it at 31 per cent down from the rim, and I built it
+        // there; two more pieces since then both measure 46. Two against one,
+        // so it moves. Which also deepens the well, since the node is the floor:
+        // 26mm of water sits in it now instead of 15.
+        const R = 0.0230, HT = 0.0480, WALL = 0.0042, NODE = 0.0259;
         // One continuous path makes the whole solid: out along the node's
         // underside, down the inside of the lower tube, across the cut base,
         // up the outside past the node's ridge, over the rim, down the inside
         // of the upper cup, and in across the node's top face.
         const g = lathe([
           [NODE - 0.0003, 0.0000], [NODE - 0.0001, 0.0140], [NODE + 0.0001, 0.0186],
-          [0.0320, 0.0188], [0.0250, 0.0187], [0.0120, 0.0186],
+          [0.0246, 0.0188], [0.0180, 0.0187], [0.0100, 0.0186],
           [0.0000, 0.0184], [0.0000, 0.0184],
           [0.0000, 0.0222], [0.0000, 0.0222],
-          [0.0015, 0.0228], [0.0120, 0.0229], [0.0250, 0.0230],
-          [0.0300, 0.0234], [NODE, 0.0244], [0.0362, 0.0235],
-          [0.0412, 0.0229], [0.0462, 0.0227],
+          [0.0015, 0.0228], [0.0100, 0.0229], [0.0190, 0.0230],
+          [0.0226, 0.0234], [NODE, 0.0244], [0.0292, 0.0235],
+          [0.0360, 0.0229], [0.0440, 0.0227],
           [HT, R - 0.0004], [HT, R - 0.0004],
           [HT, R - WALL], [HT, R - WALL],
-          [0.0450, 0.0187], [0.0400, 0.0186], [0.0362, 0.0184],
-          [0.0350, 0.0150], [NODE + 0.0014, 0.0000],
+          [0.0450, 0.0187], [0.0380, 0.0186], [0.0300, 0.0184],
+          [0.0276, 0.0150], [NODE + 0.0014, 0.0000],
         // 120 sides, and the count is forced by the fibre below: a mesh of N
         // sides carries at most N/2 cycles round the circumference, and past
         // that a fine stripe folds into a broad soft band. At 72 sides my 61
