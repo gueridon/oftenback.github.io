@@ -1,162 +1,1009 @@
 <!doctype html>
-<html lang="fr">
+<html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="google" content="notranslate">
-<title>oftenback.io</title>
-<style>
-  /* the Nakata zen scene, ported from the phone launcher's zen-mode home screen
-     (nakata-launcher/MainActivity.kt): a single wobbling/drifting vermillion blob
-     on a darkened cream ground, with a few sakura petals falling and swaying past
-     it. Same darkened ground as the launcher (Nakata.GROUND, darkened). */
-  :root { --ground:#cec8bf; --pad:44px; --mark:#ff6a00; }  /* oftenback.io: bright fluorescent orange */
-  html, body { margin:0; height:100%; background:var(--ground); overflow:hidden; }
-  #c {
-    position:fixed; left:var(--pad); top:var(--pad);
-    width:calc(100vw - 2*var(--pad)); height:calc(100vh - 2*var(--pad));
-    display:block;
-  }
-  /* oftenback.io, a whisper under the lower-left corner (nothing shouts) */
-  #mark {
-    position:fixed; left:var(--pad); bottom:14px;
-    font:700 12px/1.4 -apple-system,"Segoe UI",system-ui,sans-serif;
-    letter-spacing:0.42em; text-transform:lowercase;
-    color:var(--mark); user-select:none; pointer-events:none;
-  }
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>oftenback</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="site.css">
+  <style>
+    /* The sky is the page. It sits behind everything and never scrolls -- the
+       words and the room list ride on top of it. Step 1 of
+       intro-sakura-plan.md: the field alone, no branch, no cloud, no petal. */
+    html,body{height:100%;margin:0;overflow:hidden;}
+    /* width/height matter before any script runs: a canvas with no CSS size
+       is 300x150, and that is exactly what flashed in the top left corner on
+       arrival, next to the placeholder text, on a bare cream page. */
+    #sky-canvas{display:block;position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;}
+    /* The #veil ELEMENT is in this page's markup on purpose -- site.js runs at
+       the end of the body, behind a blocking fetch of three.min.js, and a page
+       cannot be covered by a veil that does not exist yet. Its RULES live in
+       site.css, which is a blocking <link> in the head and therefore already
+       applied at the first paint. */
+    .room-content{text-shadow:0 1px 14px rgba(255,255,255,.75);}
+    /* The room list and the mark are styled for cream: a warm pale grey at
+       58% opacity, which is a whisper on #f4ede2 and simply vanishes over a
+       blue sky -- the first render made that plain. Re-pointed to a cool deep
+       ink that belongs to air, and the menu's drop shadow inverted from a dark
+       lift to a soft white halo, which is what separates dark text from sky.
+       Scoped to this page; every other room keeps its cream styling. */
+    .side{filter:drop-shadow(0 1px 10px rgba(255,255,255,.72));}
+    .side .stop{color:#1f3f5e;opacity:.64;}
+    .side .stop:hover{color:#0d2136;}
+    .side .link{background:#1f3f5e;opacity:.28;}
+    .brand-mini span{color:#1f3f5e;}
+    .brand-mini:hover span{color:#0d2136;}
+
+    /* The only sentence on the site so far: hello, three times. The Japanese
+       carries it and the two Latin words stand under it as glosses, which is
+       the pattern the tea chapters settled on. Everything is in the page's own
+       cool ink rather than the cream rooms' warm one, because warm grey on a
+       blue sky simply disappears. */
+    .hello{display:flex;flex-direction:column;align-items:center;gap:11px;}
+    .hello .jp{font:400 clamp(26px,3.4vw,38px)/1 serif;letter-spacing:.34em;
+      color:#1f3f5e;text-indent:.34em;}
+    .hello .rom{display:flex;gap:26px;font-size:11px;letter-spacing:.36em;
+      text-transform:lowercase;color:#1f3f5e;opacity:.66;font-weight:600;}
+    .hello .rom i{font-style:normal;}
+    .note{max-width:400px;font-size:14px;line-height:1.95;font-weight:300;
+      color:#1f3f5e;opacity:.74;}
+    /* the content sits in the clear sky under the branch, not dead centre */
+    .room{align-items:flex-end;padding-bottom:clamp(90px,20vh,190px);}
+    @media (max-width:760px){ .note{max-width:none;} }
+  </style>
 </head>
 <body>
-  <canvas id="c"></canvas>
-  <div id="mark">oftenback.io</div>
-<script>
-(function () {
-  const cv = document.getElementById('c');
-  const ctx = cv.getContext('2d');
+  <div id="veil"></div>
+  <canvas id="sky-canvas"></canvas>
+  <main class="room">
+    <div class="room-content">
+      <div class="hello">
+        <span class="jp">ようこそ</span>
+        <span class="rom"><i>welcome</i><i>bienvenue</i></span>
+      </div>
+      <p class="note">This house is being built one room at a time. The rooms
+      under our hands now are the ones given to chanoyu; the rest is still
+      sky.</p>
+    </div>
+  </main>
 
-  const GROUND = [206, 200, 191];             // --ground, #cec8bf
-  const BLOB_RGB = "227,66,52";                // vermillion (Nakata.VERMILLION)
-  const BLOB_ALPHA = 0.10;                     // BUTTON_CORE_ALPHA in the launcher
-  const PHI_INV = 0.6180339887498949;          // golden-ratio blob position, same corner
-  const PETAL_MAX = 3;
-  const PETAL_SPAWN_MS = 3800;
-  const TAU = 2 * Math.PI;
+  <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+  <script>
+    const t0build = performance.now();
 
-  let w = 0, h = 0, dpr = 1;
-  let baseR = 0, driftR = 0, petalR = 0, fallSpeed = 0, swayAmp = 0;
-  let blobX = 0, blobY = 0;
+    const canvas = document.getElementById("sky-canvas");
+    const tCtx = performance.now();
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+    window.__ctxMs = +(performance.now() - tCtx).toFixed(1);
+    renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+    renderer.setSize(innerWidth, innerHeight);
+    // No tone mapping here, unlike the garden. The garden is a lit scene and
+    // ACES earns its keep there; a sky is a flat field of chosen colour, and
+    // tone mapping would quietly desaturate the one thing this page IS.
+    renderer.toneMapping = THREE.NoToneMapping;
+    // renderer.info resets on every render() call, and this page now makes six
+    // of them per frame -- so __tris was reporting the two triangles of the
+    // last composite quad. Reset once a frame instead, by hand, and the count
+    // is the whole frame again.
+    renderer.info.autoReset = false;
 
-  function resize() {
-    dpr = Math.min(window.devicePixelRatio || 1, 2);
-    w = cv.clientWidth; h = cv.clientHeight;
-    cv.width = w * dpr; cv.height = h * dpr;
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, 0.1, 400);
+    // Looking up, but only a little: enough that the frame is nearly all sky
+    // and the pale haze sits just below the bottom edge rather than in view.
+    camera.position.set(0, 0, 0);
+    // First aim was 6.4 and the bottom fifth of the frame sat in flat haze --
+    // one dead colour across a quarter of the picture. Raised until the pale
+    // band is just off the bottom edge: the frame now runs from a hint of
+    // haze at the very foot to near-zenith at the top, all of it moving.
+    camera.lookAt(0, 10.5, -20);
 
-    // Same proportions as the launcher relative to its own virtual space
-    // (BUTTON_R/VH, BUTTON_DRIFT_RADIUS/BUTTON_R, PETAL_R/BUTTON_R, etc.),
-    // scaled here to whatever viewport this page happens to have.
-    const m = Math.min(w, h);
-    baseR = m * 0.09;
-    driftR = baseR;
-    petalR = baseR * 0.32;
-    fallSpeed = h * 0.0268;
-    swayAmp = w * 0.04;
-    blobX = w * PHI_INV;
-    blobY = h * (1 - PHI_INV);
-  }
-  window.addEventListener('resize', resize);
-  resize();
-
-  // 9-point wobbling closed path, quad-smoothed -- same math as the launcher's
-  // blobPath() in MainActivity.kt.
-  function blobPath(cx, cy, r, t, seed) {
-    const n = 9, pts = [];
-    for (let i = 0; i < n; i++) {
-      const ang = TAU * i / n;
-      const wobble = 0.07 * Math.sin(t * 0.28 + ang * 3 + seed) + 0.05 * Math.sin(t * 0.17 - ang * 2 + seed * 1.7);
-      const rr = r * (1 + wobble);
-      pts.push([cx + rr * Math.cos(ang), cy + rr * Math.sin(ang)]);
-    }
-    const mid = (a, b) => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
-    const p = new Path2D();
-    const first = mid(pts[n - 1], pts[0]);
-    p.moveTo(first[0], first[1]);
-    for (let i = 0; i < n; i++) {
-      const cur = pts[i], next = pts[(i + 1) % n], m2 = mid(cur, next);
-      p.quadraticCurveTo(cur[0], cur[1], m2[0], m2[1]);
-    }
-    p.closePath();
-    return p;
-  }
-
-  // Falling sakura petals: spawned from the blob, drift down while swaying,
-  // culled past the bottom -- same spawn/cull logic as the launcher's Petal code.
-  let petals = [], nextSpawn = 0;
-  let sakuraTinted = null;
-  (function loadSakura() {
-    const img = new Image();
-    img.onload = function () {
-      const off = document.createElement('canvas');
-      off.width = img.width; off.height = img.height;
-      const octx = off.getContext('2d');
-      octx.drawImage(img, 0, 0);
-      octx.globalCompositeOperation = 'source-atop';
-      octx.fillStyle = 'rgb(' + BLOB_RGB + ')';   // full-opacity tint; BLOB_ALPHA applied at draw time
-      octx.fillRect(0, 0, off.width, off.height);
-      sakuraTinted = off;
+    // ---- the field --------------------------------------------------------
+    // "tres bleu" and "un bleu doux" are not in conflict, they describe a
+    // gradient: deep and luminous at the zenith, softening to a pale haze
+    // lower down. That is what the reference photographs actually show, and
+    // it is also how Farrow's sleeve holds its blue -- never one flat slab.
+    //
+    // Three stops rather than two. A straight two-colour ramp reads as a
+    // gradient; a sky reads as air, and air has a soft shoulder in the middle
+    // where the deep blue gives way. The stops overlap on purpose.
+    const SKY = {
+      zenith: new THREE.Color(0x2a6fc6),
+      mid:    new THREE.Color(0x74acdf),
+      haze:   new THREE.Color(0xd7e8f4),
     };
-    img.src = 'nakata_sakura.png';
-  })();
+    const R = 120;
+    const skyMat = new THREE.ShaderMaterial({
+      side: THREE.BackSide,
+      depthWrite: false,
+      uniforms: {
+        cZenith: { value: SKY.zenith },
+        cMid:    { value: SKY.mid },
+        cHaze:   { value: SKY.haze },
+        uR:      { value: R },
+      },
+      vertexShader: [
+        "varying vec3 vWorld;",
+        "void main() {",
+        "  vWorld = (modelMatrix * vec4(position, 1.0)).xyz;",
+        "  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);",
+        "}",
+      ].join("\n"),
+      fragmentShader: [
+        "uniform vec3 cZenith; uniform vec3 cMid; uniform vec3 cHaze;",
+        "uniform float uR;",
+        "varying vec3 vWorld;",
+        "void main() {",
+        "  float h = clamp(vWorld.y / uR, -1.0, 1.0);",
+        "  float t = smoothstep(-0.10, 0.92, h);",
+        "  vec3 c = mix(cHaze, cMid, smoothstep(0.00, 0.46, t));",
+        "  c = mix(c, cZenith, smoothstep(0.38, 1.00, t));",
+        "  gl_FragColor = vec4(c, 1.0);",
+        // three.js converts linear -> sRGB here. The Color objects above are
+        // already linear (ColorManagement reads the hex as sRGB and converts),
+        // so this is the one place the round trip closes correctly.
+        "  #include <colorspace_fragment>",
+        "}",
+      ].join("\n"),
+    });
+    // 64x32 is more than a gradient needs, but the cost is nothing and a
+    // coarser sphere shows its silhouette as faint banding at the corners.
+    const sky = new THREE.Mesh(new THREE.SphereGeometry(R, 64, 32), skyMat);
+    scene.add(sky);
 
-  function updatePetals(t) {
-    if (t >= nextSpawn) {
-      nextSpawn = t + PETAL_SPAWN_MS / 1000;
-      petals = petals.filter(p => p.y0 + p.fallSpeed * (t - p.spawnT) <= h + petalR * 2);
-      if (petals.length < PETAL_MAX) {
-        petals.push({
-          spawnT: t, x0: blobX, y0: blobY,
-          swayPhase: Math.random() * TAU,
-          swaySpeed: 0.5 + Math.random() * 0.4,
-          swayAmp: swayAmp * (0.7 + Math.random() * 0.6),
-          fallSpeed: fallSpeed * (0.8 + Math.random() * 0.4),
+    // Two numbers, not one: creating the WebGL context is the browser's work
+    // and is glacial under software rendering, while building the scene is
+    // ours. Conflating them would have had me optimising the wrong thing.
+    window.__buildMs = +(performance.now() - t0build).toFixed(1);
+    window.__sceneMs = +(window.__buildMs - window.__ctxMs).toFixed(1);
+    // ---- the clouds -------------------------------------------------------
+    // "quelques nuages", "qui passent doucement". Three facts do the work, and
+    // without them a cloud is only a smudge:
+    //
+    //   a cumulus has a FLAT BASE and a DOMED TOP. Every puff sits its bottom
+    //     on one line and the dome comes from the puffs growing toward the
+    //     middle -- so the silhouette is got for free, not drawn.
+    //   it is brilliant white on top and faintly GREY-BLUE underneath, because
+    //     the base is in its own shadow. That single tint is all the volume a
+    //     cloud needs.
+    //   distant ones are smaller, paler and BLUER, sinking into the haze.
+    //     That is what gives a sky its depth.
+    //
+    // Built as soft billboard puffs, the way the garden's steam was: real
+    // cumulus ARE lumpy masses of soft blobs, so the technique is honest here
+    // rather than a shortcut. One merged geometry per cloud, one draw call.
+    // Off by default now: with the branches in, the bare gradient is the
+    // Farrow field the composition was chosen for. ?clouds=1 brings them back;
+    // nothing about them was deleted.
+    const CLOUDS_ON = new URLSearchParams(location.search).get("clouds") === "1";
+    // Far enough away that each one subtends a modest angle. The first plan
+    // sat them at z = -60 to -100, where a 26-wide cloud fills a third of the
+    // frame and four of them merge into one continuous bank -- the opposite of
+    // "quelques nuages". Pushed out past -110, the same cloud reads at a sixth
+    // of the width and the sky between them comes back.
+    // Measured against the frame rather than guessed: at 1.0 the nearest cloud
+    // takes about two and a half minutes to cross, the furthest about six. In
+    // twenty seconds of looking, that is a seventh of the width -- movement you
+    // notice without ever catching it. ?cloudspeed= to judge another figure.
+    const CS_P = parseFloat(new URLSearchParams(location.search).get("cloudspeed"));
+    const CLOUD_SPEED = isFinite(CS_P) ? CS_P : 1.0;
+    const CLOUD_WRAP = 210;            // wide enough that only one or two show
+
+    function puffTexture() {
+      const S = 128, c = document.createElement("canvas");
+      c.width = c.height = S;
+      const x = c.getContext("2d"), img = x.createImageData(S, S);
+      for (let j = 0; j < S; j++) for (let i = 0; i < S; i++) {
+        const dx = (i + 0.5) / S * 2 - 1, dy = (j + 0.5) / S * 2 - 1;
+        const d = Math.min(1, Math.hypot(dx, dy));
+        // Two attempts to get this right. A bright core with a weak halo gave a
+        // string of separate balls. (1-d^2)^2 merged them, but nowhere near
+        // opaque enough: a dozen overlapping puffs still never reached white,
+        // so the clouds read as haze. What works is a genuinely FLAT opaque
+        // plateau across the inner third, then a long smooth tail -- solid
+        // where they pile up, soft where they end.
+        const e = Math.max(0, Math.min(1, (d - 0.30) / 0.70));
+        const a = 1 - e * e * (3 - 2 * e);
+        const k = (j * S + i) * 4;
+        img.data[k] = 255; img.data[k + 1] = 255; img.data[k + 2] = 255;
+        img.data[k + 3] = Math.round(Math.max(0, Math.min(1, a)) * 255);
+      }
+      x.putImageData(img, 0, 0);
+      const tex = new THREE.CanvasTexture(c);
+      tex.colorSpace = THREE.SRGBColorSpace;
+      return tex;
+    }
+
+    const hash = (a, b) => {
+      const v = Math.sin(a * 127.1 + b * 311.7) * 43758.5453;
+      return v - Math.floor(v);
+    };
+
+    const CLOUD_TOP = new THREE.Color(0xffffff);
+    const CLOUD_BASE = new THREE.Color(0xd9e5f0);   // the underside, in shade
+
+    function makeCloud(seed, width, dist) {
+      const pos = [], uv = [], col = [];
+      const puffs = [];
+      // A cumulus is not a row of balls, which is what the first version drew.
+      // The second version tried to fix it by growing the puffs where the
+      // cloud is tall -- and that failed twice over: the "stack a second one
+      // on top" test could never fire (it wanted H > 2.15r while the radius
+      // WAS 0.54H, i.e. H = 1.85r), so there was never a dome; and the puffs
+      // at the tapering ends came out smaller than the gap between them, which
+      // is exactly the isolated circles the render showed.
+      //
+      // So: puffs of roughly CONSTANT size, always wider than their spacing so
+      // they cannot help but merge, and the shape comes from HOW MANY are
+      // stacked in each column. Two high at the shoulders, three or four in
+      // the middle. Flat foot, domed top, and no arithmetic that can silently
+      // do nothing.
+      const height = width * 0.55;
+      const n = Math.max(4, Math.round(width / (height * 0.30)));
+      const spacing = width / (n - 1);
+      const rBase = spacing * 0.94;
+      for (let i = 0; i < n; i++) {
+        const u = i / (n - 1);
+        // never tapering to nothing: the ends keep two thirds of the height,
+        // so a cumulus ends in a shoulder rather than a point
+        const prof = Math.pow(Math.sin(Math.PI * (0.13 + 0.74 * u)), 0.72);
+        const H = height * prof * (0.88 + 0.26 * hash(seed, i * 3 + 2));
+        const r = rBase * (0.90 + 0.20 * hash(seed, i * 3 + 3));
+        const layers = Math.max(1, Math.round(H / (r * 0.85)));
+        // The jitter belongs to the COLUMN, not to each layer of it. Drawing a
+        // fresh offset per layer made every stack zigzag, and the gaps that
+        // opened between them are the castellated silhouette the render
+        // showed. One offset per column, and halved.
+        const jit = (hash(seed, i * 11 + 7) - 0.5) * spacing * 0.22;
+        // Columns on a strict grid read as a grid -- the render showed a
+        // regular lattice of bumps, which no cumulus has. Staggered like
+        // brickwork, so no two neighbouring stacks line up.
+        const stagger = (i % 2) * r * 0.34;
+        for (let j = 0; j < layers; j++) {
+          const rr = r * (1 - 0.10 * (layers > 1 ? j / (layers - 1) : 0));
+          puffs.push([(u - 0.5) * width + jit, stagger + rr + j * r * 0.78, rr]);
+        }
+      }
+      // and a few free puffs riding the crest, off the grid entirely, to break
+      // what remains of the regularity along the top
+      const crest = 3 + Math.floor(hash(seed, 23) * 3);
+      for (let i = 0; i < crest; i++) {
+        const u = 0.18 + 0.64 * hash(seed, i * 13 + 29);
+        const prof = Math.pow(Math.sin(Math.PI * (0.13 + 0.74 * u)), 0.72);
+        const rr = rBase * (0.52 + 0.30 * hash(seed, i * 13 + 31));
+        puffs.push([(u - 0.5) * width, height * prof * (0.80 + 0.16 * hash(seed, i * 13 + 37)), rr]);
+      }
+      let top = 0;
+      puffs.forEach(([, y, r]) => { top = Math.max(top, y + r); });
+
+      puffs.forEach(([cx, cy, r], i) => {
+        const spin = hash(seed, i * 7 + 17) * Math.PI * 2;
+        const cs = Math.cos(spin), sn = Math.sin(spin);
+        const quad = [[-1, -1, 0, 0], [1, -1, 1, 0], [1, 1, 1, 1], [-1, -1, 0, 0], [1, 1, 1, 1], [-1, 1, 0, 1]];
+        for (const [qx, qy, tu, tv] of quad) {
+          const rx = (qx * cs - qy * sn) * r, ry = (qx * sn + qy * cs) * r;
+          const wy = cy + ry;
+          pos.push(cx + rx, wy, 0);
+          uv.push(tu, tv);
+          // white on top, cool underneath -- read from the vertex's height in
+          // the cloud as a whole, not within its own puff, so the gradient
+          // belongs to the mass and not to each ball in it
+          // The shade belongs to the UNDERSIDE, not to the whole mass. Reading
+          // it across the full height turned two thirds of every cloud blue,
+          // which is what made them look like haze bands rather than clouds.
+          const f = Math.max(0, Math.min(1, wy / (top * 0.34)));
+          const c = CLOUD_BASE.clone().lerp(CLOUD_TOP, f * f * (3 - 2 * f));
+          col.push(c.r, c.g, c.b);
+        }
+      });
+
+      const g = new THREE.BufferGeometry();
+      g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+      g.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2));
+      g.setAttribute("color", new THREE.Float32BufferAttribute(col, 3));
+      return g;
+    }
+
+    const clouds = [];
+    if (CLOUDS_ON) {
+      const puffTex = puffTexture();
+      // Kept low in the frame on purpose: real skies carry their cumulus in a
+      // band, and leaving the zenith empty and blue is the Farrow restraint
+      // the whole composition rests on.
+      const PLAN = [
+        //   x     y      z    width  opacity
+        [  -70,   26,  -118,   30,  0.96 ],
+        [   64,   38,  -142,   38,  0.86 ],
+        [  178,   21,  -112,   24,  0.92 ],
+        [  -12,   52,  -175,   44,  0.60 ],
+      ];
+      PLAN.forEach(([x, y, z, w, op], i) => {
+        const dist = Math.hypot(x, y, z);
+        // Parallax belongs to DEPTH, not to distance from the camera. Using
+        // the full distance meant a cloud that happened to start far off to
+        // one side was slowed for good, and two clouds at the same depth
+        // drifted at visibly different speeds. Measured: 0.70 vs 0.46 u/s at
+        // z = -118 and -112.
+        const depth = Math.abs(z);
+        const mat = new THREE.MeshBasicMaterial({
+          map: puffTex, transparent: true, depthWrite: false, depthTest: false,
+          vertexColors: true, opacity: op,
+        });
+        const m = new THREE.Mesh(makeCloud(i * 31 + 5, w, dist), mat);
+        m.position.set(x, y, z);
+        m.renderOrder = -1;              // behind everything, in front of the sky
+        scene.add(m);
+        clouds.push({ mesh: m, speed: CLOUD_SPEED * (120 / depth) });
+      });
+    }
+    // The sky must be drawn first and must never occlude: it is a shell with
+    // no depth of its own.
+    sky.renderOrder = -2;
+    skyMat.depthTest = false;
+
+    // ---- the branch -------------------------------------------------------
+    // One gesture entering from a corner, which is the whole composition.
+    //
+    // Built inside a group aligned to the CAMERA, not to the world. That means
+    // the shape can be specified the way it was actually decided -- "it enters
+    // at the top left and reaches a third of the way across" -- as fractions
+    // of the frame, instead of world coordinates guessed and re-guessed
+    // against screenshots.
+    // ---- the breeze -------------------------------------------------------
+    // The garden's technique, unchanged: the displacement lives in the vertex
+    // shader, and one byte per vertex says what the wind is allowed to move.
+    // The lesson from the bamboo applies here too -- wood and blossom share a
+    // geometry, so the material cannot be what tells them apart.
+    //
+    //   blossom            1.00   it is what the wind is for
+    //   twig, at its tip   0.75   springy, and free at one end
+    //   twig, at its base  = whatever the limb is doing there
+    //   limb, at the tip   0.35
+    //   limb, at the root  0      it comes out of a tree we cannot see
+    // The site respects prefers-reduced-motion everywhere else (the room list's
+    // float, the page fades) but the breeze and the clouds did not -- a visitor
+    // who asks for stillness was getting continuous ambient motion. They ask
+    // for it at the operating system; honouring it is not optional.
+    const STILL = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const WIND = !STILL && new URLSearchParams(location.search).get("wind") !== "0";
+    const WA_P = parseFloat(new URLSearchParams(location.search).get("windamp"));
+    const windU = {
+      uWindTime: { value: 0 },
+      // 0.05 was his figure when there was one branch and no wander in it.
+      // With five branches, a wandering spine and the defocused layers moving
+      // too, he asked for 0.1 -- about ten pixels of travel at the focal
+      // plane, still on a twelve second breath.
+      uWindAmp: { value: isFinite(WA_P) ? WA_P : 0.1 },
+    };
+    const WIND_CHUNK = [
+      "  {",
+      "    vec3 wp = (modelMatrix * vec4(transformed, 1.0)).xyz;",
+      "    float travel = dot(wp.xz, vec2(0.86, 0.51));",
+      // Gentler, at Nicolas's ask, and gentleness is two things not one: less
+      // travel AND slower. Dropping the amplitude alone would have left the
+      // same nervous flutter, just smaller. So every rate came down with it,
+      // and the fast flutter term lost most of its weight -- that was what
+      // made the blossom look busy rather than breathing.
+      "    float gust = 0.66 + 0.34 * sin(uWindTime * 0.17 - travel * 0.16);",
+      "    float sway = sin(uWindTime * 0.50 - travel * 0.60);",
+      "    float flut = 0.16 * sin(uWindTime * 1.85 + wp.x * 3.10 + wp.y * 2.40);",
+      "    float a = uWindAmp * aSway * gust * (sway + flut);",
+      "    vec3 disp = vec3(0.86 * a, -0.14 * abs(a), 0.51 * a);",
+      // `framed` carries the camera's rotation and no scale, so the matrix is
+      // orthonormal and v * M is transpose(M) * v -- the world-space push
+      // brought back into the mesh's own frame without inverse() or
+      // transpose(), neither of which exists in GLSL ES 1.0.
+      "    transformed += disp * mat3(modelMatrix);",
+      "  }",
+    ].join("\n");
+    function applyWind(mat) {
+      if (!WIND) return mat;
+      mat.onBeforeCompile = (sh) => {
+        sh.uniforms.uWindTime = windU.uWindTime;
+        sh.uniforms.uWindAmp = windU.uWindAmp;
+        sh.vertexShader = sh.vertexShader
+          .replace("#include <common>",
+                   "#include <common>\nuniform float uWindTime;\nuniform float uWindAmp;\nattribute float aSway;")
+          .replace("#include <begin_vertex>", "#include <begin_vertex>\n" + WIND_CHUNK);
+      };
+      mat.customProgramCacheKey = () => "wind";
+      return mat;
+    }
+    function setSway(geo, arr) {
+      const n = geo.attributes.position.count;
+      if (arr.length !== n) throw new Error("sway/position mismatch: " + arr.length + " vs " + n);
+      const a = new Uint8Array(n);
+      for (let i = 0; i < n; i++) a[i] = Math.round(Math.max(0, Math.min(1, arr[i])) * 255);
+      geo.setAttribute("aSway", new THREE.BufferAttribute(a, 1, true));
+      return geo;
+    }
+
+    // ---- real defocus -----------------------------------------------------
+    // Nicolas asked whether the out-of-focus branches could be built like the
+    // sharp ones and then blurred, rather than suggested with discs. They can,
+    // and it is the honest procedure: same geometry, genuinely defocused.
+    //
+    // No depth-of-field pass exists in the plain three.js build, and none is
+    // needed. Each blurred plane is drawn ALONE into a small render target,
+    // blurred, and composited back in the right order. The targets are
+    // deliberately low resolution -- bilinear upsampling does most of the
+    // blurring for free, which is how cheap defocus has always been done -- so
+    // a small Gaussian on top is enough.
+    //
+    // Order matters and is the reason there are two of them: the far branches
+    // belong BEHIND the sharp ones, the near mass in FRONT.
+    //
+    //   layer 0  the sky
+    //   layer 1  the far branches, blurred, drawn behind
+    //   layer 2  the sharp branches
+    //   layer 3  the near branch, blurred hardest, drawn in front
+    //
+    // ?bokeh=disc keeps the earlier disc method, which is not deleted.
+    const ONLY_P = new URLSearchParams(location.search).get("only");
+    const ONLY = ONLY_P === null ? null : +ONLY_P;
+    const L_SKY = 0, L_FAR = 1, L_SHARP = 2, L_NEAR = 3;
+    sky.layers.set(L_SKY);
+
+    const rt = (k) => {
+      const t = new THREE.WebGLRenderTarget(
+        Math.max(2, Math.round(innerWidth * k)), Math.max(2, Math.round(innerHeight * k)),
+        { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBAFormat });
+      t.texture.generateMipmaps = false;
+      return t;
+    };
+    const SCALE = { [L_FAR]: 0.30, [L_NEAR]: 0.16 };
+    // three passes at a sixth of the resolution dissolved the near mass
+    // entirely; the low resolution is already doing most of the work
+    const PASSES = { [L_FAR]: 2, [L_NEAR]: 2 };
+    const targets = {};
+    [L_FAR, L_NEAR].forEach((L) => { targets[L] = [rt(SCALE[L]), rt(SCALE[L])]; });
+
+    const blurMat = new THREE.ShaderMaterial({
+      uniforms: { tSrc: { value: null }, uDir: { value: new THREE.Vector2() } },
+      depthTest: false, depthWrite: false,
+      vertexShader: "varying vec2 vUv; void main(){ vUv = uv;" +
+        " gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }",
+      fragmentShader: [
+        "uniform sampler2D tSrc; uniform vec2 uDir; varying vec2 vUv;",
+        // A five-tap Gaussian at the linearly-interpolated offsets, which buys
+        // nine taps' worth of reach for five reads. The render target holds
+        // PREMULTIPLIED colour (three.js premultiplies by default), and that is
+        // the one thing that makes this correct: blurring premultiplied values
+        // never drags the transparent background's black into the edges.
+        "void main() {",
+        "  vec4 s = texture2D(tSrc, vUv) * 0.227027;",
+        "  s += (texture2D(tSrc, vUv + uDir * 1.3846) + texture2D(tSrc, vUv - uDir * 1.3846)) * 0.316216;",
+        "  s += (texture2D(tSrc, vUv + uDir * 3.2308) + texture2D(tSrc, vUv - uDir * 3.2308)) * 0.070270;",
+        "  gl_FragColor = s;",
+        "}",
+      ].join("\n"),
+    });
+    const compMat = new THREE.ShaderMaterial({
+      uniforms: { tSrc: { value: null }, uGain: { value: 1.0 } },
+      transparent: true, depthTest: false, depthWrite: false,
+      // premultiplied compositing: source is already multiplied by its alpha
+      blending: THREE.CustomBlending,
+      blendSrc: THREE.OneFactor, blendDst: THREE.OneMinusSrcAlphaFactor,
+      vertexShader: "varying vec2 vUv; void main(){ vUv = uv;" +
+        " gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }",
+      fragmentShader: [
+        "uniform sampler2D tSrc; uniform float uGain; varying vec2 vUv;",
+        // three.js applies the linear -> sRGB conversion when it draws to the
+        // CANVAS, but not when it draws into a render target: a target holds
+        // LINEAR colour. Copying that straight to the screen displays linear
+        // values as though they were sRGB, which darkens everything -- the
+        // defocused wood came out nearly black and the blossom lost its pink.
+        //
+        // The blur itself is deliberately left in linear, which is where
+        // blurring physically belongs. The conversion happens here, once, and
+        // the alpha is undone and redone around it so the premultiplied edges
+        // are not bent by the curve.
+        "vec3 lin2srgb(vec3 c) {",
+        "  return mix(c * 12.92, pow(max(c, vec3(0.0)), vec3(0.41666)) * 1.055 - 0.055,",
+        "             step(vec3(0.0031308), c));",
+        "}",
+        "void main() {",
+        "  vec4 t = texture2D(tSrc, vUv);",
+        "  vec3 c = t.a > 0.0001 ? t.rgb / t.a : vec3(0.0);",
+        // A bright area thrown out of focus does not only spread, it LIFTS:
+        // real lenses bloom their highlights. A small gain here is what takes
+        // the blossom back from grey-pink to pink.
+        "  gl_FragColor = vec4(lin2srgb(min(c * uGain, vec3(1.0))) * t.a, t.a);",
+        "}",
+      ].join("\n"),
+    });
+    const fsCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+    const fsScene = new THREE.Scene();
+    const fsQuad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), blurMat);
+    fsScene.add(fsQuad);
+
+    // Renders one layer alone, blurs it, and leaves the result in a texture.
+    function defocus(L) {
+      const [a, b] = targets[L];
+      const saveLayers = camera.layers.mask;
+      camera.layers.set(L);
+      renderer.setRenderTarget(a);
+      renderer.setClearColor(0x000000, 0);
+      renderer.clear();
+      renderer.render(scene, camera);
+      camera.layers.mask = saveLayers;
+
+      fsQuad.material = blurMat;
+      let src = a, dst = b;
+      for (let i = 0; i < PASSES[L]; i++) {
+        for (const dir of [[1, 0], [0, 1]]) {
+          blurMat.uniforms.tSrc.value = src.texture;
+          blurMat.uniforms.uDir.value.set(dir[0] / src.width, dir[1] / src.height);
+          renderer.setRenderTarget(dst);
+          renderer.clear();
+          renderer.render(fsScene, fsCam);
+          const t = src; src = dst; dst = t;
+        }
+      }
+      return src.texture;
+    }
+
+    const BRANCH_ON = new URLSearchParams(location.search).get("branch") !== "0";
+    // How full the branch is. Nicolas chose the sparest of three compositions,
+    // so the default stays restrained -- but density is a matter of taste and
+    // this is his to judge: ?bloom=1.6 for a heavier spring.
+    const BLOOM_P = parseFloat(new URLSearchParams(location.search).get("bloom"));
+    const BLOOM = isFinite(BLOOM_P) ? BLOOM_P : 1;
+    // How thick the wood is, as a fraction of a branch's own span. 0.013 was
+    // heavy -- the branches read as bars across the sky. ?wood= to try another.
+    const WOOD_P = parseFloat(new URLSearchParams(location.search).get("wood"));
+    const WOOD = isFinite(WOOD_P) ? WOOD_P : 0.0088;
+    // How far a branch strays from the straight line between where it enters
+    // the frame and where it ends, as a fraction of the half frame.
+    const WD_P = parseFloat(new URLSearchParams(location.search).get("wander"));
+    const WANDER = isFinite(WD_P) ? WD_P : 0.15;
+    const framed = new THREE.Group();
+    framed.position.copy(camera.position);
+    framed.quaternion.copy(camera.quaternion);
+    scene.add(framed);
+
+    const FOVR = 50 * Math.PI / 180;
+    const DEPTH = 9.2;                          // how close the branch hangs
+    // fx, fy are fractions of the half-frame at a given depth: (-1, 1) is the
+    // top left corner, whatever the depth. So a branch can be moved nearer or
+    // further -- which is what makes it blurred -- without its composition on
+    // screen changing at all.
+    const HHd = (d) => d * Math.tan(FOVR / 2);
+    const HWd = (d) => HHd(d) * (innerWidth / innerHeight);
+    const Fd = (fx, fy, d) => new THREE.Vector3(fx * HWd(d), fy * HHd(d), -d);
+
+    // A tube of varying thickness along a curve. three's own TubeGeometry has
+    // one radius for its whole length, and a branch that does not taper is a
+    // pipe. The frames come from three so the tube cannot twist on itself.
+    function taperedTube(curve, r0, r1, N, S, s0, s1) {
+      const frames = curve.computeFrenetFrames(N, false);
+      const pos = [], sway = [];
+      const sw = (t) => (s0 === undefined ? 0 : s0 + (s1 - s0) * Math.pow(t, 1.45));
+      const ring = (i) => {
+        const t = i / N;
+        const p = curve.getPointAt(t);
+        const r = r0 + (r1 - r0) * Math.pow(t, 0.72);
+        const nrm = frames.normals[i], bin = frames.binormals[i];
+        const out = [];
+        for (let k = 0; k < S; k++) {
+          const a = (k / S) * Math.PI * 2;
+          out.push(new THREE.Vector3().copy(p)
+            .addScaledVector(nrm, Math.cos(a) * r)
+            .addScaledVector(bin, Math.sin(a) * r));
+        }
+        return out;
+      };
+      let prev = ring(0);
+      for (let i = 1; i <= N; i++) {
+        const cur = ring(i);
+        const wa = sw((i - 1) / N), wb = sw(i / N);
+        for (let k = 0; k < S; k++) {
+          const k2 = (k + 1) % S;
+          const a = prev[k], b = prev[k2], c = cur[k2], d = cur[k];
+          pos.push(a.x, a.y, a.z, b.x, b.y, b.z, c.x, c.y, c.z);
+          sway.push(wa, wa, wb);
+          pos.push(a.x, a.y, a.z, c.x, c.y, c.z, d.x, d.y, d.z);
+          sway.push(wa, wb, wb);
+        }
+        prev = cur;
+      }
+      return { pos, sway };
+    }
+
+    // ---- one blossom ------------------------------------------------------
+    // Five petals, each a small rounded fan of four triangles. Not a botanical
+    // drawing: no notched tip, no stamens. At the size these read on screen a
+    // notch is a wasted triangle, and "pas trop realiste" was the instruction.
+    // The colour does the work instead -- pale, almost white at the rim, warm
+    // and deep at the throat, which is what the reference photographs show.
+    const PETAL_RIM = new THREE.Color(0xfdf1f4);
+    const PETAL_MID = new THREE.Color(0xf7c8d7);
+    const THROAT    = new THREE.Color(0xd9749b);
+
+    function pushBlossom(pos, col, swayArr, swayVal, centre, radius, quat, seed, warm) {
+      // The petals are nearly white at the rim, which is right in focus and
+      // wrong out of it: blurred against blue, near-white averages to a washed
+      // mauve. The reference photograph's defocused blossom is frankly PINK.
+      // So the out-of-focus branches get their rim and midtone pulled toward
+      // the throat colour.
+      const w = warm || 0;
+      const RIM = PETAL_RIM.clone().lerp(THROAT, w);
+      const MID = PETAL_MID.clone().lerp(THROAT, w);
+      const P = 5;
+      const v = new THREE.Vector3();
+      const put = (x, y, c) => {
+        v.set(x, y, 0).applyQuaternion(quat).add(centre);
+        pos.push(v.x, v.y, v.z);
+        col.push(c.r, c.g, c.b);
+        swayArr.push(swayVal);
+      };
+      const spin = hash(seed, 3) * Math.PI * 2;
+      for (let p = 0; p < P; p++) {
+        const a = spin + (p / P) * Math.PI * 2;
+        const r = radius * (0.88 + 0.24 * hash(seed, p * 7 + 11));
+        // The petal outline, as angles off its own axis and radii along it.
+        // First pass used 0.34/0.22 radians, which over five petals covering
+        // 1.26 rad each left huge gaps -- the flowers read as little grey
+        // snowflakes. A sakura petal is BROAD; neighbours nearly touch.
+        const S1 = 0.56, S2 = 0.42;
+        const pt = (da, rr) => [Math.cos(a + da) * rr, Math.sin(a + da) * rr];
+        const o = [
+          pt(0, 0),                 // the throat
+          pt(-S1, r * 0.42),
+          pt(-S2, r * 0.88),
+          pt(0, r),                 // the tip
+          pt(S2, r * 0.88),
+          pt(S1, r * 0.42),
+        ];
+        const cAt = (i) => (i === 0 ? THROAT : i <= 1 || i >= 5 ? MID : RIM);
+        for (let i = 1; i < o.length - 1; i++) {
+          put(o[0][0], o[0][1], THROAT);
+          put(o[i][0], o[i][1], cAt(i));
+          put(o[i + 1][0], o[i + 1][1], cAt(i + 1));
+        }
+      }
+    }
+
+    if (BRANCH_ON) {
+      // sunlight from the upper right, and the sky itself as the fill. A
+      // blossom against blue is mostly lit BY the blue, which is why a plain
+      // directional light alone leaves petals looking cut out of paper.
+      // light.layers is tested against the CAMERA, not against each mesh --
+      // the garden taught this the hard way. Rendering a single layer at a
+      // time means a light left on layer 0 would simply stop existing for
+      // every other pass, and the petals would come out black.
+      const hemi = new THREE.HemisphereLight(0x9cc4ea, 0xf0e6dc, 1.15);
+      const sun = new THREE.DirectionalLight(0xfff6ea, 1.25);
+      sun.position.set(6, 7, 4);
+      hemi.layers.enableAll();
+      sun.layers.enableAll();
+      scene.add(hemi);
+      scene.add(sun);
+
+      const barkMat = new THREE.MeshStandardMaterial({
+        color: 0x4a352c, flatShading: true, roughness: 1, metalness: 0,
+      });
+      // Defocused wood, on its own material because it must be PALER. Spread
+      // over a wide blur disc, a thin dark twig gives up almost all its
+      // darkness -- and left at full strength it greys the blossom mass it
+      // sits inside, which is what kept the blurred branches brown.
+      const barkFaint = new THREE.MeshStandardMaterial({
+        color: new THREE.Color(0x4a352c).lerp(SKY.mid, 0.62),
+        flatShading: true, roughness: 1, metalness: 0,
+      });
+      const petalMat = new THREE.MeshStandardMaterial({
+        vertexColors: true, flatShading: true, roughness: 1, metalness: 0,
+        side: THREE.DoubleSide,
+      });
+
+      // ---- how the defocus is done ----------------------------------------
+      // The out-of-focus branches are the SAME geometry as the sharp ones,
+      // rendered on their own layer into a small target and genuinely blurred
+      // (see the layer notes above). An earlier version instead drew them as
+      // soft pink discs -- a defocused point source IS a disc, so it was an
+      // honest stylisation and much cheaper -- but real geometry won, and that
+      // path has been removed rather than left to rot behind a flag.
+
+      // ---- one branch, described in fractions of the frame ------------------
+      // Every branch is generated the same way whatever its focus: the blurred
+      // masses are grown from real skeletons, which is why they sit where real
+      // branches would rather than being pink smudges pasted into a corner.
+      function skeleton(cfg) {
+        const d = cfg.depth;
+        const P = (fx, fy, dz) => Fd(fx, fy, d + (dz || 0));
+        // The spine used to be five points interpolated STRAIGHT from entry to
+        // exit with one bow over the whole length -- which is a straight line
+        // with an arc, and read exactly as that: rigid. A real branch changes
+        // direction at every bud, and does it more the thinner it gets, since
+        // thin wood bends where thick wood does not.
+        //
+        // So: more control points, each pushed off the chord by a hashed
+        // amount that GROWS toward the tip. The push is perpendicular to the
+        // chord in the plane of the PICTURE -- the same lesson the twigs
+        // taught: an offset that runs into the screen is an offset nobody
+        // sees.
+        const NP = 8;
+        const dfx = cfg.to[0] - cfg.from[0], dfy = cfg.to[1] - cfg.from[1];
+        const cl = Math.hypot(dfx, dfy) || 1;
+        const pfx = -dfy / cl, pfy = dfx / cl;
+        // 0.075 was only 5% of the main limb's chord -- visible up close and
+        // still reading as a straight line at a glance, which was the whole
+        // complaint. ?wander= to try another.
+        const wander = WANDER;
+        const pts = [];
+        for (let i = 0; i <= NP; i++) {
+          const t = i / NP;
+          const grow = 0.20 + 0.80 * t;
+          // ends stay put: the entry is anchored off-frame and the tip is
+          // where the terminal umbel was placed
+          const hold = (i === 0 || i === NP) ? 0 : 1;
+          const w = (hash(cfg.seed * 13 + i, 41) - 0.5) * wander * grow * hold;
+          const fx = cfg.from[0] + dfx * t + pfx * w;
+          const fy = cfg.from[1] + dfy * t + pfy * w + Math.sin(Math.PI * t) * cfg.sag;
+          const dz = (0.5 - t) * cfg.rake
+                   + (hash(cfg.seed * 13 + i, 43) - 0.5) * cfg.rake * 0.30 * hold;
+          pts.push(P(fx, fy, dz));
+        }
+        const spine = new THREE.CatmullRomCurve3(pts);
+        // pts[NP], not pts[4]: with five control points those were the same
+        // thing, and adding more silently made this the MIDDLE of the curve --
+        // halving every branch thickness and every twig length at a stroke.
+        const span = pts[0].distanceTo(pts[NP]);
+        const twigs = [];
+        const N = cfg.twigs;
+        for (let i = 0; i < N; i++) {
+          const sd = cfg.seed * 7 + i;
+          const t = 0.10 + 0.86 * (i + 0.4 * hash(sd, 1)) / N;
+          // "petites branches": shorter than the first pass, which had a few
+          // reaching so far from the limb they read as separate branches
+          const len = span * (0.072 + 0.062 * hash(sd, 2)) * cfg.twigLen;
+          const base = spine.getPointAt(t);
+          const dir = spine.getTangentAt(t);
+          // The side used to be cross(tangent, up), which for a limb lying
+          // across the frame points mostly INTO the screen -- so the left/right
+          // alternation was real and completely invisible, and the only
+          // direction that ever showed was the upward lean. Every twig went up.
+          // The perpendicular has to be taken in the plane of the PICTURE.
+          const view = new THREE.Vector3(0, 0, 1);            // toward the camera
+          const perp = new THREE.Vector3().crossVectors(dir, view).normalize();
+          const into = new THREE.Vector3().crossVectors(perp, dir).normalize();
+          const up = new THREE.Vector3(0, 1, 0);
+          // alternating, so both flanks are furnished, but with the occasional
+          // double so it does not read as a fishbone
+          const flip = ((i % 2) ? -1 : 1) * (hash(sd, 6) < 0.24 ? -1 : 1);
+          const side = flip * (0.58 + 0.42 * hash(sd, 4));
+          const dep = (hash(sd, 5) - 0.5) * 0.85;   // some depth, so it is not a flat fan
+          const rise = 0.16;                        // twigs do turn toward the light
+          // The along-the-spine component used to dominate (0.55 then 0.95 of
+          // the length), so a twig ran inside its parent for a third of its
+          // life before emerging -- which is the doubled slab the render
+          // showed at every junction. A twig leaves.
+          const mid = base.clone().addScaledVector(dir, len * 0.30)
+            .addScaledVector(perp, side * len * 0.55)
+            .addScaledVector(into, dep * len * 0.20)
+            .addScaledVector(up, rise * len);
+          const end = base.clone().addScaledVector(dir, len * 0.52)
+            .addScaledVector(perp, side * len * 0.98)
+            .addScaledVector(into, dep * len * 0.38)
+            .addScaledVector(up, rise * len * 2.1);
+          // A three-point twig is a smooth arc. A fourth point, nudged off the
+          // line, lets it actually turn -- which is what a twig does at a bud.
+          const kink = base.clone().lerp(end, 0.68)
+            .addScaledVector(perp, side * len * 0.13)
+            .addScaledVector(up, (hash(sd, 8) - 0.5) * len * 0.30);
+          twigs.push({ curve: new THREE.CatmullRomCurve3([base, mid, kink, end]),
+                       seed: sd, len, at: t });
+        }
+        // A branch ends in flowers, not in a bare point. Making the twigs leave
+        // more decisively left a long naked tail on every limb, which no
+        // cherry has: a short terminal stub at the tip carries the last umbel.
+        {
+          const b = spine.getPointAt(0.97);
+          const d2 = spine.getTangentAt(0.97);
+          const up = new THREE.Vector3(0, 1, 0);
+          const lat = new THREE.Vector3().crossVectors(d2, up).normalize();
+          const L = span * 0.055 * cfg.twigLen;
+          const m = b.clone().addScaledVector(d2, L * 0.5).addScaledVector(up, L * 0.18);
+          const e = b.clone().addScaledVector(d2, L * 0.9)
+            .addScaledVector(up, L * 0.42).addScaledVector(lat, L * 0.22);
+          twigs.push({ curve: new THREE.CatmullRomCurve3([b, m, e]),
+                       seed: cfg.seed * 7 + 99, len: L, at: 0.97 });
+        }
+        return { spine, twigs, span };
+      }
+
+      const LIMB_SWAY = 0.35, TWIG_SWAY = 0.75;
+      const swayAt = (t) => LIMB_SWAY * Math.pow(t, 1.45);
+      // One bucket per layer. A defocused branch is now built exactly like a
+      // sharp one and simply put on a different layer, to be rendered apart
+      // and blurred -- which is what Nicolas asked for.
+      const BK = {};
+      const bucket = (L) => (BK[L] = BK[L] ||
+        { wood: [], woodSway: [], petal: [], petalCol: [], petalSway: [] });
+      let blossoms = 0;
+
+      function buildBranch(cfg) {
+        const sk = skeleton(cfg);
+        const B = bucket(cfg.layer);
+        const rW = sk.span * WOOD * cfg.thick;
+        // the parent's OWN thickness where a child leaves it -- same curve the
+        // tube itself uses, so the two cannot disagree
+        const rAt = (t) => rW + (rW * 0.14 - rW) * Math.pow(t, 0.72);
+
+        const push = (r) => {
+          for (let i = 0; i < r.pos.length; i++) B.wood.push(r.pos[i]);
+          for (let i = 0; i < r.sway.length; i++) B.woodSway.push(r.sway[i]);
+        };
+        // eight sides, not six: a thin tube lit from one side reads as a
+        // faceted plank until it has enough faces to turn
+        push(taperedTube(sk.spine, rW, rW * 0.14, 26, 8, 0, LIMB_SWAY));
+        sk.twigs.forEach(({ curve, at }) => {
+          // A twig used to be a fixed fraction of the branch's ROOT thickness,
+          // so near the tip -- where the limb has already thinned to 0.29 -- a
+          // twig at 0.50 came out nearly twice as thick as its own parent.
+          // Taken from the local radius instead, a child is always slimmer
+          // than what it leaves. And it tapers to nothing rather than ending
+          // in a flat cut. Its sway starts as exactly whatever the limb is
+          // doing at that point, so a junction cannot shear, and ends free.
+          push(taperedTube(curve, rAt(at) * 0.54, rAt(at) * 0.05, 12, 6,
+                           swayAt(at), TWIG_SWAY));
+        });
+
+        // the umbels: tight rosettes at nodes, never closer than 0.40 along a
+        // twig, or they bury the wood they are supposed to hang from
+        sk.twigs.forEach(({ curve, seed, len }) => {
+          const nodes = 5 + Math.floor(hash(seed, 11) * 3);
+          for (let k = 0; k < nodes; k++) {
+            const t = 0.40 + 0.60 * Math.pow((k + 0.35 * hash(seed, k * 3 + 12)) / nodes, 0.85);
+            const node = curve.getPointAt(Math.min(1, t));
+            // The defocused branches need far MORE flowers, not the same
+            // number blurred: at this scale the dark wood mixes with the pale
+            // blossom and greys the whole mass, which is why the first blurred
+            // pass came out a dull brown-pink. In a photograph the blossom
+            // simply outnumbers the wood.
+            const per = Math.max(1, Math.round(
+              (3 + Math.floor(hash(seed, k * 3 + 13) * 3)) * BLOOM * (cfg.bloom || 1)));
+            for (let i = 0; i < per; i++) {
+              const sd = seed * 101 + k * 13 + i;
+              const spread = len * (0.16 + 0.11 * hash(sd, 1));
+              const aa = hash(sd, 2) * Math.PI * 2, e = (hash(sd, 3) - 0.5) * 1.4;
+              const at = node.clone().add(new THREE.Vector3(
+                Math.cos(aa) * spread, Math.sin(e) * spread * 0.9, Math.sin(aa) * spread));
+              // Bigger on the defocused branches, not just more numerous. A
+              // blossom blurred at a sixth of the resolution dissolves into a
+              // weak patch if there is sky between it and its neighbour; the
+              // out-of-focus foreground of a photograph is a nearly CONTINUOUS
+              // mass, because what is out of focus there is a whole crown and
+              // not one branch.
+              const rad = (0.115 + 0.070 * hash(sd, 7)) * cfg.thick
+                        * (cfg.depth / DEPTH) * (cfg.petal || 1);
+              const q = new THREE.Quaternion().setFromEuler(new THREE.Euler(
+                (hash(sd, 4) - 0.5) * 1.15, (hash(sd, 5) - 0.5) * 1.15,
+                hash(sd, 6) * Math.PI * 2));
+              pushBlossom(B.petal, B.petalCol, B.petalSway, 1, at, rad, q, sd, cfg.warm);
+              blossoms++;
+            }
+          }
         });
       }
+
+      // ---- the arrangement --------------------------------------------------
+      // Two sharp branches across the top, three defocused masses holding the
+      // right and the far corners, and the centre and lower left left open --
+      // the reference photograph's own structure, and Farrow's restraint
+      // still intact where it counts.
+      //   layer decides whether it is sharp, blurred behind, or blurred in front
+      //   warm pulls the petals toward their throat colour, which is what a
+      //     defocused blossom needs so it does not average to washed mauve
+      const PLAN_BRANCH = [
+        { seed: 3,  depth: 9.2,  from: [-1.55, 1.16], to: [ 0.06, 0.33], sag: 0.06, rake: 1.9, thick: 1.00, twigs: 11, twigLen: 1.00,        layer: L_SHARP },
+        // Stopped higher than it was: reaching to (0.28, -0.02) left a long
+        // naked diagonal below its last umbel, and put its terminal cluster
+        // straight onto the words.
+        { seed: 21, depth: 11.5, from: [ 1.30, 1.42], to: [ 0.44, 0.28], sag: 0.10, rake: 1.2, thick: 0.78, twigs: 9,  twigLen: 0.92,        layer: L_SHARP },
+        // Two short ones hanging in off the TOP edge, between the other two.
+        // The top of the frame is what the reference furnishes; the emptiness
+        // low and to the left is the composition, not a gap.
+        { seed: 105, depth: 8.0,  from: [-0.78, 1.30], to: [-0.34, 0.62], sag: 0.05, rake: 0.8, thick: 0.60, twigs: 6,  twigLen: 1.00,        layer: L_SHARP },
+        { seed: 132, depth: 13.0, from: [ 0.08, 1.34], to: [ 0.50, 0.74], sag: 0.07, rake: 1.4, thick: 0.54, twigs: 5,  twigLen: 0.95,        layer: L_SHARP },
+        { seed: 44, depth: 22.0, from: [ 1.45, 0.72], to: [ 0.42,-0.32], sag: 0.14, rake: 3.0, thick: 0.55, twigs: 10, twigLen: 1.05, layer: L_FAR,   bloom: 2.6, petal: 2.10, warm: 0.48 },
+        { seed: 67, depth: 5.2,  from: [ 1.32,-1.30], to: [ 0.24,-0.84], sag:-0.10, rake: 1.0, thick: 0.62, twigs: 8,  twigLen: 1.10, layer: L_NEAR,  bloom: 3.4, petal: 2.40, warm: 0.42 },
+        { seed: 88, depth: 30.0, from: [-1.42, 1.05], to: [-0.55, 0.44], sag: 0.08, rake: 4.0, thick: 0.45, twigs: 8,  twigLen: 1.00, layer: L_FAR,   bloom: 2.2, petal: 1.80, warm: 0.36 },
+      ];
+      PLAN_BRANCH.forEach(buildBranch);
+
+      Object.keys(BK).forEach((key) => {
+        const L = +key, b = BK[L];
+        if (b.wood.length) {
+          const g = new THREE.BufferGeometry();
+          g.setAttribute("position", new THREE.Float32BufferAttribute(b.wood, 3));
+          g.computeVertexNormals();
+          const m = new THREE.Mesh(setSway(g, b.woodSway),
+                                   applyWind(L === L_SHARP ? barkMat : barkFaint));
+          m.layers.set(L);
+          framed.add(m);
+        }
+        if (b.petal.length) {
+          const g = new THREE.BufferGeometry();
+          g.setAttribute("position", new THREE.Float32BufferAttribute(b.petal, 3));
+          g.setAttribute("color", new THREE.Float32BufferAttribute(b.petalCol, 3));
+          g.computeVertexNormals();
+          const m = new THREE.Mesh(setSway(g, b.petalSway), applyWind(petalMat));
+          m.layers.set(L);
+          framed.add(m);
+        }
+      });
+      window.__blossoms = blossoms;
     }
-  }
 
-  let last = performance.now(), T = 0;
-  function frame(now) {
-    const dt = Math.min((now - last) / 1000, 0.05); last = now;
-    T += dt;
-    updatePetals(T);
+    window.__scene = scene;
+    window.__tris = 0;
 
-    ctx.clearRect(0, 0, w, h);
-    ctx.fillStyle = 'rgb(' + GROUND[0] + ',' + GROUND[1] + ',' + GROUND[2] + ')';
-    ctx.fillRect(0, 0, w, h);
-
-    const driftCx = blobX + driftR * Math.sin(T * 0.055);
-    const driftCy = blobY + driftR * 0.6 * Math.sin(T * 0.037 + 1.3);
-    ctx.save();
-    ctx.fillStyle = 'rgba(' + BLOB_RGB + ',' + BLOB_ALPHA + ')';
-    ctx.fill(blobPath(driftCx, driftCy, baseR, T, 0));
-    ctx.restore();
-
-    if (sakuraTinted) {
-      ctx.save();
-      ctx.globalAlpha = BLOB_ALPHA;
-      for (const p of petals) {
-        const elapsed = T - p.spawnT;
-        const py = p.y0 + p.fallSpeed * elapsed;
-        const px = p.x0 + p.swayAmp * Math.sin(p.swaySpeed * elapsed + p.swayPhase);
-        ctx.drawImage(sakuraTinted, px - petalR, py - petalR, petalR * 2, petalR * 2);
+    let tPrev = null;
+    function frame(now) {
+      const dt = tPrev === null ? 0 : Math.min(0.1, (now - tPrev) / 1000);
+      tPrev = now;
+      renderer.info.reset();
+      if (WIND) { windU.uWindTime.value = now / 1000; window.__windTime = now / 1000; }
+      for (const c of clouds) {
+        if (!STILL) c.mesh.position.x += c.speed * dt;
+        if (c.mesh.position.x > CLOUD_WRAP) c.mesh.position.x = -CLOUD_WRAP;
+        // re-aimed every frame rather than once at build time: it costs
+        // nothing for five meshes and it survives the camera ever moving
+        c.mesh.lookAt(camera.position);
       }
-      ctx.restore();
+      if (BRANCH_ON && ONLY === null) {
+        // The order IS the depth of field: sky, then what is behind the plane
+        // of focus, then what is in focus, then what is in front of it.
+        const texFar = defocus(L_FAR);
+        const texNear = defocus(L_NEAR);
+        renderer.setRenderTarget(null);
+        renderer.setClearColor(0x000000, 1);
+        renderer.autoClear = true;
+        camera.layers.set(L_SKY);
+        renderer.render(scene, camera);
+        renderer.autoClear = false;
+        fsQuad.material = compMat;
+        compMat.uniforms.tSrc.value = texFar;
+        compMat.uniforms.uGain.value = 1.14;
+        renderer.render(fsScene, fsCam);
+        camera.layers.set(L_SHARP);
+        renderer.render(scene, camera);
+        compMat.uniforms.tSrc.value = texNear;
+        compMat.uniforms.uGain.value = 1.22;
+        renderer.render(fsScene, fsCam);
+        renderer.autoClear = true;
+      } else if (ONLY !== null) {
+        // debug affordance: one layer, unblurred, so a fault can be told apart
+        // from the blur that would otherwise be hiding it
+        renderer.setRenderTarget(null);
+        camera.layers.set(ONLY);
+        renderer.render(scene, camera);
+      } else {
+        renderer.setRenderTarget(null);
+        camera.layers.enableAll();
+        renderer.render(scene, camera);
+      }
+      window.__firstFrame = true;
+      window.__tris = renderer.info.render.triangles;
+      requestAnimationFrame(frame);
     }
-
     requestAnimationFrame(frame);
-  }
-  requestAnimationFrame(frame);
-})();
-</script>
+
+    addEventListener("resize", () => {
+      camera.aspect = innerWidth / innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(innerWidth, innerHeight);
+      [L_FAR, L_NEAR].forEach((L) => targets[L].forEach((t) =>
+        t.setSize(Math.max(2, Math.round(innerWidth * SCALE[L])),
+                  Math.max(2, Math.round(innerHeight * SCALE[L])))));
+    });
+  </script>
+  <script src="blob.js"></script>
+  <!-- The mark sits on blue here, not on cream. At the site's usual 10% alpha
+       it measured 26/255 at its strongest and was effectively invisible --
+       which matters now that it is the way home. -->
+  <script>window.MARK_ALPHA = 0.30;</script>
+  <script src="site.js"></script>
 </body>
 </html>

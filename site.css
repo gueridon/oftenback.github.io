@@ -1,0 +1,256 @@
+:root{
+  --bg:#f4ede2; --ink:#3d3530; --dim:#8e7f73; --soft:#b3a89c; --border:#e3d9c9;
+  --clay:#a55a4a; --clay-deep:#8a4839;
+  --sage:#9aab97; --sage-deep:#788c75; --whisper:#ece2cf; --line:#cbb89a;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+/* overflow:hidden matters here, not just cosmetically: main.room is
+   min-height:100%, and a transformed element's POST-transform box counts as
+   scrollable overflow per spec -- so the parallax drift alone was enough to
+   poke it outside the viewport on one side, triggering a scrollbar, which
+   shrinks the viewport, which changes the parallax math, which can remove
+   the overflow and drop the scrollbar again. That feedback loop was the
+   "gutter opening and closing" / the room jumping. None of these pages
+   scroll on purpose, so just disallow it outright. */
+html,body{height:100%;overflow:hidden;}
+body{
+  background:var(--bg); color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Inter,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased;
+  cursor:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"><circle cx="6" cy="6" r="5" fill="%23f4ede2" stroke="%233d3530" stroke-opacity="0.32" stroke-width="1"/></svg>') 6 6, auto;
+}
+/* The dot was near-black and turned vermillion on hover. Cream now, vermillion
+   still on hover.
+   The hairline ink ring at 32% is not decoration: a cream dot on a cream page
+   is invisible, and the cream rooms are half the site. It holds the shape
+   without touching the colour you read, exactly as the mark needed more
+   density to survive the blue sky.
+   Links otherwise take a native pointing hand regardless of the inherited body
+   cursor, so the same dot is forced on them explicitly.
+   And BUTTONS too, which is what was missing: the eight rooms in the chashitsu
+   chapter and the rack in the dogu chapter are buttons, not links, so they were
+   never picking up the vermillion. A disabled one is excluded, because the
+   objects not yet built are not clickable and the cursor should not promise
+   that they are. */
+a,button{cursor:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"><circle cx="6" cy="6" r="5" fill="%23f4ede2" stroke="%233d3530" stroke-opacity="0.32" stroke-width="1"/></svg>') 6 6, auto;}
+a:hover,button:not([disabled]):hover{cursor:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"><circle cx="6" cy="6" r="5" fill="%23e34234" fill-opacity="0.85" stroke="%23e34234" stroke-opacity="0.45" stroke-width="1"/></svg>') 6 6, auto;}
+
+/* ---- landing (Higashiya-inspired: spare, vertical, asymmetric) ---- */
+.scene{min-height:100%;position:relative;display:flex;align-items:center;justify-content:center;}
+
+/* centre: Project Nakata, the focal doorway */
+.center{display:flex;flex-direction:column;align-items:center;gap:22px;
+  text-decoration:none;transition:transform .95s cubic-bezier(0.16,1,0.3,1);}
+.center:hover{transform:translateY(-7px);}
+.center img,.center canvas{width:clamp(116px,15vw,156px);height:auto;display:block;aspect-ratio:1/1;}
+.center .title{font-size:12px;letter-spacing:.38em;text-transform:uppercase;
+  color:var(--dim);font-weight:400;padding-left:.38em;}
+
+/* the map: a light vertical scroll of stops, floating on the right margin like the
+   background. nakata (the room) -> system (the gallery) -> grow yours (build the relation). */
+.side{position:fixed;right:clamp(22px,4.5vw,60px);top:0;bottom:0;z-index:2;
+  display:flex;flex-direction:column;align-items:flex-end;justify-content:center;
+  pointer-events:none;
+  /* a soft lift so the menu reads as its own layer floating above the page,
+     the way it naturally does over the tea room's real depth -- here there's
+     no 3D behind it, so the shadow is doing that job on its own. */
+  filter:drop-shadow(0 3px 8px rgba(61,53,48,0.14));}
+.side .stop{pointer-events:auto;text-align:right;text-decoration:none;
+  font-size:11.5px;letter-spacing:.24em;text-transform:lowercase;font-weight:300;
+  color:var(--soft);opacity:.58;transition:opacity .35s ease,color .35s ease;
+  /* padding enlarges the actual clickable/hoverable box; the matching negative
+     margin cancels it back out for LAYOUT purposes (as flex items, padding here
+     would otherwise push the stops further apart) -- so the hit zone grows
+     without changing anything visually. */
+  padding:10px 16px;margin:-10px -16px;}
+.side .stop:hover{opacity:1;color:var(--ink);}
+.side .stop.here{opacity:1;color:var(--clay);}        /* a light imprint of where you are */
+.side .link{width:1px;height:32px;margin:9px 0;background:var(--soft);opacity:.36;}
+/* the float lives on the room list only, NOT on .side itself -- .side also
+   contains .brand-mini, whose position must stay perfectly static to match
+   the landing blob's measured dock target. A shared animation on the parent
+   made the mark drift too, so the probe measurement (taken at one point in
+   the cycle) and the real, still-drifting element could disagree by a few
+   px depending on timing -- read by Nicolas as "the blob jumps down 5-10px". */
+.stops-wrap{animation:mapfloat 9s ease-in-out infinite;}
+@keyframes mapfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@media (prefers-reduced-motion:reduce){.stops-wrap{animation:none;}}
+
+/* the persistent mark: the same blob + title, large and centred on the landing,
+   small everywhere else -- now the top item of the .side group itself (not a
+   separately-pinned corner element), so the mark and the room list read as one
+   continuous stack, vertically centred together, mark above menu. */
+/* margin was 22px, a deliberate gap when a separate "room one" sat below it.
+   With that gone the mark is the list's first item, so the gap now matches the
+   rhythm of the dividers between stops (9px + line + 9px). Its TYPE is
+   untouched -- OFTENBACK keeps its own smaller, wider lettering. */
+.brand-mini{display:flex;flex-direction:column;align-items:flex-end;gap:8px;
+  text-decoration:none;margin-bottom:9px;
+  pointer-events:auto;}         /* .side itself is pointer-events:none; opt back in to click through to the landing */
+.brand-mini canvas{width:102px;height:102px;display:block;}
+.brand-mini span{font-size:9px;letter-spacing:.38em;text-transform:uppercase;
+  color:var(--dim);font-weight:400;padding-left:.38em;transition:color .35s ease;}
+.brand-mini:hover span{color:var(--ink);}
+
+.stops-wrap{display:flex;flex-direction:column;align-items:flex-end;}
+
+/* No more cross-page transition choreography -- .side never fades, on any
+   page, at any time, full stop. Each page just fades its OWN content in on
+   load, plainly, independent of where you came from. Simpler, and the
+   cross-page sessionStorage/bfcache machinery this replaced kept finding new
+   ways to feel inconsistent. */
+/* ---- the veil: every crossing fades, none of them flips ----
+   These rules were duplicated in three places (site.js, and the head of each
+   3D page) because site.js injected them only at DOMContentLoaded, which is
+   after the first paint -- so a page relying on it showed itself naked first.
+   Here they are one copy, in a blocking <link>, applied before anything draws.
+   A page that must be covered from its very first frame still ships the
+   <div id="veil"> itself; the rules no longer have to travel with it. */
+#veil{position:fixed;inset:0;z-index:60;background:#f2e6d0;opacity:1;
+  transition:opacity .75s ease;pointer-events:none;display:flex;
+  align-items:center;justify-content:center;}
+#veil.gone{opacity:0;}
+
+main{opacity:0;transition:opacity .6s ease;}
+main.in{opacity:1;}
+@media (prefers-reduced-motion:reduce){main{opacity:1 !important;transition:none;}}
+
+/* ---- rooms (placeholder) ---- */
+/* just a plain centring frame on the page's own off-white background -- the
+   3D room shell (room-box.js) didn't earn its keep, so it's gone. */
+.room{position:relative;min-height:100%;display:flex;align-items:center;justify-content:center;}
+/* The room list is fixed to the right edge and the room's content is centred
+   in the whole viewport, so on a narrow screen they collide -- measured at
+   430px wide, the paragraph ran straight through OFTENBACK. The list occupies
+   22px of offset plus a 102px mark, so reserve that gutter. Wide screens are
+   untouched: the centring there is deliberate. */
+@media (max-width:760px){
+  .room{padding-right:134px;padding-left:22px;}
+  .room p{max-width:none;}
+}
+.room-content{position:relative;z-index:1;display:flex;flex-direction:column;
+  align-items:center;gap:22px;text-align:center;padding:48px;}
+.room .crest{width:clamp(120px,16vw,170px);height:auto;}
+.room h1{font-weight:300;letter-spacing:.18em;text-transform:lowercase;font-size:28px;}
+.room p{max-width:440px;color:var(--dim);font-weight:300;line-height:1.7;font-size:15px;}
+
+/* ---- nakata room: an overview of the collaborative system ---- */
+.nakata{position:relative;}                 /* page wrapper; the echo is fixed behind */
+/* the faint, slow echo of the constellation, breathing behind the whole page */
+#nakata-echo{position:fixed;inset:0;width:100%;height:100%;z-index:0;
+  opacity:.34;pointer-events:none;}
+
+/* hero: what nakata is, one calm screen */
+.nakata .hero{position:relative;min-height:100vh;display:flex;align-items:center;
+  padding:clamp(64px,10vw,140px);}
+.nakata .edge{position:relative;z-index:1;max-width:540px;
+  display:flex;flex-direction:column;gap:26px;}
+.nakata .crest{width:76px;height:auto;opacity:.92;margin-bottom:2px;}
+.nakata .eyebrow{font-size:11px;letter-spacing:.34em;text-transform:lowercase;
+  color:var(--dim);font-weight:400;}
+.nakata h1{font-weight:200;letter-spacing:.2em;text-transform:lowercase;
+  font-size:clamp(32px,5vw,44px);line-height:1;margin-top:-16px;color:var(--ink);}
+.nakata .lead{color:var(--ink);font-weight:300;line-height:1.78;font-size:15.5px;max-width:486px;}
+.nakata .lead .q{color:var(--dim);}
+
+/* scroll cue at the foot of the hero */
+.nakata .cue{position:absolute;left:clamp(64px,10vw,140px);bottom:46px;z-index:1;
+  display:flex;flex-direction:column;align-items:flex-start;gap:9px;}
+.nakata .cue .word{font-size:10.5px;letter-spacing:.3em;text-transform:lowercase;color:var(--soft);}
+.nakata .cue .line{width:1px;height:34px;background:var(--soft);opacity:.6;}
+
+/* the overview: six quiet movements, a single left-weighted column */
+.nakata .overview{position:relative;z-index:1;
+  padding:0 clamp(64px,10vw,140px) clamp(90px,13vh,170px);}
+.nakata .movement{max-width:560px;margin:0 0 clamp(64px,12vh,118px);}
+.nakata .movement .num{display:block;font-size:11px;letter-spacing:.34em;
+  color:var(--soft);font-weight:400;margin-bottom:13px;}
+.nakata .movement h2{font-weight:300;letter-spacing:.14em;text-transform:lowercase;
+  font-size:clamp(23px,3vw,30px);line-height:1.1;color:var(--ink);margin-bottom:17px;}
+.nakata .movement p{color:var(--ink);font-weight:300;line-height:1.8;font-size:15px;}
+.nakata .movement p + p{margin-top:13px;}
+.nakata .movement .ground{display:block;margin-top:16px;font-size:11.5px;
+  letter-spacing:.08em;color:var(--soft);font-weight:300;}
+.nakata .coda{font-size:13px;letter-spacing:.06em;color:var(--dim);font-weight:300;
+  font-style:italic;}
+
+/* movements breathe in as they enter view. Progressive enhancement: visible by
+   default; only hidden-then-revealed once JS adds .anim (so no-JS keeps the content). */
+.nakata.anim .movement,.nakata.anim .coda{opacity:0;transform:translateY(16px);
+  transition:opacity .9s ease,transform .9s ease;}
+.nakata.anim .movement.seen,.nakata.anim .coda.seen{opacity:1;transform:none;}
+
+/* nakata-system: precise content carried in the light aesthetic.
+   Wider movements for the delicate diagrams; prose stays narrow within them. */
+.nakata .movement.wide{max-width:760px;}
+.nakata .movement.wide p{max-width:496px;}
+.nakata figure{margin:24px 0 4px;}
+.nakata figure svg{width:100%;max-width:700px;height:auto;display:block;}
+.nakata figcaption{margin-top:11px;font-size:11.5px;letter-spacing:.04em;color:var(--soft);
+  font-weight:300;line-height:1.62;max-width:470px;}
+.nakata .attrib{display:block;margin-top:15px;font-size:11.5px;letter-spacing:.18em;
+  color:var(--soft);font-weight:300;}
+.nakata .quote{display:block;margin-top:16px;padding-left:17px;border-left:1px solid var(--line);
+  font-style:italic;color:var(--dim);font-size:13.5px;line-height:1.72;font-weight:300;max-width:452px;}
+.nakata .mono{font-family:"SF Mono",Menlo,Consolas,monospace;font-size:12.5px;
+  color:var(--sage-deep);letter-spacing:0;}
+
+/* comprehensive detail, rendered light and sharp (the scroll register) */
+.nakata .step{margin-top:19px;}
+.nakata .step .lbl{display:block;font-size:11px;letter-spacing:.18em;text-transform:lowercase;
+  color:var(--sage-deep);font-weight:500;margin-bottom:5px;}
+.nakata .step p{margin:0;max-width:500px;font-size:14px;line-height:1.72;color:var(--ink);font-weight:300;}
+
+/* hairline term / definition pairs */
+.nakata .pairs{margin-top:18px;max-width:580px;}
+.nakata .pairs .row{display:grid;grid-template-columns:152px 1fr;gap:20px;
+  padding:11px 0;border-top:1px solid var(--border);}
+.nakata .pairs .row:last-child{border-bottom:1px solid var(--border);}
+.nakata .pairs .k{font-size:12.5px;letter-spacing:.03em;color:var(--sage-deep);font-weight:500;}
+.nakata .pairs .v{font-size:13.5px;line-height:1.58;color:var(--ink);font-weight:300;}
+@media(max-width:620px){.nakata .pairs .row{grid-template-columns:1fr;gap:3px;}}
+
+/* hairline table */
+.nakata table.fine{width:100%;max-width:700px;border-collapse:collapse;margin-top:18px;}
+.nakata table.fine th{text-align:left;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--soft);font-weight:400;padding:0 16px 8px 0;border-bottom:1px solid var(--border);}
+.nakata table.fine td{font-size:12.8px;line-height:1.55;color:var(--ink);font-weight:300;
+  padding:11px 16px 11px 0;border-bottom:1px solid var(--border);vertical-align:top;}
+.nakata table.fine td .k{color:var(--sage-deep);}
+
+/* faint mono panel (e.g. the wake order) */
+.nakata .codeq{margin-top:16px;max-width:548px;padding:14px 18px;border:1px solid var(--border);
+  border-radius:8px;background:rgba(236,226,207,.5);
+  font-family:"SF Mono",Menlo,Consolas,monospace;font-size:11.5px;line-height:1.95;color:var(--dim);}
+.nakata .codeq .h{color:var(--sage-deep);}
+.nakata .codeq .c{color:var(--soft);}
+
+/* two delicate columns */
+.nakata .cols{display:grid;grid-template-columns:1fr 1fr;gap:36px;margin-top:20px;max-width:700px;}
+@media(max-width:620px){.nakata .cols{grid-template-columns:1fr;gap:22px;}}
+.nakata .cols .col h4{font-size:11px;letter-spacing:.15em;text-transform:lowercase;
+  color:var(--sage-deep);font-weight:500;margin-bottom:9px;}
+.nakata ul.fine{list-style:none;margin:0;padding:0;}
+.nakata ul.fine li{position:relative;padding-left:15px;margin:8px 0;font-size:13px;line-height:1.6;
+  color:var(--ink);font-weight:300;}
+.nakata ul.fine li::before{content:"";position:absolute;left:0;top:9px;width:5px;height:1px;background:var(--soft);}
+
+/* quiet inline note (in plain words / why it matters / practical consequence) */
+.nakata .aside{margin-top:18px;padding-left:16px;border-left:1px solid var(--sage);
+  font-size:13px;line-height:1.72;color:var(--dim);font-weight:300;max-width:484px;}
+.nakata .aside b{color:var(--sage-deep);font-weight:600;}
+
+/* the buoyancy equation: a quiet, centered formula panel */
+.nakata .formula{margin:22px 0 4px;max-width:600px;padding:16px 20px;
+  border:1px solid var(--border);border-radius:9px;background:rgba(236,226,207,.42);text-align:center;}
+.nakata .formula .eq{font-family:"SF Mono",Menlo,Consolas,monospace;font-size:15px;
+  color:var(--ink);letter-spacing:.01em;}
+.nakata .formula .eq sup{font-size:10px;}
+.nakata .formula .legend{display:block;margin-top:11px;font-size:11px;color:var(--soft);
+  letter-spacing:.02em;line-height:1.6;}
+
+/* constellation room */
+.constellation{min-height:100%;display:flex;align-items:center;justify-content:center;padding:56px;}
+.constellation img,.constellation svg{width:min(92vw,1000px);height:auto;display:block;}
+.constellation svg circle,.constellation svg text{transition:opacity .3s ease;}
+.constellation svg line{transition:stroke-dashoffset .5s ease;}

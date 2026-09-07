@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- the mark, reduced to one shape: the same vermillion, at the density it
+       reads at 16px rather than the 10% it wears at full size -->
+  <path fill="#e34234" fill-opacity="0.85"
+    d="M32 5c13 0 24 10 26 22 2 13-7 26-20 30C25 60 12 55 7 43C2 31 8 15 20 9c4-2 8-4 12-4z"/>
+</svg>

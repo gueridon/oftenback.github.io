@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>chanoyu · oftenback</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="site.css">
+  <style>
+    /* The chapter house, in the writing the chashitsu chapter found. Three
+       transfers, and each earns its place rather than being applied because
+       the other page has it:
+         the title runs DOWN the left edge and gives the page an anchor;
+         the four principles are four vertical lines, which is how they are
+           written and read;
+         each chapter's Japanese stands vertical at the head of its row, so the
+           list has a spine and the eye can run it without reading.
+       The prose stays horizontal, because prose is for reading. */
+    html,body{overflow-y:auto;height:auto;min-height:100%;}
+    .room{align-items:flex-start;min-height:auto;
+      padding-top:clamp(40px,7vh,80px);padding-bottom:clamp(40px,7vh,80px);}
+    .room-content{width:100%;align-items:stretch;}
+    .cs{width:100%;max-width:706px;margin:0 auto;text-align:left;
+      display:flex;gap:26px;align-items:flex-start;}
+    .cs p{max-width:none;}
+
+    .vtitle{flex:0 0 auto;display:flex;gap:12px;padding-top:2px;}
+    .vtitle span{writing-mode:vertical-rl;line-height:1;}
+    .vtitle .jp{font:400 34px/1 serif;letter-spacing:.16em;color:var(--ink);
+      text-orientation:upright;}
+    .vtitle .rom{font-size:10px;letter-spacing:.34em;text-transform:uppercase;
+      color:var(--dim);font-weight:600;padding-top:4px;}
+    .col{flex:1 1 auto;min-width:0;}
+
+    .col > p{margin-bottom:16px;color:var(--dim);font-weight:300;
+      line-height:1.75;font-size:15px;text-align:justify;hyphens:auto;}
+    .col > p em{font-style:italic;color:var(--ink);}
+
+    /* 和敬清寂 as a kakemono, but a modern one: the roji's cards taught the
+       lesson and it applies here too -- a wash and nothing else. No mounting,
+       no rods, no drawing of a scroll. It hangs because it floats, not because
+       it has been given hardware.
+       Each translation sits horizontally in line with its own character,
+       starting at the panel's right edge. So the four are read across, one by
+       one, instead of guessed at from a list underneath.
+       --adv is the character's line advance in pixels, and the gloss rows are
+       exactly that tall: the only way the two columns can stay in step is to
+       be driven by one number. */
+    .kake{--glyph:26px;--adv:40px;--pad:24px;
+      display:flex;align-items:flex-start;gap:22px;margin:0 0 40px;}
+    .kake .panel{background:rgba(61,53,48,.055);border-radius:6px;
+      padding:var(--pad) 26px;display:flex;justify-content:center;}
+    /* Set vertically, LETTER-SPACING is what advances one character to the
+       next -- line-height spaces the columns, not the glyphs. Measured before
+       this: the characters stepped 30px while the translations stepped 42, and
+       the two ladders drifted apart by the fourth. The advance is now one
+       number and the spacing is derived from it. */
+    .kake .jp{writing-mode:vertical-rl;text-orientation:upright;
+      font:400 var(--glyph)/1 serif;color:var(--ink);
+      letter-spacing:calc(var(--adv) - var(--glyph));}
+    /* No correction: measured, a vertically-set glyph is centred in its whole
+       ADVANCE, not in its own body, so the first character and the first gloss
+       row already agree once both start at the same padding. Guessing the
+       other way put a constant 7px between the two ladders. */
+    .kake .gloss{list-style:none;padding-top:var(--pad);}
+    .kake .gloss li{height:var(--adv);display:flex;align-items:center;
+      font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+      color:var(--dim);font-weight:600;white-space:nowrap;}
+    .kake .gloss i{font-style:normal;color:var(--soft);font-weight:400;
+      letter-spacing:.14em;margin-right:9px;}
+
+    /* the chapters */
+    .chapters{list-style:none;}
+    .chapters a,.chapters .soon{display:flex;align-items:flex-start;gap:20px;
+      padding:16px 2px;text-decoration:none;}
+    .chapters a{color:inherit;transition:background .35s ease;}
+    .chapters a:hover{background:var(--whisper);}
+    .chapters .cj{flex:0 0 30px;writing-mode:vertical-rl;text-orientation:upright;
+      font:400 17px/1 serif;letter-spacing:.10em;color:var(--ink);}
+    .chapters .body{flex:1 1 auto;min-width:0;padding-top:2px;}
+    .chapters .cr{display:block;font-size:9.5px;letter-spacing:.26em;
+      text-transform:uppercase;color:var(--dim);font-weight:600;margin-bottom:6px;}
+    .chapters a .cr{color:var(--clay);}
+    .chapters .cd{display:block;font-size:14px;color:var(--dim);font-weight:300;
+      line-height:1.65;}
+    .chapters .soon{cursor:inherit;}
+    .chapters .soon .cj,.chapters .soon .cd,.chapters .soon .cr{color:var(--soft);}
+    .foot{margin-top:26px;font-size:11px;letter-spacing:.16em;color:var(--soft);
+      text-transform:lowercase;}
+    @media (max-width:760px){
+      .cs{gap:18px;} .vtitle .jp{font-size:28px;}
+      .chapters .cj{flex-basis:26px;font-size:15px;}
+    }
+  </style>
+</head>
+<body>
+  <div id="veil"></div>
+  <main class="room">
+    <div class="room-content">
+      <div class="cs">
+        <div class="vtitle">
+          <span class="jp">茶の湯</span>
+          <span class="rom">chanoyu</span>
+        </div>
+
+        <div class="col">
+          <figure class="kake">
+            <div class="panel"><span class="jp">和敬清寂</span></div>
+            <ul class="gloss">
+              <li><i>wa</i> harmony</li>
+              <li><i>kei</i> respect</li>
+              <li><i>sei</i> purity</li>
+              <li><i>jaku</i> tranquillity</li>
+            </ul>
+          </figure>
+
+          <p><em>Chanoyu</em> means hot water for tea, and that is all it claims
+          to be. Not a performance, not a religious rite: a meeting, arranged so
+          that nothing in it happens by accident and nothing in it can happen
+          twice.</p>
+
+          <p>A host invites a few guests. There is a garden to cross, a door too
+          low to pass standing, a fire, a bowl. Every object has one job and a
+          name. What takes four hours to do could be done in four minutes, and
+          the difference between the two is the whole of it.</p>
+
+          <ul class="chapters">
+          <li>
+            <a href="tearoom-roji.html">
+              <span class="cj">露地</span>
+              <span class="body"><span class="cr">roji</span><span class="cd">The dewy path. A garden whose only purpose is to take the street out of you before you arrive. Walk it.</span></span>
+            </a>
+          </li>
+          <li>
+            <a href="chashitsu.html">
+              <span class="cj">茶室</span>
+              <span class="body"><span class="cr">chashitsu</span><span class="cd">The room itself, classified by where its hearth is cut. Four positions, each normal and reversed: the eight.</span></span>
+            </a>
+          </li>
+          <li>
+            <a href="dogu.html">
+              <span class="cj">道具</span>
+              <span class="body"><span class="cr">dogu</span><span class="cd">Not equipment: named individuals. One object at a time, in a field of nothing.</span></span>
+            </a>
+          </li>
+          <li>
+            <span class="soon">
+              <span class="cj">点前</span>
+              <span class="body"><span class="cr">temae</span><span class="cd">The procedure. Sixty movements to make one bowl of tea, arranged so that they look like none.</span></span>
+            </span>
+          </li>
+          <li>
+            <span class="soon">
+              <span class="cj">茶事</span>
+              <span class="body"><span class="cr">chaji</span><span class="cd">The full gathering. Charcoal, a meal, thick tea and thin, and a season that will not come round again.</span></span>
+            </span>
+          </li>
+          <li>
+            <span class="soon">
+              <span class="cj">立礼</span>
+              <span class="body"><span class="cr">ryurei</span><span class="cd">Tea at a table, standing. Devised in 1872 so that guests who do not kneel could still be served, and the way this group practises.</span></span>
+            </span>
+          </li>
+          <li>
+            <span class="soon">
+              <span class="cj">一期一会</span>
+              <span class="body"><span class="cr">ichigo ichie</span><span class="cd">One time, one meeting. Why the same guests are never invited to the same afternoon.</span></span>
+            </span>
+          </li>
+          </ul>
+          <p class="foot">three chapters open, four to build</p>
+        </div>
+      </div>
+    </div>
+  </main>
+  <script src="blob.js"></script>
+  <script src="site.js"></script>
+</body>
+</html>

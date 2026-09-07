@@ -1,0 +1,3608 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>tearoom · oftenback</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="site.css">
+  <style>
+    /* The journey is keyboard-driven now, so the page does not scroll at all. */
+    html,body{height:100%;overflow:hidden;margin:0;}
+    /* the annotation dots and their caption, in the site's own vermillion */
+    #notes{position:fixed;inset:0;pointer-events:none;z-index:6;}
+    /* A translucent disc of CONSTANT size whose opacity breathes. The button
+       carries the visibility written every frame from the projection; the span
+       inside carries the pulse. Nested opacities multiply, which is what lets
+       the two live together instead of overwriting each other. */
+    .note-dot{position:absolute;width:30px;height:30px;margin:-15px 0 0 -15px;
+      border:0;padding:0;background:none;cursor:pointer;pointer-events:auto;
+      transition:opacity .45s ease;}
+    .note-disc{display:block;width:100%;height:100%;border-radius:50%;
+      background:#e34234;animation:notepulse 3.4s ease-in-out infinite;}
+    @keyframes notepulse{0%,100%{opacity:.30;}50%{opacity:.72;}}
+    .note-dot:hover .note-disc{animation:none;opacity:.82;}
+    .note-dot.on .note-disc{animation:none;opacity:.86;}
+    /* White type on nothing at all, floating. Legibility comes from a doubled
+       shadow, because it has to hold over bright sky as well as dark foliage. */
+    /* The same translucent dark the keys wear, and no border. These panels sat
+       on nothing but their own glow, which held over the moss and gave way
+       over bright sand: a shadow behind white text stops being a shadow once
+       the ground is lighter than the text. A wash carries what the glow could
+       not, and being the keys' own wash it reads as the same family of object.
+       No border, so it stays a wash and does not become a box. */
+    /* 330 + the 18px of padding on each side: box-sizing is border-box across
+       this site, so a wash added inside the old max-width would have narrowed
+       the text column from 330 to 294 and rewrapped every card. */
+    #note-card{position:absolute;max-width:366px;color:#fff;opacity:0;
+      pointer-events:none;transition:opacity .4s ease;
+      font:400 14px/1.62 system-ui,sans-serif;
+      background:rgba(18,14,10,.30);border-radius:6px;padding:15px 18px;
+      text-shadow:0 1px 2px rgba(18,14,10,.95), 0 0 8px rgba(18,14,10,.90),
+        0 0 26px rgba(18,14,10,.80);}
+    #note-card.on{opacity:1;}
+    /* The recueil's visual unit, brought into the garden. On the chanoyu index
+       and in the chashitsu chapter a panel is a vertical NAME at its left edge
+       with horizontal prose beside it, and nothing drawn. The same two panels
+       here -- the opening card and the annotations -- now read as members of
+       the same family instead of as this page's own private furniture.
+       The prose stays horizontal. It always will. */
+    .vt{flex:0 0 auto;display:flex;gap:9px;padding-top:1px;}
+    .vt span{writing-mode:vertical-rl;line-height:1;}
+    .vt .jp{text-orientation:upright;font:400 21px/1 serif;letter-spacing:.15em;
+      color:#fff;}
+    .vt .rom{font-size:9px;letter-spacing:.30em;text-transform:uppercase;
+      color:rgba(255,255,255,.72);font-weight:600;padding-top:3px;}
+    #note-card{display:flex;gap:16px;}
+    #note-card .tx{flex:1 1 auto;min-width:0;}
+
+    /* the opening panel, off to one side, gone once you start walking */
+    #intro-card{position:fixed;left:clamp(26px,5.5vw,86px);top:50%;
+      transform:translateY(-50%);max-width:440px;color:#fff;z-index:6;
+      display:flex;gap:18px;
+      pointer-events:none;transition:opacity 1s ease;
+      font:400 14px/1.68 system-ui,sans-serif;
+      /* the padding is pulled back out of the left offset, so the TEXT stays
+         exactly where it was composed and only the wash grows around it */
+      background:rgba(18,14,10,.30);border-radius:6px;
+      padding:20px 22px;margin-left:-22px;
+      text-shadow:0 1px 2px rgba(18,14,10,.95), 0 0 8px rgba(18,14,10,.90),
+        0 0 26px rgba(18,14,10,.80);}
+    #intro-card .tx{flex:1 1 auto;min-width:0;}
+    #intro-card .vt .jp{font-size:25px;}
+    #intro-card p{margin:0 0 11px;}
+    /* wide tracking suits a key name, not a phrase */
+    #intro-card b{font-weight:600;letter-spacing:.14em;}
+    /* Taking the keys out of the card left a visitor with no way to know how
+       to start: the guide only arrives once you are already walking. One line,
+       and only the one key that begins it -- everything else can wait until
+       there is something to steer. */
+    #intro-card .go{margin:20px 0 0;font-size:11px;letter-spacing:.16em;
+      color:rgba(255,255,255,.78);text-transform:lowercase;
+      display:flex;align-items:center;gap:11px;}
+    /* the same key, drawn the same way, so the one on the card and the ones in
+       the panel are recognisably the same object */
+    #intro-card .go kbd{font:600 9px/1 system-ui,sans-serif;letter-spacing:.20em;
+      text-transform:uppercase;color:rgba(255,255,255,.94);
+      border:1px solid rgba(255,255,255,.40);border-radius:4px;
+      background:rgba(18,14,10,.30);padding:4px 0 3px;min-width:58px;
+      text-align:center;text-indent:.20em;}
+    #intro-card strong{font-weight:600;}
+    /* The controls are not discoverable, so this stays put rather than fading. */
+    /* Left-aligned on the same margin as the opening panel, and low, so they
+       sit out of the passage instead of across the middle of it. */
+    #hint{position:fixed;left:clamp(26px,5.5vw,86px);bottom:clamp(26px,4vh,54px);
+      font:400 11px/2.0 system-ui,sans-serif;letter-spacing:.22em;
+      color:rgba(255,255,255,.80);text-align:left;pointer-events:none;
+      /* starts hidden and is driven per frame from the intro card's own fade,
+         so no CSS transition here: it would only lag behind the walk */
+      opacity:0;
+      text-shadow:0 1px 2px rgba(18,14,10,.95), 0 0 10px rgba(18,14,10,.85);}
+    /* A small panel rather than a list of sentences: the key itself drawn as a
+       key, so the eye finds it without reading. M leads, because which mode
+       you are in decides what the three below it mean -- and they say so, they
+       are rewritten when the mode changes rather than describing both at once.
+       The gaps group it: the mode, then the two that move you, then the one
+       that turns you. */
+    #hint .krow{display:flex;align-items:center;gap:11px;margin:0 0 5px;line-height:1;}
+    #hint .kgap{height:11px;}
+    #hint kbd{font:600 9px/1 system-ui,sans-serif;letter-spacing:.20em;
+      text-transform:uppercase;color:rgba(255,255,255,.94);
+      border:1px solid rgba(255,255,255,.40);border-radius:4px;
+      background:rgba(18,14,10,.30);padding:4px 0 3px;min-width:58px;
+      text-align:center;text-indent:.20em;flex:0 0 auto;}
+    #hint .d,#hint .modes{font-size:10.5px;letter-spacing:.10em;
+      color:rgba(255,255,255,.62);}
+    /* the mode that is running is lit; the other one waits */
+    #hint .modes i{font-style:normal;letter-spacing:.16em;color:rgba(255,255,255,.34);
+      transition:color .3s ease;}
+    #hint .modes i.on{color:rgba(255,255,255,.96);}
+    #hint .modes em{font-style:normal;margin:0 7px;color:rgba(255,255,255,.28);}
+    /* This page's own veil: the loading screen. Held until the scene has
+       drawn a frame AND a minimum time has passed, so the crossing always has
+       its moment even on a machine fast enough not to need one.
+
+       These #veil rules deliberately DUPLICATE site.js's. site.js runs at the
+       end of the body, behind a blocking network fetch of three.min.js, so
+       until then the veil was an unstyled static div: the first paint showed
+       the intro card and the hint text with the loading mark stranded at the
+       top of the page, and only later did it snap into a full-screen cover.
+       A page that ships its own veil has to style it in its own head, or it
+       does not cover anything at the one moment it exists to cover. */
+    #loading{text-align:center;color:#3d3530;}
+    #loading .jp{font:400 46px/1 serif;letter-spacing:.16em;}
+    #loading .rom{margin-top:14px;font:600 11px/1 system-ui,sans-serif;
+      letter-spacing:.34em;text-transform:uppercase;color:#8e7f73;}
+    #loading .bar{margin:26px auto 0;width:190px;height:1px;
+      background:rgba(61,53,48,.18);}
+    #loading .bar i{display:block;height:100%;width:0;background:#e34234;
+      transition:width .25s linear;}
+    /* the nakata variant's own soft-edge atmosphere -- scoped to its own
+       canvas by id, not a generic canvas{} rule, so it doesn't touch the
+       side-nav or brand-mark canvases site.js injects on top */
+    #teahouse-canvas{display:block;position:fixed;top:0;left:0;filter:blur(1.2px) saturate(1.08);}
+  </style>
+</head>
+<body>
+  <div id="veil" data-hold="true">
+    <div id="loading">
+      <div class="jp">茶の湯</div>
+      <div class="rom">chanoyu</div>
+      <div class="bar"><i></i></div>
+    </div>
+  </div>
+  <canvas id="teahouse-canvas"></canvas>
+  <div id="hint">
+    <div class="krow"><kbd>M</kbd><span class="modes"><i data-m="auto">auto</i><em>·</em><i data-m="manual">walk</i></span></div>
+    <div class="kgap"></div>
+    <div class="krow"><kbd>SPACE</kbd><span class="d" data-k="space"></span></div>
+    <div class="krow"><kbd>R</kbd><span class="d" data-k="r"></span></div>
+    <div class="kgap"></div>
+    <div class="krow"><kbd>MOUSE</kbd><span class="d" data-k="mouse"></span></div>
+  </div>
+  <div id="notes"><div id="note-card"></div></div>
+  <div id="intro-card">
+    <div class="vt"><span class="jp">露地</span><span class="rom">roji</span></div>
+    <div class="tx">
+    <p>The dewy path. Rikyu took the name from the Lotus Sutra, where those who
+    escape the burning house take their seats on dewy ground.</p>
+    <p>It is not a garden to be admired: it is a passage, and nothing in it is
+    allowed to be remarkable. Ordinary trees, valueless stones, moss. Asked to
+    describe the ideal one, Rikyu answered only <em>thick green moss, all pure
+    and sunny warm</em>.</p>
+    <p>It is two gardens rather than one. An outer, sanded, where guests wait;
+    an inner, mossy, past the middle gate. Crossing that gate is meant to feel
+    like a change of scene. It ends at a door too low to pass standing.</p>
+    <p class="go"><kbd>SPACE</kbd> to set out</p>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+  <script>
+    // The scene is built synchronously and it is heavy: several hundred
+    // thousand triangles of geometry. Nothing paints while that runs, so the
+    // whole build is deferred by two frames, letting the loading screen show
+    // itself first. Without this the visitor stares at a white page and then
+    // the garden appears, with nothing in between to say why.
+    const LOAD_MIN_MS = 2100;
+    const loadStart = performance.now();
+    const loadBar = document.querySelector("#loading .bar i");
+    (function creep() {
+      const k = Math.min(1, (performance.now() - loadStart) / LOAD_MIN_MS);
+      loadBar.style.width = (window.__firstFrame ? 100 : Math.min(94, k * 94)) + "%";
+      if (!window.__dismissed) requestAnimationFrame(creep);
+    })();
+    function dismissLoader() {
+      if (!window.__firstFrame) { requestAnimationFrame(dismissLoader); return; }
+      const wait = Math.max(0, LOAD_MIN_MS - (performance.now() - loadStart));
+      setTimeout(() => {
+        window.__dismissed = true;
+        loadBar.style.width = "100%";
+        const v = document.getElementById("veil");
+        // The veil STAYS in the DOM once faded: site.js reuses this very
+        // element to fade back OUT of the page when a menu link is clicked.
+        // Removing it left the exit with nothing to fade, so leaving chanoyu
+        // sat blank for a beat and then flipped. Only the loading card goes.
+        if (v) {
+          v.classList.add("gone");
+          setTimeout(() => {
+            const card = document.getElementById("loading");
+            if (card) card.remove();
+          }, 900);
+        }
+      }, wait);
+    }
+    requestAnimationFrame(dismissLoader);
+
+    function buildScene() {
+    // ---- the cinematic tea room: step 1 of tearoom-roji-plan.md.
+    // Adds the fourth wall with a nijiriguchi (the crawl-in door), which the
+    // static tearoom.html never had because its camera sits OUTSIDE the room
+    // and a front wall would mask everything. ?cam=in seats the camera inside
+    // so both possible destinations can be compared.
+    // ---- the tea room (nakata variant): soft-edge, diffuse, the site's own
+    // cream/ink/vermillion palette rather than an earthy naturalistic set ----
+    const PALETTE = {
+      bg:     0xf2e6d0, // cream, warmed a touch so the haze is not a white void
+      ink:    0x3d3530,
+      wall:   0xe3d9c9,
+      floor:  0xece2cf, // --whisper
+      plinth: 0xc2baa9, // desaturated toward neutral
+      soft:   0xb8b0a3,
+      dim:    0x8e7f73,
+      clay:   0xe34234, // the blob's own vermillion, the one deliberate accent
+      sage:   0xc9c2b2, // neutralized
+    };
+    const VERMILLION = 0xe34234;
+
+    const scene = new THREE.Scene();
+    window.__scene = scene;         // measuring affordance, see __leafMat below
+    scene.background = new THREE.Color(PALETTE.bg);
+    // The sense of infinity came from one hard line: the ground meeting the
+    // sky. Fog in EXACTLY the background colour leaves that line nothing to
+    // draw with, and distance simply dissolves. Starts past the garden so the
+    // room and everything you crouch beside are untouched.
+    // Brought closer so the haze reaches the far end of the scrub band: the
+    // transition is then made of colour, density AND softness, and there is no
+    // distance at which the eye finds a hard edge.
+    // near and far are independent, and the two wishes need different ones:
+    // a CLOSE near is what veils the far end of the scrub band, a DISTANT far
+    // is what stops the hills washing out to flat fog colour.
+    scene.fog = new THREE.Fog(PALETTE.bg, 8, 68);
+
+    // a real chashitsu is small and low-ceilinged
+    const ROOM = 4, WALL_H = 2.0;
+
+    const camera = new THREE.PerspectiveCamera(38, innerWidth / innerHeight, 0.1, 50);
+    window.__cam = camera;          // measuring affordance, see __scene above
+    // Destination A (default) = today's doll's-house view from OUTSIDE the room.
+    // Destination B (?cam=in) = seated INSIDE, where a guest actually sits after
+    // bowing through the nijiriguchi. y=0.85 is already a seated eye height.
+    // The destination, chosen 2026-09-05: seated INSIDE (option B in the plan).
+    // y=0.85 is a seated eye height; 54 degrees rather than 38 because the
+    // tight lens read as a detail shot of the tokonoma, not as a room.
+    const CAM_IN  = new THREE.Vector3(0.45, 0.85, 1.72);
+    const LOOK_IN = new THREE.Vector3(-0.05, 0.62, -1.00);
+
+    // No ?cam= means the journey. ?cam=out|in|door are frozen debug views:
+    // out  = the old doll's-house framing, kept for comparison
+    // in   = the destination, static
+    // door = looking back at the nijiriguchi, to check the opening
+    const PERF = new URLSearchParams(location.search).has("perf");
+    const CAM_MODE = new URLSearchParams(location.search).get("cam");
+    const STATIC_VIEW = CAM_MODE !== null;
+    const CAM_BASE =
+      CAM_MODE === "in"   ? CAM_IN.clone() :
+      CAM_MODE === "door" ? new THREE.Vector3(-0.75, 0.80, -0.55) :
+                            new THREE.Vector3(0.9, 0.85, 3.1);
+    const LOOK_BASE =
+      CAM_MODE === "in"   ? LOOK_IN.clone() :
+      CAM_MODE === "door" ? new THREE.Vector3(0.7, 0.42, 2.0) :
+                            new THREE.Vector3(-0.15, 0.75, -0.4);
+    camera.fov = (CAM_MODE === "out") ? 38 : 54;
+    camera.updateProjectionMatrix();
+
+    const _so = new THREE.Vector3().subVectors(CAM_BASE, LOOK_BASE);
+    const STATIC_RADIUS = Math.hypot(_so.x, _so.z);
+    const ORBIT_BASE_ANGLE_STATIC = Math.atan2(_so.x, _so.z);
+    const STATIC_AMP = (CAM_MODE === "out") ? 0.35 : 0.14;
+    if (STATIC_VIEW) document.body.classList.add("static-view");
+    let staticDoorOpen = STATIC_VIEW;   // the frozen views want the door aside
+
+    // NOTE, learned the hard way 2026-09-05: three.js does NOT filter lights
+    // per object. `light.layers` is tested against the CAMERA, not against each
+    // mesh, so a "daylight on its own layer" does nothing and lit the room
+    // straight through its roof. Measured: the dark wall went #261F14 -> #8A795F.
+    // The honest fix is the real one: let the roof actually block the sun.
+    const outdoor = (o) => o;   // kept so the call sites still read as intent
+
+    const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById("teahouse-canvas"), antialias: true });
+    renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+    renderer.setSize(innerWidth, innerHeight);
+    renderer.shadowMap.enabled = true;
+    // VSM was tried here, 2026-09-06, and REJECTED. It gave beautiful soft
+    // dapple, but it covered the pavilion's plaster in a dense white lacework
+    // -- Nicolas: "like bacteria under a microscope". That is light bleeding,
+    // and this scene is its worst case: thousands of tiny leaf occluders four
+    // metres up with a large wall twelve metres behind them, so a single texel
+    // spans a bimodal depth distribution and the variance bound overestimates
+    // visibility. Measured across the whole blur range -- radius 1.0, 0.35 and
+    // 0.05 -- and the lacework is there at every one of them, so it is not the
+    // blur, it is the representation. No setting saves it.
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.1;
+
+    // ---- flat, matte materials only -- no PBR shine, no textures ----
+    const mat = (hex) => new THREE.MeshStandardMaterial({ color: hex, flatShading: true, roughness: 1, metalness: 0 });
+
+    // ---- floor: a subtle woven tatami suggestion ----
+    function makeTatamiTexture() {
+      const w = 384, h = 128; // 3:1, matching the 3-square-long mat
+      const c = document.createElement("canvas");
+      c.width = w; c.height = h;
+      const ctx = c.getContext("2d");
+      ctx.fillStyle = "#" + PALETTE.floor.toString(16).padStart(6, "0");
+      ctx.fillRect(0, 0, w, h);
+      ctx.strokeStyle = "rgba(61,53,48,0.035)";
+      ctx.lineWidth = 1;
+      for (let y = 3; y < h; y += 5) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+      }
+      ctx.strokeStyle = "rgba(61,53,48,0.05)";
+      ctx.lineWidth = 2;
+      ctx.strokeRect(1, 1, w - 2, h - 2);
+      const tex = new THREE.CanvasTexture(c);
+      tex.colorSpace = THREE.SRGBColorSpace;
+      tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+      tex.repeat.set(7 / 3, 7);
+      return tex;
+    }
+
+    // a deterministic hash keyed on original vertex position -- hoisted, used
+    // by both the room shell's rugged planes and the plinth's rugged box
+    function hash3(x, y, z) {
+      const s = Math.sin(x * 12.9898 + y * 78.233 + z * 37.719) * 43758.5453;
+      return s - Math.floor(s);
+    }
+
+    // sketchy, less-than-ruler-straight room shell
+    function makeRuggedPlane(w, h, segW, segH, edgeJitter, bumpJitter, seed) {
+      const geo = new THREE.PlaneGeometry(w, h, segW, segH);
+      const pos = geo.attributes.position;
+      for (let i = 0; i < pos.count; i++) {
+        const x = pos.getX(i), y = pos.getY(i), z = pos.getZ(i);
+        pos.setX(i, x + (hash3(x + seed, y, 11.1) - 0.5) * edgeJitter);
+        pos.setY(i, y + (hash3(y, x + seed, 22.2) - 0.5) * edgeJitter);
+        pos.setZ(i, z + (hash3(x + seed, y + seed, 33.3) - 0.5) * bumpJitter);
+      }
+      geo.computeVertexNormals();
+      return geo;
+    }
+    const SEAM = 0.08;
+
+    const floor = new THREE.Mesh(
+      makeRuggedPlane(ROOM + SEAM, ROOM + SEAM, 16, 16, 0.028, 0.01, 0.3),
+      new THREE.MeshStandardMaterial({ map: makeTatamiTexture(), flatShading: true, roughness: 1, metalness: 0 })
+    );
+    floor.rotation.x = -Math.PI / 2;
+    floor.receiveShadow = true;
+    scene.add(floor);
+
+    // ---- adobe plaster, shared across all three walls ----
+    function makeAdobeTexture() {
+      const w = 320, h = 320;
+      const c = document.createElement("canvas");
+      c.width = w; c.height = h;
+      const ctx = c.getContext("2d");
+      ctx.fillStyle = "#d9cfbe";
+      ctx.fillRect(0, 0, w, h);
+
+      for (let i = 0; i < 26; i++) {
+        const x = Math.random() * w, y = Math.random() * h, r = 30 + Math.random() * 70;
+        const warm = Math.random() < 0.5;
+        const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+        g.addColorStop(0, warm ? "rgba(168,112,74,0.06)" : "rgba(90,70,50,0.05)");
+        g.addColorStop(1, "rgba(0,0,0,0)");
+        ctx.fillStyle = g;
+        ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+      }
+
+      for (let i = 0; i < 1600; i++) {
+        const x = Math.random() * w, y = Math.random() * h;
+        ctx.fillStyle = Math.random() < 0.5
+          ? `rgba(70,50,34,${0.015 + Math.random() * 0.03})`
+          : `rgba(235,210,175,${0.015 + Math.random() * 0.035})`;
+        ctx.fillRect(x, y, 1.4, 1.4);
+      }
+
+      for (let i = 0; i < 20; i++) {
+        const x = Math.random() * w, y = Math.random() * h;
+        const len = 20 + Math.random() * 50;
+        const ang = (Math.random() - 0.5) * 0.3;
+        ctx.strokeStyle = "rgba(60,44,30,0.03)";
+        ctx.lineWidth = 3 + Math.random() * 4;
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(x + Math.cos(ang) * len, y + Math.sin(ang) * len);
+        ctx.stroke();
+      }
+
+      const tex = new THREE.CanvasTexture(c);
+      tex.colorSpace = THREE.SRGBColorSpace;
+      tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+      tex.repeat.set(2.2, 1.3);
+      return tex;
+    }
+    const adobeTex = makeAdobeTexture();
+    const adobeMat = new THREE.MeshStandardMaterial({
+      map: adobeTex, bumpMap: adobeTex, bumpScale: 0.01,
+      flatShading: true, roughness: 1, metalness: 0,
+    });
+
+    const wall = new THREE.Mesh(makeRuggedPlane(ROOM + SEAM, WALL_H + SEAM, 14, 8, 0.024, 0.01, 1.1), adobeMat);
+    wall.position.set(0, WALL_H / 2, -ROOM / 2);
+    wall.receiveShadow = true;
+    scene.add(wall);
+
+    const ceiling = new THREE.Mesh(makeRuggedPlane(ROOM + SEAM, ROOM + SEAM, 16, 16, 0.028, 0.01, 2.3), mat(PALETTE.plinth));
+    ceiling.rotation.x = Math.PI / 2;
+    ceiling.position.set(0, WALL_H, 0);
+    ceiling.receiveShadow = true;
+    ceiling.castShadow = true;     // it, not just the roof, must stop the sun
+    scene.add(ceiling);
+
+    const rightWall = new THREE.Mesh(makeRuggedPlane(ROOM + SEAM, WALL_H + SEAM, 14, 8, 0.024, 0.01, 3.7), adobeMat);
+    rightWall.rotation.y = -Math.PI / 2;
+    rightWall.position.set(ROOM / 2, WALL_H / 2, 0);
+    rightWall.receiveShadow = true;
+    scene.add(rightWall);
+
+    const leftWall = new THREE.Mesh(makeRuggedPlane(ROOM + SEAM, WALL_H + SEAM, 14, 8, 0.024, 0.01, 5.2), adobeMat);
+    leftWall.rotation.y = Math.PI / 2;
+    leftWall.position.set(-ROOM / 2, WALL_H / 2, 0);
+    leftWall.receiveShadow = true;
+    scene.add(leftWall);
+
+    // ---- the fourth wall + nijiriguchi ----
+    // A PlaneGeometry cannot carry a hole, and switching to ExtrudeGeometry
+    // would lose makeRuggedPlane's hand-jitter, so the wall is built as three
+    // panels around the opening plus a low sill. Off-centre on purpose: real
+    // nijiriguchi sit to one side, and asymmetry is the house style.
+    const DOOR_W = 0.7, DOOR_H = 0.72, DOOR_SILL = 0.06, DOOR_CX = 0.7;
+    const FRONT_Z = ROOM / 2;
+    const doorL = DOOR_CX - DOOR_W / 2, doorR = DOOR_CX + DOOR_W / 2;
+
+    // Cloned rather than mutating adobeMat: the other three walls must stay
+    // single-sided or they would close off the doll's-house debug view.
+    const adobeMatBoth = adobeMat.clone();
+    adobeMatBoth.side = THREE.DoubleSide;
+
+    function frontPanel(w, h, cx, cy, seed) {
+      const m = new THREE.Mesh(makeRuggedPlane(w, h, Math.max(2, Math.round(w * 4)), Math.max(2, Math.round(h * 4)), 0.024, 0.01, seed), adobeMatBoth);
+      m.rotation.y = Math.PI;            // face inward, toward -Z
+      m.position.set(cx, cy, FRONT_Z);
+      m.receiveShadow = true;
+      scene.add(outdoor(m));
+      return m;
+    }
+    // left of the door, right of the door, the lintel above it, the sill below
+    frontPanel((doorL + ROOM / 2) + SEAM, WALL_H + SEAM, (doorL - ROOM / 2) / 2, WALL_H / 2, 6.4);
+    frontPanel((ROOM / 2 - doorR) + SEAM, WALL_H + SEAM, (doorR + ROOM / 2) / 2, WALL_H / 2, 7.9);
+    frontPanel(DOOR_W + SEAM, (WALL_H - DOOR_H - DOOR_SILL) + SEAM, DOOR_CX, (DOOR_SILL + DOOR_H + WALL_H) / 2, 8.6);
+    frontPanel(DOOR_W + SEAM, DOOR_SILL + SEAM, DOOR_CX, DOOR_SILL / 2, 9.3);
+
+    // ---- the window: the room's only light source ----
+    // +1, the SUN's side. It was -1, the shade side, where sunlight cannot
+    // physically reach it: the light travels toward -x, so a window on the -x
+    // wall can never throw a rectangle on this floor. Nicolas felt the knot
+    // from the mismatch of shadow directions before either of us saw the cause.
+    const WINDOW_SIDE = 1;
+    const WINDOW_Y = 1.25, WINDOW_Z = 0.35, WINDOW_W = 0.4, WINDOW_H = 0.55;
+    const windowPane = new THREE.Mesh(
+      new THREE.PlaneGeometry(WINDOW_W, WINDOW_H),
+      new THREE.MeshBasicMaterial({ color: 0xfff3d9 })
+    );
+    windowPane.rotation.y = -WINDOW_SIDE * Math.PI / 2;
+    windowPane.position.set(WINDOW_SIDE * (ROOM / 2 - 0.01), WINDOW_Y, WINDOW_Z);
+    scene.add(windowPane);
+
+    // bamboo frame + lattice, golden-ratio split rather than symmetric
+    const bambooMat = mat(PALETTE.plinth);
+    const BAMBOO_X = WINDOW_SIDE * (ROOM / 2 - 0.03);
+    const zLo = WINDOW_Z - WINDOW_W / 2, zHi = WINDOW_Z + WINDOW_W / 2;
+    const yLo = WINDOW_Y - WINDOW_H / 2, yHi = WINDOW_Y + WINDOW_H / 2;
+
+    function bambooVertical(z, yFrom, yTo, radius) {
+      const rod = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, yTo - yFrom, 8), bambooMat);
+      rod.position.set(BAMBOO_X, (yFrom + yTo) / 2, z);
+      rod.castShadow = true;
+      scene.add(rod);
+    }
+    function bambooHorizontal(y, zFrom, zTo, radius) {
+      const rod = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, zTo - zFrom, 8), bambooMat);
+      rod.rotation.x = Math.PI / 2;
+      rod.position.set(BAMBOO_X, y, (zFrom + zTo) / 2);
+      rod.castShadow = true;
+      scene.add(rod);
+    }
+
+    const FRAME_R = 0.014, FRAME_PAD = 0.03;
+    bambooVertical(zLo, yLo - FRAME_PAD, yHi + FRAME_PAD, FRAME_R);
+    bambooVertical(zHi, yLo - FRAME_PAD, yHi + FRAME_PAD, FRAME_R);
+    bambooHorizontal(yLo, zLo - FRAME_PAD, zHi + FRAME_PAD, FRAME_R);
+    bambooHorizontal(yHi, zLo - FRAME_PAD, zHi + FRAME_PAD, FRAME_R);
+
+    const LATTICE_R = 0.009;
+    bambooVertical(zLo + WINDOW_W * 0.382, yLo, yHi, LATTICE_R);
+    const goldenScale = WINDOW_H / 2;
+    const yBar1 = yHi - 0.618 * goldenScale;
+    const yBar2 = yBar1 - 1.0 * goldenScale;
+    bambooHorizontal(yBar1, zLo, zHi, LATTICE_R);
+    bambooHorizontal(yBar2, zLo, zHi, LATTICE_R);
+
+    // ---- tokonoma ----
+    function makeWoodTexture() {
+      const w = 256, h = 256;
+      const c = document.createElement("canvas");
+      c.width = w; c.height = h;
+      const ctx = c.getContext("2d");
+      ctx.fillStyle = "#7b6c58";
+      ctx.fillRect(0, 0, w, h);
+      for (let i = 0; i < 46; i++) {
+        const y = Math.random() * h;
+        const dark = Math.random() < 0.55;
+        ctx.strokeStyle = dark
+          ? `rgba(12,7,4,${0.12 + Math.random() * 0.16})`
+          : `rgba(107,76,50,${0.07 + Math.random() * 0.11})`;
+        ctx.lineWidth = 0.6 + Math.random() * 1.6;
+        ctx.beginPath();
+        ctx.moveTo(0, y + (Math.random() - 0.5) * 6);
+        ctx.bezierCurveTo(
+          w * 0.33, y + (Math.random() - 0.5) * 12,
+          w * 0.66, y + (Math.random() - 0.5) * 12,
+          w, y + (Math.random() - 0.5) * 6
+        );
+        ctx.stroke();
+      }
+      const tex = new THREE.CanvasTexture(c);
+      tex.colorSpace = THREE.SRGBColorSpace;
+      tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+      tex.repeat.set(2.5, 1);
+      return tex;
+    }
+
+    function makeRuggedBox(w, h, d, segX, segY, segZ, jitter) {
+      const geo = new THREE.BoxGeometry(w, h, d, segX, segY, segZ);
+      const pos = geo.attributes.position;
+      for (let i = 0; i < pos.count; i++) {
+        const x = pos.getX(i), y = pos.getY(i), z = pos.getZ(i);
+        const jx = (hash3(x, y, z) - 0.5) * jitter;
+        const jz = (hash3(z, x, y + 4.2) - 0.5) * jitter;
+        pos.setX(i, x + jx);
+        pos.setZ(i, z + jz);
+      }
+      geo.computeVertexNormals();
+      return geo;
+    }
+
+    const TOKO_CX = 0;
+    const plinth = new THREE.Mesh(
+      makeRuggedBox(1.7, 0.32, 1.0, 10, 2, 6, 0.035),
+      new THREE.MeshStandardMaterial({ map: makeWoodTexture(), flatShading: true, roughness: 0.9, metalness: 0 })
+    );
+    plinth.position.set(TOKO_CX, 0.16, -ROOM / 2 + 0.5);
+    plinth.castShadow = true;
+    plinth.receiveShadow = true;
+    scene.add(plinth);
+
+    const recess = new THREE.Mesh(makeRuggedPlane(1.9, 1.7, 10, 8, 0.02, 0.008, 8.9), mat(PALETTE.soft));
+    recess.position.set(TOKO_CX, 1.1, -ROOM / 2 + 0.04);
+    scene.add(recess);
+
+    // ---- the kakejiku ----
+    function makeScrollTexture(text, w, h) {
+      const canvas = document.createElement("canvas");
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext("2d");
+
+      ctx.fillStyle = "#f1e8d8";
+      ctx.fillRect(0, 0, w, h);
+
+      for (let i = 0; i < 340; i++) {
+        const x = Math.random() * w, y = Math.random() * h;
+        const len = 3 + Math.random() * 9;
+        const ang = Math.random() * Math.PI;
+        ctx.strokeStyle = Math.random() < 0.5 ? "rgba(120,98,68,0.05)" : "rgba(255,251,240,0.06)";
+        ctx.lineWidth = 0.5 + Math.random() * 0.7;
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(x + Math.cos(ang) * len, y + Math.sin(ang) * len);
+        ctx.stroke();
+      }
+      for (let i = 0; i < 16; i++) {
+        const x = Math.random() * w, y = Math.random() * h, r = 14 + Math.random() * 34;
+        const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+        g.addColorStop(0, "rgba(138,112,76,0.06)");
+        g.addColorStop(1, "rgba(138,112,76,0)");
+        ctx.fillStyle = g;
+        ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+      }
+
+      const chars = Array.from(text);
+      const fontSize = w * 0.6;
+      const lineH = fontSize * 1.08;
+      const totalH = chars.length * lineH;
+      const startY = h / 2 - totalH / 2 + lineH / 2;
+
+      chars.forEach((c, i) => {
+        const cx = w / 2 + (Math.random() - 0.5) * fontSize * 0.06;
+        const cy = startY + i * lineH + (Math.random() - 0.5) * fontSize * 0.05;
+        const rot = (Math.random() - 0.5) * 0.07;
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(rot);
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.font = `${fontSize}px "Noto Serif CJK JP", serif`;
+        ctx.filter = "blur(3px)";
+        ctx.fillStyle = "rgba(35,28,22,0.5)";
+        ctx.fillText(c, 0, 0);
+        ctx.filter = "none";
+        ctx.fillStyle = "rgba(32,26,21,0.88)";
+        ctx.fillText(c, 0, 0);
+        ctx.restore();
+      });
+
+      const tex = new THREE.CanvasTexture(canvas);
+      tex.colorSpace = THREE.SRGBColorSpace;
+      return tex;
+    }
+
+    const SCROLL_CX = TOKO_CX, SCROLL_CY = 1.3, SCROLL_CZ = -ROOM / 2 + 0.08;
+    const SCROLL_W = 0.5, SCROLL_H = 1.1;
+
+    const scrollTex = makeScrollTexture("一期一会", 300, 880);
+    const scroll = new THREE.Mesh(
+      new THREE.PlaneGeometry(SCROLL_W, SCROLL_H),
+      new THREE.MeshStandardMaterial({ map: scrollTex, roughness: 1, metalness: 0 })
+    );
+    scroll.position.set(SCROLL_CX, SCROLL_CY, SCROLL_CZ);
+    scroll.receiveShadow = true;
+    scene.add(scroll);
+
+    const dowelMat = mat(PALETTE.plinth);
+    const barW = SCROLL_W + 0.05, barH = 0.02, barD = 0.012;
+    const topBar = new THREE.Mesh(new THREE.BoxGeometry(barW, barH, barD), dowelMat);
+    topBar.position.set(SCROLL_CX, SCROLL_CY + SCROLL_H / 2 + barH / 2, SCROLL_CZ + 0.012);
+    topBar.castShadow = true;
+    scene.add(topBar);
+
+    const bottomBar = new THREE.Mesh(new THREE.BoxGeometry(barW, barH, barD), dowelMat);
+    bottomBar.position.set(SCROLL_CX, SCROLL_CY - SCROLL_H / 2 - barH / 2, SCROLL_CZ + 0.012);
+    bottomBar.castShadow = true;
+    scene.add(bottomBar);
+
+    // ---- the vase: three stems, deliberately odd ----
+    // Bowl right, flowers left: the window moved to the sun's side, so the
+    // whole composition mirrors with it. Asymmetric, as it should be, but now
+    // asymmetric the right way round.
+    const VASE_X = TOKO_CX - 0.55, VASE_Z = -ROOM / 2 + 0.85, PLINTH_TOP = 0.32;
+    const vase = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.085, 0.12, 0.22, 32),
+      new THREE.MeshStandardMaterial({ color: PALETTE.ink, flatShading: false, roughness: 1, metalness: 0 })
+    );
+    vase.position.set(VASE_X, PLINTH_TOP + 0.11, VASE_Z);
+    vase.castShadow = true;
+    vase.receiveShadow = true;
+    scene.add(vase);
+
+    const mouth = new THREE.Group();
+    mouth.position.set(VASE_X, PLINTH_TOP + 0.22, VASE_Z);
+    mouth.rotation.y = Math.PI;
+    scene.add(mouth);
+
+    function stem(height, bend, tiltZ, tiltX, stemColor, tipColor, tipSize, seed, tipBuilder) {
+      const g = new THREE.Group();
+      const bx = bend * Math.sin(seed * 2.7);
+      const bz = bend * 0.6 * Math.cos(seed * 1.9);
+      const curve = new THREE.CatmullRomCurve3([
+        new THREE.Vector3(0, 0, 0),
+        new THREE.Vector3(bx * 0.3, height * 0.42, bz * 0.3),
+        new THREE.Vector3(bx * 0.75, height * 0.78, bz * 0.75),
+        new THREE.Vector3(bx, height, bz),
+      ]);
+      const s = new THREE.Mesh(
+        new THREE.TubeGeometry(curve, 12, 0.011, 6, false),
+        new THREE.MeshStandardMaterial({ color: stemColor, flatShading: false, roughness: 1, metalness: 0 })
+      );
+      s.castShadow = true;
+      g.add(s);
+      const tip = tipBuilder ? tipBuilder(tipSize, tipColor) : new THREE.Mesh(new THREE.SphereGeometry(tipSize, 8, 6), mat(tipColor));
+      tip.position.copy(curve.getPoint(1)).addScaledVector(new THREE.Vector3(bx, height, bz).normalize(), tipSize * 0.3);
+      tip.castShadow = true;
+      g.add(tip);
+      g.rotation.z = tiltZ;
+      g.rotation.x = tiltX;
+      return g;
+    }
+
+    const THISTLE_TUFT = 0xa9698a;
+    function makeThistle(size, baseColor, tuftColor) {
+      const g = new THREE.Group();
+      const bract = new THREE.Mesh(new THREE.IcosahedronGeometry(size, 0), mat(baseColor));
+      bract.castShadow = true;
+      g.add(bract);
+      const N = 11;
+      for (let i = 0; i < N; i++) {
+        const az = (i / N) * Math.PI * 2;
+        const h = size * (1.0 + Math.random() * 0.5);
+        const bristle = new THREE.Mesh(new THREE.ConeGeometry(size * 0.05, h, 4), mat(tuftColor));
+        bristle.position.y = h / 2;
+        bristle.castShadow = true;
+        const bg = new THREE.Group();
+        bg.add(bristle);
+        bg.position.y = size * 0.82;
+        bg.rotation.x = 0.28 + Math.random() * 0.22;
+        bg.rotation.y = az;
+        g.add(bg);
+      }
+      return g;
+    }
+
+    mouth.add(stem(0.34, 0.05, -0.22, 0.08, PALETTE.sage, PALETTE.clay, 0.036, 0.4,
+      (sz, col) => makeThistle(sz, col, THISTLE_TUFT)));
+
+    const bladeCurve = new THREE.CatmullRomCurve3([
+      new THREE.Vector3(0, 0, 0),
+      new THREE.Vector3(0.03, 0.30, 0.01),
+      new THREE.Vector3(0.09, 0.55, 0.02),
+      new THREE.Vector3(0.19, 0.72, 0.03),
+    ]);
+    const blade = new THREE.Mesh(new THREE.TubeGeometry(bladeCurve, 16, 0.024, 5, false), mat(PALETTE.sage));
+    blade.scale.set(0.3, 1, 1);
+    blade.castShadow = true;
+    const bladeGroup = new THREE.Group();
+    bladeGroup.add(blade);
+    bladeGroup.rotation.z = 0.30;
+    bladeGroup.rotation.x = -0.05;
+    bladeGroup.rotation.y = 0.4;
+    mouth.add(bladeGroup);
+
+    mouth.add(stem(0.5, 0.07, 0.05, -0.16, PALETTE.sage, PALETTE.sage, 0.02, 1.8));
+
+    // ---- the chawan ----
+    const MATCHA = 0x9caa5a;
+
+    function makeChawan() {
+      const g = new THREE.Group();
+      const bowlPts = [
+        [0.000, 0.000], [0.075, 0.000], [0.075, 0.010], [0.055, 0.016],
+        [0.140, 0.024], [0.140, 0.205],
+      ].map(([x, y]) => new THREE.Vector2(x, y));
+      const bowlGeo = new THREE.LatheGeometry(bowlPts, 32);
+
+      const outer = new THREE.Mesh(
+        bowlGeo,
+        new THREE.MeshStandardMaterial({ color: PALETTE.soft, flatShading: false, roughness: 1, metalness: 0 })
+      );
+      outer.castShadow = true; outer.receiveShadow = true;
+      g.add(outer);
+
+      const inner = new THREE.Mesh(bowlGeo, new THREE.MeshBasicMaterial({ color: PALETTE.dim, side: THREE.BackSide }));
+      g.add(inner);
+
+      const matcha = new THREE.Mesh(
+        new THREE.SphereGeometry(0.125, 12, 5, 0, Math.PI * 2, 0, 1.0),
+        mat(MATCHA)
+      );
+      matcha.scale.y = 0.18;
+      matcha.position.y = 0.165;
+      g.add(matcha);
+
+      return g;
+    }
+
+    const chawan = makeChawan();
+    chawan.position.set(0.6, 0, -0.15);   // in the light, and within reach of the guest
+    scene.add(chawan);
+
+    function makeSteamAlphaMap() {
+      const w = 64, h = 8;
+      const c = document.createElement("canvas");
+      c.width = w; c.height = h;
+      const ctx = c.getContext("2d");
+      const grad = ctx.createLinearGradient(0, 0, w, 0);
+      grad.addColorStop(0, "white");
+      grad.addColorStop(0.55, "white");
+      grad.addColorStop(1, "black");
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, w, h);
+      const tex = new THREE.CanvasTexture(c);
+      tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;
+      return tex;
+    }
+    const steamAlphaMap = makeSteamAlphaMap();
+
+    const STEAM_BASE_Y = 0.19;
+    const steamWisps = [];
+    for (let i = 0; i < 4; i++) {
+      const wisp = new THREE.Mesh(
+        new THREE.BufferGeometry(),
+        new THREE.MeshBasicMaterial({
+          color: 0xfffaf2, transparent: true, opacity: 0.12, depthWrite: false,
+          side: THREE.DoubleSide, alphaMap: steamAlphaMap,
+        })
+      );
+      wisp.userData.phase = i * 1.9 + Math.random();
+      wisp.userData.freq = 0.45 + Math.random() * 0.35;
+      wisp.userData.xOff = (i - 1.5) * 0.02;
+      wisp.userData.zOff = (i - 1.5) * 0.015 - 0.02;
+      wisp.userData.h = 0.28 + i * 0.045;
+      chawan.add(wisp);
+      steamWisps.push(wisp);
+    }
+
+    function updateSteam(t) {
+      const n = 6;
+      steamWisps.forEach((w) => {
+        const { phase, freq, xOff, zOff, h } = w.userData;
+        const pts = [];
+        for (let i = 0; i < n; i++) {
+          const f = i / (n - 1);
+          const y = STEAM_BASE_Y + f * h;
+          const sway = Math.sin(t * freq + phase + f * 3.4) * 0.045 * f;
+          const drift = Math.cos(t * freq * 0.7 + phase * 1.4 + f * 2.1) * 0.03 * f;
+          pts.push(new THREE.Vector3(xOff + sway, y, zOff + drift));
+        }
+        const curve = new THREE.CatmullRomCurve3(pts);
+        const radius = 0.01 * (1 - 0.35 * Math.sin(t * 0.5 + phase) * Math.sin(t * 0.5 + phase));
+        const geo = new THREE.TubeGeometry(curve, 14, Math.max(radius, 0.004), 5, false);
+        w.geometry.dispose();
+        w.geometry = geo;
+        w.material.opacity = 0.07 + 0.06 * (0.5 + 0.5 * Math.sin(t * 0.8 + phase));
+      });
+    }
+
+    // ---- the nijiriguchi door ----------------------------------------------
+    // A small cedar panel sliding on the OUTSIDE face, as it does in reality.
+    // Closed for the whole approach, so the opening is a shut door and not a
+    // lit hole, then slid aside once you are kneeling. That gives the crossing
+    // a gesture of its own: you kneel, you slide, then you bow through.
+    let nijiriDoor = null;
+    {
+      const g = new THREE.Group();
+      const dw = DOOR_W + 0.10, dh = DOOR_SILL + DOOR_H + 0.06;
+      const doorWood = new THREE.MeshStandardMaterial({
+        map: makeWoodTexture(), flatShading: true, roughness: 1, metalness: 0,
+      });
+      const panel = new THREE.Mesh(makeRuggedBox(dw, dh, 0.030, 5, 4, 1, 0.005), doorWood);
+      panel.castShadow = true;
+      panel.receiveShadow = true;
+      g.add(panel);
+      // two battens across the outer face, and a small pull
+      [-dh * 0.24, dh * 0.24].forEach((by) => {
+        const b = new THREE.Mesh(makeRuggedBox(dw, 0.045, 0.016, 4, 1, 1, 0.004), doorWood);
+        b.position.set(0, by, 0.023);
+        b.castShadow = true;
+        g.add(b);
+      });
+      const pull = new THREE.Mesh(makeRuggedBox(0.055, 0.11, 0.014, 1, 2, 1, 0.003), mat(0x4a4238));
+      pull.position.set(-dw * 0.34, 0, 0.026);
+      g.add(pull);
+      g.position.set(DOOR_CX, dh / 2 - 0.02, FRONT_Z + 0.032);
+      scene.add(g);
+      nijiriDoor = g;
+
+      // the track it runs in, above and below, on the same face
+      [dh + 0.01, -0.03].forEach((ry, i) => {
+        const rail = new THREE.Mesh(
+          makeRuggedBox(dw * 2.1, 0.042, 0.052, 6, 1, 1, 0.004), doorWood);
+        rail.position.set(DOOR_CX + dw * 0.45, ry, FRONT_Z + 0.040);
+        rail.castShadow = true;
+        scene.add(rail);
+        void i;
+      });
+    }
+
+    // ---- the roji: the dewy path (step 3 of tearoom-roji-plan.md) ----------
+    // A real chashitsu stands on a raised floor, so the ground outside sits
+    // below the tatami. That is truer, and it also fixes the wall appearing to
+    // float: the house now rests on something. Standing eye height outside
+    // lands naturally around y = 1.15, which is where beat 0 already was.
+    const GROUND_Y = -0.30;
+    // Declared up here because floorAt dishes the ground around the basin.
+    const TSU_X = -0.85, TSU_Z = 3.60;
+
+    // soto-roji (outer) -> the chumon at about z 9.9 -> uchi-roji (inner).
+    // The inner half is unchanged, so nothing already placed has moved.
+    const ROJI = [
+      [1.20, 17.40], [2.50, 15.60], [3.60, 13.80], [3.50, 11.80], [3.00, 10.30],
+      [2.90, 8.60], [2.30, 7.00], [1.20, 5.60], [0.20, 4.60], [0.15, 3.60], [0.70, 2.72],
+    ];
+    // BY ARC LENGTH, not by segment index. Interpolating uniformly over
+    // segments bunches stones up on the short ones and spreads them on the
+    // long ones: this roji's segments run from 1.00 to 2.22 units, so stones
+    // ended up more than twice as dense in places and interpenetrated, which
+    // is what made them shimmer in motion. Even real spacing, even gaps.
+    const SEG = [], CUM = [0];
+    for (let i = 1; i < ROJI.length; i++) {
+      SEG.push(Math.hypot(ROJI[i][0] - ROJI[i - 1][0], ROJI[i][1] - ROJI[i - 1][1]));
+      CUM.push(CUM[i - 1] + SEG[i - 1]);
+    }
+    const rojiLen = CUM[CUM.length - 1];
+    function rojiAt(d) {
+      d = Math.min(rojiLen, Math.max(0, d));
+      let i = 0;
+      while (i < SEG.length - 1 && d > CUM[i + 1]) i++;
+      const k = (d - CUM[i]) / SEG[i];
+      return [ROJI[i][0] + (ROJI[i + 1][0] - ROJI[i][0]) * k,
+              ROJI[i][1] + (ROJI[i + 1][1] - ROJI[i][1]) * k];
+    }
+    // A set stepping stone reads as a FLAT top with an irregular but ROUNDED
+    // edge: no corners anywhere. Neither a box nor a squashed solid gives that,
+    // so the geometry is built by hand. The outline is a circle whose radius is
+    // modulated by three low harmonics, which is irregular yet has no vertex
+    // sharp enough to see. The top face is one plane (all normals straight up),
+    // while the rim carries radial normals and is smooth-shaded, so the edge
+    // stays crisp and the flank stays round.
+
+    // ---- the garden floor -------------------------------------------------
+    // The moss used to be five flat polygons laid on the ground like decals.
+    // Making them domed would have brought back the z-fighting shimmer where
+    // they overlapped, so instead the moss stops being an object and becomes
+    // the RELIEF of the ground: one subdivided mesh over the walked area,
+    // displaced and coloured by noise fields. Nothing can overlap itself.
+    function vnoise(x, y, seed) {
+      const xi = Math.floor(x), yi = Math.floor(y);
+      const xf = x - xi, yf = y - yi;
+      const u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf);
+      const h = (a, b) => hash3(a + seed, b, 7.7);
+      const n00 = h(xi, yi), n10 = h(xi + 1, yi), n01 = h(xi, yi + 1), n11 = h(xi + 1, yi + 1);
+      return (n00 * (1 - u) + n10 * u) * (1 - v) + (n01 * (1 - u) + n11 * u) * v;
+    }
+    // Value noise in octaves, not layered sines: sines cross into a visible
+    // plaid at low frequency, which is exactly the regularity we are removing.
+    // sRGB -> linear, for vertex colours. Hoisted up here from the foliage
+    // section: it is a pure helper with no dependencies and the ground litter,
+    // built much earlier, needs it too.
+    const toLin1 = (q) => (q <= 0.04045 ? q / 12.92 : Math.pow((q + 0.055) / 1.055, 2.4));
+
+    function fbm(x, y, seed) {
+      let amp = 0.5, freq = 1, sum = 0, norm = 0;
+      for (let o = 0; o < 4; o++) {
+        sum += amp * vnoise(x * freq, y * freq, seed + o * 13.7);
+        norm += amp; amp *= 0.5; freq *= 2.13;
+      }
+      return sum / norm;
+    }
+    const sstep = (a, b, v) => {
+      const k = Math.min(1, Math.max(0, (v - a) / (b - a)));
+      return k * k * (3 - 2 * k);
+    };
+
+    // Height and moss are computed by ONE function, used both to build the
+    // floor mesh and to seat everything standing on it. Placing objects at a
+    // fixed y once the ground undulates simply buries them: eight of the
+    // seventeen stepping stones had vanished under the terrain without anyone
+    // asking for it.
+    const FW = 26, FD = 32, FCX = 0.6, FCZ = 7.0;
+    // Distance from a point to the roji centreline, so the walked corridor can
+    // be kept bare and level: a path people use does not grow moss cushions.
+    function pathDist(x, z) {
+      let best = 1e9;
+      for (let i = 1; i < ROJI.length; i++) {
+        const ax = ROJI[i - 1][0], az = ROJI[i - 1][1];
+        const bx = ROJI[i][0], bz = ROJI[i][1];
+        const vx = bx - ax, vz = bz - az;
+        const t = Math.max(0, Math.min(1, ((x - ax) * vx + (z - az) * vz) / (vx * vx + vz * vz)));
+        best = Math.min(best, Math.hypot(x - (ax + vx * t), z - (az + vz * t)));
+      }
+      return best;
+    }
+
+    // ---- outer roji and inner ---------------------------------------------
+    // Sadler: "The outer Roji is generally sanded, while the Inner is mossy."
+    // And Ikei, quoted in the same chapter: "the outer has no special character
+    // but is narrow and dark, but when one opens the Naka-kuguri and enters the
+    // inner, THE SCENE SHOULD CHANGE."
+    //
+    // So the middle gate is not a decoration on the path, it is the boundary
+    // between two grounds, and the change across it should be abrupt. Half a
+    // metre, which the gate and its fence hide anyway.
+    const CHUMON_X = 2.98, CHUMON_Z = 9.90, CHUMON_RY = 0.06;
+    const GX = Math.sin(CHUMON_RY), GZ = Math.cos(CHUMON_RY);   // across the gate
+    const GATE_SIGN = (() => {
+      const [ex, ez] = rojiAt(0);            // where the visitor comes in
+      return ((ex - CHUMON_X) * GX + (ez - CHUMON_Z) * GZ) < 0 ? -1 : 1;
+    })();
+    // 1 in the outer roji, 0 in the inner
+    const outerAt = (x, z) =>
+      sstep(-0.26, 0.26, ((x - CHUMON_X) * GX + (z - CHUMON_Z) * GZ) * GATE_SIGN);
+
+    function floorAt(x, z) {
+      const lx = x - FCX, lz = z - FCZ;
+      const edge = Math.min(sstep(0, 2.4, FW / 2 - Math.abs(lx)),
+                            sstep(0, 2.4, FD / 2 - Math.abs(lz)));
+      const broad = fbm(x * 0.34, z * 0.34, 3.1);
+      const fine  = fbm(x * 1.25, z * 1.25, 9.4);
+      const onPath = 1 - sstep(0.46, 1.20, pathDist(x, z));   // 1 on the line, 0 away
+      // The umi: a shallow dish of bare pebbles around the basin, which is
+      // where the spilled water goes. No moss lives in it.
+      const inUmi = 1 - sstep(0.50, 1.22, Math.hypot(x - TSU_X, z - TSU_Z));
+      const out = outerAt(x, z);
+      const m = sstep(0.34, 0.68, broad * 0.7 + fine * 0.3) * edge
+              * (1 - 0.62 * onPath) * (1 - 0.92 * inUmi) * (1 - 0.94 * out);
+      const swell = (fbm(x * 0.16, z * 0.16, 21.5) - 0.5) * 0.30;   // the land, kept
+      const hump  = (fbm(x * 0.58, z * 0.58, 31.9) - 0.5) * 0.105
+                  * (1 - 0.65 * onPath) * (1 - inUmi) * (1 - 0.72 * out);
+      const cushion = m * 0.115 * fbm(x * 1.7, z * 1.7, 44.2);   // moss only
+      // The grain term has 0.22-unit features against a 0.17 mesh step, so the
+      // floor mesh cannot resolve it and rides up to 2cm off the true surface.
+      // Harmless on open ground, but it swallowed the gravel. Off in the umi.
+      const grain = (fbm(x * 4.6, z * 4.6, 61.8) - 0.5) * 0.020
+                  * (1 - 0.55 * onPath) * (1 - inUmi);   // the dish is left perfectly smooth
+      const dish = -0.085 * inUmi;
+      return { y: (swell + hump + cushion + grain) * edge + dish * edge,
+               moss: m, umi: inUmi * edge, outer: out * edge };
+    }
+    const groundAt = (x, z) => GROUND_Y + floorAt(x, z).y;
+
+    // Paving is flat and the earth conforms to it, not the reverse. Seating
+    // each slab on the local bumps let the terrain cut across their tops and
+    // the moss eat their corners. So the slabs follow a SMOOTHED level.
+    const smoothGround = (x, z) => {
+      const o = 0.30;
+      let sum = 0;
+      for (const [dx, dz] of [[0, 0], [o, 0], [-o, 0], [0, o], [0, -o],
+                              [o, o], [-o, -o], [o, -o], [-o, o]])
+        sum += groundAt(x + dx, z + dz);
+      return sum / 9;
+    };
+
+    {
+      const NX = 150, NZ = 185;
+      const geo = new THREE.PlaneGeometry(FW, FD, NX, NZ);
+      const pos = geo.attributes.position;
+      const rgb = new Float32Array(pos.count * 3);
+      const toLin = (c) => (c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
+      // These were too close to tell apart, so the garden read as one brown.
+      const EARTH = [0.585, 0.570, 0.478], MOSS = [0.385, 0.495, 0.298];
+      const GRAVEL = [0.588, 0.578, 0.545];
+      // The outer roji, sanded. Paler and warmer than the earth and quite
+      // distinct from the umi's grey pebbles, so the two bare surfaces in the
+      // garden do not read as the same thing.
+      const SAND = [0.688, 0.652, 0.556];
+
+      for (let i = 0; i < pos.count; i++) {
+        const lx = pos.getX(i), lz = -pos.getY(i);       // plane is XY before rotation
+        const x = lx + FCX, z = lz + FCZ;
+        const f = floorAt(x, z);   // the same function that seats the objects
+        const m = f.moss;
+        pos.setZ(i, f.y);
+
+        const mottle = 0.87 + 0.13 * fbm(x * 2.8, z * 2.8, 77.3);
+        // Inside the umi the GROUND is gravel, not soil with stones lying on
+        // it. Colouring the bed means the bed reads even where a grain sits
+        // low, and it is what a real umi is: a bed, not a scatter.
+        const gv = f.umi, ou = f.outer;
+        // sand has a much finer grain than soil does
+        const sandMottle = 0.93 + 0.07 * fbm(x * 7.4, z * 7.4, 55.1);
+        for (let k = 0; k < 3; k++) {
+          const soil = EARTH[k] * (1 - m) + MOSS[k] * m;
+          const dry = soil * (1 - ou) + SAND[k] * ou * (sandMottle / mottle);
+          rgb[i * 3 + k] = toLin(Math.min(1, (dry * (1 - gv) + GRAVEL[k] * gv) * mottle));
+        }
+      }
+      geo.setAttribute("color", new THREE.BufferAttribute(rgb, 3));
+      geo.computeVertexNormals();
+      const floor = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({
+        color: 0xffffff, vertexColors: true, roughness: 1, metalness: 0,
+      }));
+      floor.rotation.x = -Math.PI / 2;
+      floor.position.set(FCX, GROUND_Y + 0.002, FCZ);
+      floor.receiveShadow = true;
+      scene.add(outdoor(floor));
+    }
+
+    // ---- the surrounding land ---------------------------------------------
+    // The tea house sits in a small plain. Beyond the belt the ground lifts
+    // into hills that fade into the haze, so the eye finds ridges instead of
+    // a ruled line. Flat within 18 units, so nothing already placed moves.
+    {
+      // 200 segments over 150 units gives 0.75-unit cells, so colour and relief
+      // detail down to about 1.5 units resolves. At 132 the surface could only
+      // carry features coarser than 2.3, which is why it read as smooth beige.
+      const S = 150, NS = 200;
+      const geo = new THREE.PlaneGeometry(S, S, NS, NS);
+      const pos = geo.attributes.position;
+      const rgb = new Float32Array(pos.count * 3);
+      const toL = (q) => (q <= 0.04045 ? q / 12.92 : Math.pow((q + 0.055) / 1.055, 2.4));
+      // Green and brown mixed, not one beige: woodland green where the ground
+      // lies gently, earth and rock where it is steep, and grain over both.
+      const GRN = [0.268, 0.352, 0.222], GRN2 = [0.352, 0.412, 0.252];
+      const BRN = [0.392, 0.336, 0.248], ROCK = [0.452, 0.430, 0.382];
+      const hAt = (x, z) => {
+        const d = Math.hypot(x - 0.6, z - 7.0);
+        const rise = sstep(16, 34, d);
+        const ridge = fbm(x * 0.055, z * 0.055, 301.7);
+        const fine  = fbm(x * 0.145, z * 0.145, 412.3);
+        const lump  = (fbm(x * 0.46, z * 0.46, 517.9) - 0.5) * 1.15;   // lumpy hillsides
+        return (Math.pow(ridge, 1.85) * 0.78 + fine * 0.22) * 27.0 * rise + lump * rise;
+      };
+      for (let i = 0; i < pos.count; i++) {
+        const x = pos.getX(i) + 0.6, z = -pos.getY(i) + 7.0;
+        const d = Math.hypot(x - 0.6, z - 7.0);
+        const rise = sstep(16, 34, d);
+        const h = hAt(x, z);
+        pos.setZ(i, h - 0.13);
+        // slope from finite differences: steep faces go to earth and rock
+        const e = 0.9;
+        const slope = Math.min(1, Math.hypot(hAt(x + e, z) - hAt(x - e, z),
+                                             hAt(x, z + e) - hAt(x, z - e)) / (2 * e) / 1.5);
+        const patch = fbm(x * 0.085, z * 0.085, 611.3);          // broad green/brown patches
+        const grain = fbm(x * 0.40, z * 0.40, 733.1);            // the texture itself
+        const gmix = Math.max(0, Math.min(1, patch * 0.65 + grain * 0.35));
+        const green = [0, 1, 2].map((k) => GRN[k] + (GRN2[k] - GRN[k]) * gmix);
+        const bare  = [0, 1, 2].map((k) => BRN[k] + (ROCK[k] - BRN[k]) * gmix);
+        const b = Math.max(0, Math.min(1, slope * 0.78 + (grain - 0.5) * 0.45 + rise * 0.10));
+        const mot = 0.86 + 0.14 * fbm(x * 0.95, z * 0.95, 811.7);
+        for (let k = 0; k < 3; k++)
+          rgb[i * 3 + k] = toL(Math.min(1, (green[k] * (1 - b) + bare[k] * b) * mot));
+      }
+      geo.setAttribute("color", new THREE.BufferAttribute(rgb, 3));
+      geo.computeVertexNormals();
+      const land = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({
+        color: 0xffffff, vertexColors: true, roughness: 1, metalness: 0,
+      }));
+      land.rotation.x = -Math.PI / 2;
+      land.position.set(0.6, GROUND_Y, 7.0);
+      land.receiveShadow = true;
+      scene.add(land);
+      window.__landHeight = (x, z) => GROUND_Y + hAt(x, z) - 0.13;
+      // A dense forest on them, in silhouette. Two things were wrong before: it
+      // began at 30 units while the hills rise from 16, leaving a bare desert
+      // ring; and it was far too thin to read as woodland. Each crown is now
+      // two crossed panels, FOUR triangles, which is what makes eighteen
+      // thousand of them affordable. Density is modulated by a noise field, so
+      // there are dense stands and clearings rather than an even sprinkle.
+      {
+        const pos2 = [], rgb2 = [];
+        const PLN = 1.32471795724474602596, B1 = 1 / PLN, B2 = 1 / (PLN * PLN);
+        const DK = [0.185, 0.222, 0.172], LT = [0.330, 0.372, 0.268];
+        const CAND = 17000;
+        for (let i = 0; i < CAND; i++) {
+          const q1 = (0.5 + B1 * i) % 1, q2 = (0.5 + B2 * i) % 1;
+          const ang = q1 * Math.PI * 2;
+          const rad = Math.sqrt(17 * 17 + (82 * 82 - 17 * 17) * q2);
+          const tx = 0.6 + Math.cos(ang) * rad, tz = 7.0 + Math.sin(ang) * rad;
+          if (Math.abs(tx - 0.6) > 73 || Math.abs(tz - 7.0) > 73) continue;
+          // stands and clearings
+          if (fbm(tx * 0.062, tz * 0.062, 901.3) < 0.36) continue;
+          const gy = window.__landHeight(tx, tz);
+          // A treeline: stands thin out with altitude and stop near the tops.
+          // Real, and it is what hands the summits back to the mountains after
+          // the forest had swallowed them.
+          const alt = gy - GROUND_Y;
+          if (hash3(i * 5.9, 9.1, 10.3) < sstep(9.5, 17.5, alt)) continue;
+          const w = 0.34 + 0.42 * hash3(i * 1.7, 2.2, 5.5);
+          const hh = w * (2.1 + 1.5 * hash3(i * 2.3, 3.3, 6.6));
+          const rot = hash3(i * 3.7, 7.7, 8.8) * Math.PI;
+          const t2 = 0.16 + 0.62 * hash3(i * 3.1, 4.4, 7.7);
+          const c2 = [0, 1, 2].map((k) => toL(DK[k] + (LT[k] - DK[k]) * t2));
+          // two crossed panels, each a flat hexagon so the silhouette is a
+          // rounded mass rather than a rectangle
+          for (let pnl = 0; pnl < 2; pnl++) {
+            const a2 = rot + pnl * Math.PI / 2;
+            const ux = Math.cos(a2), uz = Math.sin(a2);
+            const P = (sx, sy) => [tx + ux * sx * w, gy + sy * hh, tz + uz * sx * w];
+            const A = P(0, 0.02), B = P(-0.85, 0.42), C = P(-0.55, 0.94);
+            const D = P(0.55, 0.94), E = P(0.85, 0.42);
+            [[A, B, C], [A, C, D], [A, D, E]].forEach((tri) => tri.forEach((Q) => {
+              pos2.push(Q[0], Q[1], Q[2]);
+              rgb2.push(c2[0], c2[1], c2[2]);
+            }));
+          }
+        }
+        const fg = new THREE.BufferGeometry();
+        fg.setAttribute("position", new THREE.Float32BufferAttribute(pos2, 3));
+        fg.setAttribute("color", new THREE.Float32BufferAttribute(rgb2, 3));
+        fg.computeVertexNormals();
+        scene.add(new THREE.Mesh(fg, new THREE.MeshStandardMaterial({
+          color: 0xffffff, vertexColors: true, flatShading: true,
+          roughness: 1, metalness: 0, side: THREE.DoubleSide,
+        })));
+      }
+    }
+
+    // the base the tea house stands on
+    // Top deliberately 12mm BELOW the tatami: coplanar with it, the base
+    // self-shadowed the floor through the window light and dulled the room.
+    const base = new THREE.Mesh(
+      makeRuggedBox(ROOM + 0.44, -GROUND_Y - 0.012, ROOM + 0.44, 8, 3, 8, 0.02),
+      mat(0x8a8378)
+    );
+    base.position.set(0, (GROUND_Y - 0.012) / 2, 0);
+    base.receiveShadow = true;
+    base.castShadow = true;
+    scene.add(outdoor(base));
+
+    // ---- outward skins for the other three walls ----
+    // From outside you could see straight through them: a PlaneGeometry only
+    // renders one face, and theirs points inward. A separate outward shell is
+    // better than DoubleSide here, because DoubleSide would also hand the
+    // daylight the walls' INNER faces and wash out the room.
+    const shellMat = adobeMat.clone();
+    [[0, -ROOM / 2 - 0.02, 0], [-Math.PI / 2, 0, 0], [Math.PI / 2, 0, 0]].forEach(([ry, pz, _], i) => {
+      const skin = new THREE.Mesh(makeRuggedPlane(ROOM + SEAM, WALL_H + SEAM, 14, 8, 0.024, 0.01, 30 + i), shellMat);
+      if (i === 0) { skin.position.set(0, WALL_H / 2, -ROOM / 2 - 0.02); }              // back, faces +Z? no: outward = -Z
+      if (i === 1) { skin.rotation.y = Math.PI / 2;  skin.position.set(ROOM / 2 + 0.02, WALL_H / 2, 0); }
+      if (i === 2) { skin.rotation.y = -Math.PI / 2; skin.position.set(-ROOM / 2 - 0.02, WALL_H / 2, 0); }
+      if (i === 0) skin.rotation.y = Math.PI;
+      skin.castShadow = true;
+      skin.receiveShadow = true;
+      scene.add(outdoor(skin));
+    });
+
+    // ---- the roof ----
+    // Without it you see straight over the wall into the room and the house
+    // reads as three flats on a stage. A four-sided cone is a hip roof and
+    // keeps the faceted language; its radius gives the eave overhang for free.
+    // Kayabuki: a miscanthus thatch, which is what a rustic chashitsu wears.
+    // Three things make thatch read as thatch and not as a painted cone: it is
+    // THICK, so the eave is a deep cut band rather than a line; it is STEEP,
+    // because it has to shed water; and it is made of thousands of stems, so
+    // the surface is drawn as strips running down the slope, the same trick as
+    // the leaves.
+    {
+      const RE = (ROOM / 2 + 0.52) * Math.SQRT2;     // eave radius, corner to corner
+      const RH = 1.95;                                // steep, as thatch must be
+      const TH = 0.34;                                // the depth of the thatch
+      const Y0 = WALL_H - 0.10;
+      const toL = (q) => (q <= 0.04045 ? q / 12.92 : Math.pow((q + 0.055) / 1.055, 2.4));
+      const STRAW_LIT = [0.560, 0.505, 0.372], STRAW_DARK = [0.235, 0.212, 0.162];
+      const MOSSY = [0.300, 0.352, 0.238];
+
+      const corner = (k, rad, y) => {
+        const a = Math.PI / 4 + k * Math.PI / 2;
+        return [Math.cos(a) * rad, y, Math.sin(a) * rad];
+      };
+      const pos = [], rgb = [];
+      const col = (t, moss) => {
+        const c = [0, 1, 2].map((i) => {
+          const base = STRAW_DARK[i] + (STRAW_LIT[i] - STRAW_DARK[i]) * Math.max(0, Math.min(1, t));
+          return toL(Math.min(1, base * (1 - moss) + MOSSY[i] * moss));
+        });
+        return c;
+      };
+      const tri = (A, B, C, t, moss) => {
+        const c = col(t, moss);
+        [A, B, C].forEach((P) => { pos.push(P[0], P[1], P[2]); rgb.push(c[0], c[1], c[2]); });
+      };
+
+      const APEX = [0, Y0 + RH, 0];
+      for (let k = 0; k < 4; k++) {
+        const B0 = corner(k, RE, Y0), B1 = corner(k + 1, RE, Y0);
+        const L0 = corner(k, RE, Y0 - TH), L1 = corner(k + 1, RE, Y0 - TH);
+        tri(APEX, B0, B1, 0.62, 0.05);                       // the slope
+        tri(B0, L0, L1, 0.30, 0.34); tri(B0, L1, B1, 0.30, 0.34);   // the cut eave, mossy
+
+        // the stems: thin strips laid down the slope, scattered over the face
+        const dirx = (B0[0] + B1[0]) / 2 - APEX[0], dirz = (B0[2] + B1[2]) / 2 - APEX[2];
+        const dl = Math.hypot(dirx, Y0 - APEX[1], dirz);
+        const dn = [dirx / dl, (Y0 - APEX[1]) / dl, dirz / dl];
+        const sx2 = (B1[0] - B0[0]) / 2, sz2 = (B1[2] - B0[2]) / 2;
+        const sl = Math.hypot(sx2, sz2);
+        const sn = [sx2 / sl, 0, sz2 / sl];
+        const N = 1900;
+        for (let i = 0; i < N; i++) {
+          let u = hash3(k * 31 + 7, i, 2.4), v = hash3(k * 31 + 7, i, 5.1);
+          if (u + v > 1) { u = 1 - u; v = 1 - v; }
+          const w = 1 - u - v;
+          const px = APEX[0] * w + B0[0] * u + B1[0] * v;
+          const py = APEX[1] * w + B0[1] * u + B1[1] * v;
+          const pz = APEX[2] * w + B0[2] * u + B1[2] * v;
+          const down0 = u + v;
+          // Thatch is cut clean at the eave. Un-clipped, the stems dangled past
+          // it in a spiky fringe. Shorten them as they approach the edge.
+          const len = (0.26 + 0.22 * hash3(k, i, 7.3)) * (1 - 0.80 * Math.max(0, (down0 - 0.80) / 0.20));
+          const wid = 0.020 + 0.016 * hash3(k, i, 8.6);
+          const lift = 0.012 + 0.020 * hash3(k, i, 9.9);
+          const jit = (hash3(k, i, 11.2) - 0.5) * 0.10;      // stems not perfectly parallel
+          const ax = dn[0] + sn[0] * jit, ay = dn[1], az = dn[2] + sn[2] * jit;
+          const ox = px + sn[0] * 0, oy = py + lift, oz = pz;
+          const A = [ox - sn[0] * wid, oy, oz - sn[2] * wid];
+          const Bp = [ox + sn[0] * wid, oy, oz + sn[2] * wid];
+          const C = [ox + sn[0] * wid * 0.4 + ax * len, oy + ay * len, oz + sn[2] * wid * 0.4 + az * len];
+          const D = [ox - sn[0] * wid * 0.4 + ax * len, oy + ay * len, oz - sn[2] * wid * 0.4 + az * len];
+          const down = u + v;                                // 0 at the apex, 1 at the eave
+          const t = 0.34 + 0.36 * hash3(k, i, 12.5) + 0.20 * (1 - down);
+          tri(A, Bp, C, t, 0.30 * down * hash3(k, i, 13.8));
+          tri(A, C, D, t, 0.30 * down * hash3(k, i, 13.8));
+        }
+      }
+      // the hips, rolled and slightly proud, as a thatcher finishes them
+      for (let k = 0; k < 4; k++) {
+        const B = corner(k, RE * 1.005, Y0 + 0.03);
+        const M = [(APEX[0] + B[0]) / 2, (APEX[1] + B[1]) / 2 + 0.09, (APEX[2] + B[2]) / 2];
+        for (let q = 0; q < 26; q++) {
+          const f0 = q / 26, f1 = (q + 1) / 26;
+          const at = (f) => [APEX[0] + (B[0] - APEX[0]) * f,
+                             APEX[1] + (B[1] - APEX[1]) * f + Math.sin(f * Math.PI) * 0.10,
+                             APEX[2] + (B[2] - APEX[2]) * f];
+          const P0 = at(f0), P1 = at(f1);
+          const wdt = 0.10;
+          const nx = -(B[2] - APEX[2]) / Math.hypot(B[0] - APEX[0], B[2] - APEX[2]);
+          const nz = (B[0] - APEX[0]) / Math.hypot(B[0] - APEX[0], B[2] - APEX[2]);
+          tri([P0[0] - nx * wdt, P0[1], P0[2] - nz * wdt],
+              [P0[0] + nx * wdt, P0[1], P0[2] + nz * wdt],
+              [P1[0] + nx * wdt, P1[1], P1[2] + nz * wdt], 0.28, 0.16);
+          tri([P0[0] - nx * wdt, P0[1], P0[2] - nz * wdt],
+              [P1[0] + nx * wdt, P1[1], P1[2] + nz * wdt],
+              [P1[0] - nx * wdt, P1[1], P1[2] - nz * wdt], 0.28, 0.16);
+        }
+      }
+      const rg = new THREE.BufferGeometry();
+      rg.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+      rg.setAttribute("color", new THREE.Float32BufferAttribute(rgb, 3));
+      rg.computeVertexNormals();
+      const roof = new THREE.Mesh(rg, new THREE.MeshStandardMaterial({
+        color: 0xffffff, vertexColors: true, flatShading: true,
+        roughness: 1, metalness: 0, side: THREE.DoubleSide,
+      }));
+      roof.castShadow = true;
+      roof.receiveShadow = true;
+      scene.add(outdoor(roof));
+    }
+
+    // ---- the fallen leaves -------------------------------------------------
+    // Sadler, quoting the Cha-fu on Rikyu's roji: "the leaves of the trees lie
+    // as they fall. Oak and pine leaves lie thick on the ground but unmixed
+    // with dirt as though blown there by the wind so that the ground is
+    // covered everywhere. ONLY THE PATH IS SWEPT."
+    //
+    // That last clause is the whole thing. Litter everywhere is just untidy;
+    // litter everywhere with one swept corridor through it is a garden that
+    // someone looks after, and it says so without a word. It is also what
+    // makes the path read as a path from any angle, which stepping stones
+    // alone never quite did.
+    //
+    // "Covered everywhere" is taken as PRESENT everywhere rather than
+    // carpeting: true carpeting would need some forty thousand cards, and at
+    // that density the moss we spent a day on stops existing.
+    // 3200 read as a few specks on bare moss. Nine thousand is still not the
+    // forty thousand true carpeting would take, but it is enough that the eye
+    // stops counting them, which is the only threshold that matters.
+    const LITTER = 9000;
+    {
+      const lp = [], lc = [];
+      // Fallen leaves are not green. Oak going to leather, momiji going to
+      // rust, and the grey-fawn of old pine needles.
+      // First pass ran too orange: a few read as bright confetti. Oak and pine
+      // litter is leather, fawn and grey-brown, with rust as the exception
+      // rather than the rule.
+      // Weighted by repetition rather than by a random draw: the browns fill
+      // seven of the nine slots so rust stays the exception. Equal odds across
+      // seven tones put too much bright confetti in the sun.
+      const TONES = [
+        [0.402, 0.312, 0.204], [0.455, 0.360, 0.238], [0.340, 0.262, 0.176],
+        [0.372, 0.318, 0.244], [0.302, 0.272, 0.214], [0.428, 0.336, 0.214],
+        [0.386, 0.300, 0.198], [0.352, 0.306, 0.236],
+        [0.462, 0.312, 0.200],
+      ];
+      // R2, the plastic-number sequence: two hashes of the same index are
+      // correlated and clump into lines, which the gravel taught us once.
+      const G = 1.32471795724474602596, A1 = 1 / G, A2 = 1 / (G * G);
+      const X0 = -8.6, X1 = 9.4, Z0 = -4.2, Z1 = 18.6;
+
+      const put = (x, y, z, len, wid, yaw, seed, needle) => {
+        const c = Math.cos(yaw), sn = Math.sin(yaw);
+        const t = TONES[Math.floor(hash3(seed, 3.3, 7.1) * TONES.length) % TONES.length];
+        const shade = 0.80 + 0.40 * hash3(seed, 5.5, 2.2);
+        const col = t.map((q) => toLin1(Math.max(0, Math.min(1, q * shade))));
+        // Four corners at four heights: a dry leaf never lies flat, and the
+        // saddle that gives it is two triangles rather than the six a real
+        // curl would cost.
+        const lift = (needle ? 0.004 : 0.013) * (0.4 + hash3(seed, 8.8, 1.1));
+        const corner = (u, v, h) => {
+          const ox = u * len * 0.5, oz = v * wid * 0.5;
+          lp.push(x + ox * c - oz * sn, y + h, z + ox * sn + oz * c);
+          lc.push(col[0], col[1], col[2]);
+        };
+        const h00 = lift * 0.9, h01 = -lift * 0.3, h10 = -lift * 0.2, h11 = lift;
+        corner(-1, -1, h00); corner(1, -1, h10); corner(1, 1, h11);
+        corner(-1, -1, h00); corner(1, 1, h11); corner(-1, 1, h01);
+      };
+
+      let placed = 0;
+      for (let i = 0; i < LITTER * 3 && placed < LITTER; i++) {
+        const x = X0 + ((0.5 + i * A1) % 1) * (X1 - X0);
+        const z = Z0 + ((0.5 + i * A2) % 1) * (Z1 - Z0);
+        // swept, with a soft margin: a broom does not leave a drawn line
+        const pd = pathDist(x, z);
+        if (pd < 0.52 + 0.22 * hash3(i, 1.7, 4.4)) continue;
+        const f = floorAt(x, z);
+        if (f.umi > 0.14) continue;                       // the pebble bed is raked
+        // inside the house, and its plinth
+        if (Math.abs(x - 0.6) < 3.1 && z > -1.0 && z < 2.6) continue;
+        // Drifts. Wind does not distribute evenly, and an even scatter is the
+        // one thing that would make this read as a texture rather than as
+        // leaves that fell.
+        const drift = fbm(x * 0.42, z * 0.42, 71.3);
+        // Thinner on the sand: the outer roji is a kept surface, and leaves
+        // left thick on it would bury the very distinction the gate exists to
+        // make. Not none, though. Nobody sweeps a garden bare.
+        if (hash3(i, 9.1, 3.7) > (0.16 + 1.55 * Math.pow(drift, 1.4))
+                                 * sstep(0.55, 2.1, pd)
+                                 * (1 - 0.62 * f.outer)) continue;
+
+        const needle = hash3(i, 2.6, 6.2) < 0.34;
+        const len = needle ? 0.095 + 0.065 * hash3(i, 4.1, 1.3)
+                           : 0.078 + 0.060 * hash3(i, 4.1, 1.3);
+        // A leaf is longer than it is wide. At 0.62-0.92 of the length these
+        // were squares, and a square on the ground is a card, not a leaf.
+        const wid = needle ? 0.007 + 0.005 * hash3(i, 6.4, 8.2)
+                           : len * (0.40 + 0.24 * hash3(i, 6.4, 8.2));
+        put(x, groundAt(x, z) + 0.004, z, len, wid,
+            hash3(i, 7.3, 5.9) * Math.PI * 2, i * 1.7, needle);
+        placed++;
+      }
+      const g = new THREE.BufferGeometry();
+      g.setAttribute("position", new THREE.Float32BufferAttribute(lp, 3));
+      g.setAttribute("color", new THREE.Float32BufferAttribute(lc, 3));
+      g.computeVertexNormals();
+      const m = new THREE.Mesh(g, new THREE.MeshStandardMaterial({
+        color: 0xffffff, vertexColors: true, flatShading: true,
+        roughness: 1, metalness: 0, side: THREE.DoubleSide,
+      }));
+      m.receiveShadow = true;
+      scene.add(outdoor(m));
+      window.__litter = placed;
+      window.__pathDist = pathDist;   // measuring affordance: lets a harness
+                                      // check that the corridor really is swept
+    }
+
+    // ---- tobi-ishi, the stepping stones ----
+    // The path is deliberately not straight. That is the whole function of a
+    // roji: it makes you slow down and turn before you arrive.
+    // Colour comes from the vertices, not the material: a stone that is one
+    // flat grey reads as a moulded pat. Base colour stays white so the vertex
+    // colours carry everything.
+    const stoneMat = new THREE.MeshStandardMaterial({
+      color: 0xffffff, vertexColors: true, flatShading: false,
+      roughness: 1, metalness: 0, side: THREE.DoubleSide,
+    });
+
+    // `rough` scales the outline noise; the water basin passes a low value,
+    // because at full roughness its pierced rim narrows past the hollow inside
+    // it and the bore pokes through the stone.
+    function makeStoneGeo(r, h, seed, holeFrac, rough, eRotForce) {
+            // Sides very slightly flared, not tapered: narrowing downward reads as a
+      // pebble set on the surface. A strong flare is no better, it builds a
+      // plinth. Nearly straight, sunk deep, is what reads as buried.
+      const N = 96, TAU = Math.PI * 2, top = h / 2, bot = -h / 2, taper = 1.03;
+      const rr = (rough === undefined) ? 1 : rough;
+
+      // Six harmonics on non-consecutive orders, amplitude falling with order.
+      // Several scales at once is what makes an edge read as rough rather than
+      // as a wobbly circle, and with 96 segments even the 11th stays smooth,
+      // so it is rough WITHOUT corners.
+      const ORDERS = [1, 2, 3, 5, 7, 11];
+      const AMPS = [0.10, 0.07, 0.045, 0.028, 0.018, 0.012];
+      const harm = ORDERS.map((k, i) => ({
+        k, a: AMPS[i] * rr * (0.6 + hash3(seed, k, 1) * 0.8), p: hash3(seed, k, 2) * TAU,
+      }));
+      // and a squashed, freely rotated ellipse under it all: real stones are
+      // lopsided, not round with a wobble
+      const ecc = (0.10 + hash3(seed, 7, 7) * 0.13) * rr;
+      // The long axis. Seeded by default, but a caller can aim it: Sadler says
+      // no stepping stone is ever laid lengthwise in the line of the path, and
+      // that cannot be obeyed unless the placer knows where the long axis is.
+      const eRot = (eRotForce === undefined) ? hash3(seed, 8, 8) * TAU : eRotForce;
+      // R had no y in it at all, so every stone was a PRISM: the same wavy
+      // cross-section at every height. Invisible on a stepping stone, where
+      // only the crown shows, and glaring on anything tall -- which is why the
+      // tsukubai read as machined however rough its outline was.
+      const R = (t, y) => {
+        let m = 1;
+        for (const q of harm) m += q.a * Math.sin(q.k * t + q.p);
+        const yy = (y === undefined) ? 0 : y / Math.max(0.001, h);
+        const swell = 1 + rr * 0.26 * (fbm(yy * 3.1 + seed, 0.5, 18.3) - 0.5) * 2
+                    + rr * 0.13 * Math.sin(2.4 * t + yy * 5.1 + seed) * yy;
+        return r * m * (1 + ecc * Math.cos(2 * (t - eRot))) * swell;
+      };
+      const nrm = (x, y, z) => { const l = Math.hypot(x, y, z); return [x / l, y / l, z / l]; };
+
+      // Vertex colours are consumed as LINEAR, while a hex on a material is
+      // treated as sRGB. Feeding sRGB values straight in renders everything
+      // far too pale: 0.615 arrives looking like 0.81. Convert.
+      const toLin = (c) => (c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
+      const GREY = [0.545, 0.552, 0.532], MOSS = [0.33, 0.40, 0.25];
+      const mix = (moss, mottle) =>
+        [0, 1, 2].map((i) => toLin(Math.min(1, (GREY[i] * (1 - moss) + MOSS[i] * moss) * mottle)));
+
+      // Mottling is sampled from the vertex's position IN THE PLANE, never
+      // from radius and angle. Any function of (r, theta) on a radial mesh
+      // paints radial structure: a fan spokes, rings bullseye. Smooth sines in
+      // x and z have no privileged axis, so the wear looks like wear.
+      // A PRODUCT of sines in x and z is a plaid. On a flat stepping stone seen
+      // from above it passed for mottling; on the tsukubai's flank, close up,
+      // it is a grid of soft rectangles, which is what Nicolas was looking at.
+      // fbm has no privileged axis and does not repeat.
+      //
+      // And it must know the height. Sampling (x, z) only means the pattern is
+      // identical at every level of a tall stone, so it runs in vertical
+      // stripes -- the same oversight, one axis further on.
+      const mottleAt = (x, z, y) => {
+        const yy = y || 0;
+        return 0.865 + 0.135 * (
+          0.60 * (fbm(x * 6.4 + seed, z * 6.4 + yy * 7.1, 41.2) - 0.5) * 2 +
+          0.40 * (fbm(x * 19.0 + seed, z * 19.0 + yy * 21.3, 63.8) - 0.5) * 2);
+      };
+      const smoothstep = (a, b, v) => {
+        const k = Math.min(1, Math.max(0, (v - a) / (b - a)));
+        return k * k * (3 - 2 * k);
+      };
+      // The top is worn smooth and only greens in its outer third.
+      const topColAt = (x, z, edge) => mix(
+        0.26 * smoothstep(0.60, 1.0, edge) * (0.55 + 0.45 * hash3(seed, 9.9, 1.3)),
+        mottleAt(x, z, top));
+      // The flank is where a set stone actually greens: low down, unevenly.
+      const sideColAt = (x, z, yFrac, y) => mix(
+        Math.pow(1 - yFrac, 1.4) * (0.34 + 0.66 * hash3(seed, 2.7, 3.3))
+          * mottleAt(x * 1.4, z * 1.4, (y || 0) * 1.4),
+        mottleAt(x, z, y));
+
+      const pos = [], nor = [], rgb = [];
+      const push = (p, n, c) => { pos.push(...p); nor.push(...n); rgb.push(...c); };
+
+      for (let i = 0; i < N; i++) {
+        const t0 = i / N * TAU, t1 = (i + 1) / N * TAU;
+        const r0 = R(t0, top), r1 = R(t1, top);   // same y the flank starts at,
+                                                  // or the crown and the side
+                                                  // part company at the rim
+        const A = [r0 * Math.cos(t0), top, r0 * Math.sin(t0)];
+        const B = [r1 * Math.cos(t1), top, r1 * Math.sin(t1)];
+        // The top is built as concentric rings, not a triangle fan. A fan
+        // interpolates one centre colour out to 96 different rim colours, so
+        // ANY angular mottle on it shows up as spokes. Rings let the top be
+        // unevenly coloured, which is what a weathered stone is, with no
+        // radiating artefact. The innermost disc stays angularly flat.
+        const UP = [0, 1, 0];
+        const RINGS = holeFrac > 0 ? [holeFrac, 0.80, 1.0] : [0, 0.45, 0.72, 0.88, 1.0];
+        const at = (t, rad, f) => [rad * f * Math.cos(t), top, rad * f * Math.sin(t)];
+        const tc = (p, f) => topColAt(p[0], p[2], f);
+        if (RINGS[0] === 0) {
+          const p1 = at(t1, r1, RINGS[1]), p0 = at(t0, r0, RINGS[1]);
+          push([0, top, 0], UP, topColAt(0, 0, 0));
+          push(p1, UP, tc(p1, RINGS[1]));
+          push(p0, UP, tc(p0, RINGS[1]));
+        }
+        for (let k = (RINGS[0] === 0 ? 1 : 0); k < RINGS.length - 1; k++) {
+          const fi = RINGS[k], fo = RINGS[k + 1];
+          const iA = at(t0, r0, fi), iB = at(t1, r1, fi);
+          const oA = at(t0, r0, fo), oB = at(t1, r1, fo);
+          push(iA, UP, tc(iA, fi)); push(oB, UP, tc(oB, fo)); push(oA, UP, tc(oA, fo));
+          push(iA, UP, tc(iA, fi)); push(iB, UP, tc(iB, fi)); push(oB, UP, tc(oB, fo));
+        }
+        // The flank used to be ONE quad from crown to foot: a ruled surface, so
+        // however wavy the outline was, the side of a tall stone was straight
+        // from top to bottom. That is the other half of why the tsukubai read
+        // as machined. Banded now, and R is asked again at every level, so the
+        // stone can bulge and pinch as it rises. Only tall stones pay: a flat
+        // stepping stone still gets one band.
+        const BANDS = Math.max(1, Math.min(4, Math.round(h / (r * 0.5))));
+        for (let bd = 0; bd < BANDS; bd++) {
+          const f0 = bd / BANDS, f1 = (bd + 1) / BANDS;
+          const y0 = top + (bot - top) * f0, y1 = top + (bot - top) * f1;
+          const k0 = 1 + (taper - 1) * f0, k1 = 1 + (taper - 1) * f1;
+          const ra0 = R(t0, y0) * k0, rb0 = R(t1, y0) * k0;
+          const ra1 = R(t0, y1) * k1, rb1 = R(t1, y1) * k1;
+          const P = [ra0 * Math.cos(t0), y0, ra0 * Math.sin(t0)];
+          const Q = [rb0 * Math.cos(t1), y0, rb0 * Math.sin(t1)];
+          const Sx = [rb1 * Math.cos(t1), y1, rb1 * Math.sin(t1)];
+          const T = [ra1 * Math.cos(t0), y1, ra1 * Math.sin(t0)];
+          const nA = nrm(Math.cos(t0), 0.30, Math.sin(t0));
+          const nB = nrm(Math.cos(t1), 0.30, Math.sin(t1));
+          const cP = sideColAt(P[0], P[2], 1 - f0, y0), cQ = sideColAt(Q[0], Q[2], 1 - f0, y0);
+          const cS = sideColAt(Sx[0], Sx[2], 1 - f1, y1), cT = sideColAt(T[0], T[2], 1 - f1, y1);
+          push(P, nA, cP); push(Q, nB, cQ); push(Sx, nB, cS);
+          push(P, nA, cP); push(Sx, nB, cS); push(T, nA, cT);
+        }
+      }
+      const g = new THREE.BufferGeometry();
+      g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+      g.setAttribute("normal", new THREE.Float32BufferAttribute(nor, 3));
+      g.setAttribute("color", new THREE.Float32BufferAttribute(rgb, 3));
+      return g;
+    }
+
+    // ---- nobedan: the paved stretch ---------------------------------------
+    // Where a roji stops being a file of separate stones it does not become
+    // bare ground, it becomes paving. The change of material is the classic
+    // way to mark the threshold between outer and inner garden, so it runs
+    // through the chumon: the foot feels the boundary before the eye names it.
+    // Short: just the threshold. It spans the gate and stops.
+    const NOBE_D0 = 7.10, NOBE_D1 = 10.30;
+    const NOBE_W = 0.78;
+    // A cut paver is not a crisp box. Its top edge is chamfered, worn off by a
+    // century of feet, and moss creeps in from the joints. The chamfer is left
+    // as a visible narrow facet rather than smoothed, which softens the edge
+    // without leaving the faceted language the rest of the garden speaks.
+    const paverMat = new THREE.MeshStandardMaterial({
+      color: 0xffffff, vertexColors: true, flatShading: true,
+      roughness: 1, metalness: 0, side: THREE.DoubleSide,
+    });
+    function makePaver(w, d, h, wx, wz, seed) {
+      const c = 0.024, hw = w / 2, hd = d / 2, ht = h / 2;
+      const toLin = (q) => (q <= 0.04045 ? q / 12.92 : Math.pow((q + 0.055) / 1.055, 2.4));
+      const STONE = [0.615, 0.600, 0.552], MOSS = [0.345, 0.450, 0.268];
+      // Sampled in WORLD space so a mossy patch runs across several slabs
+      // instead of stopping politely at every joint.
+      // 0.55 gave 1.8-unit cells over a 3.2-unit path: every slab got the same
+      // value and the whole strip went evenly green. Higher, so it varies.
+      const field = sstep(0.44, 0.78, fbm(wx * 1.45, wz * 1.45, 55.1));
+      const tone = 0.92 + 0.16 * hash3(seed, 2.2, 8.8);
+      const col = (edgeness, k) => {
+        const m = Math.min(1, field * (0.30 + 0.70 * edgeness) + 0.10 * hash3(seed, k, 4.4));
+        return [0, 1, 2].map((i) =>
+          toLin(Math.min(1, (STONE[i] * (1 - m) + MOSS[i] * m) * tone)));
+      };
+      // slightly irregular outline: cut stone, but cut by hand
+      const j = (i) => (hash3(seed + i * 3.1, i * 7.7, 2.2) - 0.5) * 0.014;
+      const outer = [[-hw + j(0), -hd + j(1)], [-hw + j(2), hd + j(3)],
+                     [hw + j(4), hd + j(5)], [hw + j(6), -hd + j(7)]];
+      const inner = outer.map(([x, z]) => [x * (1 - c / hw), z * (1 - c / hd)]);
+
+      const pos = [], rgb = [];
+      const put = (p, e, k) => { pos.push(p[0], p[1], p[2]); rgb.push(...col(e, k)); };
+      const I = (k) => [inner[k][0], ht, inner[k][1]];
+      const O = (k) => [outer[k][0], ht - c, outer[k][1]];
+      const B = (k) => [outer[k][0], -ht, outer[k][1]];
+      // top
+      [[0, 1, 2], [0, 2, 3]].forEach((tri) => tri.forEach((k) => put(I(k), 0.18, k)));
+      for (let k = 0; k < 4; k++) {
+        const n = (k + 1) % 4;
+        put(I(k), 0.18, k); put(I(n), 0.18, n); put(O(n), 1, n);      // chamfer
+        put(I(k), 0.18, k); put(O(n), 1, n);    put(O(k), 1, k);
+        put(O(k), 1, k);    put(O(n), 1, n);    put(B(n), 1, n);      // flank
+        put(O(k), 1, k);    put(B(n), 1, n);    put(B(k), 1, k);
+      }
+      const g = new THREE.BufferGeometry();
+      g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+      g.setAttribute("color", new THREE.Float32BufferAttribute(rgb, 3));
+      g.computeVertexNormals();
+      return g;
+    }
+
+    {
+      let d = NOBE_D0, row = 0;
+      while (d < NOBE_D1) {
+        const rowLen = 0.30 + hash3(row, 1.7, 4.4) * 0.13;
+        const [cx, cz] = rojiAt(d + rowLen / 2);
+        const [ax, az] = rojiAt(Math.max(0, d - 0.05));
+        const [bx, bz] = rojiAt(Math.min(rojiLen, d + rowLen + 0.05));
+        const ang = Math.atan2(bx - ax, bz - az);          // heading of the path here
+        const px = Math.cos(ang), pz = -Math.sin(ang);     // and its perpendicular
+
+        // two or three slabs across, split unevenly: fitted paving, not tiling
+        const n = hash3(row, 5.5, 2.2) < 0.45 ? 2 : 3;
+        const cuts = [0];
+        for (let k = 1; k < n; k++) cuts.push(k / n + (hash3(row, k * 3.3, 9.9) - 0.5) * 0.22);
+        cuts.push(1);
+        for (let k = 0; k < n; k++) {
+          const f0 = cuts[k], f1 = cuts[k + 1];
+          const w = (f1 - f0) * NOBE_W - 0.010;            // minus the joint
+          const off = ((f0 + f1) / 2 - 0.5) * NOBE_W;
+          const sx = cx + px * off, sz = cz + pz * off;
+
+          const slab = new THREE.Mesh(
+            makePaver(w, rowLen - 0.010, 0.16, sx, sz, row * 13.1 + k), paverMat);
+          // Barely grazing the moss. At +0.030 they stood 10cm proud and read
+          // as bricks dropped on the grass; paving is set INTO the ground, with
+          // only a couple of centimetres and the joint line showing.
+          slab.position.set(sx, smoothGround(sx, sz) - 0.062, sz);   // ~18mm proud
+          slab.rotation.y = ang + (hash3(row, k, 12.4) - 0.5) * 0.05;
+          slab.castShadow = true;
+          slab.receiveShadow = true;
+          scene.add(outdoor(slab));
+        }
+        d += rowLen;
+        row++;
+      }
+    }
+
+    // Every stone stays clear of its neighbours. Largest radius is about 0.27
+    // once the harmonics have had their say, so 0.95 between centres leaves a
+    // real gap, and the lateral wander is kept small enough not to close it.
+    // Sadler, on the tobi-ishi: "Stepping stones are usually laid in groups of
+    // three and four, but abbreviated groups of two and three are not
+    // inadmissible." And: "Stones of the same size are not laid in succession,
+    // nor are any ever laid lengthwise in the line of the path."
+    //
+    // They used to be evenly spaced with a random radius, which breaks all
+    // three rules at once. Nicolas had already felt the first one without
+    // knowing it: he asked for a gap in the run and said the absence of stone
+    // changed the continuity. That IS the grouping rule, found by eye.
+    // Sadler again: "There is no rule about the distance between them except
+    // that it should allow of comfortable walking." At 1.42 the pause between
+    // groups left nearly a metre of bare ground between stones 45cm across --
+    // a leap, not a stride. These keep the 0.95 average the path had when it
+    // was evenly spaced, and spend the difference on rhythm instead.
+    const IN_GROUP = 0.80;        // an easy step, within a group
+    const BETWEEN  = 1.28;        // the pause between groups: still one stride
+    const CLASSES  = [0.190, 0.224, 0.263];
+    {
+      let d = 0.42, gi = 0, prevClass = -1, placed = 0;
+      const audit = [];
+      while (d < rojiLen - 0.28) {
+        const n = 2 + Math.floor(hash3(gi, 4.4, 1.1) * 2.99);      // 2, 3 or 4
+        for (let k = 0; k < n && d < rojiLen - 0.28; k++) {
+          const skip = d > NOBE_D0 - 0.55 && d < NOBE_D1 + 0.55;   // the paving owns this
+          if (!skip) {
+            // never the same size twice running: step to a different class
+            let cls = Math.floor(hash3(gi * 7 + k, 2.2, 9.3) * 2.99);
+            if (cls === prevClass) cls = (cls + 1 + Math.floor(hash3(gi * 7 + k, 5.1, 3.8) * 1.99)) % 3;
+            prevClass = cls;
+            const r = CLASSES[cls] * (0.94 + 0.12 * hash3(gi * 7 + k, 8.1, 2.4));
+
+            const [cx, cz] = rojiAt(d);
+            const [ax, az] = rojiAt(Math.max(0, d - 0.14));
+            const [bx, bz] = rojiAt(Math.min(rojiLen, d + 0.14));
+            const tx = bx - ax, tz = bz - az;
+            // ACROSS the path. A stone's long axis lying along the way you walk
+            // reads as a plank; across, it reads as somewhere to put a foot.
+            const across = Math.atan2(tx, -tz);
+            const jitter = (hash3(gi * 7 + k, 3.6, 7.2) - 0.5) * 0.62;   // never near lengthwise
+
+            const sx = cx + (hash3(gi * 7 + k, 1.9, 4.8) - 0.5) * 0.10;
+            const sz = cz + (hash3(gi * 7 + k, 2.2, 5.5) - 0.5) * 0.09;
+            const stone = new THREE.Mesh(
+              makeStoneGeo(r, 0.20, gi * 31 + k * 5.3, undefined, undefined, 0), stoneMat);
+            // Seated ON the terrain, sunk so only the crown shows: 1.7 inches
+            // proud, between Oribe's inch and a half and the Sen school's two.
+            stone.position.set(sx, groundAt(sx, sz) - 0.056, sz);
+            stone.rotation.set((hash3(gi + k, 9.1, 3) - 0.5) * 0.11,
+                               -(across + jitter),
+                               (hash3(gi + k, 4.4, 8) - 0.5) * 0.11);
+            stone.receiveShadow = true;
+            stone.castShadow = true;
+            scene.add(outdoor(stone));
+            audit.push({ d: +d.toFixed(2), cls, r: +r.toFixed(3), across: +across.toFixed(3),
+                         yaw: +(-(across + jitter)).toFixed(3) });
+            placed++;
+          }
+          d += IN_GROUP * (0.93 + 0.14 * hash3(gi * 7 + k, 6.6, 1.2));
+        }
+        d += BETWEEN - IN_GROUP;
+        gi++;
+      }
+      window.__stones = audit;
+    }
+
+    // ---- the tsukubai (step 4) -------------------------------------------
+    // The basin is deliberately low. Nobody rinses standing: the height itself
+    // is what makes you crouch, the same way the nijiriguchi makes you bow.
+    // Set off the path to the left, so you must step aside before you arrive.
+    const TSU_Y = groundAt(TSU_X, TSU_Z);       // the whole installation sits on the ground it stands on
+    const BASIN_TOP = TSU_Y + 0.32;             // barely above the knees
+
+    // the chozubachi, reusing the stepping-stone geometry: same flat top, same
+    // rounded irregular edge, just taller
+    // rough 0.40 was timid for a chozubachi cut from a found boulder, and with
+    // a prism for a body it could not have helped anyway. 0.88 now, on a body
+    // that finally varies with height.
+    const basin = new THREE.Mesh(makeStoneGeo(0.27, 0.46, 41.7, 0.55, 0.88), stoneMat);
+    basin.position.set(TSU_X, BASIN_TOP - 0.23, TSU_Z);   // squat, as a chozubachi is
+    basin.castShadow = true; basin.receiveShadow = true;
+    scene.add(outdoor(basin));
+
+    // the hollow: an open cylinder wall, then the water at its floor
+    const hollowMat = new THREE.MeshStandardMaterial({ color: 0x54524b, roughness: 1, metalness: 0, side: THREE.DoubleSide });
+    const hollow = new THREE.Mesh(new THREE.CylinderGeometry(0.157, 0.135, 0.10, 28, 1, true), hollowMat);
+    hollow.position.set(TSU_X, BASIN_TOP - 0.050, TSU_Z);
+    scene.add(outdoor(hollow));
+
+    const water = new THREE.Mesh(
+      new THREE.CircleGeometry(0.145, 28),
+      new THREE.MeshStandardMaterial({ color: 0x9fb0ae, roughness: 0.15, metalness: 0.1 })
+    );
+    water.rotation.x = -Math.PI / 2;
+    water.position.set(TSU_X, BASIN_TOP - 0.062, TSU_Z);
+    scene.add(outdoor(water));
+
+    // mae-ishi, the front stone you crouch on, plus the two flanking stones
+    [[0.60, 0.42, 0.10, 52.3], [-0.62, -0.30, 0.30, 63.1], [0.10, -0.66, 0.26, 71.9]]
+      .forEach(([dx, dz, r, seed]) => {
+        const st = new THREE.Mesh(makeStoneGeo(r, 0.13, seed), stoneMat);
+        st.position.set(TSU_X + dx, groundAt(TSU_X + dx, TSU_Z + dz) + 0.035, TSU_Z + dz);
+        st.castShadow = true; st.receiveShadow = true;
+        scene.add(outdoor(st));
+      });
+
+    // kakei, the bamboo spout: without it this is a bowl on a rock
+    const bambooPale = mat(PALETTE.plinth);
+    // Weathered kakei bamboo is dark, and it is a PIPE: open at the cut end,
+    // with a visible bore. Built as two open-ended cylinders, an outer wall and
+    // a darker inner one, so the tube has thickness rather than being a
+    // painted stick. The hishaku is left pale on purpose: a ladle is renewed
+    // often and stays fresh, while the spout weathers.
+    const bambooDark = new THREE.MeshStandardMaterial({
+      color: 0x4a4238, flatShading: true, roughness: 1, metalness: 0,
+      side: THREE.DoubleSide,
+    });
+    const bambooBore = new THREE.MeshStandardMaterial({
+      color: 0x241f1a, flatShading: true, roughness: 1, metalness: 0,
+      side: THREE.DoubleSide,
+    });
+    function bambooPipe(len, rOut, rIn) {
+      const g = new THREE.Group();
+      g.add(new THREE.Mesh(new THREE.CylinderGeometry(rOut, rOut, len, 12, 1, true), bambooDark));
+      g.add(new THREE.Mesh(new THREE.CylinderGeometry(rIn, rIn, len - 0.002, 12, 1, true), bambooBore));
+      return g;
+    }
+
+    // Aimed by direction rather than by guessed Euler angles: the tip has to
+    // actually overhang the water, or it is a stick planted in the ground.
+    // Brought round to the near-left rather than behind: from the crouch the
+    // old placement ran straight down the view axis, so the pipe foreshortened
+    // into a vertical bar and stopped reading as a spout at all. Now it
+    // crosses the frame.
+    const spoutFrom = new THREE.Vector3(TSU_X - 0.55, BASIN_TOP + 0.40, TSU_Z + 0.30);
+    const spoutTo   = new THREE.Vector3(TSU_X - 0.02, BASIN_TOP + 0.15, TSU_Z + 0.02);
+    const spoutDir  = new THREE.Vector3().subVectors(spoutTo, spoutFrom);
+    const spout = bambooPipe(spoutDir.length(), 0.030, 0.021);
+    spout.position.copy(spoutFrom).addScaledVector(spoutDir, 0.5);
+    spout.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), spoutDir.clone().normalize());
+    spout.traverse((o) => { o.castShadow = true; });
+    scene.add(outdoor(spout));
+    const spoutPost = bambooPipe(0.74, 0.036, 0.026);
+    spoutPost.traverse((o) => { o.castShadow = true; });
+    spoutPost.position.set(TSU_X - 0.55, TSU_Y + 0.37, TSU_Z + 0.30);
+    scene.add(outdoor(spoutPost));
+
+    // ---- the trickle ----
+    // Same technique as the tea steam: a tube rebuilt each frame along a curve.
+    // Two differences. Water accelerates as it falls, so the sample points are
+    // spaced by f*f rather than evenly, and it arrives somewhere, so it leaves
+    // rings on the surface. Kept thin and low-opacity: a thread, not a tap.
+    const WATER_Y = BASIN_TOP - 0.062;
+
+    // The thread must not begin in mid-air. It starts INSIDE the bore, runs
+    // along the pipe's own axis, and only becomes a falling stream once past
+    // the cut end, so its flat top is hidden by the bamboo. Two segments:
+    // guided by the pipe, then a projectile leaving with the pipe's direction.
+    const exitDir = spoutDir.clone().normalize();
+    const tip = spoutTo.clone();
+    const DRIFT = 0.035;                       // how far it carries before landing
+    const NSEG = 12;
+    const tricklePts = [tip.clone().addScaledVector(exitDir, -0.075)];  // up the bore
+    for (let i = 1; i <= NSEG; i++) {
+      const f = i / NSEG;
+      tricklePts.push(new THREE.Vector3(
+        tip.x + exitDir.x * DRIFT * f,
+        tip.y + (WATER_Y - tip.y) * (0.25 * f + 0.75 * f * f),   // leaves with speed, then accelerates
+        tip.z + exitDir.z * DRIFT * f
+      ));
+    }
+    const TRICKLE_X = tip.x + exitDir.x * DRIFT;   // where the rings belong
+    const TRICKLE_Z = tip.z + exitDir.z * DRIFT;
+
+    const trickle = new THREE.Mesh(
+      new THREE.TubeGeometry(new THREE.CatmullRomCurve3(tricklePts), 26, 0.0052, 7, false),
+      new THREE.MeshBasicMaterial({
+        color: 0xe4edea, transparent: true, opacity: 0.42,
+        depthWrite: false, side: THREE.DoubleSide,
+      })
+    );
+    scene.add(outdoor(trickle));
+
+    const ripples = [];
+    for (let i = 0; i < 3; i++) {
+      const ring = new THREE.Mesh(
+        new THREE.RingGeometry(0.030, 0.037, 28),
+        new THREE.MeshBasicMaterial({
+          color: 0xeff5f3, transparent: true, opacity: 0,
+          depthWrite: false, side: THREE.DoubleSide,
+        })
+      );
+      ring.rotation.x = -Math.PI / 2;
+      ring.position.set(TRICKLE_X, WATER_Y + 0.0015, TRICKLE_Z);
+      ring.userData.phase = i / 3;
+      ripples.push(ring);
+      scene.add(outdoor(ring));
+    }
+
+    // Only the rings move. The thread itself is still.
+    function updateWater(t) {
+      ripples.forEach((r) => {
+        const k = (t * 0.55 + r.userData.phase) % 1;
+        r.scale.setScalar(0.35 + k * 2.6);
+        r.material.opacity = 0.30 * (1 - k) * (1 - k);
+      });
+    }
+
+    // hishaku, the ladle. It has to REST: laid across the basin so that the
+    // cup sits on the rim on one side and the handle carries on over the rim
+    // on the other. Before, the handle was cantilevered from one side with the
+    // cup out over the hole, 35mm clear of the stone, so it hung in the air.
+    const ladle = new THREE.Group();
+    const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.011, 0.011, 0.50, 6), bambooPale);
+    handle.rotation.z = Math.PI / 2;
+    handle.position.x = 0.03;
+    ladle.add(handle);
+    const cup = new THREE.Mesh(new THREE.CylinderGeometry(0.042, 0.036, 0.045, 12), bambooPale);
+    cup.position.set(-0.24, -0.008, 0);
+    ladle.add(cup);
+    ladle.position.set(TSU_X, BASIN_TOP + 0.013, TSU_Z);
+    ladle.rotation.y = 0.5;
+    ladle.traverse((o) => { o.castShadow = true; });
+    scene.add(outdoor(ladle));
+
+    // ---- the umi: the pebble bed the basin stands in -----------------------
+    // Rounded cobbles, wet and dark close to the water, drier and paler out at
+    // the rim, with a few larger set stones at the edge. One merged mesh.
+    {
+      // Gravel, not cobbles. At grain size the low detail is invisible, and it
+      // is what makes five thousand of them affordable.
+      const proto = new THREE.IcosahedronGeometry(1, 0);
+      const pp = proto.attributes.position;
+      const pos = [], rgb = [];
+      const toL = (q) => (q <= 0.04045 ? q / 12.92 : Math.pow((q + 0.055) / 1.055, 2.4));
+      const WET = [0.300, 0.300, 0.288], DRY = [0.630, 0.618, 0.578];
+      // R2, the plastic-number quasirandom sequence, not two hashes of i.
+      // hash3(i,..) and hash3(i,..) share the same sine argument in i, so angle
+      // and radius came out CORRELATED and the pebbles landed along a curve
+      // instead of filling the disc. R2 also covers more evenly than random.
+      const PL = 1.32471795724474602596, A1 = 1 / PL, A2 = 1 / (PL * PL);
+      const N = 5200;
+      for (let i = 0; i < N; i++) {
+        const q1 = (0.5 + A1 * i) % 1, q2 = (0.5 + A2 * i) % 1;
+        const a = q1 * Math.PI * 2;
+        // For EVEN density across an annulus the radius must be
+        // sqrt(r0^2 + (r1^2 - r0^2) q), not r0 + (r1-r0) sqrt(q). The latter
+        // puts the square root on the offset, so density climbs outward and
+        // the ring hugging the basin comes out nearly bare: measured 310
+        // grains per square metre at the basin against 986 at the rim.
+        const R0 = 0.235, R1 = 1.20;
+        const rad = Math.sqrt(R0 * R0 + (R1 * R1 - R0 * R0) * q2);
+        const px = TSU_X + Math.cos(a) * rad, pz = TSU_Z + Math.sin(a) * rad;
+        const sc = 0.0105 + 0.0135 * hash3(i * 2.3, 4.4, 6.1);
+        const gy = groundAt(px, pz);
+        // Lifted clear of the floor mesh, not just of the analytic surface. The
+        // floor is sampled every 0.17 and interpolated FLAT, so across a
+        // concave dish it rides ABOVE the true curve and swallowed the grains.
+        const cy = gy + 0.032 + sc * (0.24 + 0.34 * hash3(i * 1.3, 5.5, 7.2));
+        const sy = sc * (0.46 + 0.30 * hash3(i * 1.9, 6.6, 8.3));
+        const sp = 1 + (hash3(i * 1.6, 7.7, 9.4) - 0.5) * 0.34;
+        const wet = (1 - sstep(0.30, 1.05, rad)) * (0.40 + 0.60 * hash3(i * 2.7, 8.8, 10.5));
+        const tone = 0.84 + 0.24 * hash3(i * 3.1, 9.9, 11.6);
+        const c = [0, 1, 2].map((k) =>
+          toL(Math.min(1, (DRY[k] + (WET[k] - DRY[k]) * wet) * tone)));
+        for (let v = 0; v < pp.count; v++) {
+          pos.push(px + pp.getX(v) * sc * sp, cy + pp.getY(v) * sy, pz + pp.getZ(v) * sc / sp);
+          rgb.push(c[0], c[1], c[2]);
+        }
+      }
+      const g = new THREE.BufferGeometry();
+      g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+      g.setAttribute("color", new THREE.Float32BufferAttribute(rgb, 3));
+      g.computeVertexNormals();
+      const m = new THREE.Mesh(g, new THREE.MeshStandardMaterial({
+        color: 0xffffff, vertexColors: true, flatShading: true,
+        roughness: 1, metalness: 0,
+      }));
+      m.castShadow = true; m.receiveShadow = true;
+      scene.add(outdoor(m));
+    }
+
+    // ---- ishidoro, the stone lanterns -------------------------------------
+    // Stacked boxes read as a machined toy. A real one has had a century
+    // outdoors: its arrises are worn off, its pieces sit a degree out of
+    // square, and moss and lichen have taken the low and shaded faces. And its
+    // hibukuro, the fire box, is HOLLOW: it held a flame.
+    const lanternMat = new THREE.MeshStandardMaterial({
+      color: 0xffffff, vertexColors: true, flatShading: true,
+      roughness: 1, metalness: 0, side: THREE.DoubleSide,
+    });
+
+    // Colour any geometry as weathered stone: mossy low down, lichen in
+    // patches, mottled everywhere. Applied after the shape is built, so cones
+    // and columns and blocks all wear the same skin.
+    // yBase lifts each piece's LOCAL y into the lantern's own height, which is
+    // what decides how mossy it is. Comparing a local y (centred on zero) to
+    // world bounds made every piece think it sat at ground level, and the
+    // whole lantern came out painted moss-green.
+    function tintStone(geo, seed, yBase) {
+      const pos = geo.attributes.position;
+      const rgb = new Float32Array(pos.count * 3);
+      // Darker and greyer than before. The old value read as poured concrete
+      // against the sand, which Nicolas noticed, and a lantern that has stood
+      // outdoors for a century is not a pale object.
+      const STONE = [0.472, 0.466, 0.436], MOSS = [0.286, 0.386, 0.226],
+            LICHEN = [0.640, 0.638, 0.566];
+      for (let i = 0; i < pos.count; i++) {
+        const x = pos.getX(i), y = pos.getY(i), z = pos.getZ(i);
+        // Moss climbs higher than it did, lichen takes more of the shape, and a
+        // third, much finer mottle carries the porosity the plates are drawn
+        // with. Weather does not stop at the plinth.
+        const low = 1 - sstep(0.02, 0.86, y + yBase);
+        const patch = fbm(x * 5.5 + seed, z * 5.5, 12.3);
+        const m = Math.min(1, (0.62 * low + 0.48 * sstep(0.48, 0.82, patch)) * 0.78);
+        const li = sstep(0.52, 0.82, fbm(x * 11 + seed, y * 7 + z * 5, 71.2)) * 0.72;
+        const grain = 0.94 + 0.06 * fbm(x * 46 + seed, z * 46 + y * 31, 88.4);
+        const mot = (0.84 + 0.16 * fbm(x * 14 + seed, z * 14 + y * 6, 33.7)) * grain;
+        for (let k = 0; k < 3; k++) {
+          const base = STONE[k] * (1 - m) + MOSS[k] * m;
+          rgb[i * 3 + k] = toLin1(Math.min(1, (base * (1 - li) + LICHEN[k] * li) * mot));
+        }
+      }
+      geo.setAttribute("color", new THREE.BufferAttribute(rgb, 3));
+      return geo;
+    }
+
+    // A block with every arris chamfered off, the way weather takes them.
+    function wornBlock(w, h, d, c, seed) {
+      const hw = w / 2, hd = d / 2, ht = h / 2;
+      const j = (i) => (hash3(seed + i * 3.1, i * 7.7, 2.2) - 0.5) * 0.010;
+      const ring = (inset, y) => [[-hw + inset + j(1), y, -hd + inset + j(2)],
+                                  [-hw + inset + j(3), y,  hd - inset + j(4)],
+                                  [ hw - inset + j(5), y,  hd - inset + j(6)],
+                                  [ hw - inset + j(7), y, -hd + inset + j(8)]];
+      const T = ring(c, ht), TU = ring(0, ht - c), BD = ring(0, -ht + c), B = ring(c, -ht);
+      const pos = [];
+      const q = (a, b, cc, dd) => pos.push(...a, ...b, ...cc, ...a, ...cc, ...dd);
+      pos.push(...T[0], ...T[1], ...T[2], ...T[0], ...T[2], ...T[3]);          // top
+      pos.push(...B[2], ...B[1], ...B[0], ...B[3], ...B[2], ...B[0]);          // bottom
+      for (let k = 0; k < 4; k++) {
+        const n = (k + 1) % 4;
+        q(T[k], T[n], TU[n], TU[k]);      // top chamfer
+        q(TU[k], TU[n], BD[n], BD[k]);    // flank
+        q(BD[k], BD[n], B[n], B[k]);      // bottom chamfer
+      }
+      const g = new THREE.BufferGeometry();
+      g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+      g.computeVertexNormals();
+      return g;
+    }
+
+    // Sadler, THE STONE LANTERN: "for the Tea garden especially lanterns made
+    // of NATURAL UNCUT STONE are preferred." That is the answer to what was
+    // wrong with the pair we had: they were stacked chamfered boxes, and no
+    // amount of weathering saves a stack of boxes from reading as machined.
+    //
+    // So nothing here is a clean solid. Every ring is pushed off round by the
+    // same harmonics the stepping stones use, and every silhouette is a
+    // profile curve rather than a pile of slabs.
+    // Chaikin's corner cut, run twice: every join in a profile is replaced by
+    // two points at a quarter and three quarters of it, so the arris literally
+    // stops existing. Two rounds turn a five-point outline into seventeen and
+    // there is no crease left anywhere on the silhouette.
+    function chaikin(prof, rounds) {
+      let p = prof;
+      for (let n = 0; n < (rounds || 2); n++) {
+        const q = [p[0]];
+        for (let i = 0; i < p.length - 1; i++) {
+          const a = p[i], b = p[i + 1];
+          q.push([a[0] * 0.75 + b[0] * 0.25, a[1] * 0.75 + b[1] * 0.25]);
+          q.push([a[0] * 0.25 + b[0] * 0.75, a[1] * 0.25 + b[1] * 0.75]);
+        }
+        q.push(p[p.length - 1]);
+        p = q;
+      }
+      return p;
+    }
+
+    function softLathe(profRaw, sides, seed, wob) {
+      // Nicolas, looking at Sadler's plate of Count Matsuura's 12th century
+      // lantern: erase the arrises, and make the surfaces worn and mossy --
+      // "the material in the plates looks porous or rough". That lantern's
+      // post is not a column at all, it is a BOULDER: no straight face, wider
+      // at the foot, drawn in stipple. Three things get it: no creases (the
+      // corner cut above), enough sides that the silhouette turns, and a skin
+      // that is not smooth.
+      const prof = chaikin(profRaw, 2);
+      const W = (wob === undefined) ? 1 : wob;
+      const HARM = [1, 2, 3, 5].map((k, i) => ({
+        k, a: [0.062, 0.040, 0.026, 0.016][i] * W,
+        p: hash3(seed, k * 2.7, 3.3) * Math.PI * 2,
+      }));
+      const shape = (t) => { let m = 1; for (const q of HARM) m += q.a * Math.sin(q.k * t + q.p); return m; };
+      // The cross-section also has to CHANGE with height, or a tall piece is an
+      // extrusion however wavy its outline. A slow drift up the shape is what
+      // makes a post read as carved from something found.
+      const drift = (y) => 1 + 0.150 * W * (fbm(y * 2.6 + seed, seed * 0.7, 24.1) - 0.5) * 2;
+      const ring = (y, r) => {
+        const out = [];
+        for (let s = 0; s < sides; s++) {
+          const t = s / sides * Math.PI * 2;
+          let rr = r * shape(t) * drift(y);
+          // Porosity. Sampled from the vertex's own POSITION, never from angle
+          // and height: any function of those two paints vertical stripes, the
+          // same trap the stepping stones set once.
+          const px = Math.cos(t) * rr, pz = Math.sin(t) * rr;
+          rr *= 1 + 0.078 * W * (fbm(px * 17 + seed, pz * 17 + y * 13, 51.7) - 0.5) * 2;
+          out.push([Math.cos(t) * rr, y, Math.sin(t) * rr]);
+        }
+        return out;
+      };
+      const pos = [];
+      const quad = (A, B, C, D) => pos.push(...A, ...B, ...C, ...A, ...C, ...D);
+      let prev = ring(prof[0][0], prof[0][1]);
+      // close the bottom
+      for (let s = 1; s < sides - 1; s++) pos.push(...prev[0], ...prev[s + 1], ...prev[s]);
+      for (let i = 1; i < prof.length; i++) {
+        const cur = ring(prof[i][0], prof[i][1]);
+        for (let s = 0; s < sides; s++) {
+          const n = (s + 1) % sides;
+          quad(prev[s], prev[n], cur[n], cur[s]);
+        }
+        prev = cur;
+      }
+      for (let s = 1; s < sides - 1; s++) pos.push(...prev[0], ...prev[s], ...prev[s + 1]);
+      const g = new THREE.BufferGeometry();
+      g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+      g.computeVertexNormals();
+      return g;
+    }
+
+    // A leg that bows outward, for the snow-viewing lantern. Straight legs
+    // would put the one clean line back into the softest lantern there is.
+    function bowedLeg(a, spread, h, r0, r1, seed) {
+      const N = 7, S = 5, pos = [];
+      const quad = (A, B, C, D) => pos.push(...A, ...B, ...C, ...A, ...C, ...D);
+      const ring = (k) => {
+        const t = k / N;
+        // out and then back under: the profile of the Sentsuji lantern's leg
+        const out = spread * (0.30 + 0.86 * Math.sin(Math.PI * t * 0.92));
+        const cx = Math.cos(a) * out, cz = Math.sin(a) * out;
+        const y = h * t;
+        const r = r0 + (r1 - r0) * t;
+        const o = [];
+        for (let s = 0; s < S; s++) {
+          const u = s / S * Math.PI * 2;
+          const rr = r * (1 + 0.10 * Math.sin(2 * u + seed) + (hash3(seed, k, s) - 0.5) * 0.10);
+          o.push([cx + Math.cos(u) * rr, y, cz + Math.sin(u) * rr]);
+        }
+        return o;
+      };
+      let prev = ring(0);
+      for (let s = 1; s < S - 1; s++) pos.push(...prev[0], ...prev[s + 1], ...prev[s]);
+      for (let k = 1; k <= N; k++) {
+        const cur = ring(k);
+        for (let s = 0; s < S; s++) quad(prev[s], prev[(s + 1) % S], cur[(s + 1) % S], cur[s]);
+        prev = cur;
+      }
+      for (let s = 1; s < S - 1; s++) pos.push(...prev[0], ...prev[s], ...prev[s + 1]);
+      const g = new THREE.BufferGeometry();
+      g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+      g.computeVertexNormals();
+      return g;
+    }
+
+    // the hibukuro: a floor, a ring of posts, a lintel. Hollow, because it
+    // held a flame -- and the gaps between the posts ARE the windows.
+    function fireBox(g, seed, y0, h, r, posts, rPost) {
+      for (let k = 0; k < posts; k++) {
+        const t = (k + 0.5) / posts * Math.PI * 2;
+        const geo = softLathe([[0, rPost * 1.10], [h * 0.5, rPost], [h, rPost * 1.06]],
+                              4, seed + k * 3.7, 1.4);
+        const m = new THREE.Mesh(tintStone(geo, seed, y0), lanternMat);
+        m.position.set(Math.cos(t) * r, y0, Math.sin(t) * r);
+        m.rotation.y = -t;
+        m.castShadow = true;
+        g.add(m);
+      }
+    }
+
+    function put(g, geo, seed, y, ry) {
+      const m = new THREE.Mesh(tintStone(geo, seed, y), lanternMat);
+      m.position.y = y;
+      // a degree or two out of square: a stack settles over a century
+      m.rotation.set((hash3(seed, y * 13, 1.1) - 0.5) * 0.05,
+                     (hash3(seed, y * 17, 2.2) - 0.5) * 0.30 + (ry || 0),
+                     (hash3(seed, y * 19, 3.3) - 0.5) * 0.05);
+      m.castShadow = true;
+      g.add(m);
+      return m;
+    }
+
+    // ---- the Oribe shape ---------------------------------------------------
+    // From Sadler's plate: a slender post going STRAIGHT INTO THE GROUND with
+    // no base at all, a shallow niche with a standing figure cut into it, a
+    // plain box and a modest square cap. Sadler: "very many lanterns found in
+    // the Roji and favored by Chajin have the foot buried in the ground
+    // without any base."
+    function makeOribeLantern(seed) {
+      const g = new THREE.Group();
+      // the post, buried: it begins below zero and no plinth is ever seen
+      // Nine sides, not six, and an ODD number on purpose: with six there is
+      // always a flat face square to the eye, and the post read as a prism
+      // however rough its skin was. Its radii are uneven up the shape too --
+      // the Matsuura lantern's post narrows, swells and narrows again, because
+      // it was a stone before it was a lantern.
+      put(g, softLathe([[-0.22, 0.072], [-0.02, 0.063], [0.16, 0.048],
+                        [0.30, 0.056], [0.44, 0.045], [0.56, 0.059]],
+                       9, seed + 1, 2.0), seed, 0);
+      // the shallow niche and its figure, the mark of the shape
+      const niche = softLathe([[0, 0.030], [0.15, 0.032], [0.19, 0.024]], 5, seed + 9, 0.7);
+      const nm = new THREE.Mesh(tintStone(niche, seed + 9, 0.16), lanternMat);
+      nm.position.set(0.044, 0.16, 0.010);
+      nm.scale.set(0.55, 1, 0.42);
+      nm.castShadow = true;
+      g.add(nm);
+      put(g, softLathe([[0, 0.086], [0.030, 0.098], [0.048, 0.082]], 6, seed + 2, 0.9), seed, 0.560);
+      // the fire box
+      put(g, softLathe([[0, 0.104], [0.026, 0.098]], 4, seed + 3, 0.8), seed, 0.606, 0.18);
+      fireBox(g, seed + 20, 0.632, 0.150, 0.078, 4, 0.020);
+      put(g, softLathe([[0, 0.100], [0.028, 0.112]], 4, seed + 4, 0.8), seed, 0.782, 0.18);
+      // the cap: corners lifted, never a cone
+      put(g, softLathe([[0, 0.150], [0.052, 0.118], [0.086, 0.056], [0.100, 0.030]],
+                       4, seed + 5, 1.5), seed, 0.810, 0.18);
+      put(g, softLathe([[0, 0.026], [0.020, 0.034], [0.044, 0.016]], 5, seed + 6, 1.0),
+          seed, 0.906);
+      return g;
+    }
+
+    // ---- the snow-viewing shape --------------------------------------------
+    // The Sentsuji lantern, which Sadler's plate calls "a model of fine
+    // proportions": three bowed legs, a wide low hexagonal cap with its
+    // corners lifted, and a ball on top. Low and broad where the Oribe is tall
+    // and narrow, which is the whole point of having two.
+    function makeYukimiLantern(seed) {
+      const g = new THREE.Group();
+      for (let k = 0; k < 3; k++) {
+        const a = (k / 3) * Math.PI * 2 + hash3(seed, k, 1.4) * 0.25;
+        const geo = bowedLeg(a, 0.165, 0.245, 0.040, 0.030, seed + k * 5.5);
+        const m = new THREE.Mesh(tintStone(geo, seed + k, 0.10), lanternMat);
+        m.castShadow = true;
+        g.add(m);
+      }
+      put(g, softLathe([[0, 0.150], [0.030, 0.166], [0.048, 0.150]], 6, seed + 2, 0.9),
+          seed, 0.238);
+      fireBox(g, seed + 30, 0.292, 0.140, 0.118, 6, 0.024);
+      put(g, softLathe([[0, 0.164], [0.026, 0.178]], 6, seed + 4, 0.9), seed, 0.428);
+      // the wide dome. A snow-viewing cap is nearly as wide as the lantern is
+      // tall, which is why the shape exists: it catches snow.
+      put(g, softLathe([[0, 0.300], [0.040, 0.272], [0.082, 0.196],
+                        [0.112, 0.098], [0.126, 0.040]], 6, seed + 5, 1.3), seed, 0.452);
+      put(g, softLathe([[0, 0.032], [0.026, 0.044], [0.056, 0.020]], 6, seed + 6, 0.8),
+          seed, 0.570);
+      return g;
+    }
+
+    // Sadler: "Lanterns are always arranged with stones according to the usual
+    // rhythmic order of grouping, the lantern taking the place of the Upright
+    // Torso Stone as the principal element in the group. There may be two or
+    // three other stones in the group and the Lamp Lighting Stone at one side
+    // is often stepped." A lantern standing alone on moss is a lamp post.
+    function lanternGroup(cx, cz, seed, facing) {
+      const n = 2 + Math.floor(hash3(seed, 4.2, 8.8) * 2.99);
+      for (let k = 0; k < n; k++) {
+        const a = facing + 1.1 + hash3(seed, k * 3.3, 2.1) * 4.2;
+        const d = 0.30 + hash3(seed, k * 5.1, 6.3) * 0.26;
+        const x = cx + Math.cos(a) * d, z = cz + Math.sin(a) * d;
+        const r = 0.085 + hash3(seed, k * 7.7, 1.9) * 0.085;
+        const st = new THREE.Mesh(makeStoneGeo(r, 0.14, seed * 3 + k * 11), stoneMat);
+        st.position.set(x, groundAt(x, z) - 0.048, z);
+        st.rotation.set((hash3(seed, k, 2) - 0.5) * 0.14, hash3(seed, k, 5) * 6.2,
+                        (hash3(seed, k, 8) - 0.5) * 0.14);
+        st.castShadow = true; st.receiveShadow = true;
+        scene.add(outdoor(st));
+      }
+      // the lamp-lighting stone: flat, low, on the side you would stand
+      const lx = cx + Math.cos(facing) * 0.40, lz = cz + Math.sin(facing) * 0.40;
+      const lamp = new THREE.Mesh(makeStoneGeo(0.150, 0.11, seed * 5 + 3, undefined, 0.7,
+                                               facing + Math.PI / 2), stoneMat);
+      lamp.position.set(lx, groundAt(lx, lz) - 0.030, lz);
+      lamp.rotation.set((hash3(seed, 9, 1) - 0.5) * 0.07, 0, (hash3(seed, 9, 2) - 0.5) * 0.07);
+      lamp.castShadow = true; lamp.receiveShadow = true;
+      scene.add(outdoor(lamp));
+    }
+
+    // Two, not more. Sadler: putting one at every point "will look monotonous
+    // like street lamps". The Oribe stands on the sand of the outer roji near
+    // the way in, its foot simply buried; the snow-viewing one is on the moss
+    // by the water basin, where a lantern is actually needed at dawn.
+    [[1.90, 12.20, -0.4, 19.3, "oribe"],
+     [2.75,  5.70,  0.6,  5.1, "yukimi"]].forEach(([lx, lz, ry, sd, kind]) => {
+      const l = kind === "oribe" ? makeOribeLantern(sd) : makeYukimiLantern(sd);
+      l.position.set(lx, groundAt(lx, lz), lz);
+      l.rotation.y = ry;
+      scene.add(outdoor(l));
+      lanternGroup(lx, lz, sd, ry + 2.4);
+    });
+
+    // ---- koshikake machiai: the covered waiting bench, in the OUTER garden --
+    // Guests arrive, sit here, and are called. It is the only place in a roji
+    // where you are meant to stop, which is why it gets a beat of its own.
+    const woodMat = new THREE.MeshStandardMaterial({
+      map: makeWoodTexture(), flatShading: true, roughness: 1, metalness: 0,
+    });
+    const machiai = new THREE.Group();
+    {
+      const post = (px, pz) => {
+        const p = bambooPipe(1.95, 0.055, 0.040);
+        p.position.set(px, 0.97, pz);
+        p.traverse((o) => { o.castShadow = true; });
+        machiai.add(p);
+      };
+      post(-0.95, -0.48); post(0.95, -0.48); post(-0.95, 0.48); post(0.95, 0.48);
+      const roof = new THREE.Mesh(makeRuggedBox(2.45, 0.13, 1.45, 6, 1, 4, 0.02), mat(0x7d7466));
+      roof.position.set(0, 2.00, 0); roof.castShadow = true; machiai.add(roof);
+      const seat = new THREE.Mesh(makeRuggedBox(1.85, 0.09, 0.52, 6, 1, 3, 0.012), woodMat);
+      seat.position.set(0, 0.46, -0.16); seat.castShadow = true; seat.receiveShadow = true;
+      machiai.add(seat);
+      // A BOX, not a plane. As a single-sided plane it was invisible from
+      // behind, so the shelter had no backrest in the opening view and grew
+      // one on arrival. A plank has thickness anyway.
+      const backer = new THREE.Mesh(makeRuggedBox(1.90, 1.10, 0.055, 6, 4, 1, 0.012), adobeMat);
+      backer.position.set(0, 1.05, -0.47);
+      backer.castShadow = true; backer.receiveShadow = true;
+      machiai.add(backer);
+    }
+    machiai.position.set(5.55, groundAt(5.55, 13.60), 13.60);
+    // Turned so that a guest sitting on it looks straight down the outer
+    // garden at the chumon. What you wait for is the gate.
+    machiai.rotation.y = -2.54;
+    scene.add(outdoor(machiai));
+
+    // ---- chumon: the middle gate ------------------------------------------
+    // The hinge of the whole garden. Everything before it is the world you
+    // came from; everything after it is the tea. You pass THROUGH it.
+    // (CHUMON_X/Z/RY are hoisted to the top, beside the path: floorAt needs to
+    // know which side of this gate a point falls on.)
+    const chumon = new THREE.Group();
+    {
+      const half = 0.68;
+      [-half, half].forEach((dx) => {
+        const p = bambooPipe(2.10, 0.062, 0.045);
+        p.position.set(dx, 1.05, 0);
+        p.traverse((o) => { o.castShadow = true; });
+        chumon.add(p);
+      });
+      const lintel = bambooPipe(half * 2 + 0.24, 0.050, 0.036);
+      lintel.rotation.z = Math.PI / 2;
+      lintel.position.set(0, 1.98, 0);
+      lintel.traverse((o) => { o.castShadow = true; });
+      chumon.add(lintel);
+      const gateRoof = new THREE.Mesh(makeRuggedBox(half * 2 + 0.62, 0.10, 0.62, 5, 1, 3, 0.02), mat(0x7d7466));
+      gateRoof.position.set(0, 2.12, 0); gateRoof.castShadow = true;
+      chumon.add(gateRoof);
+
+    }
+    chumon.position.set(CHUMON_X, groundAt(CHUMON_X, CHUMON_Z), CHUMON_Z);
+    chumon.rotation.y = CHUMON_RY;
+    scene.add(outdoor(chumon));
+
+    // ---- chiriana: the symbolic waste pit, beside the inner path ----------
+    {
+      const pit = new THREE.Group();
+      const hole = new THREE.Mesh(new THREE.PlaneGeometry(0.34, 0.34), mat(0x2b2721));
+      hole.rotation.x = -Math.PI / 2;
+      hole.position.y = -0.055;
+      pit.add(hole);
+      // a rim of set stones, then the pair of green sticks leaned in it
+      [[-0.21, 0], [0.21, 0], [0, -0.21], [0, 0.21]].forEach(([dx, dz], i) => {
+        const st = new THREE.Mesh(makeStoneGeo(0.13, 0.09, 90 + i), stoneMat);
+        st.position.set(dx, -0.010, dz);
+        st.castShadow = true; st.receiveShadow = true;
+        pit.add(st);
+      });
+      [[-0.05, 0.32], [0.03, -0.28]].forEach(([tilt, ry]) => {
+        const stick = new THREE.Mesh(new THREE.CylinderGeometry(0.011, 0.011, 0.46, 6), mat(0x6d7a58));
+        stick.position.set(0.02, 0.16, 0.02);
+        stick.rotation.set(tilt, 0, ry);
+        stick.castShadow = true;
+        pit.add(stick);
+      });
+      pit.position.set(-0.28, groundAt(-0.28, 3.02) + 0.03, 3.02);
+      scene.add(outdoor(pit));
+    }
+
+    // ---- vegetation -------------------------------------------------------
+    // From the Nezu Museum reference: the thing that makes a roji a roji is the
+    // maple canopy overhead. It encloses the space, fills the empty sky, and
+    // throws dappled shade across everything below. Then clipped mounded
+    // shrubs at the foot of the building, and darker ground cover along the
+    // paving. All of it stays faceted, like the rest of the garden.
+    const leafMat = new THREE.MeshStandardMaterial({
+      color: 0xffffff, vertexColors: true, flatShading: true,
+      roughness: 1, metalness: 0, side: THREE.DoubleSide,
+    });
+    // measuring affordance, same spirit as __u/__tris: every leaf, blade and
+    // bamboo frond in the garden shares this one material, so a harness can
+    // weigh the foliage separately from the rest of the scene.
+    window.__leafMat = leafMat;
+    // ---- who the wind is allowed to move ------------------------------------
+    // The breeze reaches leaves, not structure. But bamboo culms, their nodes
+    // and the fence rails all share leafMat with the foliage -- they are merged
+    // into the same geometry precisely to keep 60 culms from becoming 60 draw
+    // calls -- so the material alone cannot tell them apart, and the first
+    // version had the whole grove leaning like a wheat field. Nicolas caught
+    // it. One byte per vertex settles it: Uint8 normalised, 1.36MB rather than
+    // the 5.4MB floats would cost, and a sway weight needs nothing like that
+    // precision. A geometry that somehow misses the attribute reads 0 and
+    // simply does not move, which is the safe direction to fail in.
+    function setSway(geo, weight) {
+      const n = geo.attributes.position.count;
+      const a = new Uint8Array(n);
+      if (typeof weight === "number") {
+        a.fill(Math.round(Math.max(0, Math.min(1, weight)) * 255));
+      } else {
+        if (weight.length !== n)
+          throw new Error("sway/position mismatch: " + weight.length + " vs " + n);
+        for (let i = 0; i < n; i++) a[i] = Math.round(Math.max(0, Math.min(1, weight[i])) * 255);
+      }
+      geo.setAttribute("aSway", new THREE.BufferAttribute(a, 1, true));
+      return geo;
+    }
+    // Bamboo culms are held still by default: Nicolas found tall stems swaying
+    // side to side made far too much movement. ?culmsway=0.12 tries a little
+    // give without an edit, since real bamboo does bend.
+    const CULM_SWAY_P = parseFloat(new URLSearchParams(location.search).get("culmsway"));
+    const CULM_SWAY = isFinite(CULM_SWAY_P) ? CULM_SWAY_P : 0;
+    // A bamboo blade is narrow and stiff; a maple leaf is broad and hangs
+    // loose. They have no business moving by the same amount. ?bladesway=0.5
+    // calms the bamboo foliage alone, leaving the maples as they are.
+    const BLADE_SWAY_P = parseFloat(new URLSearchParams(location.search).get("bladesway"));
+    const BLADE_SWAY = isFinite(BLADE_SWAY_P) ? BLADE_SWAY_P : 0.2;
+
+    const barkMat = new THREE.MeshStandardMaterial({
+      color: 0x726c60, flatShading: true, roughness: 1, metalness: 0,
+    });
+    // First pass was emerald and clashed with the cream/ink world. The Nezu
+    // reference is green but soft and grey-green, not saturated.
+    const LEAF_LIT = [0.548, 0.578, 0.398], LEAF_DARK = [0.262, 0.298, 0.228];
+
+    // ---- leaf cards --------------------------------------------------------
+    // Blobs give mass but no texture: they read as balls stuck on branch ends.
+    // Real foliage is thousands of small strokes catching light at every angle,
+    // so foliage is now made of individual leaves, scattered stochastically.
+    // Shapes are from the botany, not from memory: Acer palmatum carries 5 to 9
+    // pointed lobes radiating from ONE point (a hand), 4-12cm; bamboo carries
+    // lanceolate blades, long and narrow, in fans of 6 to 8 per branchlet.
+    function leafBasis(seed, i) {
+      const th = hash3(seed, i, 1.7) * Math.PI * 2;
+      const ph = Math.acos(1 - 1.55 * hash3(seed, i, 2.9));   // biased face-up
+      const n = [Math.sin(ph) * Math.cos(th), Math.cos(ph), Math.sin(ph) * Math.sin(th)];
+      const t = Math.abs(n[1]) < 0.9 ? [0, 1, 0] : [1, 0, 0];
+      let u = [t[1] * n[2] - t[2] * n[1], t[2] * n[0] - t[0] * n[2], t[0] * n[1] - t[1] * n[0]];
+      const ul = Math.hypot(u[0], u[1], u[2]) || 1;
+      u = [u[0] / ul, u[1] / ul, u[2] / ul];
+      const v = [n[1] * u[2] - n[2] * u[1], n[2] * u[0] - n[0] * u[2], n[0] * u[1] - n[1] * u[0]];
+      return [u, v];
+    }
+    // five thin triangles from one point: a palmate hand, deeply cut, 5 tris
+    function pushMapleLeaf(pos, cx, cy, cz, R, seed, i) {
+      const [u, v] = leafBasis(seed, i);
+      const spin = hash3(seed, i, 4.1) * Math.PI * 2;
+      const at = (rad, ang) => {
+        const c = Math.cos(ang + spin) * rad, d = Math.sin(ang + spin) * rad;
+        return [cx + u[0] * c + v[0] * d, cy + u[1] * c + v[1] * d, cz + u[2] * c + v[2] * d];
+      };
+      const O = [cx, cy, cz];
+      for (let k = 0; k < 5; k++) {
+        const a = -1.75 + k * 0.875;                      // lobes over ~200 degrees
+        const rr = R * (0.72 + 0.28 * hash3(seed, i * 5 + k, 5.3));
+        pos.push(...O, ...at(rr, a - 0.19), ...at(rr, a + 0.19));
+      }
+    }
+    // one lanceolate blade, 2 tris
+    function pushBladeLeaf(pos, cx, cy, cz, L, W, seed, i, droop) {
+      const [u, v] = leafBasis(seed, i);
+      const spin = hash3(seed, i, 6.2) * Math.PI * 2;
+      const cs = Math.cos(spin), sn = Math.sin(spin);
+      const at = (a, b) => {
+        const c = a * cs - b * sn, d = a * sn + b * cs;
+        return [cx + u[0] * c + v[0] * d, cy + u[1] * c + v[1] * d - droop * Math.abs(b) / L,
+                cz + u[2] * c + v[2] * d];
+      };
+      const A = at(0, 0), B = at(W * 0.5, L * 0.28), C = at(0, L), D = at(-W * 0.5, L * 0.28);
+      pos.push(...A, ...B, ...C, ...A, ...C, ...D);
+    }
+
+    // One merged mesh per canopy, not one per blob: a hundred separate little
+    // meshes per tree would be a hundred draw calls each.
+    //
+    // And the clusters are placed ON THE BRANCH TIPS, not in a dome hovering
+    // above the skeleton. Built as an independent dome, the foliage visibly
+    // floated: branches ended, then a gap, then leaves. Foliage grows where
+    // the wood ends.
+    const blobProto = new THREE.IcosahedronGeometry(1, 1);
+    function makeCanopyFromTips(seed, tips, spreadR, perTip, treeR, treeH) {
+      const pos = [], rgb = [];
+      let n = 0;
+      for (const tip of tips) {
+        for (let b = 0; b < perTip; b++, n++) {
+          const off = spreadR;
+          const cx = tip.x + (hash3(seed, n, 1.1) - 0.5) * off * 2;
+          const cy = tip.y + (hash3(seed, n, 2.2) - 0.42) * off * 1.6;
+          const cz = tip.z + (hash3(seed, n, 3.3) - 0.5) * off * 2;
+          const R = 0.085 + 0.075 * hash3(seed, n, 7.4);
+          const before = pos.length / 3;
+          pushMapleLeaf(pos, cx, cy, cz, R, seed, n);
+          const high = sstep(treeH * 0.55, treeH * 1.20, cy);
+          const out = sstep(0.15, 0.95, Math.hypot(cx, cz) / Math.max(0.3, treeR));
+          const t = 0.16 + 0.34 * high + 0.28 * out
+                  + 0.34 * (hash3(seed, n, 8.5) - 0.5);       // leaf-to-leaf sparkle
+          const c = [0, 1, 2].map((k) =>
+            toLin1(LEAF_DARK[k] + (LEAF_LIT[k] - LEAF_DARK[k]) * Math.max(0, Math.min(1, t))));
+          for (let q = before; q < pos.length / 3; q++) rgb.push(c[0], c[1], c[2]);
+        }
+      }
+      const g = new THREE.BufferGeometry();
+      g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+      g.setAttribute("color", new THREE.Float32BufferAttribute(rgb, 3));
+      g.computeVertexNormals();
+      return g;
+    }
+
+    function limb(from, to, r0, r1) {
+      const dir = new THREE.Vector3().subVectors(to, from);
+      const m = new THREE.Mesh(new THREE.CylinderGeometry(r1, r0, dir.length(), 6), barkMat);
+      m.position.copy(from).addScaledVector(dir, 0.5);
+      m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.clone().normalize());
+      m.castShadow = true;
+      return m;
+    }
+
+    // A momiji is multi-trunked and leans: several slender stems from one root,
+    // splaying outward, then branching high and arching over.
+    function makeTree(seed, h, spread, leafFactor) {
+      const g = new THREE.Group();
+      const tips = [];
+      const stems = 2 + Math.floor(hash3(seed, 1, 1) * 2.4);
+      for (let t = 0; t < stems; t++) {
+        const a = (t / stems) * Math.PI * 2 + hash3(seed, t, 2) * 1.2;
+        const lean = (0.30 + 0.45 * hash3(seed, t, 3)) * spread * 0.42;
+        const th = h * (0.60 + 0.28 * hash3(seed, t, 4));
+        const mid = new THREE.Vector3(Math.cos(a) * lean * 0.45, th * 0.55, Math.sin(a) * lean * 0.45);
+        const top = new THREE.Vector3(Math.cos(a) * lean, th, Math.sin(a) * lean);
+        g.add(limb(new THREE.Vector3(0, 0, 0), mid, 0.115, 0.072));
+        g.add(limb(mid, top, 0.072, 0.038));
+        for (let b = 0; b < 3; b++) {
+          const ba = a + (b - 1) * 0.85 + (hash3(seed, t * 5 + b, 6) - 0.5) * 0.8;
+          const bl = spread * (0.34 + 0.26 * hash3(seed, t + b, 7));
+          const b1 = new THREE.Vector3(top.x + Math.cos(ba) * bl,
+                                       th + h * 0.20 * (0.4 + hash3(seed, t + b, 8)),
+                                       top.z + Math.sin(ba) * bl);
+          g.add(limb(top, b1, 0.038, 0.024));
+          for (let c = 0; c < 2; c++) {
+            const ca = ba + (c - 0.5) * 0.95 + (hash3(seed, t * 7 + b * 3 + c, 9) - 0.5) * 0.5;
+            const cl = spread * (0.22 + 0.20 * hash3(seed, t + b + c, 10));
+            // the last span rises less and can droop: a maple arches over
+            const b2 = new THREE.Vector3(b1.x + Math.cos(ca) * cl,
+                                         b1.y + h * 0.06 * (hash3(seed, t + c, 11) - 0.35),
+                                         b1.z + Math.sin(ca) * cl);
+            g.add(limb(b1, b2, 0.024, 0.012));
+            tips.push(b2);
+          }
+        }
+      }
+      const canopy = new THREE.Mesh(
+        setSway(makeCanopyFromTips(seed, tips, spread * 0.26,
+                           Math.round(234 * (leafFactor === undefined ? 1 : leafFactor)),
+                           spread, h), 1), leafMat);
+      canopy.castShadow = true;
+      g.add(canopy);
+      return g;
+    }
+
+    // maples: two arching over the tea house, one at the bench, one at the gate,
+    // one behind for depth. Kept off the sightlines the beats depend on.
+    [[-2.85, 3.10, 3.5, 2.9, 101], [3.70, 1.10, 3.9, 3.2, 202],
+     [ 7.10, 15.30, 3.7, 3.0, 303], [7.30, 8.10, 3.4, 2.7, 404],
+     [-1.20, -3.40, 4.1, 3.4, 505], [-4.60, 8.40, 3.6, 2.8, 606]]
+      .forEach(([tx, tz, th, sp, sd]) => {
+        const t = makeTree(sd, th, sp);
+        t.position.set(tx, groundAt(tx, tz), tz);
+        scene.add(outdoor(t));
+      });
+
+    // karikomi: clipped mounds. Smooth domes, deliberately tidier than
+    // anything else out here, because they are the one thing that is cut.
+    function makeShrub(seed, r, h) {
+      const geo = new THREE.IcosahedronGeometry(1, 2);
+      const p2 = geo.attributes.position;
+      const rgb = new Float32Array(p2.count * 3);
+      for (let i = 0; i < p2.count; i++) {
+        const x = p2.getX(i), y = p2.getY(i), z = p2.getZ(i);
+        const k = 1 + (fbm(x * 2.2 + seed, z * 2.2 + y, 27.6) - 0.5) * 0.18;
+        const ny = Math.max(-0.12, y) * k;                  // flat-bottomed mound
+        p2.setXYZ(i, x * r * k, ny * h, z * r * k);
+        const t = 0.22 + 0.55 * sstep(-0.2, 1.0, y) + 0.20 * (fbm(x * 4 + seed, z * 4, 44.9) - 0.5);
+        for (let c = 0; c < 3; c++)
+          rgb[i * 3 + c] = toLin1(LEAF_DARK[c] + (LEAF_LIT[c] - LEAF_DARK[c]) * Math.max(0, Math.min(1, t)) * 0.52);
+      }
+      geo.setAttribute("color", new THREE.BufferAttribute(rgb, 3));
+      geo.computeVertexNormals();
+      return geo;
+    }
+    // The mound alone was the last smooth object left in the garden and it
+    // showed. It stays, because it gives the clipped silhouette and the mass,
+    // but it is now clothed in small blades sampled over its own surface.
+    function shrubLeaves(geo, seed, r, h) {
+      const p3 = geo.attributes.position;
+      const pos = [], rgb = [];
+      // A clipped shrub is DENSE: you should not see the mound between the
+      // leaves. At 240 they read as confetti stuck on a dome.
+      // Sampled across the FACES, not at the vertices. Landing on vertices put
+      // every leaf on one of only 960 points, so they piled into rosettes and
+      // left the faces between them bare: dense in count, sparse to the eye.
+      const tris = p3.count / 3;
+      const N = Math.round(4200 * r * r);
+      for (let i = 0; i < N; i++) {
+        const f = Math.floor(hash3(seed, i, 2.4) * tris) * 3;
+        let a = hash3(seed, i, 9.1), b = hash3(seed, i, 9.7);
+        if (a + b > 1) { a = 1 - a; b = 1 - b; }
+        const cw = 1 - a - b;
+        const x = (p3.getX(f) * cw + p3.getX(f + 1) * a + p3.getX(f + 2) * b) * 1.03;
+        const y = (p3.getY(f) * cw + p3.getY(f + 1) * a + p3.getY(f + 2) * b) * 1.03;
+        const z = (p3.getZ(f) * cw + p3.getZ(f + 1) * a + p3.getZ(f + 2) * b) * 1.03;
+        const before = pos.length / 3;
+        pushBladeLeaf(pos, x, y, z, 0.052 + 0.032 * hash3(seed, i, 3.6),
+                      0.030 + 0.018 * hash3(seed, i, 4.8), seed + 5, i, 0.010);
+        const t = 0.20 + 0.50 * sstep(-h * 0.3, h * 0.95, y) + 0.30 * (hash3(seed, i, 5.9) - 0.5);
+        const c = [0, 1, 2].map((q) =>
+          toLin1(LEAF_DARK[q] + (LEAF_LIT[q] - LEAF_DARK[q]) * Math.max(0, Math.min(1, t)) * 0.80));
+        for (let v3 = before; v3 < pos.length / 3; v3++) rgb.push(c[0], c[1], c[2]);
+      }
+      const g = new THREE.BufferGeometry();
+      g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+      g.setAttribute("color", new THREE.Float32BufferAttribute(rgb, 3));
+      g.computeVertexNormals();
+      return g;
+    }
+
+    [[-1.90, 2.62, 0.62, 0.50, 11], [-0.60, 2.55, 0.44, 0.36, 22],
+     [ 1.55, 2.58, 0.55, 0.44, 33], [ 2.60, 2.75, 0.38, 0.30, 44],
+     [-2.90, 4.70, 0.70, 0.55, 55], [ 4.10, 4.60, 0.52, 0.42, 66],
+     [ 4.55, 11.10, 0.66, 0.52, 77], [ 1.05, 13.60, 0.58, 0.46, 88],
+     [ 6.60, 12.20, 0.48, 0.38, 99], [-1.40, 6.90, 0.60, 0.47, 110]]
+      .forEach(([sx2, sz2, r, h, sd]) => {
+        const geo = makeShrub(sd, r, h);
+        const grp = new THREE.Group();
+        const m = new THREE.Mesh(setSway(geo, 0.30), leafMat);
+        m.receiveShadow = true;
+        grp.add(m);
+        const lv = new THREE.Mesh(setSway(shrubLeaves(geo, sd, r, h), 1), leafMat);
+        lv.castShadow = true;
+        grp.add(lv);
+        grp.position.set(sx2, groundAt(sx2, sz2) - h * 0.10, sz2);
+        grp.rotation.y = hash3(sd, 3, 3) * 3.14;
+        scene.add(outdoor(grp));
+      });
+
+    // ---- takegaki: the bamboo fence either side of the chumon --------------
+    // Not a picket fence. A real one is culms set almost touching, so the
+    // inner garden is HIDDEN and the gate becomes its only aperture. Merged
+    // into one geometry per panel: 60 culms would otherwise be 60 draw calls.
+    const culmProto = new THREE.CylinderGeometry(1, 1, 1, 7).toNonIndexed();
+    function bambooFence(cx0, cz0, dx, dz, len, h, seed) {
+      const proto = culmProto.attributes.position;
+      const pos = [], rgb = [];
+      const CULM = [0.300, 0.288, 0.232], CULM_L = [0.470, 0.452, 0.360];
+      const put = (sx, sy, sz, tx, ty, tz, lieAlongX, tint, mossy) => {
+        for (let i = 0; i < proto.count; i++) {
+          let x = proto.getX(i) * sx, y = proto.getY(i) * sy, z = proto.getZ(i) * sz;
+          if (lieAlongX) { const t = x; x = y; y = -t; }
+          const wy = y + ty;
+          pos.push(x + tx, wy, z + tz);
+          const lo = 1 - sstep(0.05, 0.55, wy);
+          const m = Math.min(1, mossy * (0.35 + 0.65 * lo));
+          for (let k = 0; k < 3; k++) {
+            const base = CULM[k] + (CULM_L[k] - CULM[k]) * tint;
+            rgb.push(toLin1(Math.min(1, base * (1 - m) + LEAF_DARK[k] * m)));
+          }
+        }
+      };
+      const step = 0.070;
+      const n = Math.floor(len / step);
+      for (let i = 0; i <= n; i++) {
+        const f = i / n;
+        const wx = cx0 + dx * len * f, wz = cz0 + dz * len * f;
+        const g0 = groundAt(wx, wz);
+        const r = 0.030 + hash3(seed, i, 1.3) * 0.011;
+        const ch = h * (0.93 + 0.09 * hash3(seed, i, 2.6));
+        // culm, leaning a hair, seated on the ground it stands on
+        put(r, ch, r, wx + (hash3(seed, i, 3.9) - 0.5) * 0.012, g0 + ch / 2 - 0.04,
+            wz + (hash3(seed, i, 4.2) - 0.5) * 0.012, false,
+            hash3(seed, i, 5.5), 0.30 + 0.55 * hash3(seed, i, 6.1));
+        // the nodes, a slightly fatter band every so often
+        for (let k = 1; k <= 3; k++) {
+          const ny = g0 - 0.04 + ch * (k / 3.6) + hash3(seed, i * 3 + k, 7.7) * 0.05;
+          put(r * 1.22, 0.022, r * 1.22, wx, ny, wz, false, hash3(seed, i, 5.5), 0.10);
+        }
+      }
+      // binding rails across the face
+      [0.20, 0.58, 0.93].forEach((fy, k) => {
+        const steps = Math.ceil(len / 0.5);
+        for (let i = 0; i < steps; i++) {
+          const f0 = i / steps, f1 = (i + 1) / steps;
+          const mx = cx0 + dx * len * (f0 + f1) / 2, mz = cz0 + dz * len * (f0 + f1) / 2;
+          const gy = groundAt(mx, mz) - 0.04 + h * fy;
+          put(0.023, len / steps + 0.01, 0.023, mx, gy, mz + 0.036, true, 0.55, 0.14);
+        }
+      });
+      const g = new THREE.BufferGeometry();
+      g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+      g.setAttribute("color", new THREE.Float32BufferAttribute(rgb, 3));
+      g.computeVertexNormals();
+      // a takegaki is culms, nodes and binding rails: all of it structure
+      const m = new THREE.Mesh(setSway(g, CULM_SWAY), leafMat);
+      m.castShadow = true; m.receiveShadow = true;
+      return m;
+    }
+
+    // and the growth tangled through and over it
+    function fenceGrowth(cx0, cz0, dx, dz, len, h, seed) {
+      const bp = blobProto.attributes.position;
+      const pos = [], rgb = [];
+      const n = Math.round(len * 5.5);
+      for (let b = 0; b < n; b++) {
+        // never in the first stretch beside the gate: the opening must stay clean
+        const f = 0.14 + 0.86 * hash3(seed, b, 1.1);
+        const wx = cx0 + dx * len * f, wz = cz0 + dz * len * f;
+        const g0 = groundAt(wx, wz);
+        const top = hash3(seed, b, 2.2) > 0.55;          // spilling over, or at the foot
+        const cy = g0 + (top ? h * (0.86 + 0.22 * hash3(seed, b, 3.3))
+                             : h * (0.10 + 0.34 * hash3(seed, b, 3.3)));
+        const side = (hash3(seed, b, 4.4) - 0.5) * 0.50;
+        const sc = 0.16 + 0.20 * hash3(seed, b, 5.5);
+        const cxg = wx + dz * side, czg = wz - dx * side;
+        for (let L = 0; L < 30; L++) {
+          const idx = b * 37 + L;
+          const ox = (hash3(seed, idx, 6.1) - 0.5) * sc * 2.0;
+          const oy = (hash3(seed, idx, 7.2) - 0.5) * sc * 1.4;
+          const oz = (hash3(seed, idx, 8.3) - 0.5) * sc * 2.0;
+          const before = pos.length / 3;
+          pushBladeLeaf(pos, cxg + ox, cy + oy, czg + oz,
+                        0.052 + 0.036 * hash3(seed, idx, 9.4),
+                        0.028 + 0.017 * hash3(seed, idx, 10.5), seed + 3, idx, 0.012);
+          const t = 0.24 + 0.32 * sstep(g0 + h * 0.4, g0 + h * 1.1, cy + oy)
+                  + 0.34 * (hash3(seed, idx, 11.6) - 0.5);
+          const c = [0, 1, 2].map((k) =>
+            toLin1(LEAF_DARK[k] + (LEAF_LIT[k] - LEAF_DARK[k]) * Math.max(0, Math.min(1, t))));
+          for (let v4 = before; v4 < pos.length / 3; v4++) rgb.push(c[0], c[1], c[2]);
+        }
+      }
+      const g = new THREE.BufferGeometry();
+      g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+      g.setAttribute("color", new THREE.Float32BufferAttribute(rgb, 3));
+      g.computeVertexNormals();
+      const m = new THREE.Mesh(setSway(g, 1), leafMat);   // nothing but blades
+      m.castShadow = true;
+      return m;
+    }
+
+    // ---- the bamboo grove behind the fence --------------------------------
+    // Not a wall: a sketch of one. Scattered culms in loose clumps with real
+    // gaps, so the inner garden is screened without being sealed. Seeing
+    // through it is the point; what it removes is the clear view, not the
+    // light. One merged mesh per side, culms and leaves together.
+    // Mature culms are STRAW, not green: that is the first thing the reference
+    // photograph says. And they are far more slender than they look in memory,
+    // which is precisely why a close-planted row still lets the light through.
+    const CULM_LIT = [0.745, 0.640, 0.330], CULM_SHADE = [0.395, 0.348, 0.182];
+    function bambooGrove(cx0, cz0, dx, dz, len, seed, leafScale) {
+      const LS = (leafScale === undefined) ? 1 : leafScale;
+      const cp = culmProto.attributes.position, bp = blobProto.attributes.position;
+      const pos = [], rgb = [];
+      const sway = [];
+      const push = (x, y, z, t, leaf) => {
+        pos.push(x, y, z);
+        sway.push(leaf ? 1 : CULM_SWAY);   // culms and nodes come through here
+        const A = leaf ? LEAF_DARK : CULM_SHADE, B = leaf ? LEAF_LIT : CULM_LIT;
+        for (let k = 0; k < 3; k++)
+          rgb.push(toLin1(A[k] + (B[k] - A[k]) * Math.max(0, Math.min(1, t))));
+      };
+      const stamp = (proto, sx, sy, sz, tx, ty, tz, tFn, leaf) => {
+        for (let i = 0; i < proto.count; i++)
+          push(tx + proto.getX(i) * sx, ty + proto.getY(i) * sy, tz + proto.getZ(i) * sz,
+               tFn(proto.getY(i), ty + proto.getY(i) * sy), leaf);
+      };
+      // perpendicular, pointing away from the outer garden
+      const nx = dz, nz = -dx;
+      let d = 0.2, clump = 0;
+      while (d < len) {
+        const inClump = 2 + Math.floor(hash3(seed, clump, 1.1) * 4.6);
+        const back = 0.55 + 1.65 * hash3(seed, clump, 2.2);
+        for (let c = 0; c < inClump; c++) {
+          const jd = d + (hash3(seed, clump * 5 + c, 3.3) - 0.5) * 0.42;
+          const jb = back + (hash3(seed, clump * 5 + c, 4.4) - 0.5) * 0.55;
+          const wx = cx0 + dx * jd + nx * jb, wz = cz0 + dz * jd + nz * jb;
+          const g0 = groundAt(wx, wz);
+          const H = 4.2 + 2.0 * hash3(seed, clump * 5 + c, 5.5);
+          const r = 0.017 + 0.013 * hash3(seed, clump * 5 + c, 6.6);
+          const lean = (hash3(seed, clump * 5 + c, 7.7) - 0.5) * 0.30;
+          const lx = wx + lean * 0.5, lz = wz + lean * 0.35;
+          // the culm, and its nodes
+          stamp(cp, r, H, r, lx, g0 + H / 2, lz, (ly) => 0.32 + 0.52 * sstep(-0.5, 0.45, ly));
+          const NODES = Math.max(3, Math.round(10 * LS));
+          for (let k = 1; k <= NODES; k++) {
+            const ny = g0 + H * (k / (NODES + 1)) + hash3(seed, clump + c + k, 8.8) * 0.12;
+            stamp(cp, r * 1.20, 0.020, r * 1.20, lx, ny, lz, () => 0.72);
+          }
+          // Fans of lanceolate blades at branchlet points, 6 to 8 per fan as
+          // bamboo actually carries them, drooping. Discs read as saucers.
+          const sprays = Math.round((21 + Math.floor(hash3(seed, clump * 5 + c, 9.9) * 18)) * LS);
+          for (let q = 0; q < sprays; q++) {
+            const a = hash3(seed, clump * 9 + c * 3 + q, 10.1) * Math.PI * 2;
+            const rr = 0.06 + 0.16 * hash3(seed, clump * 9 + c * 3 + q, 11.2);
+            const sy = g0 + H * (0.44 + 0.56 * hash3(seed, clump * 9 + c * 3 + q, 12.3));
+            const bx = lx + Math.cos(a) * rr, bz = lz + Math.sin(a) * rr;
+            const nL = 6 + Math.floor(hash3(seed, clump * 11 + c * 5 + q, 13.4) * 3);
+            for (let L = 0; L < nL; L++) {
+              const idx = (clump * 977 + c * 131 + q * 17 + L) % 100000;
+              const len = 0.20 + 0.16 * hash3(seed, idx, 14.9);
+              const before = pos.length / 3;
+              pushBladeLeaf(pos, bx, sy, bz, len, 0.030 + 0.014 * hash3(seed, idx, 15.6),
+                            seed, idx, 0.16 * len);
+              const t = 0.30 + 0.34 * sstep(g0 + H * 0.45, g0 + H, sy)
+                      + 0.32 * (hash3(seed, idx, 16.8) - 0.5);
+              const col = [0, 1, 2].map((k) =>
+                toLin1(LEAF_DARK[k] + (LEAF_LIT[k] - LEAF_DARK[k]) * Math.max(0, Math.min(1, t))));
+              for (let v2 = before; v2 < pos.length / 3; v2++) {
+                rgb.push(col[0], col[1], col[2]);
+                sway.push(BLADE_SWAY);     // the blades do not go through push()
+              }
+            }
+          }
+        }
+        d += (0.30 + 0.62 * hash3(seed, clump, 14.5)) / LS;   // close-planted, still open
+        clump++;
+      }
+      const g = new THREE.BufferGeometry();
+      g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+      g.setAttribute("color", new THREE.Float32BufferAttribute(rgb, 3));
+      g.computeVertexNormals();
+      const m = new THREE.Mesh(setSway(g, sway), leafMat);
+      m.castShadow = true;
+      return m;
+    }
+
+    {
+      const dxg = Math.cos(CHUMON_RY), dzg = -Math.sin(CHUMON_RY);
+      const FH = 1.03, GAP = 0.76, RUN = 5.2;   // two thirds of the previous 1.55
+      [[-1, 71], [1, 82]].forEach(([sgn, sd]) => {
+        const x0 = CHUMON_X + dxg * GAP * sgn, z0 = CHUMON_Z + dzg * GAP * sgn;
+        scene.add(outdoor(bambooFence(x0, z0, dxg * sgn, dzg * sgn, RUN, FH, sd)));
+        scene.add(outdoor(fenceGrowth(x0, z0, dxg * sgn, dzg * sgn, RUN, FH, sd + 7)));
+        scene.add(outdoor(bambooGrove(x0, z0, dxg * sgn, dzg * sgn, RUN + 1.2, sd + 31)));
+      });
+    }
+
+    // ---- the enclosing belt -----------------------------------------------
+    // A roji is a small world. Bamboo and trees close it on every side, so
+    // there is no outside to look at and the garden becomes a room: the point
+    // is not to see the boundary but to never see past it.
+    [[-9.6, -5.5, 1, 0, 21.0, 811], [-9.8, 20.6, 1, 0, 21.0, 822],
+     [-9.9, -5.0, 0, 1, 25.5, 833], [11.4, -5.0, 0, 1, 25.5, 844]]
+      .forEach(([bx, bz, dx, dz, len, sd]) => {
+        // Half the foliage: these are 20 units off and deep in haze, so the
+        // mass reads the same and it is the single biggest saving available.
+        scene.add(outdoor(bambooGrove(bx, bz, dx, dz, len, sd, 0.5)));
+      });
+
+    [[-7.4, 1.2, 4.3, 3.4, 911], [8.6, 3.6, 4.0, 3.2, 922],
+     [-6.8, 12.6, 4.2, 3.3, 933], [9.2, 18.4, 4.1, 3.2, 944],
+     [-2.4, 19.8, 4.0, 3.1, 955], [3.8, -5.2, 4.4, 3.5, 966],
+     [-8.8, 7.8, 3.9, 3.0, 977], [10.2, 11.0, 4.0, 3.1, 988]]
+      .forEach(([tx, tz, th, sp, sd]) => {
+        const t = makeTree(sd, th, sp, 0.55);   // belt trees, thinner canopies
+        t.position.set(tx, groundAt(tx, tz), tz);
+        scene.add(outdoor(t));
+      });
+
+    // ---- the transition scrub ----------------------------------------------
+    // Where the belt stops, the garden met the hills at a hard line. A band of
+    // low bushes straddles that edge and ties the two together: greener and
+    // denser on the garden side, sparser and more olive as it climbs, so the
+    // eye is handed from one to the other instead of stepping over a break.
+    // Same blade leaves as everything else, scattered, one merged mesh.
+    {
+      const mound = new THREE.IcosahedronGeometry(1, 1);
+      const mp = mound.attributes.position;
+      const pos = [], rgb = [];
+      const PL2 = 1.32471795724474602596, C1 = 1 / PL2, C2 = 1 / (PL2 * PL2);
+      const R0 = 10.2, R1 = 23.0;
+      const CX = 0.6, CZ = 7.0;
+      const GARDEN = [0.315, 0.372, 0.245], HILL = [0.300, 0.330, 0.262];
+      const N = 210;
+      for (let i = 0; i < N; i++) {
+        const q1 = (0.5 + C1 * i) % 1, q2 = (0.5 + C2 * i) % 1;
+        const ang = q1 * Math.PI * 2;
+        const rad = Math.sqrt(R0 * R0 + (R1 * R1 - R0 * R0) * q2);
+        const bx = CX + Math.cos(ang) * rad, bz = CZ + Math.sin(ang) * rad;
+        // whichever surface is on top here: the garden floor near in, the land beyond
+        const gy = Math.max(groundAt(bx, bz), window.__landHeight(bx, bz));
+        const out = sstep(R0, R1, rad);                  // 0 at the garden, 1 in the hills
+        const r = (0.85 - 0.34 * out) * (0.55 + 0.85 * hash3(i * 1.7, 2.2, 3.3));
+        const h = r * (0.62 + 0.40 * hash3(i * 2.3, 4.4, 5.5));
+        const tint = [0, 1, 2].map((k) => GARDEN[k] + (HILL[k] - GARDEN[k]) * out);
+        // the mass
+        const before0 = pos.length / 3;
+        for (let v = 0; v < mp.count; v++) {
+          const yy = Math.max(-0.15, mp.getY(v));
+          pos.push(bx + mp.getX(v) * r, gy + yy * h, bz + mp.getZ(v) * r);
+          const t = 0.30 + 0.40 * sstep(-0.2, 1.0, mp.getY(v));
+          rgb.push(toLin1(tint[0] * (0.55 + 0.55 * t)),
+                   toLin1(tint[1] * (0.55 + 0.55 * t)),
+                   toLin1(tint[2] * (0.55 + 0.55 * t)));
+        }
+        // and the leaves over it, fewer and larger the further out it sits
+        const NL = Math.round((190 - 110 * out) * r);
+        for (let L = 0; L < NL; L++) {
+          const f = Math.floor(hash3(i * 7.1 + L, 6.6, 7.7) * (mp.count / 3)) * 3;
+          let a = hash3(i * 3.7 + L, 8.8, 9.9), b = hash3(i * 5.3 + L, 10.1, 11.2);
+          if (a + b > 1) { a = 1 - a; b = 1 - b; }
+          const w = 1 - a - b;
+          const lx = (mp.getX(f) * w + mp.getX(f + 1) * a + mp.getX(f + 2) * b) * r * 1.04;
+          const lyR = (mp.getY(f) * w + mp.getY(f + 1) * a + mp.getY(f + 2) * b);
+          const lz = (mp.getZ(f) * w + mp.getZ(f + 1) * a + mp.getZ(f + 2) * b) * r * 1.04;
+          const before = pos.length / 3;
+          pushBladeLeaf(pos, bx + lx, gy + Math.max(-0.15, lyR) * h * 1.04, bz + lz,
+                        0.085 + 0.075 * hash3(i + L, 12.3, 13.4),
+                        0.048 + 0.040 * hash3(i + L, 14.5, 15.6), i * 31 + 7, L, 0.014);
+          const t = 0.34 + 0.44 * sstep(-0.2, 1.0, lyR) + 0.28 * (hash3(i + L, 16.7, 17.8) - 0.5);
+          const c = [0, 1, 2].map((k) => toLin1(Math.min(1, tint[k] * (0.62 + 0.90 * Math.max(0, Math.min(1, t))))));
+          for (let v2 = before; v2 < pos.length / 3; v2++) rgb.push(c[0], c[1], c[2]);
+        }
+        void before0;
+      }
+      const g = new THREE.BufferGeometry();
+      g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+      g.setAttribute("color", new THREE.Float32BufferAttribute(rgb, 3));
+      g.computeVertexNormals();
+      const m = new THREE.Mesh(g, new THREE.MeshStandardMaterial({
+        color: 0xffffff, vertexColors: true, flatShading: true,
+        roughness: 1, metalness: 0, side: THREE.DoubleSide,
+      }));
+      m.castShadow = true; m.receiveShadow = true;
+      scene.add(m);
+    }
+
+    // ---- lighting ----
+    // Left exactly as the approved interior had it. The garden is lit by the
+    // shadow-casting sun instead, so the room needs no compensation.
+    const hemi = new THREE.HemisphereLight(0xd8ccb6, 0x4a4034, 0.56);
+    scene.add(hemi);
+
+    // A soft, shadowless daylight for the roji. No shadows on purpose: it must
+    // not carve the interior, which belongs to the window alone.
+    // Late afternoon rather than noon: lower and warmer. Long raking light is
+    // most of what makes a small garden feel like somewhere you are welcome.
+    const day = new THREE.DirectionalLight(0xffe3b4, 2.5);
+    // Pulled far back along the same direction: as a shadow camera it sits at
+    // this position, and the outer garden at z~17 was behind its near plane,
+    // so nothing out there cast or received. Sun angle is unchanged.
+    day.position.set(13.5, 12.9, 19.5);
+    day.target.position.set(0.4, 0, 6.0);
+    // Shadows are not decoration here, they are the mechanism: the roof and
+    // walls are what keep the room dark while the garden is in full sun. The
+    // only daylight that reaches inside comes through the nijiriguchi, which
+    // is exactly right.
+    day.castShadow = true;
+    day.shadow.mapSize.set(3072, 3072);
+    const sc = day.shadow.camera;
+    sc.left = -17; sc.right = 17; sc.top = 17; sc.bottom = -17;
+    sc.near = 1; sc.far = 62;
+    // No shadow.radius: under PCFSoftShadowMap it is inert. Measured on one
+    // page, wind off, camera fixed: radius 1 against radius 25 changes 0.46%
+    // of the frame. The softness of a PCFSoft edge is set by the TEXEL, which
+    // is the one lever there is -- see mapSize above.
+    day.shadow.bias = -0.0012;
+    day.shadow.normalBias = 0.006;   // higher leaks a bright rim at the wall/ceiling seam
+    scene.add(day);
+    scene.add(day.target);
+
+    // A window casts a rectangle, not a disc. The spot gets a projected mask
+    // (a "cookie") shaped like the opening, with the lattice bars drawn into
+    // it, so the floor receives the window's shape and its divisions. Landing
+    // obliquely it becomes a parallelogram, which is what real light does.
+    function makeWindowCookie() {
+      const S = 512, c = document.createElement("canvas");
+      c.width = c.height = S;
+      const g = c.getContext("2d");
+      g.fillStyle = "#000";
+      g.fillRect(0, 0, S, S);
+      // the aperture, proportioned like the window (0.4 wide x 0.55 tall)
+      const w = S * 0.46, h = S * 0.63, x0 = (S - w) / 2, y0 = (S - h) / 2;
+      g.fillStyle = "#fff";
+      g.fillRect(x0, y0, w, h);
+      // the bamboo lattice, split off centre like the real frame
+      g.strokeStyle = "#000";
+      g.lineWidth = S * 0.022;
+      g.beginPath();
+      g.moveTo(x0 + w * 0.618, y0); g.lineTo(x0 + w * 0.618, y0 + h);
+      g.moveTo(x0, y0 + h * 0.382); g.lineTo(x0 + w, y0 + h * 0.382);
+      g.stroke();
+      // soften the edge: sunlight through paper is not a razor
+      g.filter = "blur(6px)";
+      g.drawImage(c, 0, 0);
+      const tex = new THREE.CanvasTexture(c);
+      tex.colorSpace = THREE.SRGBColorSpace;
+      return tex;
+    }
+
+    const windowLight = new THREE.SpotLight(0xfff1d6, 24, 7, Math.PI / 4.6, 0.95, 0.8);
+    windowLight.map = makeWindowCookie();
+    windowLight.position.set(WINDOW_SIDE * (ROOM / 2 - 0.15), WINDOW_Y, WINDOW_Z);
+    // The exact mirror of the old aim, so the beam still rakes down onto the
+    // floor and the tokonoma instead of washing the far wall.
+    windowLight.target.position.set(0.55, 0.35, -0.7);
+    windowLight.castShadow = true;
+    windowLight.shadow.mapSize.set(1024, 1024);
+    windowLight.shadow.camera.near = 0.3;
+    windowLight.shadow.camera.far = 6;
+    windowLight.shadow.radius = 4;
+    scene.add(windowLight);
+    scene.add(windowLight.target);
+
+    // ---- the journey: scroll travels, the mouse looks --------------------
+    // Five waypoints from outside the nijiriguchi to seated inside. Each beat
+    // is hit exactly and interpolated with a smoothstep, NOT a spline: the
+    // opening is only 0.7 wide, and a Catmull-Rom would happily overshoot the
+    // camera straight through the wall beside it.
+    // Standing eye height outside is GROUND_Y + ~1.5. The walk follows the
+    // roji's own bend, so the house arrives obliquely and you turn to face the
+    // door: that turn is the roji doing its work.
+    // The roji's own structure, beat by beat: outer garden, wait, pass the
+    // gate, inner garden, purify, bow, sit. Every stop is one the ritual
+    // already asks for, not one invented for the camera.
+    const BEATS = [
+      { u: 0.00, pos: [ 1.20, 1.22,18.60], look: [ 2.60, 0.95,16.20] }, // soto-roji: arrival
+      { u: 0.09, pos: [ 3.10, 1.20,15.10], look: [ 4.80, 1.00,14.10] }, // the machiai comes into view
+      { u: 0.17, pos: [ 5.61, 0.91,13.68], look: [ 2.77, 0.86, 9.56] }, // SEATED on the bench, watching the gate
+      { u: 0.26, pos: [ 3.55, 1.20,12.60], look: [ 3.05, 1.00,10.60] }, // called: risen, the gate ahead
+      { u: 0.34, pos: [ 3.06, 1.16,11.20], look: [ 2.96, 1.05, 9.30] }, // BEFORE the chumon, so its posts frame the view
+      { u: 0.40, pos: [ 2.94, 1.16, 9.35], look: [ 2.60, 0.95, 7.60] }, // through it, uchi-roji
+      { u: 0.48, pos: [ 2.10, 1.20, 6.70], look: [ 1.00, 0.90, 4.90] }, // the bend
+      { u: 0.56, pos: [ 0.55, 1.18, 4.90], look: [-0.40, 0.55, 4.00] }, // the basin catches the eye
+      { u: 0.63, pos: [-0.10, 1.14, 4.25], look: [-0.82, 0.10, 3.66] }, // stepped aside, standing over it
+      { u: 0.70, pos: [-0.05, 0.36, 4.42], look: [-0.85,-0.02, 3.64] }, // CROUCHED at the water
+      { u: 0.77, pos: [ 0.20, 1.10, 4.00], look: [ 0.70, 0.55, 2.20] }, // risen, turned to the door
+      { u: 0.84, pos: [ 0.72, 1.15, 3.30], look: [ 0.70, 0.44, 2.00] }, // standing before it
+      { u: 0.90, pos: [ 0.71, 0.62, 2.85], look: [ 0.70, 0.42, 2.00] }, // kneeling
+      { u: 0.95, pos: [ 0.70, 0.40, 2.02], look: [ 0.62, 0.45, 1.20] }, // head at the threshold
+      { u: 0.98, pos: [ 0.66, 0.48, 1.75], look: [ 0.35, 0.55, 0.30] }, // through, still low
+      { u: 1.00, pos: CAM_IN.toArray(),    look: LOOK_IN.toArray()   }, // seated
+    ];
+    const smooth = (t) => t * t * (3 - 2 * t);
+    const _p = new THREE.Vector3(), _l = new THREE.Vector3();
+
+    function sampleJourney(u) {
+      let i = 0;
+      while (i < BEATS.length - 2 && u > BEATS[i + 1].u) i++;
+      const a = BEATS[i], b = BEATS[i + 1];
+      const t = smooth(Math.min(1, Math.max(0, (u - a.u) / (b.u - a.u))));
+      for (let k = 0; k < 3; k++) {
+        _p.setComponent(k, a.pos[k] + (b.pos[k] - a.pos[k]) * t);
+        _l.setComponent(k, a.look[k] + (b.look[k] - a.look[k]) * t);
+      }
+    }
+
+    // ---- stopping points ---------------------------------------------------
+    // At a stop the traveller may look around. Nicolas asked to "tourner la
+    // camera autour de lui", which is a PIVOT in place, not the orbit the old
+    // static room used: the camera stays where it stands and the view swings.
+    // For someone kneeling or seated that is the truthful gesture, and it is
+    // also what lets a stop feel like standing still rather than sliding.
+    const STOPS = [
+      { u: 0.100, half: 0.024 },   // the shelter comes into view
+      { u: 0.170, half: 0.028 },   // seated on the waiting bench
+      { u: 0.340, half: 0.026 },   // the middle gate
+      { u: 0.700, half: 0.024 },   // the tsukubai
+      { u: 0.900, half: 0.020 },   // the sliding door
+      { u: 1.000, half: 0.040 },   // seated, the bowl
+    ];
+    const LOOK_SWING = 0.58, LOOK_TILT = 0.20;
+    function stopWeight(u) {
+      let best = 0;
+      for (const st of STOPS) {
+        const w = 1 - smooth(Math.min(1, Math.abs(u - st.u) / st.half));
+        if (w > best) best = w;
+      }
+      return best;
+    }
+    let targetAngle = 0, currentAngle = 0, targetTilt = 0, currentTilt = 0;
+    addEventListener("mousemove", (e) => {
+      const nx = (e.clientX / innerWidth) * 2 - 1;
+      const ny = (e.clientY / innerHeight) * 2 - 1;
+      targetAngle = -nx * LOOK_SWING;    // inverted, as this scene always has been
+      targetTilt = -ny * LOOK_TILT;
+    });
+
+    // ---- the annotations ---------------------------------------------------
+    // A vermillion point over anything worth naming. Each belongs to a stop,
+    // so they appear only where the traveller has paused: the path is never
+    // littered with dots while you are moving.
+    const NOTES = [
+      { at: 0.100, p: [5.82, groundAt(5.55, 13.60) + 1.05, 13.99], t: "Koshikake machiai",
+        jp: "腰掛待合", d: "The waiting bench. The one place in a roji where you are meant to stop. Guests sit here until the host comes to call them, and look out over the outer garden while the world they arrived from falls away." },
+      { at: 0.170, p: [2.30, groundAt(2.30, 9.90) + 0.75, 9.90], t: "Takegaki",
+        jp: "竹垣", d: "The bamboo fence. Its culms are set almost touching, so that the inner garden stays hidden. It keeps nothing out; it delays the eye." },
+      { at: 0.340, p: [2.98, groundAt(2.98, 9.90) + 2.05, 9.90], t: "Chumon",
+        jp: "中門", d: "The middle gate, the hinge of the garden. What lies before it belongs to the world you came from; what lies beyond belongs to the tea. You pass through once, in one direction." },
+      { at: 0.340, p: [2.85, groundAt(2.85, 8.60) + 0.18, 8.60], t: "Nobedan",
+        jp: "延段", d: "The paved stretch. Where the path stops being a file of separate stones it becomes fitted paving, and that change of material marks the threshold underfoot before the eye can name it." },
+      { at: 0.340, p: [1.20, groundAt(1.20, 5.60) + 0.16, 5.60], t: "Tobi-ishi",
+        jp: "飛石", d: "The stepping stones. Spaced on purpose and never in line, they force you to slow down and to look down, which is the first thing a roji asks of you." },
+      { at: 0.700, p: [-0.72, -0.015, 3.83], t: "Tsukubai",
+        jp: "蹲踞", d: "The purification basin. It sits low deliberately: the architecture is what makes you crouch. Guests rinse their hands and their mouth before entering." },
+      { at: 0.700, p: [-1.13, 0.21, 3.76], t: "Kakei",
+        jp: "筧", d: "The bamboo spout. A split pipe bringing the water down in one thin unbroken thread. The sound it makes counts as an element of the garden, no less than the stones." },
+      { at: 0.700, p: [-0.28, groundAt(-0.28, 3.02) + 0.22, 3.02], t: "Chiriana",
+        jp: "塵穴", d: "The refuse pit, and purely symbolic. Nothing is thrown into it. It stands as evidence that the garden was swept for this meeting, and that someone tended it before you came." },
+      { at: 0.900, p: [0.70, 0.44, 2.10], t: "Nijiriguchi",
+        jp: "躙口", d: "The crawling-in entrance, seventy centimetres square. Nobody enters a tea room standing. The bow is not politeness: the architecture imposes it, on the lord exactly as on the farmer." },
+      { at: 0.340, p: [0.0, 2.30, 2.55], t: "Kayabuki",
+        jp: "茅葺", d: "The thatched roof, of miscanthus. Thick, cut clean at the eave, and steep enough to shed the rain. It is what keeps the room in shadow, by holding the sun off it." },
+      { at: 1.000, p: [0.0, 1.30, -1.86], t: "Kakejiku",
+        jp: "一期一会", d: "The scroll in the tokonoma. Ichi-go ichi-e: one time, one meeting. This gathering will not happen twice, and it is the only thing the room says to you." },
+      { at: 1.000, p: [-0.55, 0.78, -1.15], t: "Ikebana",
+        jp: "生花", d: "The flower in the tokonoma. One stem and two leaves, deliberately off balance. You do not arrange a bouquet here; you let a season be seen." },
+      { at: 1.000, p: [0.60, 0.20, -0.15], t: "Chawan",
+        jp: "茶碗", d: "The bowl. Set on the side the light comes from, within reach of the guest's hand. The matcha is still steaming: the ceremony has not begun, it has only just begun." },
+    ];
+
+    const introEl = document.getElementById("intro-card");
+    const notesEl = document.getElementById("notes");
+    const cardEl = document.getElementById("note-card");
+    let openNote = -1;
+    const _v = new THREE.Vector3();
+    NOTES.forEach((n, i) => {
+      const b = document.createElement("button");
+      b.className = "note-dot";
+      b.innerHTML = "<span class='note-disc'></span>";
+      b.style.opacity = 0;
+      b.setAttribute("aria-label", n.t);
+      b.addEventListener("click", (ev) => {
+        ev.stopPropagation();
+        openNote = (openNote === i) ? -1 : i;
+        NOTES.forEach((m, k) => m.el.classList.toggle("on", k === openNote));
+        if (openNote < 0) { cardEl.classList.remove("on"); return; }
+        cardEl.innerHTML =
+          "<span class='vt'><span class='jp'>" + n.jp + "</span>" +
+          "<span class='rom'>" + n.t + "</span></span>" +
+          "<span class='tx'>" + n.d + "</span>";
+        cardEl.classList.add("on");
+      });
+      notesEl.appendChild(b);
+      n.el = b;
+      n.vec = new THREE.Vector3(n.p[0], n.p[1], n.p[2]);
+    });
+    addEventListener("click", () => {
+      openNote = -1;
+      cardEl.classList.remove("on");
+      NOTES.forEach((m) => m.el.classList.remove("on"));
+    });
+
+    function placeNotes(u, gate) {
+      for (let i = 0; i < NOTES.length; i++) {
+        const n = NOTES[i];
+        const near = gate * (1 - smooth(Math.min(1, Math.abs(u - n.at) / 0.05)));
+        _v.copy(n.vec).project(camera);
+        const front = _v.z < 1;
+        const on = near > 0.04 && front && Math.abs(_v.x) < 1.05 && Math.abs(_v.y) < 1.05;
+        n.el.style.opacity = on ? (0.25 + 0.75 * near).toFixed(2) : 0;
+        n.el.style.pointerEvents = on ? "auto" : "none";
+        if (!on) { if (openNote === i) { openNote = -1; cardEl.classList.remove("on"); } continue; }
+        const sx = (_v.x * 0.5 + 0.5) * innerWidth, sy = (-_v.y * 0.5 + 0.5) * innerHeight;
+        n.el.style.left = sx + "px";
+        n.el.style.top = sy + "px";
+        if (openNote === i) {
+          // Set BESIDE the dot, and on whichever side keeps it off the object
+          // it is naming: to the left when the dot is right of centre.
+          // 330 is the card's max-width; the wash added 18px of padding on each
+          // side, and this number is what keeps the card on screen and clear
+          // of the object it names, so it has to count the whole box.
+          const cw = 330 + 36;
+          const raw = (sx > innerWidth * 0.56) ? sx - cw - 34 : sx + 34;
+          cardEl.style.left = Math.min(Math.max(16, raw), innerWidth - cw - 16) + "px";
+          cardEl.style.top = Math.min(Math.max(16, sy - 26), innerHeight - 200) + "px";
+        }
+      }
+    }
+
+    // ---- the walk, one breath at a time ------------------------------------
+    // SPACE moves to the next stop, R back to the previous one, and the glide
+    // is deliberately long and eased at both ends: you cannot hurry it, and
+    // the stops are places you actually come to rest rather than zones you
+    // happen to pass through. Scrolling let the visitor rush and made every
+    // stop a coincidence.
+    const MARKS = [0].concat(STOPS.map((st) => st.u));
+    let markIdx = 0, currentU = 0, walkPrev = null;
+    let fromU = 0, toU = 0, glideT0 = 0, glideDur = 0, moving = false;
+    let lookW = 1, lookTarget = 1;
+    const breathe = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+
+    function goTo(next) {
+      if (moving || next < 0 || next >= MARKS.length) return;
+      fromU = currentU;
+      toU = MARKS[next];
+      // Long, and longer the further it has to carry you. Nicolas asked for a
+      // third of the first speed, so these are the first figures tripled.
+      glideDur = 7800 + Math.abs(toU - fromU) * 69000;
+      glideT0 = performance.now();
+      moving = true;
+      lookTarget = 0;
+      markIdx = next;
+    }
+    // ---- two ways to walk ---------------------------------------------------
+    // AUTO, the default and the piece as composed: press SPACE and the path
+    //   carries you to the next stop on a long eased glide you cannot hurry.
+    // MANUAL: HOLD space to walk, let go to stop, wherever you like, and look
+    //   around from anywhere rather than only at a stop.
+    //
+    // Nicolas asked for this once the lanterns were worth looking at: on rails
+    // you cannot stop in front of anything. But manual keeps you ON the path.
+    // The garden is composed for this corridor and nothing outside it is built
+    // to be seen -- free flight would find the edge of the world in about four
+    // seconds. What manual adds is the freedom that was actually missing,
+    // WHERE you stop and WHERE you look, not the freedom to leave.
+    //
+    // The same two keys in both modes, pressed in one and held in the other:
+    // one grammar to learn, not two.
+    let MODE = "auto";
+    let manualDir = 0, manualV = 0;
+    const MANUAL_TOP = 0.0148;    // u per second, a shade brisker than the glide
+    const MANUAL_EASE = 3.4;      // and it takes a moment to reach it
+
+    // The panel is not rebuilt when the mode changes, only rewritten: the same
+    // three keys are there in both modes and they simply mean something else,
+    // so replacing the markup would throw away that continuity for nothing.
+    const HINT_TEXT = {
+      auto:   { space: "to walk on",      r: "to step back",
+                mouse: "to look, at a stop" },
+      manual: { space: "hold, to walk",   r: "hold, to go back",
+                mouse: "to look, anywhere" },
+    };
+    function paintHint(m) {
+      const h = document.getElementById("hint");
+      if (!h) return;
+      const t = HINT_TEXT[m];
+      h.querySelectorAll(".d").forEach((e) => { e.textContent = t[e.dataset.k]; });
+      h.querySelectorAll(".modes i").forEach((e) => {
+        e.classList.toggle("on", e.dataset.m === m);
+      });
+    }
+
+    function setMode(m) {
+      MODE = m;
+      manualDir = 0;
+      if (m === "auto") {
+        // pick up from wherever manual left you, so SPACE goes somewhere sane
+        manualV = 0;
+        let best = 0;
+        for (let i = 1; i < MARKS.length; i++)
+          if (Math.abs(MARKS[i] - currentU) < Math.abs(MARKS[best] - currentU)) best = i;
+        markIdx = best;
+        moving = false;
+        lookTarget = 1;
+      }
+      paintHint(m);
+    }
+    paintHint(MODE);          // the panel starts out saying what auto means
+
+    addEventListener("keydown", (e) => {
+      if (e.code === "KeyM") { e.preventDefault(); setMode(MODE === "auto" ? "manual" : "auto"); return; }
+      if (MODE === "manual") {
+        if (e.code === "Space") { e.preventDefault(); manualDir = 1; }
+        else if (e.code === "KeyR") { e.preventDefault(); manualDir = -1; }
+        return;
+      }
+      if (e.code === "Space") { e.preventDefault(); goTo(markIdx + 1); }
+      else if (e.code === "KeyR") { e.preventDefault(); goTo(markIdx - 1); }
+    });
+    addEventListener("keyup", (e) => {
+      if (MODE !== "manual") return;
+      if ((e.code === "Space" && manualDir > 0) || (e.code === "KeyR" && manualDir < 0)) manualDir = 0;
+    });
+    // a key held while the window loses focus would otherwise walk forever
+    addEventListener("blur", () => { manualDir = 0; });
+
+    // The side menu is dark-on-dark inside the room, and would break the
+    // journey anyway. Hide it for the walk, hand it back on arrival.
+    let sideEl = null;
+    const hintEl = document.getElementById("hint");
+
+    let t0 = null;
+    // ---- the breeze ---------------------------------------------------------
+    // Measured first: the foliage is 452,380 triangles over 1,357,140 vertices
+    // in 44 meshes, all sharing this one leafMat, and it is already drawn twice
+    // per frame (the sun's 3072 shadow map, then the view). Moving that on the
+    // CPU would mean rewriting and re-uploading 1.36M vertices every frame and
+    // the scene would collapse. So the wind lives entirely in the vertex
+    // shader: about twenty extra instructions on work the card already does,
+    // one uniform written per frame, and not a single byte of new geometry.
+    //
+    // No per-vertex attribute either. Amplitude comes from the vertex's own
+    // height and phase from its position in the world, so a leaf high in the
+    // maple swings and the ground cover barely stirs. The cost of that thrift
+    // is that a leaf card is not perfectly rigid -- its upper vertices travel
+    // slightly further than its lower ones -- but at the scale of a leaf that
+    // reads as flutter rather than as error.
+    //
+    // ?wind=0 turns it off, so the before/after can be measured on the same
+    // machine in the same sitting.
+    // honoured here too: a visitor who asks the operating system for stillness
+    // should not be given a breeze
+    const WIND = !matchMedia("(prefers-reduced-motion: reduce)").matches &&
+                 new URLSearchParams(location.search).get("wind") !== "0";
+    // 0.1 is Nicolas's figure, chosen against the alternatives on his own
+    // screen: roughly 10cm of travel at the top of the canopy, nothing at the
+    // ground. ?windamp= overrides it without an edit.
+    const WIND_AMP = parseFloat(new URLSearchParams(location.search).get("windamp"));
+    const windUniforms = {
+      uWindTime: { value: 0 },
+      uWindAmp: { value: isFinite(WIND_AMP) ? WIND_AMP : 0.1 },
+    };
+    const WIND_CHUNK = [
+      "  {",
+      "    vec3 wp = (modelMatrix * vec4(transformed, 1.0)).xyz;",
+      // Height above the ground, squared: the canopy leans, the ground cover
+      // is left alone. Foliage in this garden spans y = -0.5 to 6.14.
+      "    float hh = clamp(wp.y / 6.0, 0.0, 1.0);",
+      "    float stiff = hh * hh;",
+      // A gust that TRAVELS across the garden rather than lifting all of it at
+      // once -- a grove breathing in unison is the tell that it is a shader.
+      "    float travel = dot(wp.xz, vec2(0.80, 0.60));",
+      "    float gust = 0.60 + 0.40 * sin(uWindTime * 0.27 - travel * 0.10);",
+      "    float sway = sin(uWindTime * 0.85 - travel * 0.55);",
+      "    float flutter = 0.28 * sin(uWindTime * 3.30 + wp.x * 4.10 + wp.z * 3.30);",
+      // aSway is the per-vertex permission: 1 for a leaf, 0 for a culm, a node
+      // or a fence rail. Without it the whole grove leaned like wheat.
+      "    float a = uWindAmp * aSway * stiff * gust * (sway + flutter);",
+      // Leaves dip as they are pushed; they do not slide along a flat plane.
+      "    vec3 disp = vec3(0.80 * a, -0.16 * abs(a), 0.60 * a);",
+      // 20 of the 44 foliage meshes carry a yaw, none carries a scale, so the
+      // rotation is orthonormal and its inverse is its transpose. In GLSL,
+      // v * M is transpose(M) * v -- which spares us inverse() and transpose(),
+      // neither of which exists in GLSL ES 1.0.
+      "    transformed += disp * mat3(modelMatrix);",
+      "  }",
+    ].join("\n");
+
+    function applyWind(mat) {
+      mat.onBeforeCompile = (shader) => {
+        shader.uniforms.uWindTime = windUniforms.uWindTime;
+        shader.uniforms.uWindAmp = windUniforms.uWindAmp;
+        shader.vertexShader = shader.vertexShader
+          .replace("#include <common>",
+                   "#include <common>\nuniform float uWindTime;\nuniform float uWindAmp;\n" +
+                   "attribute float aSway;")
+          .replace("#include <begin_vertex>",
+                   "#include <begin_vertex>\n" + WIND_CHUNK);
+      };
+      // without its own cache key three.js may hand this material a program
+      // compiled for an identical-looking material that has no wind in it
+      mat.customProgramCacheKey = () => "wind";
+    }
+
+    if (WIND) {
+      applyWind(leafMat);
+      // The shadow pass has to be given the SAME displacement, or the leaves
+      // sway while their shadows stay nailed to the ground -- worse than not
+      // moving at all. customDepthMaterial is what the shadow map draws with.
+      const leafDepthMat = new THREE.MeshDepthMaterial({
+        depthPacking: THREE.RGBADepthPacking, side: THREE.DoubleSide,
+      });
+      applyWind(leafDepthMat);
+      let windMeshes = 0, swayMissing = 0, swaySum = 0, swayCount = 0;
+      scene.traverse((o) => {
+        if (!o.isMesh || o.material !== leafMat) return;
+        o.customDepthMaterial = leafDepthMat;
+        windMeshes++;
+        // A geometry with no aSway would read 0 and quietly stand still. That
+        // is the safe failure, but it is still a failure, so it gets counted.
+        const a = o.geometry.attributes.aSway;
+        if (!a) { swayMissing++; return; }
+        for (let i = 0; i < a.count; i++) { swaySum += a.array[i] / 255; swayCount++; }
+      });
+      window.__windAmp = windUniforms.uWindAmp.value;
+      window.__bladeSway = BLADE_SWAY;
+      window.__culmSway = CULM_SWAY;
+      window.__windMeshes = windMeshes;
+      window.__swayMissing = swayMissing;
+      window.__swayMoving = swayCount ? +(100 * swaySum / swayCount).toFixed(1) : 0;
+    }
+
+    // ---- ?perf : the instrument ---------------------------------------------
+    // Three numbers, because they answer three different questions and are
+    // routinely confused for one another:
+    //
+    //   image  the interval between frames. What you actually feel. But
+    //          requestAnimationFrame is clamped to the display, so a scene
+    //          with plenty of room to spare and one with none both read 16.7.
+    //          It can tell you that you are late; it cannot tell you how
+    //          early you are.
+    //   cpu    the wall time inside this frame callback. Our own arithmetic
+    //          plus the cost of handing the draw commands to the driver -- NOT
+    //          the drawing itself, which happens asynchronously afterwards.
+    //   gpu    the real one, read back from the graphics card with a timer
+    //          query. This is the only number that shows the headroom, and so
+    //          the only one that can honestly price a change like wind.
+    //
+    // Medians, not averages: one hitch from a background tab should not be
+    // allowed to rewrite the reading. p95 is carried alongside so that the
+    // hitches stay visible instead of being smoothed away.
+    let perfEl = null, perfGl = null, perfExt = null;
+    let perfQueryFree = [], perfQueryBusy = [], perfInFlight = null;
+    const perfFrame = [], perfCpu = [], perfGpu = [];
+    let perfLastNow = 0, perfLastPaint = 0;
+    const PERF_WINDOW = 120;
+
+    function perfPush(arr, v) {
+      arr.push(v);
+      if (arr.length > PERF_WINDOW) arr.shift();
+    }
+    function perfStat(arr) {
+      if (!arr.length) return null;
+      const a = arr.slice().sort((x, y) => x - y);
+      return { med: a[a.length >> 1], p95: a[Math.min(a.length - 1, Math.floor(a.length * 0.95))] };
+    }
+    function perfInit() {
+      perfEl = document.createElement("div");
+      perfEl.id = "perf";
+      perfEl.style.cssText =
+        "position:fixed;top:18px;left:clamp(26px,5.5vw,86px);z-index:20;" +
+        "font:400 11px/1.75 ui-monospace,SFMono-Regular,Menlo,monospace;" +
+        "letter-spacing:.06em;color:rgba(255,255,255,.82);pointer-events:none;" +
+        "white-space:pre;text-shadow:0 1px 2px rgba(18,14,10,.95),0 0 10px rgba(18,14,10,.85);";
+      document.body.appendChild(perfEl);
+      perfGl = renderer.getContext();
+      // WebGL2 name first, then the WebGL1 spelling. Absent on plenty of
+      // machines and behind a flag on some; the readout degrades to "n/d"
+      // rather than lying about a number it does not have.
+      perfExt = perfGl.getExtension("EXT_disjoint_timer_query_webgl2") ||
+                perfGl.getExtension("EXT_disjoint_timer_query");
+      if (perfExt) for (let i = 0; i < 6; i++) perfQueryFree.push(perfGl.createQuery());
+    }
+    function perfBegin() {
+      if (!perfExt || !perfQueryFree.length) return;
+      perfInFlight = perfQueryFree.pop();
+      perfGl.beginQuery(perfExt.TIME_ELAPSED_EXT, perfInFlight);
+    }
+    function perfEnd() {
+      if (!perfInFlight) return;
+      perfGl.endQuery(perfExt.TIME_ELAPSED_EXT);
+      perfQueryBusy.push(perfInFlight);
+      perfInFlight = null;
+      // The card answers some frames later, never in the same one. Anything
+      // spanning a "disjoint" is thrown away: the driver is telling us the
+      // clock was interrupted and the figure is meaningless.
+      const disjoint = perfGl.getParameter(perfExt.GPU_DISJOINT_EXT);
+      if (disjoint) { perfQueryFree = perfQueryFree.concat(perfQueryBusy); perfQueryBusy = []; return; }
+      while (perfQueryBusy.length) {
+        const q = perfQueryBusy[0];
+        if (!perfGl.getQueryParameter(q, perfGl.QUERY_RESULT_AVAILABLE)) break;
+        perfPush(perfGpu, perfGl.getQueryParameter(q, perfGl.QUERY_RESULT) / 1e6);
+        perfQueryBusy.shift();
+        perfQueryFree.push(q);
+      }
+    }
+    function perfPaint(now) {
+      if (now - perfLastPaint < 250) return;
+      perfLastPaint = now;
+      const f = perfStat(perfFrame), c = perfStat(perfCpu), g = perfStat(perfGpu);
+      const ms = (v) => (v === undefined || v === null ? "   n/d" : v.toFixed(1).padStart(6) + " ms");
+      const fps = f ? (1000 / f.med).toFixed(0) : "--";
+      perfEl.textContent =
+        "image " + ms(f && f.med) + "   " + fps + " i/s   p95 " + ms(f && f.p95) + "\n" +
+        "gpu   " + ms(g && g.med) + "           p95 " + ms(g && g.p95) + "\n" +
+        "cpu   " + ms(c && c.med) + "\n" +
+        (renderer.info.render.triangles / 1000).toFixed(0) + "k tris   " +
+        renderer.info.render.calls + " appels" +
+        (perfExt ? "" : "\n(pas de minuterie gpu sur cette machine)");
+    }
+
+    function frame(now) {
+      window.__firstFrame = true;   // the loading screen waits on this, and it
+                                    // must be set for the ?cam= views too
+      if (t0 === null) t0 = now;
+      const t = (now - t0) / 1000;
+
+      if (STATIC_VIEW) {
+        if (nijiriDoor && staticDoorOpen) {
+          nijiriDoor.position.x = DOOR_CX + (DOOR_W + 0.10) * 0.92;
+          staticDoorOpen = false;
+        }
+        currentAngle += (targetAngle - currentAngle) * 0.05;
+        const angle = ORBIT_BASE_ANGLE_STATIC + currentAngle * (STATIC_AMP / LOOK_SWING);
+        camera.position.set(
+          LOOK_BASE.x + STATIC_RADIUS * Math.sin(angle),
+          CAM_BASE.y,
+          LOOK_BASE.z + STATIC_RADIUS * Math.cos(angle)
+        );
+        camera.lookAt(LOOK_BASE);
+      } else {
+        const dt = walkPrev === null ? 0 : Math.min(0.1, (now - walkPrev) / 1000);
+        walkPrev = now;
+        if (MODE === "manual") {
+          // eased at both ends, so starting and stopping are not a jolt: the
+          // long breath of the guided walk, put in your own hands
+          manualV += (manualDir * MANUAL_TOP - manualV) * Math.min(1, dt * MANUAL_EASE);
+          currentU = Math.max(0, Math.min(1, currentU + manualV * dt));
+          moving = Math.abs(manualV) > 2e-5;
+          lookTarget = 1;
+        } else if (moving) {
+          const k = Math.min(1, (now - glideT0) / glideDur);
+          currentU = fromU + (toU - fromU) * breathe(k);
+          if (k >= 1) { moving = false; lookTarget = 1; }
+        }
+        lookW += (lookTarget - lookW) * 0.055;
+        sampleJourney(currentU);
+        currentAngle += (targetAngle - currentAngle) * 0.055;
+        currentTilt += (targetTilt - currentTilt) * 0.055;
+
+        // At a stop the view pivots about where you stand. Between stops the
+        // mouse does nothing, so travelling and looking never fight for the
+        // same gesture.
+        // Looking around belongs to standing still, so it fades with the glide
+        // rather than with a window in u.
+        // In manual the look is never gated: being able to turn wherever you
+        // have chosen to stand is the whole reason the mode exists.
+        const w = (MODE === "manual") ? 1 : lookW * stopWeight(currentU);
+        if (w > 0.001) {
+          const dx = _l.x - _p.x, dz = _l.z - _p.z;
+          const R = Math.hypot(dx, dz);
+          const ang = Math.atan2(dx, dz) + currentAngle * w;
+          _l.x = _p.x + R * Math.sin(ang);
+          _l.z = _p.z + R * Math.cos(ang);
+          _l.y += currentTilt * w * R * 0.42;
+        }
+        camera.position.copy(_p);
+        camera.lookAt(_l);
+        placeNotes(currentU, MODE === "manual" ? 1 : lookW);
+        // The guide appears only once the introduction has gone: two blocks of
+        // text in the same corner of the screen at the same time is two things
+        // to read and neither gets read. It waits until the card is below a
+        // third of its opacity, so they never cross.
+        const introOp = 1 - smooth(Math.min(1, currentU / 0.055));
+        introEl.style.opacity = introOp.toFixed(3);
+        if (hintEl) hintEl.style.opacity = (1 - smooth(Math.min(1, introOp / 0.34))).toFixed(3);
+
+        // The door slides between kneeling (0.86) and the head reaching the
+        // threshold (0.93), so the interior is revealed by the sliding and not
+        // before it.
+        if (nijiriDoor)
+          nijiriDoor.position.x = DOOR_CX + (DOOR_W + 0.10) * 0.92
+            * smooth(Math.min(1, Math.max(0, (currentU - 0.86) / 0.07)));
+        window.__u = currentU;      // so a capture harness can wait for the glide
+        window.__moving = moving;
+        window.__mark = markIdx;
+        window.__tris = renderer.info.render.triangles;
+        if (!sideEl) sideEl = document.querySelector(".side");
+        // The menu belongs to every stop, not only the arrival: tied to the
+        // end of the walk it left anyone who landed here shut in for two
+        // minutes with no way out. And pointer-events follow the opacity, so
+        // it is never an invisible click target while you are moving.
+        if (sideEl) {
+          // in manual it fades as you walk and comes back when you stop
+          const menuW = (MODE === "manual")
+            ? 1 - 0.82 * Math.min(1, Math.abs(manualV) / MANUAL_TOP)
+            : lookW;
+          sideEl.style.opacity = menuW.toFixed(3);
+          sideEl.style.pointerEvents = menuW > 0.5 ? "" : "none";
+        }
+      }
+
+      if (WIND) { windUniforms.uWindTime.value = t; window.__windTime = t; }
+      // outside the walk branch, so the ?cam= views report it too -- it was
+      // undefined there, which quietly blinded the harness on those views
+      window.__tris = renderer.info.render.triangles;
+      updateSteam(t);
+      updateWater(t);
+      if (PERF) {
+        if (!perfEl) perfInit();
+        if (perfLastNow) perfPush(perfFrame, now - perfLastNow);
+        perfLastNow = now;
+        const c0 = performance.now();
+        perfBegin();
+        renderer.render(scene, camera);
+        perfEnd();
+        perfPush(perfCpu, performance.now() - c0);
+        perfPaint(now);
+      } else {
+        renderer.render(scene, camera);
+      }
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+
+    addEventListener("resize", () => {
+      camera.aspect = innerWidth / innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(innerWidth, innerHeight);
+    });
+    }
+    // two frames: one to lay the veil out, one to let it paint
+    requestAnimationFrame(() => requestAnimationFrame(buildScene));
+
+  </script>
+  <script src="blob.js"></script>
+  <script src="site.js"></script>
+</body>
+</html>

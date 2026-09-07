@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="google" content="notranslate">
+<title>oftenback.io</title>
+<style>
+  /* the Nakata zen scene, ported from the phone launcher's zen-mode home screen
+     (nakata-launcher/MainActivity.kt): a single wobbling/drifting vermillion blob
+     on a darkened cream ground, with a few sakura petals falling and swaying past
+     it. Same darkened ground as the launcher (Nakata.GROUND, darkened). */
+  :root { --ground:#cec8bf; --pad:44px; --mark:#ff6a00; }  /* oftenback.io: bright fluorescent orange */
+  html, body { margin:0; height:100%; background:var(--ground); overflow:hidden; }
+  #c {
+    position:fixed; left:var(--pad); top:var(--pad);
+    width:calc(100vw - 2*var(--pad)); height:calc(100vh - 2*var(--pad));
+    display:block;
+  }
+  /* oftenback.io, a whisper under the lower-left corner (nothing shouts) */
+  #mark {
+    position:fixed; left:var(--pad); bottom:14px;
+    font:700 12px/1.4 -apple-system,"Segoe UI",system-ui,sans-serif;
+    letter-spacing:0.42em; text-transform:lowercase;
+    color:var(--mark); user-select:none; pointer-events:none;
+  }
+</style>
+</head>
+<body>
+  <canvas id="c"></canvas>
+  <div id="mark">oftenback.io</div>
+<script>
+(function () {
+  const cv = document.getElementById('c');
+  const ctx = cv.getContext('2d');
+
+  const GROUND = [206, 200, 191];             // --ground, #cec8bf
+  const BLOB_RGB = "227,66,52";                // vermillion (Nakata.VERMILLION)
+  const BLOB_ALPHA = 0.10;                     // BUTTON_CORE_ALPHA in the launcher
+  const PHI_INV = 0.6180339887498949;          // golden-ratio blob position, same corner
+  const PETAL_MAX = 3;
+  const PETAL_SPAWN_MS = 3800;
+  const TAU = 2 * Math.PI;
+
+  let w = 0, h = 0, dpr = 1;
+  let baseR = 0, driftR = 0, petalR = 0, fallSpeed = 0, swayAmp = 0;
+  let blobX = 0, blobY = 0;
+
+  function resize() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    w = cv.clientWidth; h = cv.clientHeight;
+    cv.width = w * dpr; cv.height = h * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    // Same proportions as the launcher relative to its own virtual space
+    // (BUTTON_R/VH, BUTTON_DRIFT_RADIUS/BUTTON_R, PETAL_R/BUTTON_R, etc.),
+    // scaled here to whatever viewport this page happens to have.
+    const m = Math.min(w, h);
+    baseR = m * 0.09;
+    driftR = baseR;
+    petalR = baseR * 0.32;
+    fallSpeed = h * 0.0268;
+    swayAmp = w * 0.04;
+    blobX = w * PHI_INV;
+    blobY = h * (1 - PHI_INV);
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  // 9-point wobbling closed path, quad-smoothed -- same math as the launcher's
+  // blobPath() in MainActivity.kt.
+  function blobPath(cx, cy, r, t, seed) {
+    const n = 9, pts = [];
+    for (let i = 0; i < n; i++) {
+      const ang = TAU * i / n;
+      const wobble = 0.07 * Math.sin(t * 0.28 + ang * 3 + seed) + 0.05 * Math.sin(t * 0.17 - ang * 2 + seed * 1.7);
+      const rr = r * (1 + wobble);
+      pts.push([cx + rr * Math.cos(ang), cy + rr * Math.sin(ang)]);
+    }
+    const mid = (a, b) => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+    const p = new Path2D();
+    const first = mid(pts[n - 1], pts[0]);
+    p.moveTo(first[0], first[1]);
+    for (let i = 0; i < n; i++) {
+      const cur = pts[i], next = pts[(i + 1) % n], m2 = mid(cur, next);
+      p.quadraticCurveTo(cur[0], cur[1], m2[0], m2[1]);
+    }
+    p.closePath();
+    return p;
+  }
+
+  // Falling sakura petals: spawned from the blob, drift down while swaying,
+  // culled past the bottom -- same spawn/cull logic as the launcher's Petal code.
+  let petals = [], nextSpawn = 0;
+  let sakuraTinted = null;
+  (function loadSakura() {
+    const img = new Image();
+    img.onload = function () {
+      const off = document.createElement('canvas');
+      off.width = img.width; off.height = img.height;
+      const octx = off.getContext('2d');
+      octx.drawImage(img, 0, 0);
+      octx.globalCompositeOperation = 'source-atop';
+      octx.fillStyle = 'rgb(' + BLOB_RGB + ')';   // full-opacity tint; BLOB_ALPHA applied at draw time
+      octx.fillRect(0, 0, off.width, off.height);
+      sakuraTinted = off;
+    };
+    img.src = 'nakata_sakura.png';
+  })();
+
+  function updatePetals(t) {
+    if (t >= nextSpawn) {
+      nextSpawn = t + PETAL_SPAWN_MS / 1000;
+      petals = petals.filter(p => p.y0 + p.fallSpeed * (t - p.spawnT) <= h + petalR * 2);
+      if (petals.length < PETAL_MAX) {
+        petals.push({
+          spawnT: t, x0: blobX, y0: blobY,
+          swayPhase: Math.random() * TAU,
+          swaySpeed: 0.5 + Math.random() * 0.4,
+          swayAmp: swayAmp * (0.7 + Math.random() * 0.6),
+          fallSpeed: fallSpeed * (0.8 + Math.random() * 0.4),
+        });
+      }
+    }
+  }
+
+  let last = performance.now(), T = 0;
+  function frame(now) {
+    const dt = Math.min((now - last) / 1000, 0.05); last = now;
+    T += dt;
+    updatePetals(T);
+
+    ctx.clearRect(0, 0, w, h);
+    ctx.fillStyle = 'rgb(' + GROUND[0] + ',' + GROUND[1] + ',' + GROUND[2] + ')';
+    ctx.fillRect(0, 0, w, h);
+
+    const driftCx = blobX + driftR * Math.sin(T * 0.055);
+    const driftCy = blobY + driftR * 0.6 * Math.sin(T * 0.037 + 1.3);
+    ctx.save();
+    ctx.fillStyle = 'rgba(' + BLOB_RGB + ',' + BLOB_ALPHA + ')';
+    ctx.fill(blobPath(driftCx, driftCy, baseR, T, 0));
+    ctx.restore();
+
+    if (sakuraTinted) {
+      ctx.save();
+      ctx.globalAlpha = BLOB_ALPHA;
+      for (const p of petals) {
+        const elapsed = T - p.spawnT;
+        const py = p.y0 + p.fallSpeed * elapsed;
+        const px = p.x0 + p.swayAmp * Math.sin(p.swaySpeed * elapsed + p.swayPhase);
+        ctx.drawImage(sakuraTinted, px - petalR, py - petalR, petalR * 2, petalR * 2);
+      }
+      ctx.restore();
+    }
+
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

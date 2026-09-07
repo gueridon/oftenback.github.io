@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>chashitsu · oftenback</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="site.css">
+  <style>
+    /* A plan, not a place. The roji is a walk, so this one had to be something
+       else or it would be the same piece twice -- and Sadler hands over the
+       right something else: "Tearooms are classified according to the POSITION
+       OF THE HEARTH as well as according to the number of mats. There are
+       eight kinds called the Eight Hearths." A whole room defined by where one
+       square is cut in its floor.
+       Monochrome and one accent, and the accent is the hearth, because the
+       hearth is the entire subject. */
+    html,body{overflow-y:auto;height:auto;min-height:100%;}
+    .room{align-items:flex-start;min-height:auto;
+      padding-top:clamp(40px,7vh,80px);padding-bottom:clamp(40px,7vh,80px);}
+    /* .room-content is a centring flex column, so a child of it shrinks to its
+       content and 860px never happened: the list of eight wrapped under the
+       plan instead of standing beside it. */
+    .room-content{width:100%;align-items:stretch;}
+    /* width:100% matters: on a flex item, margin:0 auto OVERRIDES
+       align-items:stretch and sizes the box to its content instead. Measured
+       at exactly 782px, which is the row's minimum, so the eight wrapped. */
+    /* ONE measure for the whole page. The lede ran to 600, the paragraphs under
+       it to 560, and the plan with its list to 782 -- three widths, so the
+       drawing floated out past the writing instead of sitting inside it. Now
+       everything, the plan and its eight included, is exactly this wide. */
+    /* The title runs DOWN the left edge. Japanese set upright and stacking
+       downward; the Latin in the same vertical mode, which rotates its glyphs
+       a quarter turn and reads downward too. One rule does both, because
+       writing-mode is a property of the writing and not a transform pinned on
+       afterwards. */
+    .cs{width:100%;max-width:790px;margin:0 auto;text-align:left;
+      display:flex;gap:26px;align-items:flex-start;}
+    .cs p{max-width:none;}
+    .vtitle{flex:0 0 auto;display:flex;gap:12px;padding-top:2px;}
+    .vtitle span{writing-mode:vertical-rl;line-height:1;}
+    .vtitle .jp{font:400 34px/1 serif;letter-spacing:.16em;color:var(--ink);
+      text-orientation:upright;}
+    .vtitle .rom{font-size:10px;letter-spacing:.34em;text-transform:uppercase;
+      color:var(--dim);font-weight:600;padding-top:4px;}
+    .col{flex:1 1 auto;min-width:0;}
+
+    .cs .lede{margin-bottom:30px;color:var(--dim);font-weight:300;
+      line-height:1.75;font-size:15px;text-align:justify;hyphens:auto;}
+    .cs .lede em{font-style:italic;color:var(--ink);}
+
+    /* the room and what is said about it, side by side */
+    /* stretch, not flex-start: the column of writing takes the drawing's own
+       height, which is what lets its last line settle level with the foot of
+       the plan instead of floating somewhere up the side of it. */
+    .board{display:flex;gap:28px;align-items:stretch;}
+    .planwrap{flex:0 0 auto;width:328px;max-width:52%;position:relative;}
+    #plan{display:block;width:100%;height:auto;overflow:visible;}
+    /* Both captions are HTML, and that is the point: one inside the SVG and one
+       outside could only agree at a single screen width, because the one inside
+       scales with the drawing and the one outside does not. Now they are the
+       same object twice. */
+    .pcap{position:absolute;transform:translate(-50%,-50%);white-space:nowrap;
+      font:600 9px/1 system-ui,sans-serif;letter-spacing:.16em;
+      text-transform:uppercase;color:var(--dim);pointer-events:none;
+      transition:left .55s cubic-bezier(.5,0,.2,1);}
+    /* the alcove's centre: 11.5% down the box, which is where -0.31 falls in a
+       viewBox running from -0.74 over 3.74 units */
+    #tokocap{top:11.5%;}
+    .doorcap{position:relative;height:0;}
+    #doorcap{top:9px;transform:translateX(-50%);}
+    .say{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;}
+
+    /* THE DRAWING.
+       Inside a viewBox, stroke-width and font-size are in USER units, not
+       pixels: stroke-width 2.2 on a drawing 5.3 units wide is a black band
+       across 40% of it, and an 8px label is taller than the room. Strokes get
+       vector-effect:non-scaling-stroke so the numbers mean pixels again; text
+       has no such escape, so its sizes are written in user units. */
+    #plan .wall{fill:none;stroke:var(--ink);stroke-width:2.2;vector-effect:non-scaling-stroke;}
+    #plan .mat{fill:#efe7da;stroke:var(--line);stroke-width:1;vector-effect:non-scaling-stroke;
+      transition:x .55s cubic-bezier(.5,0,.2,1),y .55s cubic-bezier(.5,0,.2,1),
+                 width .55s cubic-bezier(.5,0,.2,1),height .55s cubic-bezier(.5,0,.2,1);}
+    #plan .mat.temae{fill:#e7dcc9;}
+    #plan .ro{fill:#e34234;stroke:none;
+      transition:x .55s cubic-bezier(.5,0,.2,1),y .55s cubic-bezier(.5,0,.2,1);}
+    #plan .toko{fill:#e3d9c9;stroke:var(--ink);stroke-width:1.4;vector-effect:non-scaling-stroke;}
+    #plan .door{stroke:var(--ink);stroke-width:3.4;stroke-linecap:round;
+      vector-effect:non-scaling-stroke;}
+    #plan .pillar{fill:var(--ink);transition:opacity .4s ease;}
+    #plan .who{transition:cx .55s cubic-bezier(.5,0,.2,1),cy .55s cubic-bezier(.5,0,.2,1);}
+    #plan .host{fill:var(--ink);}
+    #plan .guest{fill:none;stroke:var(--ink);stroke-width:1.3;vector-effect:non-scaling-stroke;}
+    /* user units: 0.15 of a three-unit room is a caption, 8 would be a poster */
+
+    /* The eight in the same writing as the title: each label set vertically,
+       Japanese upright and stacking downward, the roman a quarter turn and
+       reading downward beside it. Two groups of four, and it stops being a
+       table and becomes a rack of tags -- which is what choosing between eight
+       of one thing should look like. */
+    .eight{display:flex;gap:clamp(26px,6vw,64px);margin-top:36px;
+      align-items:flex-start;flex-wrap:wrap;}
+    .eight h4{margin:0 0 11px;font:600 9px/1 system-ui,sans-serif;
+      letter-spacing:.26em;text-transform:uppercase;color:var(--soft);}
+    .eight .row{display:flex;align-items:stretch;}
+    .eight button{display:flex;gap:7px;align-items:flex-start;
+      background:none;border:0;padding:11px 12px 15px;
+      cursor:inherit;font:inherit;transition:background .3s ease;}
+    .eight button:hover{background:var(--whisper);}
+    .eight button.on{background:var(--whisper);}
+    .eight button .j,.eight button .r{writing-mode:vertical-rl;line-height:1;}
+    .eight button .j{text-orientation:upright;font:400 15px/1 serif;
+      letter-spacing:.12em;color:var(--ink);}
+    .eight button .r{font-size:9px;letter-spacing:.18em;text-transform:uppercase;
+      color:var(--dim);font-weight:600;padding-top:2px;}
+    .eight button.on .r{color:var(--clay);}
+
+    /* A legend names what the drawing does NOT label on itself: the alcove and
+       the crawl-in door carry their own captions, so they are not repeated
+       here. A legend is for what has no room for a word beside it. */
+    /* A column now, not a row, and margin-top:auto drops it to the foot of the
+       writing column so its last line lands with the bottom of the plan. */
+    .legend{list-style:none;display:flex;flex-direction:column;gap:7px;
+      margin:26px 0 0;font-size:11.5px;letter-spacing:.03em;color:var(--dim);
+      margin-top:auto;}
+    .legend li{display:flex;align-items:center;gap:8px;}
+    .legend b{font-weight:400;font-family:serif;font-size:13px;
+      letter-spacing:.08em;color:var(--ink);}
+    .legend .sw{display:inline-block;width:13px;height:13px;flex:0 0 auto;}
+    .legend .sw.ro{background:#e34234;}
+    .legend .sw.mat{background:#e7dcc9;border:1px solid var(--line);}
+    .legend .sw.host{width:11px;height:11px;border-radius:50%;background:var(--ink);}
+    .legend .sw.guest{width:11px;height:11px;border-radius:50%;
+      border:1.3px solid var(--ink);}
+    .legend .sw.pillar{width:7px;height:7px;margin:0 3px;border-radius:50%;
+      background:var(--ink);}
+
+    .note{margin-top:26px;font-size:14px;line-height:1.7;
+      color:var(--dim);font-weight:300;text-align:justify;hyphens:auto;}
+    .note b{color:var(--ink);font-weight:600;letter-spacing:.02em;}
+    /* No rule over it either. With the legend's gone and the tags' gone, one
+       remaining line would have been the only drawn separator on the page, and
+       a single line is louder than none. The space does the work. */
+    .src{margin-top:44px;font-size:11px;line-height:1.8;letter-spacing:.06em;
+      color:var(--soft);}
+    .src em{font-style:italic;}
+    @media (max-width:760px){ .cs .jp{font-size:30px;} }
+  </style>
+</head>
+<body>
+  <div id="veil"></div>
+  <main class="room">
+    <div class="room-content">
+      <div class="cs">
+        <div class="vtitle">
+          <span class="jp">茶室</span>
+          <span class="rom">chashitsu &nbsp;·&nbsp; the eight hearths</span>
+        </div>
+
+        <div class="col">
+          <p class="lede">A tea room is classified by <em>where the hearth is
+          cut</em>, not only by how many mats it holds. Four positions, each in
+          a normal and a reversed style, make the eight. Everything else follows
+          from it: where the host kneels, which way the guests sit, which corner
+          of the floor is opened.</p>
+
+          <div class="board">
+            <div class="planwrap">
+              <!-- The box ends exactly at the bottom wall, so the writing column
+                   beside it can settle on that line by itself. The door's caption
+                   therefore has to leave the drawing: it hangs below as HTML, and
+                   follows the door when the room is reversed. -->
+              <svg id="plan" viewBox="0 -0.74 3 3.74" aria-label="plan of the tea room"></svg>
+              <span class="pcap" id="tokocap">tokonoma</span>
+              <div class="doorcap"><span class="pcap" id="doorcap">nijiriguchi</span></div>
+            </div>
+            <div class="say">
+              <p class="note" id="note"></p>
+              <ul class="legend">
+                <li><i class="sw ro"></i><b>炉</b> ro, the hearth</li>
+                <li><i class="sw mat"></i><b>点前座</b> temae-za, the host's mat</li>
+                <li><i class="sw host"></i><b>亭主</b> the host</li>
+                <li><i class="sw guest"></i><b>客</b> the guests</li>
+                <li><i class="sw pillar"></i><b>中柱</b> naka-bashira, in the daime only</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="eight" id="eight"></div>
+
+          <p class="src">A. L. Sadler, <em>Cha-No-Yu: The Japanese Tea
+          Ceremony</em>, on the varieties of tearoom.</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // ---- the room -----------------------------------------------------------
+    // Three units square. A tatami is twice as long as it is wide, so four of
+    // them turning about a half mat in the middle is exactly 3x3 -- which is
+    // why four AND A HALF is the number, and why the half mat is at the centre
+    // rather than tucked in a corner.
+    const U = 3;
+    const RO = 0.44;                 // the hearth: a bit under half a mat wide
+
+    // Mats, in the pinwheel. Named by where they lie so the eight can point at
+    // them without repeating coordinates.
+    const MATS = {
+      toko:  { x: 0, y: 0, w: 2, h: 1 },   // along the alcove
+      right: { x: 2, y: 0, w: 1, h: 2 },
+      lower: { x: 1, y: 2, w: 2, h: 1 },
+      left:  { x: 0, y: 1, w: 1, h: 2 },
+      half:  { x: 1, y: 1, w: 1, h: 1 },
+    };
+
+    // ---- the eight ----------------------------------------------------------
+    // Sadler: "the Four-and-a-half mat, the Daime, the Muko-giri or Opposite
+    // Hearth, and the Sumi-giri or Corner Hearth, each in two styles, Normal
+    // and Reverse." Normal is the hearth on the left with the host in front of
+    // it and the guests to his right; Reverse is that mirrored.
+    //
+    // Each entry is only: which mat the host works from, where on it the
+    // hearth is cut, and whether the mat is shortened. Everything drawn
+    // follows from those, so a correction is a number.
+    const TYPES = [
+      { key: "yojohan", jp: "四畳半", rom: "four and a half", pillar: false,
+        temae: "left", ro: [0.56, 1.06], host: [0.42, 1.62], guests: [[2.5, 0.5], [2.5, 1.5]],
+        note: "The ordinary room, and the original. Said to be so proportioned " +
+              "because an eighteen mat hall at Kamakura was divided in four and " +
+              "one quarter screened off for tea. The hearth is cut in the inner " +
+              "corner of the host's mat, against the half mat at the centre." },
+      { key: "daime", jp: "台目", rom: "daime", pillar: true,
+        temae: "left", shorten: 0.75, ro: [0.56, 1.06], host: [0.42, 1.55],
+        guests: [[2.5, 0.5], [2.5, 1.5]],
+        note: "A mat cut about a quarter short, used as the utensil mat, with " +
+              "the hearth beside it. Being LARGER than half a mat it has a " +
+              "desirable asymmetry. The middle pillar, the naka-bashira, stands " +
+              "at the hearth: Rikyu's son Do-an suggested it, and Oribe made the " +
+              "three mat daime popular." },
+      { key: "mukogiri", jp: "向切", rom: "opposite hearth", pillar: false,
+        temae: "left", ro: [0.56, 2.50], host: [0.42, 2.00], guests: [[2.5, 0.5], [2.5, 1.5]],
+        note: "The hearth cut at the far END of the mat instead of in the " +
+              "middle. The host works turned away from the centre of the room, " +
+              "which changes the whole choreography of the procedure." },
+      { key: "sumigiri", jp: "隅切", rom: "corner hearth", pillar: false,
+        temae: "left", ro: [0.00, 1.06], host: [0.52, 1.62], guests: [[2.5, 0.5], [2.5, 1.5]],
+        note: "Cut in the OUTER corner of the mat rather than on the inner " +
+              "side, so the hearth sits against the wall. Sadler: these came " +
+              "from lack of space, or from having to enter by a different " +
+              "quarter, and only later became variations for their own sake." },
+    ];
+
+    // ---- the drawing --------------------------------------------------------
+    const svg = document.getElementById("plan");
+    const NS = "http://www.w3.org/2000/svg";
+    const make = (t, a) => {
+      const e = document.createElementNS(NS, t);
+      for (const k in a) e.setAttribute(k, a[k]);
+      return e;
+    };
+    const parts = {};
+    // the alcove, along the top wall, outside the mats
+    parts.toko = make("rect", { class: "toko", x: 0, y: -0.62, width: 2, height: 0.62 });
+    svg.appendChild(parts.toko);
+    parts.tokoCap = document.getElementById("tokocap");
+
+    parts.mats = {};
+    for (const k in MATS) {
+      const m = MATS[k];
+      const r = make("rect", { class: "mat", x: m.x, y: m.y, width: m.w, height: m.h });
+      parts.mats[k] = r;
+      svg.appendChild(r);
+    }
+    parts.ro = make("rect", { class: "ro", x: 0, y: 0, width: RO, height: RO });
+    svg.appendChild(parts.ro);
+    parts.pillar = make("circle", { class: "pillar", cx: 0, cy: 0, r: 0.085, opacity: 0 });
+    svg.appendChild(parts.pillar);
+    parts.wall = make("rect", { class: "wall", x: 0, y: 0, width: U, height: U });
+    svg.appendChild(parts.wall);
+    // the crawl-in door, a gap in the bottom wall
+    parts.door = make("line", { class: "door", x1: 1.85, y1: U, x2: 2.75, y2: U });
+    svg.appendChild(parts.door);
+    parts.doorCap = document.getElementById("doorcap");
+
+    parts.host = make("circle", { class: "who host", cx: 0, cy: 0, r: 0.14 });
+    svg.appendChild(parts.host);
+    parts.guests = [0, 1].map(() => {
+      const c = make("circle", { class: "who guest", cx: 0, cy: 0, r: 0.13 });
+      svg.appendChild(c);
+      return c;
+    });
+
+    // ---- switching ----------------------------------------------------------
+    // Reverse is a true mirror of the room, so it is one transform on the whole
+    // drawing rather than eight more sets of coordinates. That is also what it
+    // IS: Sadler's reverse style is the normal one seen in a looking glass.
+    let cur = 0, reversed = false;
+    const mirror = (x) => (reversed ? U - x : x);
+
+    function draw() {
+      const t = TYPES[cur];
+      for (const k in MATS) {
+        const m = MATS[k], r = parts.mats[k];
+        let { x, y, w, h } = m;
+        if (k === t.temae && t.shorten) h *= t.shorten;   // cut at the foot, not
+                                                          // the head: the hearth
+                                                          // is at the head
+        r.setAttribute("x", reversed ? U - x - w : x);
+        r.setAttribute("y", y);
+        r.setAttribute("width", w);
+        r.setAttribute("height", h);
+        r.classList.toggle("temae", k === t.temae);
+      }
+      // The alcove is part of the room and mirrors with it. It did not, which
+      // left the reversed plan with its tokonoma on the wrong side of a room
+      // that had turned over underneath it.
+      parts.toko.setAttribute("x", reversed ? U - 2 : 0);
+      parts.tokoCap.style.left = (((reversed ? U - 2 : 0) + 1) / U * 100) + "%";
+      const rx = reversed ? U - t.ro[0] - RO : t.ro[0];
+      parts.ro.setAttribute("x", rx);
+      parts.ro.setAttribute("y", t.ro[1]);
+      parts.pillar.setAttribute("opacity", t.pillar ? 1 : 0);
+      parts.pillar.setAttribute("cx", rx + (reversed ? -0.16 : RO + 0.16));
+      parts.pillar.setAttribute("cy", t.ro[1] - 0.10);
+      parts.host.setAttribute("cx", mirror(t.host[0]));
+      parts.host.setAttribute("cy", t.host[1]);
+      t.guests.forEach((g, i) => {
+        parts.guests[i].setAttribute("cx", mirror(g[0]));
+        parts.guests[i].setAttribute("cy", g[1]);
+      });
+      parts.door.setAttribute("x1", mirror(1.85));
+      parts.door.setAttribute("x2", mirror(2.75));
+      parts.doorCap.style.left = ((reversed ? U - 2.30 : 2.30) / U * 100) + "%";
+
+      document.getElementById("note").innerHTML =
+        "<b>" + t.jp + " &nbsp; " + t.rom + (reversed ? ", reversed" : "") +
+        ".</b> " + t.note +
+        (reversed ? " Reversed: the hearth to the right and the guests on the " +
+                    "host's left, which is the same room seen in a looking glass." : "");
+      document.querySelectorAll(".eight button").forEach((b) => {
+        b.classList.toggle("on", +b.dataset.i === cur && (b.dataset.rev === "1") === reversed);
+      });
+    }
+
+    // the list: four rooms, each in its two styles
+    const eight = document.getElementById("eight");
+    [["normal", false], ["reversed", true]].forEach(([label, rev]) => {
+      const g = document.createElement("div");
+      g.className = "grp";
+      g.innerHTML = "<h4>" + label + "</h4>";
+      const row = document.createElement("div");
+      row.className = "row";
+      TYPES.forEach((t, i) => {
+        const b = document.createElement("button");
+        b.dataset.i = i;
+        b.dataset.rev = rev ? "1" : "0";
+        b.innerHTML = '<span class="j">' + t.jp + '</span><span class="r">' + t.rom + "</span>";
+        b.addEventListener("click", () => { cur = i; reversed = rev; draw(); });
+        row.appendChild(b);
+      });
+      g.appendChild(row);
+      eight.appendChild(g);
+    });
+    draw();
+  </script>
+  <script src="blob.js"></script>
+  <script src="site.js"></script>
+</body>
+</html>
