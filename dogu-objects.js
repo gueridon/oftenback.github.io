@@ -328,16 +328,30 @@
         scoop.rotation.y = 0.42;
         g.add(scoop);
 
-        // The ladle RESTS ON the lid rest, and where the rest goes is not a
-        // matter of taste: the handle leaves the cup 8.5mm up and rises at 30
-        // degrees, so it reaches the futaoki's 48mm rim at
-        //   (48 - 8.5) / tan 30 + 27 = 95mm
-        // from the cup's centre. Each was measured for its own sake and the two
-        // happen to fit, which is the pleasant kind of confirmation.
-        const REACH = (0.0480 - 0.0085) / Math.tan(30 * Math.PI / 180) + 0.0270;
-        const LX = -0.100, LZ = 0.235;
-        put(make("hishaku"), LX, LZ);
-        put(make("futaoki"), LX + REACH, LZ);
+        // The ladle rests on the lid rest by its CUP, not by its handle, which
+        // is what Nicolas sent the photograph to show and is the natural thing
+        // in practice. That single fact fixes the whole attitude, because the
+        // ladle then has exactly TWO contacts: the cup's base rim on the
+        // futaoki's rim, and the tip of the handle on the mat. Two contacts and
+        // a rigid body leave no freedom, so the tilt is not chosen, it is
+        // solved.
+        //
+        // Natural attitude: cup base at y = 0, handle leaving the wall at 26mm
+        // and rising 30 degrees to a tip at (279, 171)mm. Turning the whole
+        // thing by t about z and lifting it by T, and requiring the base rim at
+        // the futaoki's 48mm and the tip at 0, gives
+        //   t = -0.7545 rad  (-43.2 degrees),  T = 66.15mm
+        // and then the cup touches down 19mm along and the tip 321mm along.
+        // Checked: the tip lands at y = 0.000000.
+        const TILT = -0.7545, LIFT = 0.06615;
+        const LX = -0.160, LZ = 0.235;
+        const ladle = make("hishaku");
+        ladle.rotation.z = TILT;
+        ladle.position.set(LX, LIFT, LZ);
+        g.add(ladle);
+        // and the rest goes under the cup, its rim a little ahead of the cup's
+        // centre so the bowl sits over it rather than teetering on its edge
+        put(make("futaoki"), LX + 0.010, LZ);
         return g;
       },
       // Tipped so the arrangement is seen from above rather than edge on: laid
