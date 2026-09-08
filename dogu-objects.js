@@ -1455,7 +1455,125 @@
         return tip;
       },
     },
-    { key: "fukusa", jp: "帛紗", rom: "fukusa", soon: true },
+    {
+      key: "fukusa", jp: "帛紗", rom: "fukusa",
+      desc: "A square of silk, folded, and the only thing here that is never " +
+            "set down: it is worn, tucked at the waist, and taken out to wipe " +
+            "the caddy and the scoop. Nothing on them needs cleaning. The " +
+            "folding and refolding of it is the gesture, not the wiping.",
+      build() {
+        // The one object with neither an axis of revolution nor a wire to run
+        // along. A folded cloth is best described as a RIBBON THAT DOUBLES BACK
+        // ON ITSELF: its centreline runs the length of a layer, turns through
+        // half a circle at the fold, runs back, turns again. So it is a sweep
+        // after all, only the line it follows is the fold pattern rather than
+        // the shape of the object.
+        //
+        // A fukusa is about 285mm square. Folded in half one way and in four
+        // the other, it makes a packet of roughly 142 by 70 with four
+        // thicknesses, which is what is carried at the waist.
+        const W = 0.070, D = 0.142, T = 0.00105, R = 0.00175;
+        const path = [];
+        const p2 = (x, y) => path.push([x, y]);
+        const arc = (cx, cy, a0, a1, n) => {
+          for (let i = 1; i <= n; i++) {
+            const a = a0 + (a1 - a0) * i / n;
+            p2(cx + R * Math.cos(a), cy + R * Math.sin(a));
+          }
+        };
+        // The free edges are STAGGERED, not flush: a cloth folded by hand never
+        // quite lines up, and the little step is most of what says cloth rather
+        // than card.
+        p2(0.0020, 0); p2(W, 0);
+        arc(W, R, -Math.PI / 2, Math.PI / 2, 9);           // fold, right
+        p2(0, 2 * R);
+        arc(0, 3 * R, -Math.PI / 2, -Math.PI * 1.5, 9);    // fold, left
+        p2(W, 4 * R);
+        arc(W, 5 * R, -Math.PI / 2, Math.PI / 2, 9);       // fold, right
+        p2(0.0062, 6 * R);
+        const cl = chaikin(path, 1);
+
+        // The section is a STADIUM, a millimetre of thickness by the full depth
+        // of the packet with its ends rounded off. Silk has no edge to speak
+        // of, so a square end would read as sheet metal.
+        const NS = 14, EX = 0.5;
+        const pos = [], idx = [], col = [];
+        // Vermilion, which is the site's one colour and is also the colour a
+        // fukusa is most often dyed. Purple is the other; ask Nicolas.
+        const SILK = [0.760, 0.235, 0.150], DEEP = [0.395, 0.105, 0.072];
+        let prev = -1;
+        for (let i = 0; i < cl.length; i++) {
+          const P = cl[i];
+          const a = cl[Math.max(0, i - 1)], b = cl[Math.min(cl.length - 1, i + 1)];
+          let tx = b[0] - a[0], ty = b[1] - a[1];
+          const L = Math.hypot(tx, ty) || 1; tx /= L; ty /= L;
+          const nx = -ty, ny = tx;
+          const base = pos.length / 3;
+          for (let sg = 0; sg < NS; sg++) {
+            const ph = sg / NS * Math.PI * 2;
+            const cp = Math.cos(ph), sp = Math.sin(ph);
+            const u = (T / 2) * Math.sign(cp) * Math.pow(Math.abs(cp), EX);
+            const v = (D / 2) * Math.sign(sp) * Math.pow(Math.abs(sp), EX);
+            // WHAT MAKES IT CLOTH rather than a stack of card, and it took
+            // three tries: a folded cloth is not four flat layers with air
+            // between them, it BOWS. Each layer arches a little along its
+            // length, and the higher ones arch more because they have the ones
+            // below to ride over, so the packet opens toward its free edges
+            // instead of closing like a book. And it WAVES across its width,
+            // which is the only thing here that could not be a rigid object.
+            const along = Math.min(1, Math.max(0, P[0] / W));
+            const layer = P[1] / (6 * R);                 // 0 at the bottom, 1 at the top
+            const bow = 0.0019 * Math.sin(Math.PI * along) * layer;
+            const wave = 0.0011 * Math.sin(v * 27.0 + layer * 2.4)
+                       * (0.35 + 0.65 * Math.sin(Math.PI * along));
+            pos.push(P[0] + u * nx, P[1] + u * ny + bow + wave, v);
+            // Silk reads by its SHEEN, which runs with the weave: brighter
+            // where the surface faces the light and deepening fast as it turns
+            // away, much faster than a matt cloth would.
+            // The surface normal, not the centreline's. Around the section the
+            // outward direction is cos(ph) along the in-plane normal and
+            // sin(ph) along the depth, so its upward component is cp * ny. I
+            // used ny alone, which is the same for every point around a given
+            // section: the top face and the underside came out identical and
+            // the sheen landed on the edges instead.
+            const face = Math.max(0, (cp * ny) * 0.80 + 0.20);
+            const k = Math.pow(face, 0.55);
+            const w = 0.020 * Math.sin(v * 420) + 0.014 * Math.sin(P[0] * 380)
+                    + 0.055 * Math.sin(v * 9.5 + 1.1);
+            for (let c = 0; c < 3; c++)
+              col.push(toLin(Math.max(0, Math.min(1,
+                DEEP[c] + (SILK[c] - DEEP[c]) * k + w))));
+          }
+          if (prev >= 0) {
+            for (let sg = 0; sg < NS; sg++) {
+              const n = (sg + 1) % NS;
+              idx.push(prev + sg, prev + n, base + n, prev + sg, base + n, base + sg);
+            }
+          }
+          prev = base;
+        }
+        const g = new THREE.BufferGeometry();
+        g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+        g.setAttribute("color", new THREE.Float32BufferAttribute(col, 3));
+        g.setIndex(idx);
+        g.computeVertexNormals();
+        const m = new THREE.Mesh(g, new THREE.MeshStandardMaterial({
+          color: 0xffffff, vertexColors: true, roughness: 0.44,
+          metalness: 0.0, side: THREE.DoubleSide,
+        }));
+        m.position.x = -W / 2;
+        const grp = new THREE.Group(); grp.add(m);
+        return grp;
+      },
+      // Tipped and turned a little, so both the folded edge and the staggered
+      // free edges are in view: those two edges are the whole of what tells you
+      // it is folded.
+      pose(o) {
+        const t = new THREE.Group(); t.add(o); t.rotation.y = -0.55;
+        const u = new THREE.Group(); u.add(t); u.rotation.x = 0.34;
+        return u;
+      },
+    },
   ];
 
   global.DOGU = {
