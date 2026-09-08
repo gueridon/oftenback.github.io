@@ -269,98 +269,68 @@
       },
     },
     {
-      key: "set", jp: "一式", rom: "all of them",
-      desc: "All nine at their true sizes, which no single view of them can " +
-            "show. The kettle is four times the caddy across. The whisk " +
-            "stands in the bowl and the scoop lies on the caddy, which is " +
-            "where they are carried; the ladle rests on the lid rest, which " +
-            "is what a lid rest is for.",
+      key: "set", jp: "一式", rom: "all of them", flat: true,
       build() {
         // The one view that tells the truth about size. Every other entry in
         // this chapter fills the frame, so a caddy of 67mm and a kettle of 250
-        // look alike, and Nicolas noticed. Here nothing is scaled: each object
-        // is placed where it would stand and the frame is whatever contains
-        // them.
+        // look alike. Here nothing is scaled: the nine stand in a single line
+        // on a tray, in the order they are used, and the frame is whatever
+        // contains them. The whisk stands beside the bowl rather than in it, so
+        // that it can be measured against the rest like everything else.
         const make = (k) => OBJECTS.find((o) => o.key === k).build();
+
+        // Seven places, not nine: two of them are PAIRS, because two of these
+        // objects are never set down alone. The scoop lies on the caddy's lid
+        // and the ladle rests on the lid rest, and showing them so costs
+        // nothing here and says something. Only the whisk is taken out of the
+        // bowl, so that it can be measured against the rest.
+        //
+        // left and right are each place's reach from its own anchor, which is
+        // not the middle wherever something lies down.
+        const PLACE = [
+          { L: 0.0925, R: 0.0925, put: (at) => {
+              add("natsume", at, 0, 0);
+              add("chashaku", at, 0.0722, 0);            // on the lid
+            } },
+          { L: 0.0580, R: 0.0580, put: (at) => add("chawan", at, 0, 0) },
+          { L: 0.0280, R: 0.0280, put: (at) => add("chasen", at, 0, 0) },
+          { L: 0.0725, R: 0.0725, put: (at) => add("kensui", at, 0, 0) },
+          { L: 0.0300, R: 0.3208, put: (at) => {
+              // the ladle on its rest, the tilt solved from its two contacts
+              const m = add("hishaku", at, 0.06615, 0);
+              m.rotation.z = -0.7545;
+              add("futaoki", at + 0.010, 0, 0);
+            } },
+          { L: 0.1250, R: 0.1250, put: (at) => add("kama", at, 0, 0) },
+          { L: 0.0885, R: 0.0885, put: (at) => add("mizusashi", at, 0, 0) },
+        ];
+        const GAP = 0.055;   // room to breathe between one thing and the next
         const g = new THREE.Group();
-        const put = (m, x, z, ry) => {
-          m.position.set(x, m.position.y, z);
-          if (ry) m.rotation.y = ry;
+        const add = (k, x, y, z) => {
+          const m = make(k);
+          m.position.set(x, y, z);
           g.add(m); return m;
         };
+        const total = PLACE.reduce((a, q) => a + q.L + q.R, 0) + GAP * (PLACE.length - 1);
+        let x = -total / 2;
+        for (const p of PLACE) { p.put(x + p.L); x += p.L + p.R + GAP; }
 
-        // a piece of matting, only a little larger than the arrangement: a
-        // whole tatami would be 1910 by 955 and would swallow them. This is a
-        // surface to stand on, not a claim about a room.
-        const mat = new THREE.Mesh(
-          new THREE.PlaneGeometry(0.70, 0.60),
+        // and the tray, cut to the line it carries: built after the objects so
+        // it can be measured to them rather than guessed at.
+        const box = new THREE.Box3().setFromObject(g);
+        const sz = box.getSize(new THREE.Vector3());
+        const ctr = box.getCenter(new THREE.Vector3());
+        const tray = new THREE.Mesh(
+          new THREE.BoxGeometry(sz.x + 0.075, 0.011, Math.max(sz.z, 0.170) + 0.075),
           new THREE.MeshStandardMaterial({
-            color: 0xd6cda6, roughness: 0.94, metalness: 0.0,
-            side: THREE.DoubleSide,
+            color: 0xcfc4a2, roughness: 0.86, metalness: 0.0,
           }));
-        mat.rotation.x = -Math.PI / 2;
-        mat.position.set(-0.030, -0.0004, 0);
-        // and the mat does not get a vote on the framing: it is a floor
-        mat.userData.noFrame = true;
-        g.add(mat);
-
-        // BACK is negative z: the camera stands on +z looking toward the
-        // origin, so a bigger z is nearer. I had the rows the wrong way round
-        // and the kettle stood in front of everything, hiding six objects.
-        // Tall at the back, low at the front, and the horizontal extents
-        // checked against each other so that nothing passes through anything.
-        put(make("kama"), -0.170, -0.150);          // 250 across, 230 tall
-        put(make("mizusashi"), 0.190, -0.130);      // 177 across, 165 tall
-        put(make("kensui"), -0.270, 0.060);         // 145 across
-
-        // The whisk STANDS IN the bowl, which is how it arrives. Its foot goes
-        // on the bowl's inner floor, not on the mat.
-        put(make("chawan"), -0.090, 0.075);
-        const whisk = make("chasen");
-        whisk.position.set(-0.090, 0.0042, 0.075);
-        g.add(whisk);
-
-        // and the scoop LIES ON the caddy's lid, overhanging it at both ends,
-        // because a chashaku is 185mm long and a natsume 67 across
-        put(make("natsume"), 0.060, 0.070);
-        const scoop = make("chashaku");
-        scoop.position.set(0.060, 0.0722, 0.070);
-        scoop.rotation.y = 0.42;
-        g.add(scoop);
-
-        // The ladle rests on the lid rest by its CUP, not by its handle, which
-        // is what Nicolas sent the photograph to show and is the natural thing
-        // in practice. That single fact fixes the whole attitude, because the
-        // ladle then has exactly TWO contacts: the cup's base rim on the
-        // futaoki's rim, and the tip of the handle on the mat. Two contacts and
-        // a rigid body leave no freedom, so the tilt is not chosen, it is
-        // solved.
-        //
-        // Natural attitude: cup base at y = 0, handle leaving the wall at 26mm
-        // and rising 30 degrees to a tip at (279, 171)mm. Turning the whole
-        // thing by t about z and lifting it by T, and requiring the base rim at
-        // the futaoki's 48mm and the tip at 0, gives
-        //   t = -0.7545 rad  (-43.2 degrees),  T = 66.15mm
-        // and then the cup touches down 19mm along and the tip 321mm along.
-        // Checked: the tip lands at y = 0.000000.
-        const TILT = -0.7545, LIFT = 0.06615;
-        const LX = -0.160, LZ = 0.235;
-        const ladle = make("hishaku");
-        ladle.rotation.z = TILT;
-        ladle.position.set(LX, LIFT, LZ);
-        g.add(ladle);
-        // and the rest goes under the cup, its rim a little ahead of the cup's
-        // centre so the bowl sits over it rather than teetering on its edge
-        put(make("futaoki"), LX + 0.010, LZ);
+        tray.position.set(ctr.x, -0.0056, 0);
+        g.add(tray);
         return g;
       },
-      // Tipped so the arrangement is seen from above rather than edge on: laid
-      // flat and viewed from nine degrees, a group on a surface is a row of
-      // silhouettes and the placing is lost.
-      pose(o) {
-        const tip = new THREE.Group(); tip.add(o); tip.rotation.x = 0.36;
-        return tip;
-      },
+      // No pose: this one is not turned in the hands. It tips on a single
+      // horizontal axis, and the viewer owns that.
     },
     {
       key: "natsume", jp: "棗", rom: "natsume",

@@ -39,6 +39,14 @@
     .board{display:flex;gap:28px;align-items:stretch;}
     .stagewrap{flex:0 0 auto;width:328px;max-width:52%;}
     #stage{display:block;width:100%;height:328px;cursor:inherit;}
+    /* The set is a LINE, so it wants a line's shape: the whole column width and
+       no depth. And it needs no words beside it, because it is not making a
+       point about one object, it is making a comparison, and the comparison is
+       the picture. */
+    .board.flat{display:block;}
+    .board.flat .stagewrap{width:100%;max-width:100%;}
+    .board.flat #stage{height:248px;}
+    .board.flat .say{display:none;}
     .say{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;}
     /* the recueil's panel: a vertical name at the left, prose beside it */
     .name{display:flex;gap:14px;margin-bottom:16px;}
@@ -242,6 +250,14 @@
       pm.dispose(); tex.dispose();
     })();
 
+    function fit() {
+      const w = canvas.clientWidth, h = canvas.clientHeight;
+      if (!w || !h) return;
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+      renderer.setSize(w, h, false);
+    }
+
     const holder = new THREE.Group();
     scene.add(holder);
     let cur = -1;
@@ -250,6 +266,15 @@
       const o = OBJECTS[i];
       if (!o || o.soon) return;
       cur = i;
+      // The board changes SHAPE for a flat object, and it has to change before
+      // anything is measured. Framing reads camera.aspect, so doing this after
+      // the framing, as I did first, sized the line against a square canvas and
+      // then widened the canvas under it: the whole tray came out a third of
+      // the width it should have been.
+      document.querySelector(".board").classList.toggle("flat", !!o.flat);
+      fit();
+      document.querySelector(".turn").textContent =
+        o.flat ? "drag to tip it, flat to upright" : "drag to turn it";
       holder.clear();
       // BACK TO THE DESIGNED POSE, and this fixes two faults at once.
       //
@@ -312,9 +337,36 @@
           if (d > far) far = d;
         }
       });
-      const r = Math.sqrt(far) * 1.06;
-      camera.position.set(0, r * 0.60, r / Math.tan(FOV_R / 2) * 1.02);
+      const vt = Math.tan(FOV_R / 2);
+      if (o.flat) {
+        // A line laid out on a tray is not framed by a bounding RADIUS: it is
+        // long and shallow, and a radius would zoom out to fit a corner where
+        // there is nothing. It is framed by its two extents against the two
+        // half angles of the frustum, the horizontal one being the vertical one
+        // times the aspect. The vertical extent is the larger of the object's
+        // height and its depth, because tipping the tray trades one for the
+        // other and the frame must hold at both ends of the travel.
+        const sz = box.getSize(new THREE.Vector3());
+        const halfW = sz.x / 2;
+        // Tipping brings the near edge of the tray TOWARD the camera, and a
+        // nearer thing subtends a wider angle: framed on the flat box alone the
+        // tray touched both edges of the canvas whatever margin I gave it. The
+        // worst case over the whole travel is the diagonal of the height and
+        // the depth, since the corner sweeps a circle of that radius, and it
+        // has to be subtracted from the distance rather than added to the size.
+        const reach = Math.hypot(sz.y, sz.z) / 2;
+        const dz = Math.max(reach / vt, halfW / (vt * camera.aspect)) * 1.03 + reach;
+        // and the camera stands LEVEL: the angle of view is given by the tray's
+        // own tilt, so if the camera were also raised the two would compound
+        // and flat would never be flat.
+        camera.position.set(0, 0, dz);
+      } else {
+        const r = Math.sqrt(far) * 1.06;
+        camera.position.set(0, r * 0.60, r / vt * 1.02);
+      }
       camera.lookAt(0, 0, 0);
+      tilt = o.flat ? TILT0 : 0;
+      if (o.flat) holder.rotation.x = tilt;
       document.getElementById("nj").textContent = o.jp;
       document.getElementById("nr").textContent = o.rom;
       document.getElementById("nd").innerHTML = o.desc;
@@ -367,6 +419,20 @@
     const axis = new THREE.Vector3();
     const WORLD_Y = new THREE.Vector3(0, 1, 0);
     let vel = 0.10, dragging = false, lastX = 0, lastY = 0;
+    // The set is not turned in the hands: it TIPS, on one horizontal axis, and
+    // that is the whole of its freedom. Flat, the tray is edge on and you read
+    // the objects in elevation; brought up ninety degrees it faces you and you
+    // read them in plan. One degree of freedom, and both ends of it mean
+    // something, which is worth more here than a trackball that can put the
+    // line at any useless angle.
+    // It opens FLAT, at zero, and the camera being level means the tray is
+    // then exactly edge on: it stops being a surface and becomes a line, with
+    // the nine standing on it in elevation. Nicolas asked for that and he is
+    // right, it is the better first sight. The travel to ninety is there for
+    // whoever wants to look down into them.
+    const TILT0 = 0, TILT_MAX = Math.PI / 2;
+    let tilt = 0;
+    const flatNow = () => OBJECTS[cur] && OBJECTS[cur].flat;
     const turn = (dx, dy) => {
       const len = Math.hypot(dx, dy);
       if (len < 1e-4) return;
@@ -380,7 +446,12 @@
     });
     canvas.addEventListener("pointermove", (e) => {
       if (!dragging) return;
-      turn(e.clientX - lastX, e.clientY - lastY);
+      if (flatNow()) {
+        tilt = Math.max(0, Math.min(TILT_MAX, tilt + (e.clientY - lastY) * 0.0055));
+        holder.rotation.x = tilt;
+      } else {
+        turn(e.clientX - lastX, e.clientY - lastY);
+      }
       lastX = e.clientX; lastY = e.clientY;
     });
     const release = () => { dragging = false; };
@@ -394,7 +465,9 @@
       // PREmultiply, so the idle turn is about the world's upright axis rather
       // than the pot's own. Otherwise, once it has been tipped over, its slow
       // turn tips with it and it tumbles instead of standing and turning.
-      if (!dragging) {
+      // and the set does not drift: a comparison should hold still while it is
+      // being read
+      if (!dragging && !flatNow()) {
         qTmp.setFromAxisAngle(WORLD_Y, vel * dt);
         holder.quaternion.premultiply(qTmp);
       }
@@ -405,13 +478,7 @@
     show(OBJECTS.findIndex((o) => !o.soon));
     requestAnimationFrame(frame);
 
-    addEventListener("resize", () => {
-      const w = canvas.clientWidth, h = canvas.clientHeight;
-      if (!w || !h) return;
-      camera.aspect = w / h;
-      camera.updateProjectionMatrix();
-      renderer.setSize(w, h, false);
-    });
+    addEventListener("resize", () => { fit(); if (cur >= 0) show(cur); });
   </script>
   <script src="blob.js"></script>
   <script src="site.js"></script>
