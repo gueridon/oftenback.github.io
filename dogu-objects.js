@@ -1460,7 +1460,9 @@
       desc: "A square of silk, folded, and the only thing here that is never " +
             "set down: it is worn, tucked at the waist, and taken out to wipe " +
             "the caddy and the scoop. Nothing on them needs cleaning. The " +
-            "folding and refolding of it is the gesture, not the wiping.",
+            "folding and refolding of it is the gesture, not the wiping. Its " +
+            "colour is not a matter of taste either: vermilion for a woman, " +
+            "purple for a man, and past those a whole vocabulary of silks.",
       build() {
         // The one object with neither an axis of revolution nor a wire to run
         // along. A folded cloth is best described as a RIBBON THAT DOUBLES BACK
@@ -1498,8 +1500,12 @@
         // of, so a square end would read as sheet metal.
         const NS = 14, EX = 0.5;
         const pos = [], idx = [], col = [];
-        // Vermilion, which is the site's one colour and is also the colour a
-        // fukusa is most often dyed. Purple is the other; ask Nicolas.
+        // Vermilion, and the choice is settled twice over: it is a true fukusa
+        // colour, the one worn by a woman, and it is the only colour this site
+        // allows itself. Purple, which is the man's, would be a second accent
+        // and the site does not have room for one. So the fact goes into the
+        // description instead of into the dye, which is the right place for it:
+        // a visitor would otherwise read the colour as a decision.
         const SILK = [0.760, 0.235, 0.150], DEEP = [0.395, 0.105, 0.072];
         let prev = -1;
         for (let i = 0; i < cl.length; i++) {
