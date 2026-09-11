@@ -1418,7 +1418,15 @@
           [0.2092, 0.0645], [0.2100, 0.0600], [0.2104, 0.0400],
           [0.2108, 0.0180], [0.2110, 0.0000],
         ], 100, 2.4, 0);
-        g.add(new THREE.Mesh(lid, new THREE.MeshStandardMaterial({
+        // The lid and its knob go in a group NAMED, because a room may want to
+        // set it ajar: a kettle just off the boil has its lid pushed aside and
+        // that is where the steam comes from. Anonymous meshes cannot be found
+        // by a page, and copying the kettle to open one would be the fifth
+        // copy of a thing this project has learned not to copy.
+        const lidG = new THREE.Group();
+        lidG.name = "lid";
+        g.add(lidG);
+        lidG.add(new THREE.Mesh(lid, new THREE.MeshStandardMaterial({
           color: 0x4e3226, roughness: 0.38, metalness: 0.62,
           side: THREE.DoubleSide,
         })));
@@ -1437,7 +1445,7 @@
           [0.2249, 0.0028], [0.2258, 0.0034], [0.2264, 0.0026],
           [0.2266, 0.0000],
         ], 40, 3.1, 0);
-        g.add(new THREE.Mesh(knob, knobMat));
+        lidG.add(new THREE.Mesh(knob, knobMat));
 
         // tipped a little, so the lid and its knob are read as a lid and not
         // as a line: the shared camera sits nine degrees up and this object
@@ -1582,8 +1590,56 @@
     },
   ];
 
+  // ---- a composite ---------------------------------------------------------
+  // The bowl, the whisk and the scoop, assembled. They travel together and
+  // they sit together, so they are worth having as ONE thing that can be put
+  // down anywhere and turned as a unit, alongside the nine that stay separate.
+  //
+  // Every number in here was solved rather than nudged, and they are collected
+  // here so that the answers cannot drift apart across pages:
+  //   the whisk goes in head down, leaned 40 degrees off the upright, because
+  //     it is 104 long in a bowl 78 deep and the handle only clears the rim
+  //     under 45; and its seat is found by rotating first and asking where the
+  //     tip went, not by nudging the height;
+  //   the scoop is shifted 50mm along itself so the dip of its S passes over
+  //     the OPENING -- that dip falls 63.7mm from its centre and the rim is at
+  //     57.5, so laid across the middle its lowest point always lands just
+  //     outside the bowl, where nothing holds it;
+  //   and 3.4mm is added for the rim's own wave, since a raku lip rides up and
+  //     down and a stick laid on it rests on the crests.
+  // The three run on one bearing, and the whisk stands 20mm to the side of the
+  // scoop so the two do not cross.
+  function chawanSet() {
+    const by = (k) => OBJECTS.find((o) => o.key === k).build();
+    const g = new THREE.Group();
+    // Named, like the whisk and the scoop beside it, so a room can point at the
+    // BOWL rather than at the composite: three objects arrive in one hand and
+    // each still has its own name.
+    const bowl = by("chawan");
+    bowl.name = "chawan";
+    g.add(bowl);
+
+    const whiskG = new THREE.Group();
+    const whisk = by("chasen");
+    whisk.rotation.z = Math.PI - 40 * Math.PI / 180;
+    whiskG.add(whisk);
+    const tip = new THREE.Vector3(0, 0.1040, 0).applyEuler(whisk.rotation);
+    whiskG.position.set(-tip.x, 0.0120 - tip.y, -tip.z);
+    whiskG.position.z -= 0.020;               // clear of the scoop
+    whiskG.name = "chasen";
+    g.add(whiskG);
+
+    const scoop = by("chashaku");
+    scoop.position.set(0.050, 0.0776 + 0.0034, 0);
+    scoop.rotation.z = 0.1586;
+    scoop.name = "chashaku";
+    g.add(scoop);
+    return g;                                  // origin at the bowl's centre, on the mat
+  }
+
   global.DOGU = {
     OBJECTS: OBJECTS,
+    chawanSet: chawanSet,
     // the tools too: the room will want to build a mat and a hearth, and
     // whatever builds them should be able to speak the same language
     lathe: lathe, glaze: glaze, chaikin: chaikin, hash3: hash3, toLin: toLin,

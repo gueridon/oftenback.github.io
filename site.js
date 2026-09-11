@@ -69,12 +69,30 @@ document.addEventListener("DOMContentLoaded", () => {
     // chanoyu is a chapter house now rather than a single room: the stop leads
     // to its index, and stays lit while you are inside any chapter of it.
     // New chapters get added to `chapters` and nothing else has to change.
-    { href: "chanoyu.html", label: "chanoyu",
-      chapters: ["tearoom-roji.html", "chashitsu.html", "dogu.html"] },
+    // The chapters carry their own labels now, because the menu SHOWS them:
+    // standing anywhere in the chanoyu house, its rooms open underneath the
+    // stop as a sub-list. room3d is one of them -- it was reachable only from
+    // inside two other pages, which is no way to find a room.
+    { href: "chanoyu.html", label: "chanoyu", chapters: [
+      { href: "tearoom-roji.html", label: "roji" },
+      { href: "chashitsu.html", label: "chashitsu" },
+      { href: "room3d.html", label: "the room" },
+      { href: "dogu.html", label: "dogu" },
+    ] },
   ];
-  const lit = (s) => s.href === here || (s.chapters || []).indexOf(here) !== -1;
+  const lit = (s) => s.href === here ||
+    (s.chapters || []).some((c) => c.href === here);
+  // Only the house you are IN opens. A menu listing every chapter of every
+  // house would be a table of contents; this one is a place-marker, and it
+  // should stay as quiet as the rest of the page.
+  const subsHtml = (s) => (!lit(s) || !s.chapters) ? "" :
+    '<div class="subs">' + s.chapters.map((c) =>
+      '<span class="link sub"></span>' +
+      `<a class="stop sub${c.href === here ? " here" : ""}" href="${c.href}">${c.label}</a>`
+    ).join("") + "</div>";
   const stopsHtml = stops.map((s, i) =>
     `<a class="stop${lit(s) ? " here" : ""}" href="${s.href}">${s.label}</a>` +
+    subsHtml(s) +
     (i < stops.length - 1 ? '<span class="link"></span>' : "")
   ).join("");
   const brandHtml = '<a class="brand-mini" href="index.html" aria-label="oftenback -- home">' +

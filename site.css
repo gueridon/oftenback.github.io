@@ -66,6 +66,15 @@ a:hover,button:not([disabled]):hover{cursor:url('data:image/svg+xml;utf8,<svg xm
 .side .stop:hover{opacity:1;color:var(--ink);}
 .side .stop.here{opacity:1;color:var(--clay);}        /* a light imprint of where you are */
 .side .link{width:1px;height:32px;margin:9px 0;background:var(--soft);opacity:.36;}
+/* The chapters of the house you are standing in. Aligned on their own LEFT
+   edge, so the sub-level reads as a different kind of thing from the
+   right-aligned stops above it, and joined by the same thread at a third of
+   its length: near enough to belong to the stop, short enough not to claim
+   the same weight. */
+.side .subs{display:flex;flex-direction:column;align-items:flex-start;}
+.side .link.sub{height:11px;margin:3px 0;}
+.side .stop.sub{font-size:10.5px;letter-spacing:.18em;text-align:left;
+  padding:7px 16px;margin:-7px -16px;}
 /* the float lives on the room list only, NOT on .side itself -- .side also
    contains .brand-mini, whose position must stay perfectly static to match
    the landing blob's measured dock target. A shared animation on the parent

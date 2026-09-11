@@ -198,100 +198,22 @@
     </div>
   </main>
 
+  <script src="chashitsu-room.js"></script>
+  <script src="chashitsu-plan.js"></script>
   <script>
-    // ---- the room -----------------------------------------------------------
-    // Three units square. A tatami is twice as long as it is wide, so four of
-    // them turning about a half mat in the middle is exactly 3x3 -- which is
-    // why four AND A HALF is the number, and why the half mat is at the centre
-    // rather than tucked in a corner.
-    const U = 3;
-    const RO = 0.44;                 // the hearth: a bit under half a mat wide
-
-    // Mats, in the pinwheel. Named by where they lie so the eight can point at
-    // them without repeating coordinates.
-    const MATS = {
-      toko:  { x: 0, y: 0, w: 2, h: 1 },   // along the alcove
-      right: { x: 2, y: 0, w: 1, h: 2 },
-      lower: { x: 1, y: 2, w: 2, h: 1 },
-      left:  { x: 0, y: 1, w: 1, h: 2 },
-      half:  { x: 1, y: 1, w: 1, h: 1 },
-    };
-
-    // ---- the eight ----------------------------------------------------------
-    // Sadler: "the Four-and-a-half mat, the Daime, the Muko-giri or Opposite
-    // Hearth, and the Sumi-giri or Corner Hearth, each in two styles, Normal
-    // and Reverse." Normal is the hearth on the left with the host in front of
-    // it and the guests to his right; Reverse is that mirrored.
-    //
-    // Each entry is only: which mat the host works from, where on it the
-    // hearth is cut, and whether the mat is shortened. Everything drawn
-    // follows from those, so a correction is a number.
-    const TYPES = [
-      { key: "yojohan", jp: "四畳半", rom: "four and a half", pillar: false,
-        temae: "left", ro: [0.56, 1.06], host: [0.42, 1.62], guests: [[2.5, 0.5], [2.5, 1.5]],
-        note: "The ordinary room, and the original. Said to be so proportioned " +
-              "because an eighteen mat hall at Kamakura was divided in four and " +
-              "one quarter screened off for tea. The hearth is cut in the inner " +
-              "corner of the host's mat, against the half mat at the centre." },
-      { key: "daime", jp: "台目", rom: "daime", pillar: true,
-        temae: "left", shorten: 0.75, ro: [0.56, 1.06], host: [0.42, 1.55],
-        guests: [[2.5, 0.5], [2.5, 1.5]],
-        note: "A mat cut about a quarter short, used as the utensil mat, with " +
-              "the hearth beside it. Being LARGER than half a mat it has a " +
-              "desirable asymmetry. The middle pillar, the naka-bashira, stands " +
-              "at the hearth: Rikyu's son Do-an suggested it, and Oribe made the " +
-              "three mat daime popular." },
-      { key: "mukogiri", jp: "向切", rom: "opposite hearth", pillar: false,
-        temae: "left", ro: [0.56, 2.50], host: [0.42, 2.00], guests: [[2.5, 0.5], [2.5, 1.5]],
-        note: "The hearth cut at the far END of the mat instead of in the " +
-              "middle. The host works turned away from the centre of the room, " +
-              "which changes the whole choreography of the procedure." },
-      { key: "sumigiri", jp: "隅切", rom: "corner hearth", pillar: false,
-        temae: "left", ro: [0.00, 1.06], host: [0.52, 1.62], guests: [[2.5, 0.5], [2.5, 1.5]],
-        note: "Cut in the OUTER corner of the mat rather than on the inner " +
-              "side, so the hearth sits against the wall. Sadler: these came " +
-              "from lack of space, or from having to enter by a different " +
-              "quarter, and only later became variations for their own sake." },
-    ];
+    // The room's data lives in chashitsu-room.js, so that the plan drawn here
+    // and the room built in three dimensions read the same table and cannot
+    // disagree with each other.
+    const U = ROOM.U, RO = ROOM.RO, MATS = ROOM.MATS, TYPES = ROOM.TYPES;
 
     // ---- the drawing --------------------------------------------------------
-    const svg = document.getElementById("plan");
-    const NS = "http://www.w3.org/2000/svg";
-    const make = (t, a) => {
-      const e = document.createElementNS(NS, t);
-      for (const k in a) e.setAttribute(k, a[k]);
-      return e;
-    };
-    const parts = {};
-    // the alcove, along the top wall, outside the mats
-    parts.toko = make("rect", { class: "toko", x: 0, y: -0.62, width: 2, height: 0.62 });
-    svg.appendChild(parts.toko);
-    parts.tokoCap = document.getElementById("tokocap");
-
-    parts.mats = {};
-    for (const k in MATS) {
-      const m = MATS[k];
-      const r = make("rect", { class: "mat", x: m.x, y: m.y, width: m.w, height: m.h });
-      parts.mats[k] = r;
-      svg.appendChild(r);
-    }
-    parts.ro = make("rect", { class: "ro", x: 0, y: 0, width: RO, height: RO });
-    svg.appendChild(parts.ro);
-    parts.pillar = make("circle", { class: "pillar", cx: 0, cy: 0, r: 0.085, opacity: 0 });
-    svg.appendChild(parts.pillar);
-    parts.wall = make("rect", { class: "wall", x: 0, y: 0, width: U, height: U });
-    svg.appendChild(parts.wall);
-    // the crawl-in door, a gap in the bottom wall
-    parts.door = make("line", { class: "door", x1: 1.85, y1: U, x2: 2.75, y2: U });
-    svg.appendChild(parts.door);
-    parts.doorCap = document.getElementById("doorcap");
-
-    parts.host = make("circle", { class: "who host", cx: 0, cy: 0, r: 0.14 });
-    svg.appendChild(parts.host);
-    parts.guests = [0, 1].map(() => {
-      const c = make("circle", { class: "who guest", cx: 0, cy: 0, r: 0.13 });
-      svg.appendChild(c);
-      return c;
+    // The drawing itself now lives in chashitsu-plan.js, so that room3d can
+    // put the SAME plan in its corner instead of a second copy of this one.
+    // What stays here is what belongs to a CHAPTER and not to a plan: the
+    // paragraph under it, and the list of eight.
+    const PLAN = CHASHITSU_PLAN.mount(document.getElementById("plan"), {
+      caps: { toko: document.getElementById("tokocap"),
+              door: document.getElementById("doorcap") },
     });
 
     // ---- switching ----------------------------------------------------------
@@ -299,43 +221,10 @@
     // drawing rather than eight more sets of coordinates. That is also what it
     // IS: Sadler's reverse style is the normal one seen in a looking glass.
     let cur = 0, reversed = false;
-    const mirror = (x) => (reversed ? U - x : x);
 
     function draw() {
+      PLAN.draw(cur, reversed);
       const t = TYPES[cur];
-      for (const k in MATS) {
-        const m = MATS[k], r = parts.mats[k];
-        let { x, y, w, h } = m;
-        if (k === t.temae && t.shorten) h *= t.shorten;   // cut at the foot, not
-                                                          // the head: the hearth
-                                                          // is at the head
-        r.setAttribute("x", reversed ? U - x - w : x);
-        r.setAttribute("y", y);
-        r.setAttribute("width", w);
-        r.setAttribute("height", h);
-        r.classList.toggle("temae", k === t.temae);
-      }
-      // The alcove is part of the room and mirrors with it. It did not, which
-      // left the reversed plan with its tokonoma on the wrong side of a room
-      // that had turned over underneath it.
-      parts.toko.setAttribute("x", reversed ? U - 2 : 0);
-      parts.tokoCap.style.left = (((reversed ? U - 2 : 0) + 1) / U * 100) + "%";
-      const rx = reversed ? U - t.ro[0] - RO : t.ro[0];
-      parts.ro.setAttribute("x", rx);
-      parts.ro.setAttribute("y", t.ro[1]);
-      parts.pillar.setAttribute("opacity", t.pillar ? 1 : 0);
-      parts.pillar.setAttribute("cx", rx + (reversed ? -0.16 : RO + 0.16));
-      parts.pillar.setAttribute("cy", t.ro[1] - 0.10);
-      parts.host.setAttribute("cx", mirror(t.host[0]));
-      parts.host.setAttribute("cy", t.host[1]);
-      t.guests.forEach((g, i) => {
-        parts.guests[i].setAttribute("cx", mirror(g[0]));
-        parts.guests[i].setAttribute("cy", g[1]);
-      });
-      parts.door.setAttribute("x1", mirror(1.85));
-      parts.door.setAttribute("x2", mirror(2.75));
-      parts.doorCap.style.left = ((reversed ? U - 2.30 : 2.30) / U * 100) + "%";
-
       document.getElementById("note").innerHTML =
         "<b>" + t.jp + " &nbsp; " + t.rom + (reversed ? ", reversed" : "") +
         ".</b> " + t.note +

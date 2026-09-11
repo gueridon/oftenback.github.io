@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>room3d (essai)</title>
+  <!-- This page had NONE of the site's shared furniture: not this stylesheet
+       and not the two scripts at the foot of the body, alone in the recueil.
+       So it had no mark, no room list, no crossing. Nothing was broken about
+       it; it had simply never invited them in. -->
+  <link rel="stylesheet" href="site.css">
+  <style>
+    html,body{margin:0;height:100%;background:#f4ede2;overflow:hidden;}
+    canvas{display:block;width:100%;height:100%;}
+    /* The figures along the bottom are OURS, not a visitor's: the room's
+       dimensions, and a ruler that reads the pointer's position back in plan
+       units. That ruler was built for a real difficulty -- Nicolas marked two
+       spots on a screenshot and I could not convert them, because his pixels
+       and mine meant different places -- so it is hidden rather than deleted,
+       and ?dev brings both back. */
+    #hud,#rule{display:none;}
+    body[data-dev] #hud,body[data-dev] #rule{display:block;}
+    #hud{position:fixed;left:14px;bottom:12px;font:11px/1.6 monospace;
+      color:#3d3530;opacity:.6;white-space:pre;}
+    /* The guide. Nicolas: a visitor should know what he is looking at and what
+       to do. The plan is the same drawing the chashitsu chapter uses, mounted
+       from chashitsu-plan.js, so the corner of this room cannot come to
+       disagree with the chapter that explains it. */
+    /* A DARK wash, the same panel the roji's cards are: a dim room wants a
+       card that dims rather than one that cuts a bright hole in it. The plan
+       inside is mounted with { dark: true } so it reverses with the panel
+       instead of staying a white card inside a dark one.
+       The text-shadow is not decoration here, it is what keeps the type
+       legible when the room behind it is pale -- the shoji fills half the
+       frame and the panel is only three tenths opaque. */
+    #guide{position:fixed;left:18px;top:16px;width:228px;
+      color:rgba(255,255,255,.92);z-index:5;
+      font:400 12px/1.65 system-ui,sans-serif;
+      background:rgba(18,14,10,.34);border-radius:7px;padding:15px 16px 14px;
+      text-shadow:0 1px 2px rgba(18,14,10,.95), 0 0 10px rgba(18,14,10,.85);}
+    #guide svg{display:block;width:100%;height:auto;overflow:visible;
+      opacity:.92;}
+    #guide .nm{margin:12px 0 0;font-weight:600;letter-spacing:.02em;
+      color:#fff;}
+    #guide .nm .j{font:400 17px/1 serif;letter-spacing:.12em;margin-right:7px;}
+    #guide .nt{margin:6px 0 0;color:rgba(255,255,255,.80);}
+    /* The keys last and quietest: they are how, and the room is what. */
+    /* The keys are drawn as KEYS, the same object the roji's panel draws, so
+       the two pages' directions are recognisably one family. Lifted values,
+       not a new idea: a bordered cap of fixed width, the description beside
+       it in the quieter weight. */
+    #guide .ky{margin:14px 0 0;}
+    #guide .krow{display:flex;align-items:center;gap:11px;margin:0 0 5px;
+      line-height:1;}
+    #guide kbd{font:600 9px/1 system-ui,sans-serif;letter-spacing:.20em;
+      text-transform:uppercase;color:rgba(255,255,255,.94);
+      border:1px solid rgba(255,255,255,.40);border-radius:4px;
+      background:rgba(18,14,10,.30);padding:4px 0 3px;min-width:58px;
+      text-align:center;text-indent:.20em;flex:0 0 auto;}
+    #guide .d{font-size:10.5px;letter-spacing:.10em;
+      color:rgba(255,255,255,.62);}
+  </style>
+</head>
+<body>
+  <canvas id="c"></canvas>
+  <script>
+    // Set before anything paints, so the figures never flash on a plain visit.
+    if (new URLSearchParams(location.search).has("dev"))
+      document.documentElement.setAttribute("data-dev-pending", "");
+  </script>
+  <div id="hud"></div>
+  <div id="guide">
+    <svg id="plan" aria-label="plan of the tea room"></svg>
+    <div class="nm"></div>
+    <div class="nt"></div>
+    <div class="ky">
+      <div class="krow"><kbd>DRAG</kbd><span class="d">to turn the head</span></div>
+      <div class="krow"><kbd>1 2 3 4</kbd><span class="d">the four rooms</span></div>
+      <div class="krow"><kbd>R</kbd><span class="d">the reversed style</span></div>
+      <div class="krow"><kbd>K</kbd><span class="d">the host's knees</span></div>
+    </div>
+  </div>
+  <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+  <script src="chashitsu-room.js"></script>
+  <script src="chashitsu-plan.js"></script>
+  <script src="dogu-objects.js"></script>
+  <script src="chashitsu-layout.js"></script>
+  <script>
+    // A prototype. The point of it is to prove that the SAME table that draws
+    // the flat plan can raise the room, so that the two can never disagree.
+    // Nothing here is linked from the site yet.
+    const M = ROOM.MAT_WIDE;                 // one plan unit, in metres
+    const U = ROOM.U, RO = ROOM.RO;
+    const u = (n) => n * M;                  // plan units to metres
+    const WALL_H = 2.00;                     // Sadler puts a small room near six shaku
+    const MAT_T = 0.055;                     // a tatami is about two shaku thick... no: 55mm
+    const RO_DEEP = 0.36;
+
+    const cv = document.getElementById("c");
+    const renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: true });
+    renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+    renderer.setSize(innerWidth, innerHeight, false);
+    renderer.setClearColor(0x0d0b0a);
+    // Without shadows every object sits on the mat like a sticker: there is no
+    // contact, and contact is most of what makes a thing look present. One
+    // directional light casting is enough here, because there IS only one
+    // light in a tea room.
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(46, innerWidth / innerHeight, 0.05, 40);
+
+    // Everything that depends on WHICH of the eight rooms this is goes into one
+    // group, so switching is emptying and refilling it. The shell, the alcove
+    // and its post do not move between the eight, so they stay outside.
+    const stage = new THREE.Group();
+    scene.add(stage);
+    let into = scene;
+
+    const mat = (c, r, s) => new THREE.MeshStandardMaterial({
+      color: c, roughness: r === undefined ? 0.9 : r, metalness: 0,
+      side: s || THREE.FrontSide });
+    const slab = (w, h, d, m, x, y, z) => {
+      const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m);
+      b.position.set(x, y, z); into.add(b); return b;
+    };
+
+    // ---- the shell ---------------------------------------------------------
+    const PLASTER = mat(0x8d7f6c, 0.98, THREE.DoubleSide);
+    // the lattice wood, wanted by both windows, so it is declared with the shell
+    const LAT = mat(0x6f5f4c, 0.9);
+    const WOOD = mat(0x4a3a2c, 0.72);
+    const TOKO_D = 0.62;                      // the alcove, off the plan
+    // side walls and the guest wall
+    // The wall on the light side is built AROUND the opening, not behind it.
+    // Turning shadows on made the mistake obvious: a solid plaster slab stood
+    // between the sun and the room, so the whole interior lay in its shade and
+    // the shoji glowed onto nothing. A paper wall is not a picture hung on a
+    // wall, it IS the wall there, and the plaster has to stop at its frame.
+    // Same technique as the hearth in the mat: the four rectangles that are
+    // left over.
+    const SH_Y0 = 0.075, SH_Y1 = 1.66, SH_W = u(U) * 0.80, SH_Z = u(U / 2) - 0.10;
+    const wz0 = -TOKO_D, wz1 = u(U), sz0 = SH_Z - SH_W / 2, sz1 = SH_Z + SH_W / 2;
+    slab(0.02, SH_Y0, wz1 - wz0, PLASTER, -0.01, SH_Y0 / 2, (wz0 + wz1) / 2);
+    slab(0.02, WALL_H - SH_Y1, wz1 - wz0, PLASTER, -0.01, (SH_Y1 + WALL_H) / 2, (wz0 + wz1) / 2);
+    // A BOKUSEKI-MADO, the little paper window whose whole job is to light the
+    // scroll. Without it the alcove is a black hole: the daylight comes from
+    // the shoji on this same wall, but the shoji stops short of the alcove, so
+    // nothing reaches in. A tea room solves that with a second, small opening
+    // beside the tokonoma, and it is one of the nicest facts about the room:
+    // the dimmest corner gets its own window because the one thing you are
+    // meant to look at hangs there.
+    const BM_Y0 = 0.95, BM_Y1 = 1.32, BM_Z0 = -0.48, BM_Z1 = -0.14;
+    slab(0.02, BM_Y0 - SH_Y0, sz0 - wz0, PLASTER, -0.01, (SH_Y0 + BM_Y0) / 2, (wz0 + sz0) / 2);
+    slab(0.02, SH_Y1 - BM_Y1, sz0 - wz0, PLASTER, -0.01, (BM_Y1 + SH_Y1) / 2, (wz0 + sz0) / 2);
+    slab(0.02, BM_Y1 - BM_Y0, BM_Z0 - wz0, PLASTER, -0.01, (BM_Y0 + BM_Y1) / 2, (wz0 + BM_Z0) / 2);
+    slab(0.02, BM_Y1 - BM_Y0, sz0 - BM_Z1, PLASTER, -0.01, (BM_Y0 + BM_Y1) / 2, (BM_Z1 + sz0) / 2);
+    const bm = new THREE.Mesh(
+      new THREE.PlaneGeometry(BM_Z1 - BM_Z0, BM_Y1 - BM_Y0),
+      new THREE.MeshBasicMaterial({ color: 0xe6dcc6 }));
+    bm.rotation.y = Math.PI / 2;
+    bm.position.set(0.012, (BM_Y0 + BM_Y1) / 2, (BM_Z0 + BM_Z1) / 2);
+    scene.add(bm);
+    for (let i = 1; i < 3; i++)
+      slab(0.008, BM_Y1 - BM_Y0, 0.008, LAT, 0.020, (BM_Y0 + BM_Y1) / 2,
+           BM_Z0 + i * (BM_Z1 - BM_Z0) / 3);
+    for (let j = 1; j < 3; j++)
+      slab(0.008, 0.008, BM_Z1 - BM_Z0, LAT, 0.020, BM_Y0 + j * (BM_Y1 - BM_Y0) / 3,
+           (BM_Z0 + BM_Z1) / 2);
+    // and the light it lets in, raking across the back of the alcove
+    const bmLight = new THREE.DirectionalLight(0xfff0d6, 0.95);
+    bmLight.position.set(-2.2, 1.15, -0.31);
+    bmLight.target.position.set(0.95, 0.90, -0.60);
+    scene.add(bmLight); scene.add(bmLight.target);
+    slab(0.02, SH_Y1 - SH_Y0, wz1 - sz1, PLASTER, -0.01, (SH_Y0 + SH_Y1) / 2, (sz1 + wz1) / 2);
+    slab(0.02, WALL_H, u(U) + TOKO_D, PLASTER, u(U) + 0.01, WALL_H / 2, u(U / 2) - TOKO_D / 2);
+    slab(u(U) + 0.04, WALL_H, 0.02, PLASTER, u(U / 2), WALL_H / 2, u(U) + 0.01);
+    // The alcove, its board, its lintel, the scroll, the flower and the post
+    // now come from chashitsu-layout.js, so the pavilion in the roji can raise
+    // the SAME tokonoma instead of inventing a second one. It used to invent a
+    // platform 1700 x 320 x 1000 standing a metre INTO a 2865 room, which the
+    // plan's three by three has no room for: a tokonoma is a recess beyond the
+    // wall, not a shelf inside it.
+    CHASHITSU.tokonoma(scene);
+    slab(u(U) + 0.04, 0.02, u(U) + TOKO_D, mat(0x6b5a45, 0.95), u(U / 2), WALL_H, u(U / 2) - TOKO_D / 2);
+
+    // ---- light -------------------------------------------------------------
+    // A tea room is dim and lit from ONE SIDE by a wall of paper. That is not a
+    // window: the light arrives wide, flat and low, and it is the reason the
+    // room reads as depth rather than as a lit box. So the shoji is built as a
+    // pale panel that glows, with a directional behind it doing the modelling.
+    scene.add(new THREE.HemisphereLight(0xd9cfbb, 0x2a231d, 0.46));
+    // It reaches the FLOOR, over a low sill, and its lattice is sized by the
+    // pane and not by a guessed count: kumiko makes panes of about 130mm, so a
+    // 2.3 metre wall wants eighteen bars across, not six. My first try had
+    // panes of 390 and the room looked like a warehouse.
+    const shoji = new THREE.Mesh(
+      new THREE.PlaneGeometry(SH_W, SH_Y1 - SH_Y0),
+      new THREE.MeshBasicMaterial({ color: 0xece2cd }));
+    shoji.rotation.y = Math.PI / 2;
+    shoji.position.set(0.012, (SH_Y0 + SH_Y1) / 2, SH_Z);
+    scene.add(shoji);
+    const PANE = 0.130, BAR = 0.007;
+    const nC = Math.round(SH_W / PANE), nR = Math.round((SH_Y1 - SH_Y0) / PANE);
+    for (let i = 1; i < nC; i++)
+      slab(BAR, SH_Y1 - SH_Y0, BAR * 1.4, LAT,
+           0.020, (SH_Y0 + SH_Y1) / 2, SH_Z - SH_W / 2 + i * SH_W / nC);
+    for (let j = 1; j < nR; j++)
+      slab(BAR, BAR * 1.2, SH_W, LAT,
+           0.020, SH_Y0 + j * (SH_Y1 - SH_Y0) / nR, SH_Z);
+    // the frame and its sill
+    const FR = mat(0x53442f, 0.86);
+    slab(0.026, 0.030, SH_W + 0.05, FR, 0.024, SH_Y0 - 0.015, SH_Z);
+    slab(0.026, 0.030, SH_W + 0.05, FR, 0.024, SH_Y1 + 0.015, SH_Z);
+    slab(0.026, SH_Y1 - SH_Y0 + 0.06, 0.030, FR, 0.024, (SH_Y0 + SH_Y1) / 2, SH_Z - SH_W / 2 - 0.015);
+    slab(0.026, SH_Y1 - SH_Y0 + 0.06, 0.030, FR, 0.024, (SH_Y0 + SH_Y1) / 2, SH_Z + SH_W / 2 + 0.015);
+
+    const win = new THREE.DirectionalLight(0xfff2da, 1.25);
+    win.position.set(-3.2, 1.30, u(U / 2));
+    win.target.position.set(u(1.1), 0.30, u(1.3));
+    win.castShadow = true;
+    win.shadow.mapSize.set(2048, 2048);
+    const sc = win.shadow.camera;
+    sc.left = -2.4; sc.right = 2.4; sc.top = 2.4; sc.bottom = -2.4;
+    sc.near = 0.5; sc.far = 9;
+    win.shadow.bias = -0.0008;
+    win.shadow.normalBias = 0.004;
+    scene.add(win); scene.add(win.target);
+
+
+    // ---- a guest's eye -------------------------------------------------------
+    // Seated, at about a metre. The head does not travel: it TURNS. That is the
+    // truthful gesture for someone kneeling, and it is what the roji walk
+    // settled on for its stopping points. The seat itself is set by whichever
+    // of the eight rooms is standing.
+    const EYE = new THREE.Vector3(), AIM = new THREE.Vector3();
+    let yaw0 = 0, pitch0 = 0, yaw = 0, pitch = 0, drag = false, lx = 0, ly = 0;
+    const look = () => {
+      const y = yaw0 + yaw, p = Math.max(-0.85, Math.min(0.7, pitch0 + pitch));
+      camera.position.copy(EYE);
+      camera.lookAt(EYE.x + Math.sin(y) * Math.cos(p),
+                    EYE.y + Math.sin(p),
+                    EYE.z + Math.cos(y) * Math.cos(p));
+    };
+    const aimed = () => {
+      yaw0 = Math.atan2(AIM.x - EYE.x, AIM.z - EYE.z);
+      pitch0 = Math.atan2(AIM.y - EYE.y, Math.hypot(AIM.x - EYE.x, AIM.z - EYE.z));
+      yaw = 0; pitch = 0; look();
+    };
+    cv.addEventListener("pointerdown", (e) => { drag = true; lx = e.clientX; ly = e.clientY;
+      cv.setPointerCapture(e.pointerId); });
+    cv.addEventListener("pointermove", (e) => {
+      if (!drag) return;
+      yaw -= (e.clientX - lx) * 0.0032;
+      pitch -= (e.clientY - ly) * 0.0026;
+      lx = e.clientX; ly = e.clientY; look();
+    });
+    const releaseLook = () => { drag = false; };
+    cv.addEventListener("pointerup", releaseLook);
+    cv.addEventListener("pointercancel", releaseLook);
+
+    // ---- the eight ----------------------------------------------------------
+    // One table, eight rooms. `TYPES` gives four hearth positions and each is
+    // used in a normal and a reversed style, which is the whole classification
+    // the flat chapter draws. Reversing mirrors the hearth, the host, the
+    // guests and the middle pillar about the room's centre line, and leaves the
+    // mats and the alcove where they are -- the same convention the plan uses,
+    // so the two cannot disagree.
+    //
+    // The utensils travel as OFFSETS from the hearth's centre rather than as
+    // absolute places. Nicolas set them by eye for the four-and-a-half, and
+    // keeping their absolute figures would have left them stranded in the
+    // middle of the floor the moment the hearth moved.
+    // ?ti= and ?rev= so the chapter can open the room on the SAME arrangement
+    // it is drawing flat, instead of dropping you in the default one. The keys
+    // below still rule once you are here.
+    const Q3 = new URLSearchParams(location.search);
+    let TI = Math.min(3, Math.max(0, parseInt(Q3.get("ti"), 10) || 0));
+    let REV = Q3.get("rev") === "1", KNEES = true;
+    const PLAN = CHASHITSU_PLAN.mount(document.getElementById("plan"), { dark: true });
+    const guideName = document.querySelector("#guide .nm");
+    const guideNote = document.querySelector("#guide .nt");
+
+    function layout() {
+      // The furnishing now lives in chashitsu-layout.js, for the same reason
+      // the utensils and the table left this page: so that a second room can
+      // raise the SAME one and the two cannot drift. What comes back is what
+      // the room decides, and this page turns that into a camera and a line
+      // of text.
+      const R = CHASHITSU.layout(stage, { ti: TI, rev: REV, knees: KNEES });
+      EYE.copy(R.seat);
+      AIM.copy(R.aim);
+      aimed();
+      const TYPE = R.TYPE;
+      // The hud keeps the MEASUREMENTS and nothing else now: the name and the
+      // keys moved into the guide, and saying either twice would be two
+      // things to read where there is one thing to know.
+      document.getElementById("hud").textContent =
+        "salle " + (u(U) * 1000).toFixed(0) + " x " + (u(U) * 1000).toFixed(0) +
+        " mm   ro " + (u(RO) * 1000).toFixed(0) + " mm   plafond " +
+        (WALL_H * 1000).toFixed(0) + " mm";
+      PLAN.draw(TI, REV);
+      guideName.innerHTML =
+        '<span class="j">' + TYPE.jp + "</span>" + TYPE.rom +
+        (REV ? ", inverse" : "");
+      guideNote.textContent = TYPE.note +
+        (REV ? " Inverse: le foyer a droite et les invites a la gauche de " +
+               "l'hote, la meme salle vue dans un miroir." : "");
+      window.__frame = { FWD: R.FWD, LFT: R.LFT, KNEE: R.KNEE, RC: R.RC, RO: u(RO) };
+    }
+
+    addEventListener("keydown", (e) => {
+      if (e.key >= "1" && e.key <= "4") { TI = +e.key - 1; layout(); }
+      else if (e.key === "r" || e.key === "R") { REV = !REV; layout(); }
+      else if (e.key === "k" || e.key === "K") { KNEES = !KNEES; layout(); }
+    });
+    layout();
+
+    // ---- a ruler ------------------------------------------------------------
+    // Nicolas marked two positions on a screenshot and I could not convert them,
+    // because he had turned the view: his pixels and mine mean different places.
+    // So rather than guess, the page now says where the pointer is. Moving over
+    // the mats reads out the spot in PLAN UNITS, the same numbers the chashitsu
+    // table uses, so a position can be given as two figures instead of an arrow.
+    if (document.documentElement.hasAttribute("data-dev-pending"))
+      document.body.setAttribute("data-dev", "");
+    const rule = document.createElement("div");
+    rule.id = "rule";
+    rule.style.cssText = "position:fixed;right:14px;bottom:12px;font:11px/1.6 monospace;" +
+      "color:#3d3530;opacity:.75;white-space:pre;text-align:right;";
+    document.body.appendChild(rule);
+    const ndc = new THREE.Vector3(), ray = new THREE.Vector3();
+    cv.addEventListener("pointermove", (e) => {
+      if (drag) { rule.textContent = ""; return; }
+      const r = cv.getBoundingClientRect();
+      ndc.set(((e.clientX - r.left) / r.width) * 2 - 1,
+              -((e.clientY - r.top) / r.height) * 2 + 1, 0.5).unproject(camera);
+      ray.copy(ndc).sub(camera.position).normalize();
+      if (Math.abs(ray.y) < 1e-6) return;
+      const t = (0 - camera.position.y) / ray.y;
+      if (t < 0) { rule.textContent = "hors du plancher"; return; }
+      const q = camera.position.clone().addScaledVector(ray, t);
+      rule.textContent = "plan  " + (q.x / M).toFixed(3) + " , " + (q.z / M).toFixed(3) +
+        "\nmm    " + (q.x * 1000).toFixed(0) + " , " + (q.z * 1000).toFixed(0);
+    });
+
+
+    // Everything casts and everything receives: in a room this small there is
+    // nothing that is only scenery.
+    scene.traverse((o) => {
+      if (o.isMesh && !o.material.isMeshBasicMaterial) {
+        o.castShadow = true; o.receiveShadow = true;
+      }
+    });
+
+    window.__scene = scene;
+    window.__cam = camera;   // a handle for the measuring harness
+    window.__u = u;
+
+    (function loop() { renderer.render(scene, camera); requestAnimationFrame(loop); })();
+    addEventListener("resize", () => {
+      camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
+      renderer.setSize(innerWidth, innerHeight, false);
+    });
+  </script>
+  <!-- The site's own furniture, last, as on every other page: the mark and
+       the room list down the right, and the crossing that carries you to the
+       next room. -->
+  <script src="blob.js"></script>
+  <script src="site.js"></script>
+</body>
+</html>

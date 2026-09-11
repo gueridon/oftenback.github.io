@@ -15,11 +15,45 @@
        carries the visibility written every frame from the projection; the span
        inside carries the pulse. Nested opacities multiply, which is what lets
        the two live together instead of overwriting each other. */
-    .note-dot{position:absolute;width:30px;height:30px;margin:-15px 0 0 -15px;
+    /* A dot now carries its NAME. On the utensils they used to sit ON the
+       objects, and eight of them within 600mm of each other read as a heap of
+       red spots rather than as labels. So they stand in a rank ABOVE the
+       objects, each named, and only a hairline drawn on click says which is
+       which. */
+    /* The button's own box IS the disc, 26 square, and the name hangs ABOVE it
+       absolutely. That matters: written as a flex column the element's top
+       would move with the number of glyphs, so a three-character name would
+       sit its dot lower than a two-character one and the row would ripple.
+       Anchoring the DISC and letting the text grow upward keeps every dot on
+       one line, which is what stops you having to chase them. */
+    .note-dot{position:absolute;width:26px;height:26px;margin:-13px 0 0 -13px;
       border:0;padding:0;background:none;cursor:pointer;pointer-events:auto;
       transition:opacity .45s ease;}
-    .note-disc{display:block;width:100%;height:100%;border-radius:50%;
+    .note-disc{display:block;width:13px;height:13px;margin:6.5px;
+      border-radius:50%;
       background:#e34234;animation:notepulse 3.4s ease-in-out infinite;}
+    /* Vertical, upright, reading downward to the dot: the same direction the
+       vertical names take everywhere else on the site. */
+    .note-jp{position:absolute;left:50%;bottom:24px;transform:translateX(-50%);
+      writing-mode:vertical-rl;text-orientation:upright;white-space:nowrap;
+      /* nowrap, and it is not decoration: in vertical writing the INLINE axis
+         is vertical, so the shrink-to-fit box was limited by the button's own
+         26px of height. Two glyphs plus letter-spacing come to 27.6, so the
+         name broke into two columns of one character each and measured 34 wide
+         by 14 tall, which is exactly what horizontal text would have measured.
+         A layout can be vertical and still wrap into looking horizontal. */
+      font:400 13px/1.30 system-ui,sans-serif;color:#f4ede2;letter-spacing:.10em;
+      opacity:.62;transition:opacity .3s ease;
+      text-shadow:0 1px 2px rgba(18,14,10,.95), 0 0 8px rgba(18,14,10,.90);}
+    .note-dot:hover .note-jp,.note-dot.on .note-jp{opacity:1;}
+    /* The hairline. One line for the whole page: only one card is ever open. */
+    /* width and height, and not only inset: an <svg> is a replaced element and
+       keeps its default 300 x 150 box whatever inset says, so the hairline was
+       computed correctly and then clipped away. */
+    #note-line{position:fixed;left:0;top:0;width:100%;height:100%;
+      pointer-events:none;z-index:5;opacity:0;transition:opacity .3s ease;}
+    #note-line.on{opacity:1;}
+    #note-line line{stroke:#e34234;stroke-width:1;stroke-opacity:.55;}
     @keyframes notepulse{0%,100%{opacity:.30;}50%{opacity:.72;}}
     .note-dot:hover .note-disc{animation:none;opacity:.82;}
     .note-dot.on .note-disc{animation:none;opacity:.86;}
@@ -41,6 +75,17 @@
       text-shadow:0 1px 2px rgba(18,14,10,.95), 0 0 8px rgba(18,14,10,.90),
         0 0 26px rgba(18,14,10,.80);}
     #note-card.on{opacity:1;}
+    /* The card itself stays transparent to the mouse, so that turning the head
+       is never blocked by a panel of text. Only its LINKS take the pointer --
+       without this the room's two doors out were visible and dead. */
+    #room-card{opacity:0;transition:opacity .6s ease;}
+    #room-card.on{opacity:1;}
+    #room-card a{pointer-events:auto;color:#e34234;text-decoration:none;
+      border-bottom:1px solid rgba(227,66,52,.35);}
+    #room-card a:hover{border-bottom-color:#e34234;}
+    #note-card a{pointer-events:auto;color:#e34234;text-decoration:none;
+      border-bottom:1px solid rgba(227,66,52,.35);}
+    #note-card a:hover{border-bottom-color:#e34234;}
     /* The recueil's visual unit, brought into the garden. On the chanoyu index
        and in the chashitsu chapter a panel is a vertical NAME at its left edge
        with horizontal prose beside it, and nothing drawn. The same two panels
@@ -57,7 +102,10 @@
     #note-card .tx{flex:1 1 auto;min-width:0;}
 
     /* the opening panel, off to one side, gone once you start walking */
-    #intro-card{position:fixed;left:clamp(26px,5.5vw,86px);top:50%;
+    /* The room's card sits in the SAME slot as the roji's opening card, and on
+       purpose: they are the same object, the panel that says what you are
+       looking at. So the piece has one place where that sentence lives. */
+    #intro-card,#room-card{position:fixed;left:clamp(26px,5.5vw,86px);top:50%;
       transform:translateY(-50%);max-width:440px;color:#fff;z-index:6;
       display:flex;gap:18px;
       pointer-events:none;transition:opacity 1s ease;
@@ -68,9 +116,9 @@
       padding:20px 22px;margin-left:-22px;
       text-shadow:0 1px 2px rgba(18,14,10,.95), 0 0 8px rgba(18,14,10,.90),
         0 0 26px rgba(18,14,10,.80);}
-    #intro-card .tx{flex:1 1 auto;min-width:0;}
-    #intro-card .vt .jp{font-size:25px;}
-    #intro-card p{margin:0 0 11px;}
+    #intro-card .tx,#room-card .tx{flex:1 1 auto;min-width:0;}
+    #intro-card .vt .jp,#room-card .vt .jp{font-size:25px;}
+    #intro-card p,#room-card p{margin:0 0 11px;}
     /* wide tracking suits a key name, not a phrase */
     #intro-card b{font-weight:600;letter-spacing:.14em;}
     /* Taking the keys out of the card left a visitor with no way to know how
@@ -80,6 +128,11 @@
     #intro-card .go{margin:20px 0 0;font-size:11px;letter-spacing:.16em;
       color:rgba(255,255,255,.78);text-transform:lowercase;
       display:flex;align-items:center;gap:11px;}
+    /* The card said ONE key for a long time, and the note above still argues
+       for that. The second one is Nicolas's shortcut, and it is a second DOOR
+       rather than a control: set out, or be seated. They are set close so they
+       read as a pair of doors and not as two paragraphs. */
+    #intro-card .go + .go{margin-top:9px;}
     /* the same key, drawn the same way, so the one on the card and the ones in
        the panel are recognisably the same object */
     #intro-card .go kbd{font:600 9px/1 system-ui,sans-serif;letter-spacing:.20em;
@@ -91,27 +144,33 @@
     /* The controls are not discoverable, so this stays put rather than fading. */
     /* Left-aligned on the same margin as the opening panel, and low, so they
        sit out of the passage instead of across the middle of it. */
-    #hint{position:fixed;left:clamp(26px,5.5vw,86px);bottom:clamp(26px,4vh,54px);
+    /* The room's own panel, above the walk's. Same family, same drawing: in the
+       room the walk's three lines still apply (you can always step back out),
+       so this is a SECOND panel and not a replacement. */
+    #hint,#hint-room{position:fixed;left:clamp(26px,5.5vw,86px);bottom:clamp(26px,4vh,54px);
       font:400 11px/2.0 system-ui,sans-serif;letter-spacing:.22em;
       color:rgba(255,255,255,.80);text-align:left;pointer-events:none;
       /* starts hidden and is driven per frame from the intro card's own fade,
          so no CSS transition here: it would only lag behind the walk */
       opacity:0;
       text-shadow:0 1px 2px rgba(18,14,10,.95), 0 0 10px rgba(18,14,10,.85);}
+    /* AFTER the shared rule on purpose: same specificity, so the later one is
+       what lifts this panel clear of the walk's. */
+    #hint-room{bottom:calc(clamp(26px,4vh,54px) + 118px);}
     /* A small panel rather than a list of sentences: the key itself drawn as a
        key, so the eye finds it without reading. M leads, because which mode
        you are in decides what the three below it mean -- and they say so, they
        are rewritten when the mode changes rather than describing both at once.
        The gaps group it: the mode, then the two that move you, then the one
        that turns you. */
-    #hint .krow{display:flex;align-items:center;gap:11px;margin:0 0 5px;line-height:1;}
-    #hint .kgap{height:11px;}
-    #hint kbd{font:600 9px/1 system-ui,sans-serif;letter-spacing:.20em;
+    #hint .krow,#hint-room .krow{display:flex;align-items:center;gap:11px;margin:0 0 5px;line-height:1;}
+    #hint .kgap,#hint-room .kgap{height:11px;}
+    #hint kbd,#hint-room kbd{font:600 9px/1 system-ui,sans-serif;letter-spacing:.20em;
       text-transform:uppercase;color:rgba(255,255,255,.94);
       border:1px solid rgba(255,255,255,.40);border-radius:4px;
       background:rgba(18,14,10,.30);padding:4px 0 3px;min-width:58px;
       text-align:center;text-indent:.20em;flex:0 0 auto;}
-    #hint .d,#hint .modes{font-size:10.5px;letter-spacing:.10em;
+    #hint .d,#hint .modes,#hint-room .d,#hint-room .modes{font-size:10.5px;letter-spacing:.10em;
       color:rgba(255,255,255,.62);}
     /* the mode that is running is lit; the other one waits */
     #hint .modes i{font-style:normal;letter-spacing:.16em;color:rgba(255,255,255,.34);
@@ -141,6 +200,12 @@
        canvas by id, not a generic canvas{} rule, so it doesn't touch the
        side-nav or brand-mark canvases site.js injects on top */
     #teahouse-canvas{display:block;position:fixed;top:0;left:0;filter:blur(1.2px) saturate(1.08);}
+    /* Anyone who arrived without walking must not be invited to set out on a
+       path they have skipped. The body already carried .static-view and NOTHING
+       used it, which is why the card stayed up on ?cam= and on the direct
+       entrance. The walk's own fade drives these two from script, so hiding
+       them here only affects the views that never run that code. */
+    body.static-view #intro-card, body.static-view #hint{display:none;}
   </style>
 </head>
 <body>
@@ -160,7 +225,20 @@
     <div class="kgap"></div>
     <div class="krow"><kbd>MOUSE</kbd><span class="d" data-k="mouse"></span></div>
   </div>
+  <!-- The room's commands. Driven per frame from the same gate as the room's
+       card, so it is present exactly while the room is. -->
+  <div id="hint-room">
+    <div class="krow"><kbd>ARROWS</kbd><span class="d">to move about the room</span></div>
+    <div class="krow"><kbd>DRAG</kbd><span class="d">to turn, the whole way round</span></div>
+    <div class="krow"><kbd>PG UP/DN</kbd><span class="d">to rise, to crouch</span></div>
+    <div class="krow"><kbd>+ / &minus;</kbd><span class="d">the light through the paper</span></div>
+  </div>
+  <svg id="note-line"><line x1="0" y1="0" x2="0" y2="0"></line></svg>
   <div id="notes"><div id="note-card"></div></div>
+  <!-- The room's opening card. Not a note and not a dot: the counterpart of
+       the roji's first card, which says what the path is. The one difference,
+       and it is Nicolas's: you STAY in the room, so this one stays present. -->
+  <div id="room-card"></div>
   <div id="intro-card">
     <div class="vt"><span class="jp">露地</span><span class="rom">roji</span></div>
     <div class="tx">
@@ -174,10 +252,19 @@
     an inner, mossy, past the middle gate. Crossing that gate is meant to feel
     like a change of scene. It ends at a door too low to pass standing.</p>
     <p class="go"><kbd>SPACE</kbd> to set out</p>
+    <p class="go"><kbd>T</kbd> straight to the room</p>
     </div>
   </div>
 
   <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+  <!-- The room, from the same three files the chashitsu chapter reads. The
+       pavilion used to invent its own interior: a 4m shell, a tatami texture
+       drawing 3:1 mats, and a bowl built in this file. Now the mats, the
+       hearth, the fire and every utensil come from the one table, so the plan
+       and the room cannot disagree. -->
+  <script src="chashitsu-room.js"></script>
+  <script src="dogu-objects.js"></script>
+  <script src="chashitsu-layout.js"></script>
   <script>
     // The scene is built synchronously and it is heavy: several hundred
     // thousand triangles of geometry. Nothing paints while that runs, so the
@@ -251,7 +338,265 @@
     scene.fog = new THREE.Fog(PALETTE.bg, 8, 68);
 
     // a real chashitsu is small and low-ceilinged
-    const ROOM = 4, WALL_H = 2.0;
+    // The room is a REAL four-and-a-half: 2865mm, three mat widths, the same
+    // number the chashitsu chapter's table holds. It used to be 4000, which is
+    // nearly nine mats, and its floor texture drew mats 1710 x 570, a 3:1
+    // ratio where a real mat is 2:1. It was a mood, not a room.
+    //
+    // And it does NOT shrink about its centre. The garden is anchored to the
+    // DOOR: the walk runs from z 18.6 down to the threshold at 2.0, and every
+    // beat of it is hand placed. So the front wall stays exactly where it is
+    // and the BACK wall comes forward, from -2.0 to -0.865. The path, the
+    // lanterns, the basin and the first eleven beats do not move at all.
+    //
+    // Three names carry that anchor, and every interior z is written in them.
+    const ROOM_W = 2.865, WALL_H = 2.0;   // ROOM_W and not ROOM: the shared
+                                          // table is window.ROOM, and the two must
+                                          // never be mistaken for one another
+    const FRONT_Z = 2.0;                  // the threshold, fixed
+    // Off-centre on purpose: real nijiriguchi sit to one side, and asymmetry is
+    // the house style.
+    const DOOR_W = 0.7, DOOR_H = 0.72, DOOR_SILL = 0.06, DOOR_CX = 0.7;
+    // WHICH WAY IT SLIDES, and the wall decides it rather than taste. The front
+    // wall runs x -1.4325 to +1.4325 (ROOM_W / 2). The opening sits at
+    // [0.35, 1.05], so there are only 38cm of wall to its RIGHT and 178cm to
+    // its LEFT. It used to slide right, onto wall that is not there: the panel
+    // parked at [1.036, 1.836] and the track reached 1.90, both of them hanging
+    // in the air past the corner of the building. Nicolas saw the rails.
+    // Negative, therefore. 0.76 rather than 0.70 so the panel CLEARS the
+    // opening by a centimetre instead of leaving a sliver of itself across it.
+    const DOOR_SLIDE = -(DOOR_W + 0.06);
+    const BACK_Z = FRONT_Z - ROOM_W;        // -0.865
+    const CZ = FRONT_Z - ROOM_W / 2;        // the room's centre, off the origin
+    // The alcove is a BAY behind the back wall, not a shelf inside the room, so
+    // the building is deeper than the room by exactly its depth. Same anchor:
+    // the door does not move, the building grows backward. This is the identical
+    // logic a mizuya will use.
+    const TOKO_D = CHASHITSU.TOKO_D;        // 620, from the shared file
+    const SHELL_D = ROOM_W + TOKO_D;        // 3485: what the walls and roof cover
+
+    // ---- the shoji, this room's wall of light -------------------------------
+    // Ported from room3d.html, the eight-position room, at Nicolas's ask. The
+    // numbers are that page's, mapped: its room runs z 0..2.865 with the alcove
+    // at negative z, ours runs -0.865..2.0, so zRoji = zRoom3d - 0.865. WALL_H
+    // is 2.00 in both, so the heights carry over untouched.
+    // It stops short of the alcove on purpose, and what stands in the gap is
+    // the bokuseki-mado below.
+    const SH_Y0 = 0.075, SH_Y1 = 1.66;      // sill and head
+
+    // A window for the alcove was built here and then taken out again, and
+    // the reason is worth keeping: this wall can hold the shoji OR a second
+    // opening beside it, not both. The shared tokonoma fills the third of the
+    // bay the alcove does not take with a solid plaster block running to
+    // x 1.443, flush against this wall, so a bokuseki-mado at the bay's depth
+    // opens into the back of it and cannot be seen. Moved forward of the bay
+    // it was visible, but it cost the shoji 25cm of its alcove end, and
+    // Nicolas: "le grand shoji sur tout le mur est beaucoup plus beau".
+    //
+    // So we CHEAT, in his word: the alcove keeps the light a bokuseki-mado
+    // would have given it, and there is no window. See bmLight below.
+    const BAY_FRONT = FRONT_Z - ROOM_W;     // where the alcove's bay begins
+    const SH_W = ROOM_W * 0.80;             // 2292 of a 3485 wall
+    const SH_CZ = FRONT_Z - ROOM_W / 2 - 0.10;
+    const SH_Z0 = SH_CZ - SH_W / 2, SH_Z1 = SH_CZ + SH_W / 2;
+    const SH_X = ROOM_W / 2;                // +x, the SUN's side; the sun cannot reach -x
+    const SHELL_CZ = CZ - TOKO_D / 2;       // the building's centre, not the room's
+
+    // ---- the room itself, from the shared table ----------------------------
+    // The plan's coordinates run 0 to 2865 from the ALCOVE corner. This
+    // pavilion's run -1432 to +1432 across and -865 to +2000 deep, so the
+    // group is placed once and everything inside is in the plan's own numbers.
+    // The mats occupy -55 to 0, so their top face is exactly where the old
+    // painted floor was.
+    //
+    // knees: false -- the cursive M is a measuring aid for Nicolas and me, not
+    // something a guest should find on the mat.
+    const stage = new THREE.Group();
+    stage.position.set(-ROOM_W / 2, 0, BACK_Z);
+    scene.add(stage);
+    // ?fire= to try another heat, the same way the page already takes
+    // ?culmsway and ?windamp. Measured, the default of 1 is right: the embers
+    // saturate under this page's tone mapping and a multiplier does nothing.
+    const Q = new URLSearchParams(location.search);
+    const FIRE_P = parseFloat(Q.get("fire"));
+    // Two more knobs, for the same reason: numbers you turn while looking.
+    //   ?eye=   the seated eye height, in metres
+    //   ?swing= how far the head turns, in degrees each way
+    // The room returns a seated height of 1010, which is a true seiza eye. But
+    // truth is not the whole of it here: lower reads as being IN the room
+    // rather than above it, because it puts the mats' plane near the eye and
+    // lets the ceiling into the frame. Nicolas chose 600 with his own eyes,
+    // which is lower than sitting: it is the height of a head that has bowed.
+    const EYE_H = isFinite(parseFloat(Q.get("eye"))) ? parseFloat(Q.get("eye")) : 0.60;
+    const ROOM_R = CHASHITSU.layout(stage, { ti: 0, rev: false, knees: false,
+      fire: isFinite(FIRE_P) ? FIRE_P : 1 });
+
+    // The alcove is a sibling of the stage, in the same plan coordinates: the
+    // stage is emptied and refilled when the layout changes, and a tokonoma
+    // does not move between the eight. The warm point light comes with it,
+    // because without it the back of a recess is black however bright the
+    // paper looks -- and this pavilion has no bokuseki-mado to light it.
+    const toko = new THREE.Group();
+    toko.position.copy(stage.position);
+    scene.add(toko);
+    const TOKO_R = CHASHITSU.tokonoma(toko);
+    const TOKO_C = toko.localToWorld(TOKO_R.centre.clone());
+    const TOKO_SCROLL = toko.localToWorld(TOKO_R.scroll.clone());
+    const TOKO_FLOWER = toko.localToWorld(TOKO_R.flower.clone());
+    const SEAT = stage.localToWorld(ROOM_R.seat.clone());
+    const FIRE = stage.localToWorld(ROOM_R.aim.clone());
+    const EMBER = stage.localToWorld(ROOM_R.ember.clone());
+
+    // ---- where a guest may set foot -----------------------------------------
+    // Nicolas: the visitor should be free in the room, "avec des garde-fous: on
+    // ne marche pas sur le tatami de l'hote". So the rails are READ from the
+    // plan rather than drawn by eye, and they stay true if the layout changes:
+    // `hostMat` is whichever of the five mats holds the hearth, and the layout
+    // works that out itself.
+    //
+    // The alcove needs no rail. A tokonoma is a recess BEYOND the wall, so it
+    // is not floor: the room's own square already excludes it.
+    const uP = CHASHITSU.u, ROP = CHASHITSU.RO;
+    const rect = (x0, w, z0, h) => ({
+      x0: stage.position.x + uP(x0), x1: stage.position.x + uP(x0 + w),
+      z0: stage.position.z + uP(z0), z1: stage.position.z + uP(z0 + h),
+    });
+    const FLOOR = rect(0, 3, 0, 3);                       // the four and a half mats
+    const HOSTMAT = rect(ROOM_R.hostMat.x, ROOM_R.hostMat.w,
+                         ROOM_R.hostMat.y, ROOM_R.hostMat.h);
+    const HEARTH = rect(ROOM_R.roX, ROP, ROOM_R.roY, ROP);
+    // How near a body comes to a wall or to a forbidden edge. One number, so
+    // the whole thing loosens or tightens together.
+    const BODY = 0.18;
+    // Pushed OUT along whichever side is nearest, so walking into a keep-out
+    // slides you along its edge instead of stopping you dead in the middle of
+    // a step. Order matters: the floor first, then the two blocks, because a
+    // block sits inside the floor and must have the last word.
+    function keepOut(pt, r) {
+      const a0 = r.x0 - BODY, a1 = r.x1 + BODY, b0 = r.z0 - BODY, b1 = r.z1 + BODY;
+      if (pt.x <= a0 || pt.x >= a1 || pt.z <= b0 || pt.z >= b1) return;
+      // Four ways out, and the NEAREST is not always available. The host's mat
+      // is the whole west strip, so its left edge IS the wall: pushed that way
+      // you leave through it. Measured, not guessed -- a test on the mat's own
+      // centre came back at x -1.613 with the floor 180mm behind it. So the
+      // candidates are filtered to those that land back on the floor first.
+      const fx0 = FLOOR.x0 + BODY, fx1 = FLOOR.x1 - BODY;
+      const fz0 = FLOOR.z0 + BODY, fz1 = FLOOR.z1 - BODY;
+      const outs = [
+        { d: pt.x - a0, x: a0, z: pt.z },
+        { d: a1 - pt.x, x: a1, z: pt.z },
+        { d: pt.z - b0, x: pt.x, z: b0 },
+        { d: b1 - pt.z, x: pt.x, z: b1 },
+      ].filter((o) => o.x >= fx0 - 1e-9 && o.x <= fx1 + 1e-9 &&
+                      o.z >= fz0 - 1e-9 && o.z <= fz1 + 1e-9);
+      if (!outs.length) return;      // boxed in: leave the step where it was
+      outs.sort((m, n) => m.d - n.d);
+      pt.x = outs[0].x;
+      pt.z = outs[0].z;
+    }
+    function keepIn(pt) {
+      pt.x = Math.min(Math.max(pt.x, FLOOR.x0 + BODY), FLOOR.x1 - BODY);
+      pt.z = Math.min(Math.max(pt.z, FLOOR.z0 + BODY), FLOOR.z1 - BODY);
+      keepOut(pt, HOSTMAT);
+      keepOut(pt, HEARTH);
+      return pt;
+    }
+    // Exposed so the rails can be TESTED without driving the animation, which
+    // a headless harness cannot do (see the note on requestAnimationFrame).
+    window.__keepIn = (x, z) => { const q = keepIn({ x: x, z: z }); return [q.x, q.z]; };
+    window.__zones = () => ({ FLOOR: FLOOR, HOSTMAT: HOSTMAT, HEARTH: HEARTH, BODY: BODY });
+
+    // ---- the visitor's own two dials ----------------------------------------
+    // He stays CROUCHED, and that is his call, not a limitation: the whole room
+    // argues for it. The nijiriguchi is seventy centimetres because nobody
+    // enters a tea room standing, and the card says so. A visitor who could
+    // stand up in here would contradict the one thing the building imposes.
+    const EYE_LO = 0.45, EYE_HI = 1.00;   // kneeling, to a high crouch
+    const EYE_RATE = 0.42;                // metres per second held
+    // The bottom of the dial is ALMOST NIGHT, at Nicolas's ask. Measured rather
+    // than guessed: at 0.30, which it used to be, the room still read as a lit
+    // afternoon. The sun is not what kept it so -- scaling `day` at the bottom
+    // of the dial moved the frame by 3 luminance levels out of 255, so daylight
+    // barely enters this room, which is the roof and the walls doing their job.
+    const LUM_LO = 0.02, LUM_HI = 2.20, LUM_RATE = 0.85;
+    const ROAM_TOP = 0.62;                // metres per second, a slow shuffle
+    const ROAM_EASE = 5.0;                // how fast it reaches that, and stops
+    const ROAM = new THREE.Vector3(0, 0, 0);   // offset from the seat
+    const roamV = new THREE.Vector3(0, 0, 0);
+    let inRoom = false;                   // set each frame by roamStep
+    let lumDirty = true;                  // so ?lum= is applied on the first step
+    let eyeY = null;                      // set from the seat the first time
+    // ?lum= sets where the dial starts, like ?row= and ?eye= beside it: a
+    // number you turn while looking, and the way to photograph a given hour.
+    let lum = (function () {
+      const v = parseFloat(new URLSearchParams(location.search).get("lum"));
+      return isFinite(v) ? Math.min(LUM_HI, Math.max(LUM_LO, v)) : 1;
+    })();
+    const push = { f: 0, s: 0, h: 0, l: 0 };   // forward, sideways, height, light
+    const ROOM_KEYS = {
+      ArrowUp: ["f", 1], ArrowDown: ["f", -1],
+      ArrowRight: ["s", 1], ArrowLeft: ["s", -1],
+      PageUp: ["h", 1], PageDown: ["h", -1],
+      Equal: ["l", 1], NumpadAdd: ["l", 1],
+      Minus: ["l", -1], NumpadSubtract: ["l", -1],
+    };
+    const _fwd = new THREE.Vector3(), _rgt = new THREE.Vector3();
+    const _want = new THREE.Vector3(), _eye = new THREE.Vector3();
+    // One step of the visitor's own movement. Eased at both ends like the
+    // manual walk, so starting and stopping are not a jolt, and integrated
+    // against the FLATTENED look direction: you walk where you are looking,
+    // and the mouse keeps turning the head as its own separate gesture.
+    function roamStep(rdt, active) {
+      inRoom = active;
+      if (eyeY === null) eyeY = CAM_IN.y;
+      if (!active) {
+        // Walking back out: the offset melts rather than snapping, or pressing
+        // R after wandering would tear the camera back onto the path.
+        ROAM.multiplyScalar(0.90);
+        roamV.set(0, 0, 0);
+        spin *= 0.90;                 // unwound with the offset, for the same reason
+        dragging = false;
+        eyeY += (CAM_IN.y - eyeY) * 0.08;
+        return;
+      }
+      camera.getWorldDirection(_fwd);
+      _fwd.y = 0;
+      if (_fwd.lengthSq() < 1e-6) _fwd.set(0, 0, 1);
+      _fwd.normalize();
+      _rgt.set(-_fwd.z, 0, _fwd.x);
+      _want.set(0, 0, 0)
+        .addScaledVector(_fwd, push.f * ROAM_TOP)
+        .addScaledVector(_rgt, push.s * ROAM_TOP);
+      roamV.lerp(_want, Math.min(1, rdt * ROAM_EASE));
+      const q = keepIn({ x: CAM_IN.x + ROAM.x + roamV.x * rdt,
+                         z: CAM_IN.z + ROAM.z + roamV.z * rdt });
+      ROAM.x = q.x - CAM_IN.x;
+      ROAM.z = q.z - CAM_IN.z;
+      if (push.h) eyeY = Math.min(EYE_HI, Math.max(EYE_LO, eyeY + push.h * EYE_RATE * rdt));
+      // Exported like __u above it, and for the same reason: so a harness can
+      // read where the visitor is standing and facing without driving frames.
+      window.__spin = spin;
+      window.__eyeY = eyeY;
+      window.__roam = [ROAM.x, ROAM.z];
+      window.__lum = lum;
+      if (push.l || lumDirty) {
+        lumDirty = false;
+        lum = Math.min(LUM_HI, Math.max(LUM_LO, lum + push.l * LUM_RATE * rdt));
+        shojiLight.intensity = SHOJI_LUM * lum;
+        // The paper follows. It is a MeshBasic, so no light touches it and it
+        // would otherwise still be glowing white at midnight, which is the one
+        // thing that would give the whole dial away.
+        shojiPane.material.color.setHex(0xece2cd)
+          .multiplyScalar(Math.max(0.04, Math.min(1.1, lum)));
+        bmLight.intensity = BM_LUM * lum;   // the alcove dims with the room
+        // The hemisphere follows, and nearly all the way. It used to keep a
+        // floor of 0.55, which was wrong for what Nicolas wanted: measured at
+        // the bottom of the dial, the sky alone still held the upper wall at
+        // 132 of 255 while the whole frame was at 52. A little is kept so the
+        // corners do not become pure black, which no night is.
+        hemi.intensity = HEMI_BASE * (0.06 + 0.94 * lum);
+      }
+    }
 
     const camera = new THREE.PerspectiveCamera(38, innerWidth / innerHeight, 0.1, 50);
     window.__cam = camera;          // measuring affordance, see __scene above
@@ -261,27 +606,107 @@
     // The destination, chosen 2026-09-05: seated INSIDE (option B in the plan).
     // y=0.85 is a seated eye height; 54 degrees rather than 38 because the
     // tight lens read as a detail shot of the tokonoma, not as a room.
-    const CAM_IN  = new THREE.Vector3(0.45, 0.85, 1.72);
-    const LOOK_IN = new THREE.Vector3(-0.05, 0.62, -1.00);
+    // Where a guest sits is not a number to be tuned by eye: it is the table's
+    // `guests` field, and the room returns it. The old pair, 0.45/0.85/1.72,
+    // was tuned for a 4m shell and left the camera 288mm OUTSIDE a real
+    // four-and-a-half. And what he faces is the FIRE, which moves with the
+    // hearth in each of the eight layouts, so the framing follows by itself.
+    const CAM_IN  = SEAT.clone();
+    CAM_IN.y = EYE_H;
+
+    // How far the head turns is DERIVED from what there is to turn to. Measured
+    // from this seat, the scroll lies 61 degrees off the fire and the low door
+    // 69 the other way, so 89 each way covers the room with a 20 degree margin.
+    // I had put 125 in by hand first and it was too much: at the extremes you
+    // face bare plaster. The number is not a feel, it is where the alcove and
+    // the door happen to be, and it will follow the eight layouts.
+    const SWING_D = isFinite(parseFloat(Q.get("swing"))) ? parseFloat(Q.get("swing"))
+      : (function () {
+          const b = (t) => Math.atan2(t.x - CAM_IN.x, t.z - CAM_IN.z);
+          const off = (t) => { let d = (b(t) - b(FIRE)) * 180 / Math.PI;
+            while (d > 180) d -= 360; while (d < -180) d += 360; return Math.abs(d); };
+          return Math.round(Math.max(off(TOKO_C),
+            off(new THREE.Vector3(DOOR_CX, 0.4, FRONT_Z))) + 20);
+        })();
+    // And what he looks at is the BISECTOR of the two things a tea room is
+    // arranged around: the fire, and the tokonoma. Aimed at the fire alone the
+    // alcove fell 66 degrees off centre in a half-frame of 38, so bowing in no
+    // longer showed the one place in the room you are meant to look at. Halfway
+    // between them each is 33 degrees off, and both are in frame. A derivation,
+    // not a taste: both figures come from the room.
+    // What he looks at is the FIRE, and only the fire.
+    //
+    // I had it bisect the fire and the alcove, reasoning that a tea room is
+    // arranged around both and that bowing in should show the tokonoma. That
+    // was my idea, not his: he asked for the shared alcove, not for it to be
+    // in the opening shot. And it cost the thing that matters -- the embers
+    // went to 18% across and 94% DOWN the frame, and he said so at once.
+    //
+    // The two stand 66 degrees apart with the hearth on the floor and the
+    // scroll at eye height, so they lie on opposite diagonals: no aim holds
+    // both without a fisheye. A guest watching tea being made watches the
+    // FIRE, and turns his head to the scroll. So: aim at the fire, and let the
+    // head reach the alcove.
+    const LOOK_IN = FIRE.clone();
 
     // No ?cam= means the journey. ?cam=out|in|door are frozen debug views:
     // out  = the old doll's-house framing, kept for comparison
     // in   = the destination, static
     // door = looking back at the nijiriguchi, to check the opening
-    const PERF = new URLSearchParams(location.search).has("perf");
-    const CAM_MODE = new URLSearchParams(location.search).get("cam");
+    const PARAMS = new URLSearchParams(location.search);
+    const PERF = PARAMS.has("perf");
+    // ?room is the DIRECT ENTRANCE: seated inside at once, for anyone who has
+    // walked the roji before and wants the room, and for the link from the
+    // chashitsu chapter. It is not a debug view: it gets the full head turn and
+    // the pivot in place, where ?cam= keeps the old orbit.
+    const DIRECT = PARAMS.has("room");
+    const CAM_MODE = DIRECT ? "in" : PARAMS.get("cam");
     const STATIC_VIEW = CAM_MODE !== null;
     const CAM_BASE =
       CAM_MODE === "in"   ? CAM_IN.clone() :
-      CAM_MODE === "door" ? new THREE.Vector3(-0.75, 0.80, -0.55) :
+      CAM_MODE === "door" ? new THREE.Vector3(-0.75, 0.80, CZ - 0.55) :
                             new THREE.Vector3(0.9, 0.85, 3.1);
     const LOOK_BASE =
       CAM_MODE === "in"   ? LOOK_IN.clone() :
       CAM_MODE === "door" ? new THREE.Vector3(0.7, 0.42, 2.0) :
-                            new THREE.Vector3(-0.15, 0.75, -0.4);
+                            new THREE.Vector3(-0.15, 0.75, CZ - 0.4);
     camera.fov = (CAM_MODE === "out") ? 38 : 54;
     camera.updateProjectionMatrix();
 
+    // And the FIELD is checked rather than assumed: the lens opens until the
+    // EMBERS are inside 0.6 of the frame. Not the aim point, the embers -- the
+    // aim is the kettle's body 340 up, and a test written on it passed at once
+    // while what actually glows sat outside the frame. Solved by trying,
+    // because the projection is not worth inverting by hand.
+    //
+    // With the aim on the fire this comes back 54, so it is a guard rather than
+    // a correction today. It will earn its keep on the other seven layouts,
+    // where the hearth stands somewhere else.
+    if (DIRECT) {
+      const holds = (fov) => {
+        camera.fov = fov; camera.updateProjectionMatrix();
+        camera.position.copy(CAM_BASE); camera.lookAt(LOOK_BASE);
+        camera.updateMatrixWorld(true);
+        const inside = (v) => { const q = v.clone().project(camera);
+          return Math.abs(q.x) < 0.6 && Math.abs(q.y) < 0.6; };
+        return inside(EMBER);
+      };
+      // A four-and-a-half read through a 54 degree lens looks like a corridor:
+      // it is a room whose corners are all within reach, and that is a wide
+      // impression. ?fov= turns it; the guard below only opens it further if
+      // the embers would fall out.
+      let fov = isFinite(parseFloat(Q.get("fov"))) ? parseFloat(Q.get("fov")) : 64;
+      while (fov < 92 && !holds(fov)) fov += 1;
+      camera.fov = fov;
+      camera.updateProjectionMatrix();
+      window.__fov = fov;
+    }
+
+    // How far the head turns and tilts. Hoisted here from the walk because the
+    // direct entrance needs them too, and because STATIC_AMP is expressed as a
+    // fraction of the swing: at 0.14 of 0.58 the frozen views allow 24% of a
+    // head turn, which is right for a debug frame and wrong for a destination.
+    const LOOK_SWING = 0.58, LOOK_TILT = 0.20;
     const _so = new THREE.Vector3().subVectors(CAM_BASE, LOOK_BASE);
     const STATIC_RADIUS = Math.hypot(_so.x, _so.z);
     const ORBIT_BASE_ANGLE_STATIC = Math.atan2(_so.x, _so.z);
@@ -317,27 +742,9 @@
     const mat = (hex) => new THREE.MeshStandardMaterial({ color: hex, flatShading: true, roughness: 1, metalness: 0 });
 
     // ---- floor: a subtle woven tatami suggestion ----
-    function makeTatamiTexture() {
-      const w = 384, h = 128; // 3:1, matching the 3-square-long mat
-      const c = document.createElement("canvas");
-      c.width = w; c.height = h;
-      const ctx = c.getContext("2d");
-      ctx.fillStyle = "#" + PALETTE.floor.toString(16).padStart(6, "0");
-      ctx.fillRect(0, 0, w, h);
-      ctx.strokeStyle = "rgba(61,53,48,0.035)";
-      ctx.lineWidth = 1;
-      for (let y = 3; y < h; y += 5) {
-        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
-      }
-      ctx.strokeStyle = "rgba(61,53,48,0.05)";
-      ctx.lineWidth = 2;
-      ctx.strokeRect(1, 1, w - 2, h - 2);
-      const tex = new THREE.CanvasTexture(c);
-      tex.colorSpace = THREE.SRGBColorSpace;
-      tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-      tex.repeat.set(7 / 3, 7);
-      return tex;
-    }
+    // (makeTatamiTexture lived here. It drew mats 1710 by 570, a 3:1 ratio
+    //  where a real mat is 2:1, on a floor that no longer exists: the room's
+    //  five real mats come from chashitsu-layout.js now.)
 
     // a deterministic hash keyed on original vertex position -- hoisted, used
     // by both the room shell's rugged planes and the plinth's rugged box
@@ -361,13 +768,9 @@
     }
     const SEAM = 0.08;
 
-    const floor = new THREE.Mesh(
-      makeRuggedPlane(ROOM + SEAM, ROOM + SEAM, 16, 16, 0.028, 0.01, 0.3),
-      new THREE.MeshStandardMaterial({ map: makeTatamiTexture(), flatShading: true, roughness: 1, metalness: 0 })
-    );
-    floor.rotation.x = -Math.PI / 2;
-    floor.receiveShadow = true;
-    scene.add(floor);
+    // No painted floor any more: the real mats from the shared layout ARE the
+    // floor, five of them in the pinwheel with the hearth cut into one, and
+    // their top face is at y 0 where this plane used to be.
 
     // ---- adobe plaster, shared across all three walls ----
     function makeAdobeTexture() {
@@ -420,27 +823,43 @@
       flatShading: true, roughness: 1, metalness: 0,
     });
 
-    const wall = new THREE.Mesh(makeRuggedPlane(ROOM + SEAM, WALL_H + SEAM, 14, 8, 0.024, 0.01, 1.1), adobeMat);
-    wall.position.set(0, WALL_H / 2, -ROOM / 2);
-    wall.receiveShadow = true;
-    scene.add(wall);
+    // No back wall. The shared tokonoma builds the bay behind it: its own back
+    // face at BACK_Z - TOKO_D across the full width, and a solid plaster block
+    // filling the third of the bay the alcove does not take. Those ARE the wall
+    // there, and a plane across the opening would simply seal the alcove off.
 
-    const ceiling = new THREE.Mesh(makeRuggedPlane(ROOM + SEAM, ROOM + SEAM, 16, 16, 0.028, 0.01, 2.3), mat(PALETTE.plinth));
+    const ceiling = new THREE.Mesh(makeRuggedPlane(ROOM_W + SEAM, SHELL_D + SEAM, 16, 16, 0.028, 0.01, 2.3), mat(PALETTE.plinth));
     ceiling.rotation.x = Math.PI / 2;
-    ceiling.position.set(0, WALL_H, 0);
+    ceiling.position.set(0, WALL_H, SHELL_CZ);
     ceiling.receiveShadow = true;
     ceiling.castShadow = true;     // it, not just the roof, must stop the sun
     scene.add(ceiling);
 
-    const rightWall = new THREE.Mesh(makeRuggedPlane(ROOM + SEAM, WALL_H + SEAM, 14, 8, 0.024, 0.01, 3.7), adobeMat);
-    rightWall.rotation.y = -Math.PI / 2;
-    rightWall.position.set(ROOM / 2, WALL_H / 2, 0);
-    rightWall.receiveShadow = true;
-    scene.add(rightWall);
+    // The light wall is built AROUND its opening, not behind it, and room3d
+    // records why: turning shadows on made a solid slab stand between the sun
+    // and the room, so the whole interior lay in its shade and the paper glowed
+    // onto nothing. A paper wall is not a picture hung on a wall, it IS the wall
+    // there. Same technique as the fourth wall around the nijiriguchi: the four
+    // rectangles that are left over.
+    const wz0 = SHELL_CZ - SHELL_D / 2, wz1 = SHELL_CZ + SHELL_D / 2;
+    function sidePanel(dz, dy, cz, cy, seed) {
+      if (dz < 0.002 || dy < 0.002) return;
+      const m = new THREE.Mesh(makeRuggedPlane(dz, dy,
+        Math.max(2, Math.round(dz * 4)), Math.max(2, Math.round(dy * 4)),
+        0.024, 0.01, seed), adobeMat);
+      m.rotation.y = -Math.PI / 2;
+      m.position.set(ROOM_W / 2, cy, cz);
+      m.receiveShadow = true;
+      scene.add(m);
+    }
+    sidePanel(SHELL_D + SEAM, SH_Y0 + SEAM, SHELL_CZ, SH_Y0 / 2, 3.7);
+    sidePanel(SHELL_D + SEAM, (WALL_H - SH_Y1) + SEAM, SHELL_CZ, (SH_Y1 + WALL_H) / 2, 4.1);
+    sidePanel((SH_Z0 - wz0) + SEAM, (SH_Y1 - SH_Y0) + SEAM, (wz0 + SH_Z0) / 2, (SH_Y0 + SH_Y1) / 2, 4.4);
+    sidePanel((wz1 - SH_Z1) + SEAM, (SH_Y1 - SH_Y0) + SEAM, (SH_Z1 + wz1) / 2, (SH_Y0 + SH_Y1) / 2, 4.8);
 
-    const leftWall = new THREE.Mesh(makeRuggedPlane(ROOM + SEAM, WALL_H + SEAM, 14, 8, 0.024, 0.01, 5.2), adobeMat);
+    const leftWall = new THREE.Mesh(makeRuggedPlane(SHELL_D + SEAM, WALL_H + SEAM, 14, 8, 0.024, 0.01, 5.2), adobeMat);
     leftWall.rotation.y = Math.PI / 2;
-    leftWall.position.set(-ROOM / 2, WALL_H / 2, 0);
+    leftWall.position.set(-ROOM_W / 2, WALL_H / 2, SHELL_CZ);
     leftWall.receiveShadow = true;
     scene.add(leftWall);
 
@@ -449,8 +868,9 @@
     // would lose makeRuggedPlane's hand-jitter, so the wall is built as three
     // panels around the opening plus a low sill. Off-centre on purpose: real
     // nijiriguchi sit to one side, and asymmetry is the house style.
-    const DOOR_W = 0.7, DOOR_H = 0.72, DOOR_SILL = 0.06, DOOR_CX = 0.7;
-    const FRONT_Z = ROOM / 2;
+    // (DOOR_W, DOOR_H, DOOR_SILL, DOOR_CX are declared with the anchor above:
+    //  the seat's field of view is derived from where the low door is, so they
+    //  have to exist before the camera, and the door is the anchor anyway.)
     const doorL = DOOR_CX - DOOR_W / 2, doorR = DOOR_CX + DOOR_W / 2;
 
     // Cloned rather than mutating adobeMat: the other three walls must stay
@@ -467,59 +887,58 @@
       return m;
     }
     // left of the door, right of the door, the lintel above it, the sill below
-    frontPanel((doorL + ROOM / 2) + SEAM, WALL_H + SEAM, (doorL - ROOM / 2) / 2, WALL_H / 2, 6.4);
-    frontPanel((ROOM / 2 - doorR) + SEAM, WALL_H + SEAM, (doorR + ROOM / 2) / 2, WALL_H / 2, 7.9);
+    frontPanel((doorL + ROOM_W / 2) + SEAM, WALL_H + SEAM, (doorL - ROOM_W / 2) / 2, WALL_H / 2, 6.4);
+    frontPanel((ROOM_W / 2 - doorR) + SEAM, WALL_H + SEAM, (doorR + ROOM_W / 2) / 2, WALL_H / 2, 7.9);
     frontPanel(DOOR_W + SEAM, (WALL_H - DOOR_H - DOOR_SILL) + SEAM, DOOR_CX, (DOOR_SILL + DOOR_H + WALL_H) / 2, 8.6);
     frontPanel(DOOR_W + SEAM, DOOR_SILL + SEAM, DOOR_CX, DOOR_SILL / 2, 9.3);
 
-    // ---- the window: the room's only light source ----
-    // +1, the SUN's side. It was -1, the shade side, where sunlight cannot
-    // physically reach it: the light travels toward -x, so a window on the -x
-    // wall can never throw a rectangle on this floor. Nicolas felt the knot
-    // from the mismatch of shadow directions before either of us saw the cause.
-    const WINDOW_SIDE = 1;
-    const WINDOW_Y = 1.25, WINDOW_Z = 0.35, WINDOW_W = 0.4, WINDOW_H = 0.55;
-    const windowPane = new THREE.Mesh(
-      new THREE.PlaneGeometry(WINDOW_W, WINDOW_H),
-      new THREE.MeshBasicMaterial({ color: 0xfff3d9 })
-    );
-    windowPane.rotation.y = -WINDOW_SIDE * Math.PI / 2;
-    windowPane.position.set(WINDOW_SIDE * (ROOM / 2 - 0.01), WINDOW_Y, WINDOW_Z);
-    scene.add(windowPane);
+    // ---- the shoji: the paper wall itself -----------------------------------
+    // What stood here was a small bamboo window, 40 by 55 with a golden-ratio
+    // lattice, at z 0.9175. That is INSIDE the shoji's span, so the two could
+    // not share this wall and the paper wall won it. The bamboo is not lost, it
+    // is in this file's history, and the alcove's own window comes next.
+    //
+    // The pane GLOWS: MeshBasicMaterial, so no light touches it and it reads as
+    // paper with the sun behind rather than as a lit surface. The kumiko is
+    // sized by the PANE and not by a guessed count -- a kumiko pane is about
+    // 130mm, so this 2.29 wall wants eighteen bars across, not six. room3d
+    // records the first try at 390mm panes looking like a warehouse.
+    // DoubleSide, and it matters from the garden: a single face turned inward
+    // is culled from outside, so the wall of paper became a hole you could see
+    // the hearth through while walking the roji. Paper is paper from both
+    // sides, and from out there it is what a shoji looks like by day.
+    const shojiPane = new THREE.Mesh(
+      new THREE.PlaneGeometry(SH_W, SH_Y1 - SH_Y0),
+      new THREE.MeshBasicMaterial({ color: 0xece2cd, side: THREE.DoubleSide }));
+    shojiPane.rotation.y = -Math.PI / 2;
+    shojiPane.position.set(SH_X - 0.012, (SH_Y0 + SH_Y1) / 2, SH_CZ);
+    scene.add(shojiPane);
 
-    // bamboo frame + lattice, golden-ratio split rather than symmetric
-    const bambooMat = mat(PALETTE.plinth);
-    const BAMBOO_X = WINDOW_SIDE * (ROOM / 2 - 0.03);
-    const zLo = WINDOW_Z - WINDOW_W / 2, zHi = WINDOW_Z + WINDOW_W / 2;
-    const yLo = WINDOW_Y - WINDOW_H / 2, yHi = WINDOW_Y + WINDOW_H / 2;
+    const latticeMat = mat(0x6f5f4c);
+    const PANE = 0.130, BAR = 0.007;
+    const nC = Math.round(SH_W / PANE), nR = Math.round((SH_Y1 - SH_Y0) / PANE);
+    const kumiko = (dy, dz, y, z) => {
+      const m = new THREE.Mesh(makeRuggedBox(BAR * 1.4, dy, dz, 1, 2, 2, 0.001), latticeMat);
+      m.position.set(SH_X - 0.020, y, z);
+      scene.add(m);
+    };
+    for (let i = 1; i < nC; i++)
+      kumiko(SH_Y1 - SH_Y0, BAR, (SH_Y0 + SH_Y1) / 2, SH_Z0 + i * SH_W / nC);
+    for (let j = 1; j < nR; j++)
+      kumiko(BAR * 1.2, SH_W, SH_Y0 + j * (SH_Y1 - SH_Y0) / nR, SH_CZ);
 
-    function bambooVertical(z, yFrom, yTo, radius) {
-      const rod = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, yTo - yFrom, 8), bambooMat);
-      rod.position.set(BAMBOO_X, (yFrom + yTo) / 2, z);
-      rod.castShadow = true;
-      scene.add(rod);
-    }
-    function bambooHorizontal(y, zFrom, zTo, radius) {
-      const rod = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, zTo - zFrom, 8), bambooMat);
-      rod.rotation.x = Math.PI / 2;
-      rod.position.set(BAMBOO_X, y, (zFrom + zTo) / 2);
-      rod.castShadow = true;
-      scene.add(rod);
-    }
-
-    const FRAME_R = 0.014, FRAME_PAD = 0.03;
-    bambooVertical(zLo, yLo - FRAME_PAD, yHi + FRAME_PAD, FRAME_R);
-    bambooVertical(zHi, yLo - FRAME_PAD, yHi + FRAME_PAD, FRAME_R);
-    bambooHorizontal(yLo, zLo - FRAME_PAD, zHi + FRAME_PAD, FRAME_R);
-    bambooHorizontal(yHi, zLo - FRAME_PAD, zHi + FRAME_PAD, FRAME_R);
-
-    const LATTICE_R = 0.009;
-    bambooVertical(zLo + WINDOW_W * 0.382, yLo, yHi, LATTICE_R);
-    const goldenScale = WINDOW_H / 2;
-    const yBar1 = yHi - 0.618 * goldenScale;
-    const yBar2 = yBar1 - 1.0 * goldenScale;
-    bambooHorizontal(yBar1, zLo, zHi, LATTICE_R);
-    bambooHorizontal(yBar2, zLo, zHi, LATTICE_R);
+    // its frame and sill, a shade darker than the kumiko
+    const frameMat = mat(0x53442f);
+    const shojiFrame = (dy, dz, y, z) => {
+      const m = new THREE.Mesh(makeRuggedBox(0.026, dy, dz, 1, 2, 3, 0.002), frameMat);
+      m.position.set(SH_X - 0.024, y, z);
+      m.castShadow = true;
+      scene.add(m);
+    };
+    shojiFrame(0.030, SH_W + 0.05, SH_Y0 - 0.015, SH_CZ);
+    shojiFrame(0.030, SH_W + 0.05, SH_Y1 + 0.015, SH_CZ);
+    shojiFrame(SH_Y1 - SH_Y0 + 0.06, 0.030, (SH_Y0 + SH_Y1) / 2, SH_Z0 - 0.015);
+    shojiFrame(SH_Y1 - SH_Y0 + 0.06, 0.030, (SH_Y0 + SH_Y1) / 2, SH_Z1 + 0.015);
 
     // ---- tokonoma ----
     function makeWoodTexture() {
@@ -566,19 +985,13 @@
       return geo;
     }
 
-    const TOKO_CX = 0;
-    const plinth = new THREE.Mesh(
-      makeRuggedBox(1.7, 0.32, 1.0, 10, 2, 6, 0.035),
-      new THREE.MeshStandardMaterial({ map: makeWoodTexture(), flatShading: true, roughness: 0.9, metalness: 0 })
-    );
-    plinth.position.set(TOKO_CX, 0.16, -ROOM / 2 + 0.5);
-    plinth.castShadow = true;
-    plinth.receiveShadow = true;
-    scene.add(plinth);
-
-    const recess = new THREE.Mesh(makeRuggedPlane(1.9, 1.7, 10, 8, 0.02, 0.008, 8.9), mat(PALETTE.soft));
-    recess.position.set(TOKO_CX, 1.1, -ROOM / 2 + 0.04);
-    scene.add(recess);
+    // The platform, the scroll and the flower that used to stand here are gone.
+    // They were this page's own invention: a shelf 1700 x 320 x 1000 standing a
+    // METRE into a room 2865 deep, with a scroll on a plane and three stems in
+    // a cylinder. A tokonoma is a recess BEYOND the wall, and the plan's three
+    // by three has no room for a shelf inside it. The alcove now comes from
+    // chashitsu-layout.js, the same one the chashitsu chapter raises, and it is
+    // built at the end of this section once the shell is up.
 
     // ---- the kakejiku ----
     function makeScrollTexture(text, w, h) {
@@ -639,48 +1052,12 @@
       return tex;
     }
 
-    const SCROLL_CX = TOKO_CX, SCROLL_CY = 1.3, SCROLL_CZ = -ROOM / 2 + 0.08;
-    const SCROLL_W = 0.5, SCROLL_H = 1.1;
+    // The kakemono comes with the shared tokonoma. makeScrollTexture above is
+    // left standing: it is a good drawing and the next scroll can use it.
 
-    const scrollTex = makeScrollTexture("一期一会", 300, 880);
-    const scroll = new THREE.Mesh(
-      new THREE.PlaneGeometry(SCROLL_W, SCROLL_H),
-      new THREE.MeshStandardMaterial({ map: scrollTex, roughness: 1, metalness: 0 })
-    );
-    scroll.position.set(SCROLL_CX, SCROLL_CY, SCROLL_CZ);
-    scroll.receiveShadow = true;
-    scene.add(scroll);
-
-    const dowelMat = mat(PALETTE.plinth);
-    const barW = SCROLL_W + 0.05, barH = 0.02, barD = 0.012;
-    const topBar = new THREE.Mesh(new THREE.BoxGeometry(barW, barH, barD), dowelMat);
-    topBar.position.set(SCROLL_CX, SCROLL_CY + SCROLL_H / 2 + barH / 2, SCROLL_CZ + 0.012);
-    topBar.castShadow = true;
-    scene.add(topBar);
-
-    const bottomBar = new THREE.Mesh(new THREE.BoxGeometry(barW, barH, barD), dowelMat);
-    bottomBar.position.set(SCROLL_CX, SCROLL_CY - SCROLL_H / 2 - barH / 2, SCROLL_CZ + 0.012);
-    bottomBar.castShadow = true;
-    scene.add(bottomBar);
-
-    // ---- the vase: three stems, deliberately odd ----
-    // Bowl right, flowers left: the window moved to the sun's side, so the
-    // whole composition mirrors with it. Asymmetric, as it should be, but now
-    // asymmetric the right way round.
-    const VASE_X = TOKO_CX - 0.55, VASE_Z = -ROOM / 2 + 0.85, PLINTH_TOP = 0.32;
-    const vase = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.085, 0.12, 0.22, 32),
-      new THREE.MeshStandardMaterial({ color: PALETTE.ink, flatShading: false, roughness: 1, metalness: 0 })
-    );
-    vase.position.set(VASE_X, PLINTH_TOP + 0.11, VASE_Z);
-    vase.castShadow = true;
-    vase.receiveShadow = true;
-    scene.add(vase);
-
-    const mouth = new THREE.Group();
-    mouth.position.set(VASE_X, PLINTH_TOP + 0.22, VASE_Z);
-    mouth.rotation.y = Math.PI;
-    scene.add(mouth);
+    // The flower comes with the shared tokonoma too: one bud on a bare branch
+    // in a bamboo tube, which is what a tea room allows. stem() and
+    // makeThistle() below stay because the garden may want them.
 
     function stem(height, bend, tiltZ, tiltX, stemColor, tipColor, tipSize, seed, tipBuilder) {
       const g = new THREE.Group();
@@ -730,26 +1107,7 @@
       return g;
     }
 
-    mouth.add(stem(0.34, 0.05, -0.22, 0.08, PALETTE.sage, PALETTE.clay, 0.036, 0.4,
-      (sz, col) => makeThistle(sz, col, THISTLE_TUFT)));
-
-    const bladeCurve = new THREE.CatmullRomCurve3([
-      new THREE.Vector3(0, 0, 0),
-      new THREE.Vector3(0.03, 0.30, 0.01),
-      new THREE.Vector3(0.09, 0.55, 0.02),
-      new THREE.Vector3(0.19, 0.72, 0.03),
-    ]);
-    const blade = new THREE.Mesh(new THREE.TubeGeometry(bladeCurve, 16, 0.024, 5, false), mat(PALETTE.sage));
-    blade.scale.set(0.3, 1, 1);
-    blade.castShadow = true;
-    const bladeGroup = new THREE.Group();
-    bladeGroup.add(blade);
-    bladeGroup.rotation.z = 0.30;
-    bladeGroup.rotation.x = -0.05;
-    bladeGroup.rotation.y = 0.4;
-    mouth.add(bladeGroup);
-
-    mouth.add(stem(0.5, 0.07, 0.05, -0.16, PALETTE.sage, PALETTE.sage, 0.02, 1.8));
+    // (the three stems that filled the old vase were built here)
 
     // ---- the chawan ----
     const MATCHA = 0x9caa5a;
@@ -783,9 +1141,15 @@
       return g;
     }
 
-    const chawan = makeChawan();
-    chawan.position.set(0.6, 0, -0.15);   // in the light, and within reach of the guest
-    scene.add(chawan);
+    // No bowl on the floor any more. It was this page's own, built before the
+    // room had any real utensils, and once the shared layout brought a bowl,
+    // a whisk and a scoop of its own it was a second chawan with nothing to do
+    // but steam. makeChawan() is left standing: it is the only bowl on the site
+    // that is not raku, and a future page may want it.
+    //
+    // What steams now is the KETTLE, which is the thing in a tea room that
+    // actually does. Nicolas: "on pourrait avoir un kama entre ouvert avec la
+    // vapeur qui en sort de sorte qu'on conserve un element dynamique."
 
     function makeSteamAlphaMap() {
       const w = 64, h = 8;
@@ -804,22 +1168,50 @@
     }
     const steamAlphaMap = makeSteamAlphaMap();
 
-    const STEAM_BASE_Y = 0.19;
+    // The kettle, and its lid set ajar. The lid is a named group in
+    // dogu-objects.js, so it can be turned without copying the kettle; and one
+    // rotation does both halves of "ajar" at once, because the lid sits 208mm
+    // above the group's origin, so 0.10 radians tips it six degrees AND carries
+    // it 21mm aside. The crescent that opens is where the steam comes from.
+    const KETTLE = stage.children.find((o) => o.name === "kama");
+    const LID = KETTLE && KETTLE.getObjectByName("lid");
+    if (LID) LID.rotation.z = 0.10;
+    // ON THE LIP. The kettle's mouth is cut square at 204.8 in its own space --
+    // the two profile points [0.2048, 0.0629] and [0.2048, 0.0581] in
+    // dogu-objects.js are the rim's inner and outer edges -- so that is where
+    // water meets air and where steam begins. It started at 222, which is 17
+    // above the lip and reads as a thread hanging in the air over the kettle
+    // rather than as something leaving it.
+    const STEAM_BASE_Y = 0.2048;
     const steamWisps = [];
-    for (let i = 0; i < 4; i++) {
+    // THREE threads, and thin. Six were still six silhouettes, and 10mm of
+    // tube is not steam, it is a rope: at this size a wisp reads as its own
+    // solid shape, so both the count and the thickness are the picture.
+    for (let i = 0; i < 3; i++) {
       const wisp = new THREE.Mesh(
         new THREE.BufferGeometry(),
         new THREE.MeshBasicMaterial({
-          color: 0xfffaf2, transparent: true, opacity: 0.12, depthWrite: false,
+          color: 0xfffaf2, transparent: true, opacity: 0.085, depthWrite: false,
           side: THREE.DoubleSide, alphaMap: steamAlphaMap,
         })
       );
       wisp.userData.phase = i * 1.9 + Math.random();
-      wisp.userData.freq = 0.45 + Math.random() * 0.35;
-      wisp.userData.xOff = (i - 1.5) * 0.02;
-      wisp.userData.zOff = (i - 1.5) * 0.015 - 0.02;
-      wisp.userData.h = 0.28 + i * 0.045;
-      chawan.add(wisp);
+      wisp.userData.freq = 0.30 + Math.random() * 0.24;
+      // Gathered at the crescent rather than spread over a bowl's whole mouth,
+      // and taller and slower: a kettle off the boil breathes, it does not
+      // billow like a fresh bowl of matcha.
+      // In the CRESCENT, and this took three goes because arithmetic on one
+      // axis is not a shape. Seen from above the lid is a disc of radius 64.6
+      // pushed 20.6 off the axis, and the mouth a disc of radius 63 on it, so
+      // what is uncovered is a LUNE: 19mm wide at its middle and closing to
+      // nothing at both ends. My first steam sat at 34, under the bronze; my
+      // second spread 25mm across a 19mm opening, so half of it was still
+      // under the lid and its outer edge missed the mouth altogether.
+      // Nicolas saw both. Three threads inside 8mm of the lune's middle.
+      wisp.userData.xOff = 0.0530 + (i - 1) * 0.0038;
+      wisp.userData.zOff = (i - 1) * 0.0045;
+      wisp.userData.h = 0.30 + i * 0.055;
+      (KETTLE || scene).add(wisp);
       steamWisps.push(wisp);
     }
 
@@ -831,16 +1223,19 @@
         for (let i = 0; i < n; i++) {
           const f = i / (n - 1);
           const y = STEAM_BASE_Y + f * h;
-          const sway = Math.sin(t * freq + phase + f * 3.4) * 0.045 * f;
-          const drift = Math.cos(t * freq * 0.7 + phase * 1.4 + f * 2.1) * 0.03 * f;
+          const sway = Math.sin(t * freq + phase + f * 3.4) * 0.085 * f * f;
+          const drift = Math.cos(t * freq * 0.7 + phase * 1.4 + f * 2.1) * 0.060 * f * f;
           pts.push(new THREE.Vector3(xOff + sway, y, zOff + drift));
         }
         const curve = new THREE.CatmullRomCurve3(pts);
-        const radius = 0.01 * (1 - 0.35 * Math.sin(t * 0.5 + phase) * Math.sin(t * 0.5 + phase));
-        const geo = new THREE.TubeGeometry(curve, 14, Math.max(radius, 0.004), 5, false);
+        // Thin: 3.4mm breathing down to 1.6, where it was 10 down to 4. Ten
+        // millimetres of tube out of a 19mm opening was a third of the crescent
+        // in one thread.
+        const radius = 0.0034 * (1 - 0.4 * Math.sin(t * 0.5 + phase) * Math.sin(t * 0.5 + phase));
+        const geo = new THREE.TubeGeometry(curve, 14, Math.max(radius, 0.0016), 5, false);
         w.geometry.dispose();
         w.geometry = geo;
-        w.material.opacity = 0.07 + 0.06 * (0.5 + 0.5 * Math.sin(t * 0.8 + phase));
+        w.material.opacity = 0.10 + 0.09 * (0.5 + 0.5 * Math.sin(t * 0.8 + phase));
       });
     }
 
@@ -867,18 +1262,26 @@
         b.castShadow = true;
         g.add(b);
       });
+      // On the trailing edge, which is the side a hand actually takes: the
+      // panel slides toward -x, so the pull goes to its +x end. It sat on the
+      // other side while the door slid the other way.
       const pull = new THREE.Mesh(makeRuggedBox(0.055, 0.11, 0.014, 1, 2, 1, 0.003), mat(0x4a4238));
-      pull.position.set(-dw * 0.34, 0, 0.026);
+      pull.position.set(dw * 0.34, 0, 0.026);
       g.add(pull);
       g.position.set(DOOR_CX, dh / 2 - 0.02, FRONT_Z + 0.032);
       scene.add(g);
       nijiriDoor = g;
 
-      // the track it runs in, above and below, on the same face
+      // The track it runs in, above and below, on the same face. Its length is
+      // the panel plus its travel plus a hand's margin, and it is centred on
+      // the MIDPOINT of the two positions, so it covers shut and open and
+      // nothing further. It was dw * 2.1 long, a number with no reason in it,
+      // and it overhung the wall by 47cm.
+      const railL = dw + Math.abs(DOOR_SLIDE) + 0.06;
       [dh + 0.01, -0.03].forEach((ry, i) => {
         const rail = new THREE.Mesh(
-          makeRuggedBox(dw * 2.1, 0.042, 0.052, 6, 1, 1, 0.004), doorWood);
-        rail.position.set(DOOR_CX + dw * 0.45, ry, FRONT_Z + 0.040);
+          makeRuggedBox(railL, 0.042, 0.052, 6, 1, 1, 0.004), doorWood);
+        rail.position.set(DOOR_CX + DOOR_SLIDE / 2, ry, FRONT_Z + 0.040);
         rail.castShadow = true;
         scene.add(rail);
         void i;
@@ -1198,14 +1601,43 @@
     // the base the tea house stands on
     // Top deliberately 12mm BELOW the tatami: coplanar with it, the base
     // self-shadowed the floor through the window light and dulled the room.
-    const base = new THREE.Mesh(
-      makeRuggedBox(ROOM + 0.44, -GROUND_Y - 0.012, ROOM + 0.44, 8, 3, 8, 0.02),
-      mat(0x8a8378)
-    );
-    base.position.set(0, (GROUND_Y - 0.012) / 2, 0);
-    base.receiveShadow = true;
-    base.castShadow = true;
-    scene.add(outdoor(base));
+    // And it is built AROUND THE HEARTH. Nicolas: "il y a un rectangle gris au
+    // dessus du brasier, entre le kama et le brasier." He was right, and it was
+    // this: the base's top face at -12mm, colour 8a8378, standing 70mm ABOVE
+    // the ash at -82. A ray dropped down the hearth's axis hit the kettle, then
+    // a box 3325 x 288 x 3944, then the ash. The stone floor of the house was
+    // lying across the fire like a lid.
+    //
+    // room3d has no base, which is why the fire showed there and not here -- and
+    // why I had gone looking at the framing and at the tone mapping instead. It
+    // was neither.
+    //
+    // Cut the same way as the mats, the shoji and the bokuseki-mado: by building
+    // the four rectangles that REMAIN. Fourth time on this project, and by now
+    // it is the first thing to reach for rather than the last.
+    {
+      const u = CHASHITSU.u, RO = CHASHITSU.RO;
+      const M2 = 0.006;                       // clear of the pit's own walls
+      const hx0 = stage.position.x + u(ROOM_R.roX) - M2;
+      const hx1 = stage.position.x + u(ROOM_R.roX + RO) + M2;
+      const hz0 = stage.position.z + u(ROOM_R.roY) - M2;
+      const hz1 = stage.position.z + u(ROOM_R.roY + RO) + M2;
+      const bx0 = -(ROOM_W + 0.44) / 2, bx1 = (ROOM_W + 0.44) / 2;
+      const bz0 = SHELL_CZ - (SHELL_D + 0.44) / 2, bz1 = SHELL_CZ + (SHELL_D + 0.44) / 2;
+      const BH = -GROUND_Y - 0.012, BY = (GROUND_Y - 0.012) / 2;
+      const piece = (x0, x1, z0, z1, seed) => {
+        if (x1 - x0 < 0.001 || z1 - z0 < 0.001) return;
+        const m = new THREE.Mesh(
+          makeRuggedBox(x1 - x0, BH, z1 - z0, 8, 3, 8, 0.02), mat(0x8a8378));
+        m.position.set((x0 + x1) / 2, BY, (z0 + z1) / 2);
+        m.receiveShadow = true; m.castShadow = true;
+        scene.add(outdoor(m));
+      };
+      piece(bx0, hx0, bz0, bz1, 1);           // the whole slab left of the hearth
+      piece(hx1, bx1, bz0, bz1, 2);           // and right of it
+      piece(hx0, hx1, bz0, hz0, 3);           // the strip in front
+      piece(hx0, hx1, hz1, bz1, 4);           // and behind
+    }
 
     // ---- outward skins for the other three walls ----
     // From outside you could see straight through them: a PlaneGeometry only
@@ -1213,16 +1645,41 @@
     // better than DoubleSide here, because DoubleSide would also hand the
     // daylight the walls' INNER faces and wash out the room.
     const shellMat = adobeMat.clone();
-    [[0, -ROOM / 2 - 0.02, 0], [-Math.PI / 2, 0, 0], [Math.PI / 2, 0, 0]].forEach(([ry, pz, _], i) => {
-      const skin = new THREE.Mesh(makeRuggedPlane(ROOM + SEAM, WALL_H + SEAM, 14, 8, 0.024, 0.01, 30 + i), shellMat);
-      if (i === 0) { skin.position.set(0, WALL_H / 2, -ROOM / 2 - 0.02); }              // back, faces +Z? no: outward = -Z
-      if (i === 1) { skin.rotation.y = Math.PI / 2;  skin.position.set(ROOM / 2 + 0.02, WALL_H / 2, 0); }
-      if (i === 2) { skin.rotation.y = -Math.PI / 2; skin.position.set(-ROOM / 2 - 0.02, WALL_H / 2, 0); }
+    // i === 1 is the light wall, and it is skipped here: a solid outward skin
+    // over the shoji would block the sun as surely as an inner one, which is
+    // the whole lesson of building the wall around the opening. It is rebuilt
+    // below in the same four leftover rectangles.
+    [[0, BACK_Z - 0.02, 0], [-Math.PI / 2, 0, 0], [Math.PI / 2, 0, 0]].forEach(([ry, pz, _], i) => {
+      if (i === 1) return;
+      const skin = new THREE.Mesh(makeRuggedPlane((i === 0 ? ROOM_W : SHELL_D) + SEAM,
+        WALL_H + SEAM, 14, 8, 0.024, 0.01, 30 + i), shellMat);
+      if (i === 0) { skin.position.set(0, WALL_H / 2, BACK_Z - TOKO_D - 0.02); }              // back, faces +Z? no: outward = -Z
+      if (i === 1) { skin.rotation.y = Math.PI / 2;  skin.position.set(ROOM_W / 2 + 0.02, WALL_H / 2, SHELL_CZ); }
+      if (i === 2) { skin.rotation.y = -Math.PI / 2; skin.position.set(-ROOM_W / 2 - 0.02, WALL_H / 2, SHELL_CZ); }
       if (i === 0) skin.rotation.y = Math.PI;
       skin.castShadow = true;
       skin.receiveShadow = true;
       scene.add(outdoor(skin));
     });
+    // the light wall's outward skin, around the same opening
+    {
+      const skinPanel = (dz, dy, cz, cy, seed) => {
+        if (dz < 0.002 || dy < 0.002) return;
+        const m = new THREE.Mesh(makeRuggedPlane(dz, dy,
+          Math.max(2, Math.round(dz * 4)), Math.max(2, Math.round(dy * 4)),
+          0.024, 0.01, seed), shellMat);
+        m.rotation.y = Math.PI / 2;
+        m.position.set(ROOM_W / 2 + 0.02, cy, cz);
+        m.castShadow = true;
+        m.receiveShadow = true;
+        scene.add(outdoor(m));
+      };
+      const kz0 = SHELL_CZ - SHELL_D / 2, kz1 = SHELL_CZ + SHELL_D / 2;
+      skinPanel(SHELL_D + SEAM, SH_Y0 + SEAM, SHELL_CZ, SH_Y0 / 2, 40);
+      skinPanel(SHELL_D + SEAM, (WALL_H - SH_Y1) + SEAM, SHELL_CZ, (SH_Y1 + WALL_H) / 2, 41);
+      skinPanel((SH_Z0 - kz0) + SEAM, (SH_Y1 - SH_Y0) + SEAM, (kz0 + SH_Z0) / 2, (SH_Y0 + SH_Y1) / 2, 42);
+      skinPanel((kz1 - SH_Z1) + SEAM, (SH_Y1 - SH_Y0) + SEAM, (SH_Z1 + kz1) / 2, (SH_Y0 + SH_Y1) / 2, 43);
+    }
 
     // ---- the roof ----
     // Without it you see straight over the wall into the room and the house
@@ -1235,7 +1692,21 @@
     // the surface is drawn as strips running down the slope, the same trick as
     // the leaves.
     {
-      const RE = (ROOM / 2 + 0.52) * Math.SQRT2;     // eave radius, corner to corner
+      // The footprint is the HUT's, not a square. It was a square sized on the
+      // deeper of the two dimensions, which gave the ends their intended 52cm
+      // of eave and the narrow sides 83, and that surplus is what Nicolas saw:
+      // the roof read as bigger than the house it sits on.
+      //
+      // One factor narrows it in x, inside corner(), so the whole roof follows
+      // without knowing about it: slope, cut band, the 1900 stems per face and
+      // the rolled hips are all built from those corners.
+      //
+      // What is STILL deferred, and it is the older comment's real point: a hip
+      // over a rectangle wants a RIDGE rather than an apex point. This is a
+      // rectangular pyramid, correctly sized. The ridge is a job of its own.
+      const EAVE = 0.52;                               // the overhang, now all round
+      const RE = (SHELL_D / 2 + EAVE) * Math.SQRT2;    // eave radius, corner to corner
+      const SX = (ROOM_W / 2 + EAVE) / (SHELL_D / 2 + EAVE);
       const RH = 1.95;                                // steep, as thatch must be
       const TH = 0.34;                                // the depth of the thatch
       const Y0 = WALL_H - 0.10;
@@ -1245,7 +1716,7 @@
 
       const corner = (k, rad, y) => {
         const a = Math.PI / 4 + k * Math.PI / 2;
-        return [Math.cos(a) * rad, y, Math.sin(a) * rad];
+        return [Math.cos(a) * rad * SX, y, Math.sin(a) * rad];
       };
       const pos = [], rgb = [];
       const col = (t, moss) => {
@@ -1332,6 +1803,7 @@
       }));
       roof.castShadow = true;
       roof.receiveShadow = true;
+      roof.position.z = SHELL_CZ;  // built about the origin, so it rides with the shell
       scene.add(outdoor(roof));
     }
 
@@ -2948,16 +3420,46 @@
     // shadow-casting sun instead, so the room needs no compensation.
     const hemi = new THREE.HemisphereLight(0xd8ccb6, 0x4a4034, 0.56);
     scene.add(hemi);
+    const HEMI_BASE = hemi.intensity;   // what the visitor's dial scales from
 
     // A soft, shadowless daylight for the roji. No shadows on purpose: it must
     // not carve the interior, which belongs to the window alone.
     // Late afternoon rather than noon: lower and warmer. Long raking light is
     // most of what makes a small garden feel like somewhere you are welcome.
     const day = new THREE.DirectionalLight(0xffe3b4, 2.5);
+    // ?sun=-1 PUTS THE SUN ON THE OTHER SIDE, mirrored in x, and it is here to
+    // be looked at rather than argued about.
+    //
+    // Why it matters beyond the light: this page put its paper wall on +x
+    // BECAUSE the sun is there, and room3d put its own on the opposite side,
+    // which is the side the shared plan leaves open beside the alcove. That is
+    // why a bokuseki-mado works there and cannot exist here. Moving the sun is
+    // far cheaper than turning the building: not one stone of the roji moves,
+    // only the light falls the other way.
+    //
+    // What this switch does NOT yet do: move the shoji. Under ?sun=-1 the
+    // paper wall is on the shade side, which is the very mistake the window
+    // comment above records. So this is for judging THE GARDEN under the other
+    // light, nothing else. If the garden holds, the wall follows and the
+    // window becomes possible; if it does not, the idea dies here for nothing.
+    // Turned as an AZIMUTH rather than flipped, because mirroring in x alone
+    // made the light frontal at the chumon by accident: measured left-to-right
+    // across that frame, the rake fell from 26.5 to 1.2 while the composed sun
+    // holds it. What the alcove needs is only that the sun be on the -x side;
+    // where it stands round that side is still free, and this is the dial for
+    // finding it. ?sun=-1 is kept as the plain mirror, which is -34.7 here.
+    const SUN_R = 23.72, SUN_Y = 12.9, SUN_AZ0 = 34.68;   // the composed sun
+    const _sunq = new URLSearchParams(location.search);
+    const SUN_AZ = (function () {
+      const v = parseFloat(_sunq.get("sunaz"));
+      if (isFinite(v)) return v;
+      return _sunq.get("sun") === "-1" ? -SUN_AZ0 : SUN_AZ0;
+    })();
     // Pulled far back along the same direction: as a shadow camera it sits at
     // this position, and the outer garden at z~17 was behind its near plane,
     // so nothing out there cast or received. Sun angle is unchanged.
-    day.position.set(13.5, 12.9, 19.5);
+    day.position.set(SUN_R * Math.sin(SUN_AZ * Math.PI / 180), SUN_Y,
+                     SUN_R * Math.cos(SUN_AZ * Math.PI / 180));
     day.target.position.set(0.4, 0, 6.0);
     // Shadows are not decoration here, they are the mechanism: the roof and
     // walls are what keep the room dark while the garden is in full sun. The
@@ -2976,49 +3478,52 @@
     day.shadow.normalBias = 0.006;   // higher leaks a bright rim at the wall/ceiling seam
     scene.add(day);
     scene.add(day.target);
-
-    // A window casts a rectangle, not a disc. The spot gets a projected mask
-    // (a "cookie") shaped like the opening, with the lattice bars drawn into
-    // it, so the floor receives the window's shape and its divisions. Landing
-    // obliquely it becomes a parallelogram, which is what real light does.
-    function makeWindowCookie() {
-      const S = 512, c = document.createElement("canvas");
-      c.width = c.height = S;
-      const g = c.getContext("2d");
-      g.fillStyle = "#000";
-      g.fillRect(0, 0, S, S);
-      // the aperture, proportioned like the window (0.4 wide x 0.55 tall)
-      const w = S * 0.46, h = S * 0.63, x0 = (S - w) / 2, y0 = (S - h) / 2;
-      g.fillStyle = "#fff";
-      g.fillRect(x0, y0, w, h);
-      // the bamboo lattice, split off centre like the real frame
-      g.strokeStyle = "#000";
-      g.lineWidth = S * 0.022;
-      g.beginPath();
-      g.moveTo(x0 + w * 0.618, y0); g.lineTo(x0 + w * 0.618, y0 + h);
-      g.moveTo(x0, y0 + h * 0.382); g.lineTo(x0 + w, y0 + h * 0.382);
-      g.stroke();
-      // soften the edge: sunlight through paper is not a razor
-      g.filter = "blur(6px)";
-      g.drawImage(c, 0, 0);
-      const tex = new THREE.CanvasTexture(c);
-      tex.colorSpace = THREE.SRGBColorSpace;
-      return tex;
+    // The light the shoji lets in. A DIRECTIONAL, where the small bamboo window
+    // had a spot carrying a window-shaped cookie. The cookie was right for a
+    // 40cm opening and is wrong for a 2.3m wall of paper: it draws one bright
+    // rectangle, and what this room wants is light arriving WIDE, FLAT and LOW.
+    // That width is the reason the room reads as depth rather than as a lit box.
+    // `makeWindowCookie` went with it; it existed for that one map.
+    //
+    // Placed on the sun's own azimuth. `day` above comes from +x +z, so the
+    // light through the paper agrees with the shadows out in the garden, which
+    // is a mismatch Nicolas has caught here before.
+    const SHOJI_LUM = 1.25;
+    const shojiLight = new THREE.DirectionalLight(0xfff2da, SHOJI_LUM);
+    shojiLight.position.set(SH_X + 2.60, 1.45, SH_CZ + 1.10);
+    shojiLight.target.position.set(-0.60, 0.28, SH_CZ - 0.50);
+    shojiLight.castShadow = true;
+    shojiLight.shadow.mapSize.set(2048, 2048);
+    {
+      const ss = shojiLight.shadow.camera;
+      ss.left = -2.4; ss.right = 2.4; ss.top = 2.4; ss.bottom = -2.4;
+      ss.near = 0.5; ss.far = 9;
     }
+    shojiLight.shadow.bias = -0.0008;
+    shojiLight.shadow.normalBias = 0.004;
+    scene.add(shojiLight);
+    scene.add(shojiLight.target);
 
-    const windowLight = new THREE.SpotLight(0xfff1d6, 24, 7, Math.PI / 4.6, 0.95, 0.8);
-    windowLight.map = makeWindowCookie();
-    windowLight.position.set(WINDOW_SIDE * (ROOM / 2 - 0.15), WINDOW_Y, WINDOW_Z);
-    // The exact mirror of the old aim, so the beam still rakes down onto the
-    // floor and the tokonoma instead of washing the far wall.
-    windowLight.target.position.set(0.55, 0.35, -0.7);
-    windowLight.castShadow = true;
-    windowLight.shadow.mapSize.set(1024, 1024);
-    windowLight.shadow.camera.near = 0.3;
-    windowLight.shadow.camera.far = 6;
-    windowLight.shadow.radius = 4;
-    scene.add(windowLight);
-    scene.add(windowLight.target);
+    // The alcove's light, and THE CHEAT, stated so nobody has to rediscover it.
+    // A bokuseki-mado would have thrown this, and there is no bokuseki-mado:
+    // the window would have cost the shoji 25cm of its alcove end and the big
+    // shoji is the better thing. So the light stands where that window would
+    // have been and comes in anyway.
+    //
+    // It works for one reason: this light has NO castShadow, so the solid wall
+    // does not stop it. Turn shadows on here and the alcove goes dark again.
+    // That is the whole of the trick, and it is the only lie in the room.
+    //
+    // Aimed at TOKO_SCROLL itself rather than at transcribed coordinates, so
+    // if the alcove ever moves the light follows it instead of lighting where
+    // the scroll used to hang.
+    const BM_LUM = 0.95;
+    const bmLight = new THREE.DirectionalLight(0xfff0d6, BM_LUM);
+    bmLight.position.set(SH_X + 2.20, 1.15, BAY_FRONT + 0.32);
+    bmLight.target.position.copy(TOKO_SCROLL);
+    scene.add(bmLight);
+    scene.add(bmLight.target);
+
 
     // ---- the journey: scroll travels, the mouse looks --------------------
     // Five waypoints from outside the nijiriguchi to seated inside. Each beat
@@ -3046,7 +3551,7 @@
       { u: 0.84, pos: [ 0.72, 1.15, 3.30], look: [ 0.70, 0.44, 2.00] }, // standing before it
       { u: 0.90, pos: [ 0.71, 0.62, 2.85], look: [ 0.70, 0.42, 2.00] }, // kneeling
       { u: 0.95, pos: [ 0.70, 0.40, 2.02], look: [ 0.62, 0.45, 1.20] }, // head at the threshold
-      { u: 0.98, pos: [ 0.66, 0.48, 1.75], look: [ 0.35, 0.55, 0.30] }, // through, still low
+      { u: 0.98, pos: [ 0.66, 0.48, 1.75], look: [ 0.35, 0.55, CZ + 0.30] }, // through, low
       { u: 1.00, pos: CAM_IN.toArray(),    look: LOOK_IN.toArray()   }, // seated
     ];
     const smooth = (t) => t * t * (3 - 2 * t);
@@ -3077,7 +3582,6 @@
       { u: 0.900, half: 0.020 },   // the sliding door
       { u: 1.000, half: 0.040 },   // seated, the bowl
     ];
-    const LOOK_SWING = 0.58, LOOK_TILT = 0.20;
     function stopWeight(u) {
       let best = 0;
       for (const st of STOPS) {
@@ -3087,7 +3591,60 @@
       return best;
     }
     let targetAngle = 0, currentAngle = 0, targetTilt = 0, currentTilt = 0;
+    // ---- turning on the spot, the whole way round --------------------------
+    // The hover look is ABSOLUTE: the cursor's position maps into SWING_D, so
+    // it has a stop and can never bring you round behind yourself. Turning on
+    // the spot needs ACCUMULATION instead, which means a DRAG -- and a drag
+    // leaves the plain click free to open a dot, which pointer lock would not.
+    // room3d turns the same way, by the same number of radians per pixel.
+    //
+    // The two live together rather than replacing each other: `spin` is where
+    // you are FACING, and the hover angle stays what it always was, a glance
+    // around that. Same sign as the hover, which this scene has always had
+    // inverted, so dragging and pointing agree.
+    let spin = 0, dragging = false, dragX = 0, dragMoved = 0;
+    const SPIN_RATE = 0.0032;              // radians per pixel, room3d's figure
+    const cv = renderer.domElement;
+    cv.addEventListener("pointerdown", (e) => {
+      if (!inRoom) return;                 // on the path the walk owns the view
+      dragging = true; dragX = e.clientX; dragMoved = 0;
+      try { cv.setPointerCapture(e.pointerId); } catch (err) { void err; }
+    });
+    cv.addEventListener("pointermove", (e) => {
+      if (!dragging) return;
+      const dx = e.clientX - dragX;
+      spin -= dx * SPIN_RATE;
+      dragMoved += Math.abs(dx);
+      dragX = e.clientX;
+    });
+    const endDrag = () => { dragging = false; };
+    cv.addEventListener("pointerup", endDrag);
+    cv.addEventListener("pointercancel", endDrag);
+    // A drag must not also open whichever dot it happened to start on, nor
+    // close an open card. Capture phase, so it never reaches either.
+    addEventListener("click", (e) => {
+      if (dragMoved > 6) { e.stopPropagation(); e.preventDefault(); }
+      dragMoved = 0;
+    }, true);
+    // The pointer that aims at a dot is the same one that swings the look, so
+    // reaching for a dot moved it and you ended up chasing it up the screen.
+    // The look therefore HOLDS as soon as the pointer is near a dot, and holds
+    // where it already is: eased back to neutral instead, the whole room would
+    // glide and that is a second thing to chase.
+    const AIM_R = 110;                     // px, about three dot widths
+    function aimingAtDot(px, py) {
+      for (const n of NOTES) {
+        if (!n.el || n.el.style.opacity === "0") continue;
+        const r = n.el.getBoundingClientRect();
+        if (!r.width) continue;
+        const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+        if (Math.hypot(px - cx, py - cy) < AIM_R) return true;
+      }
+      return false;
+    }
     addEventListener("mousemove", (e) => {
+      if (dragging) return;                            // the drag owns the view
+      if (aimingAtDot(e.clientX, e.clientY)) return;   // hold the look, and the dots with it
       const nx = (e.clientX / innerWidth) * 2 - 1;
       const ny = (e.clientY / innerHeight) * 2 - 1;
       targetAngle = -nx * LOOK_SWING;    // inverted, as this scene always has been
@@ -3119,47 +3676,210 @@
         jp: "躙口", d: "The crawling-in entrance, seventy centimetres square. Nobody enters a tea room standing. The bow is not politeness: the architecture imposes it, on the lord exactly as on the farmer." },
       { at: 0.340, p: [0.0, 2.30, 2.55], t: "Kayabuki",
         jp: "茅葺", d: "The thatched roof, of miscanthus. Thick, cut clean at the eave, and steep enough to shed the rain. It is what keeps the room in shadow, by holding the sun off it." },
-      { at: 1.000, p: [0.0, 1.30, -1.86], t: "Kakejiku",
-        jp: "一期一会", d: "The scroll in the tokonoma. Ichi-go ichi-e: one time, one meeting. This gathering will not happen twice, and it is the only thing the room says to you." },
-      { at: 1.000, p: [-0.55, 0.78, -1.15], t: "Ikebana",
-        jp: "生花", d: "The flower in the tokonoma. One stem and two leaves, deliberately off balance. You do not arrange a bouquet here; you let a season be seen." },
-      { at: 1.000, p: [0.60, 0.20, -0.15], t: "Chawan",
-        jp: "茶碗", d: "The bowl. Set on the side the light comes from, within reach of the guest's hand. The matcha is still steaming: the ceremony has not begun, it has only just begun." },
+      // bare: the two in the tokonoma carry the dot alone. A vertical name set
+      // over the alcove covered the very things it named, and the tokonoma is
+      // the one place in the room you are meant to look at, so nothing may sit
+      // in front of it. The name is not lost, it is in the card on click.
+      { at: 1.000, bare: true, p: [TOKO_SCROLL.x, TOKO_SCROLL.y, TOKO_SCROLL.z], t: "Kakejiku",
+        jp: "和敬清寂", d: "The scroll in the tokonoma. Wa-kei-sei-jaku: harmony, respect, purity, stillness. The four principles Rikyu is said to have given, and the only thing the room says to you. It hangs in the one place here you are meant to look at." },
+      { at: 1.000, bare: true, p: [TOKO_FLOWER.x, TOKO_FLOWER.y, TOKO_FLOWER.z], t: "Ikebana",
+        jp: "生花", d: "The flower in the tokonoma. One bud on a bare branch, in a length of bamboo. You do not arrange a bouquet here; you let a season be seen, and a season in one bud is more of it than a season in twelve." },
+      { at: 1.000, p: [-0.688, 0.20, 0.357], t: "Kama",
+        jp: "釜", d: "The kettle, and the only thing in the room that makes a sound. Cast iron, filled once and kept just off the boil; its note over the fire has names, and wind in the pines is the one everybody knows. Its lid is pushed aside because the water is ready." },
     ];
+
+    // ---- a dot on every utensil ---------------------------------------------
+    // Nicolas: "on peut mettre des points/cartes sur tous les dogu!" -- and the
+    // right way is to GENERATE them, because every one of these objects already
+    // carries its own name and its own paragraph in dogu-objects.js, written
+    // when it was built. Transcribing eleven descriptions into this page would
+    // be the eleventh copy of something this project keeps learning not to
+    // copy, and the copies would drift.
+    //
+    // The position is taken from each mesh's own bounding box, so a dot sits on
+    // the object wherever the layout has put it, in any of the eight
+    // arrangements. The kettle already had a card written by hand, so it is
+    // skipped rather than doubled.
+    (function dotsOnDogu() {
+      const named = [];
+      stage.traverse((o) => { if (o.name && o.name !== "set") named.push(o); });
+      named.forEach((o) => {
+        const rec = DOGU.OBJECTS.find((x) => x.key === o.name);
+        if (!rec || !rec.desc) return;
+        // A note may already have been written by hand -- the kettle has one,
+        // because its lid being ajar is worth a sentence dogu-objects.js has no
+        // reason to carry. That one is ENRICHED rather than skipped: it keeps
+        // its text and gains an anchor, so it joins the rank instead of
+        // standing alone among the objects, 15px from its neighbour.
+        const had = NOTES.find((n) => n.jp === rec.jp);
+        o.updateMatrixWorld(true);
+        const b = new THREE.Box3().setFromObject(o);
+        if (!isFinite(b.min.x)) return;
+        const c = b.getCenter(new THREE.Vector3());
+        // The anchor is a real VERTEX, not the box's centre. A box's centre is
+        // only on the object if the object is roughly a blob: the ladle is
+        // 320mm of handle, so its centre hangs in the air out over the mat, and
+        // its dot pointed at the slop bowl. Measured, three of ten dots landed
+        // off their object that way.
+        //
+        // So: of the object's own vertices, the one standing HIGHEST among
+        // those near the middle horizontally. That is a point you can put a
+        // finger on, whatever the shape.
+        const v = new THREE.Vector3();
+        let anchor = null;
+        o.traverse((m) => {
+          if (!m.geometry || !m.geometry.attributes || !m.geometry.attributes.position) return;
+          const pa = m.geometry.attributes.position;
+          const step = Math.max(1, Math.floor(pa.count / 600));
+          for (let k = 0; k < pa.count; k += step) {
+            v.fromBufferAttribute(pa, k); v.applyMatrix4(m.matrixWorld);
+            if (Math.hypot(v.x - c.x, v.z - c.z) > 0.055) continue;
+            if (!anchor || v.y > anchor.y) anchor = v.clone();
+          }
+        });
+        if (!anchor) anchor = new THREE.Vector3(c.x, b.max.y, c.z);
+        // The dot stands at a COMMON height, well above everything on the mat,
+        // so the eight of them read as a rank of labels instead of a heap of
+        // red spots among the utensils. The anchor stays on the object, and a
+        // hairline joins the two only when the card is open.
+        //
+        // 1.15 is between the tallest thing on the mat and the alcove's lintel
+        // at 1.60: high enough to be clear of the objects, low enough to stay
+        // in the frame from a seated eye at 600.
+        if (had) { had.key = o.name; had.anchor = anchor.clone();
+                   had.p = [anchor.x, anchor.y, anchor.z]; return; }
+        NOTES.push({ at: 1.000, key: o.name, anchor: anchor.clone(),
+          p: [anchor.x, anchor.y, anchor.z],
+          t: rec.rom, jp: rec.jp, d: rec.desc });
+      });
+    })();
 
     const introEl = document.getElementById("intro-card");
     const notesEl = document.getElementById("notes");
     const cardEl = document.getElementById("note-card");
+    // The room's card, standing on its own. Its text is the Yojohan note's,
+    // which used to need a dot and a click to be read at all.
+    const roomCardEl = document.getElementById("room-card");
+    const hintRoomEl = document.getElementById("hint-room");
+    roomCardEl.innerHTML =
+      "<span class='vt'><span class='jp'>四畳半</span>" +
+      "<span class='rom'>Yojohan</span></span>" +
+      "<span class='tx'>" + "Four and a half mats, 2865mm square: a mat is 1910 by 955, " +
+           "and four of them turning about a half mat at the centre come to exactly " +
+           "three mat widths each way. The hearth is a 420mm square cut in the corner " +
+           "of the host's mat, and everything here stands where the plan puts it, at " +
+           "its own size. " +
+           "<br><br>This is one arrangement of eight: four hearth positions, each in a " +
+           "normal and a reversed style." +
+           "<br><br><a href='room3d.html'>See all eight, in the room</a>" +
+           "<br><a href='chashitsu.html'>The chashitsu chapter, drawn flat</a>" +
+      "</span>";
+    const lineEl = document.getElementById("note-line");
+    const lineSeg = lineEl.firstElementChild;
     let openNote = -1;
     const _v = new THREE.Vector3();
+    // Opening a card is no longer only a click: the room's own card opens by
+    // itself when you arrive, so the two doors out of the piece are standing
+    // open rather than waiting to be found. One function for both paths.
+    function showCard(i) {
+      openNote = i;
+      NOTES.forEach((m, k) => m.el && m.el.classList.toggle("on", k === openNote));
+      if (openNote < 0) { cardEl.classList.remove("on");
+                          lineEl.classList.remove("on"); return; }
+      const n = NOTES[openNote];
+      cardEl.innerHTML =
+        "<span class='vt'><span class='jp'>" + n.jp + "</span>" +
+        "<span class='rom'>" + n.t + "</span></span>" +
+        "<span class='tx'>" + n.d + "</span>";
+      cardEl.classList.add("on");
+    }
+
     NOTES.forEach((n, i) => {
       const b = document.createElement("button");
       b.className = "note-dot";
-      b.innerHTML = "<span class='note-disc'></span>";
+      // The name rides beside the disc, except where it would cover what it
+      // names: see `bare` on the tokonoma notes. jp itself is kept either way,
+      // because the card reads it back on click.
+      b.innerHTML = "<span class='note-disc'></span>" +
+        (n.jp && !n.bare ? "<span class='note-jp'>" + n.jp + "</span>" : "");
       b.style.opacity = 0;
       b.setAttribute("aria-label", n.t);
       b.addEventListener("click", (ev) => {
         ev.stopPropagation();
-        openNote = (openNote === i) ? -1 : i;
-        NOTES.forEach((m, k) => m.el.classList.toggle("on", k === openNote));
-        if (openNote < 0) { cardEl.classList.remove("on"); return; }
-        cardEl.innerHTML =
-          "<span class='vt'><span class='jp'>" + n.jp + "</span>" +
-          "<span class='rom'>" + n.t + "</span></span>" +
-          "<span class='tx'>" + n.d + "</span>";
-        cardEl.classList.add("on");
+        showCard(openNote === i ? -1 : i);
       });
       notesEl.appendChild(b);
       n.el = b;
       n.vec = new THREE.Vector3(n.p[0], n.p[1], n.p[2]);
+      n.avec = n.anchor ? n.anchor.clone() : null;   // the foot of the hairline
     });
     addEventListener("click", () => {
       openNote = -1;
       cardEl.classList.remove("on");
+      lineEl.classList.remove("on");
       NOTES.forEach((m) => m.el.classList.remove("on"));
     });
 
+    // Labels that would overlap are pushed apart along x, in SCREEN space,
+    // because that is where the overlap happens: two utensils 60mm apart on the
+    // mat are two names on top of each other at this distance. Sorted by x and
+    // walked once, each pushed just far enough to clear the last. The dot's
+    // own position is what moves; the hairline still lands on the object, so
+    // nothing is lied about.
+    const _lay = [];
+    // The row's height, as a percentage of the window measured from the TOP,
+    // and one number for all of them: a row that moves is a row you chase with
+    // the cursor.
+    //
+    // It has come down twice on his eye, and the second time a measurement
+    // decided which "half" he meant.
+    //
+    // A tenth put the dots against the top edge. A fifth, 132, left them high.
+    // He asked to halve their height again, and read as elevation off the
+    // BOTTOM that is two fifths, 264 -- so I tried it, and measured: the
+    // highest vertex of anything on the mat projects to y 249 from this seat,
+    // so the dots would have landed two pixels BELOW the tops of the objects.
+    // That is the heap we had just broken up.
+    //
+    // So the height that matters is the CLEARANCE above what they name, 117px,
+    // and halving that gives 191, which is 29 per cent. Lower, as he asked,
+    // and still clear. ?row= turns it, like ?eye= and ?fov= beside it.
+    const ROW_P = parseFloat(new URLSearchParams(location.search).get("row"));
+    const LABEL_ROW = Math.round(innerHeight *
+      ((isFinite(ROW_P) ? ROW_P : 29) / 100));
+    function spreadLabels() {
+      _lay.sort((a, b) => a.x - b.x);
+      const GAP = 34;                       // a vertical name is one glyph wide
+      for (let i = 1; i < _lay.length; i++) {
+        if (_lay[i].x - _lay[i - 1].x < GAP) _lay[i].x = _lay[i - 1].x + GAP;
+      }
+      // and kept on screen: if the run overflows the right edge, slide it back
+      const over = _lay.length ? _lay[_lay.length - 1].x - (innerWidth - 90) : 0;
+      if (over > 0) for (const e of _lay) e.x -= over;
+      // The room's card keeps the left of the screen, so the rank is what
+      // yields: Nicolas's rule is that the card is ALWAYS left of the dogu
+      // dots, or the dots cover the dogu. Stated as a relation and enforced
+      // here rather than trusted to a fixed offset, because the dots slide
+      // with the head and the card does not.
+      if (_lay.length && roomCardEl.classList.contains("on")) {
+        const floor = roomCardEl.getBoundingClientRect().right + 26;
+        const under = floor - _lay[0].x;
+        if (under > 0) for (const e of _lay) e.x += under;
+      }
+      for (const e of _lay) e.n.el.style.left = e.x + "px";
+    }
+
     function placeNotes(u, gate) {
+      // The room's card stands for as long as the room does. Same gate as a
+      // note at the last stop, so it fades in with the arrival and goes when
+      // you walk back out; it has no dot, so there is nothing to open.
+      const roomNear = gate * (1 - smooth(Math.min(1, Math.abs(u - 1.000) / 0.05)));
+      roomCardEl.classList.toggle("on", roomNear > 0.04);
+      // The room's commands appear with the room and go with it. Driven per
+      // frame like the walk's panel rather than by a CSS transition, for the
+      // same reason: a transition only lags behind the glide.
+      if (hintRoomEl) hintRoomEl.style.opacity = roomNear.toFixed(3);
+      _lay.length = 0;
       for (let i = 0; i < NOTES.length; i++) {
         const n = NOTES[i];
         const near = gate * (1 - smooth(Math.min(1, Math.abs(u - n.at) / 0.05)));
@@ -3171,7 +3891,12 @@
         if (!on) { if (openNote === i) { openNote = -1; cardEl.classList.remove("on"); } continue; }
         const sx = (_v.x * 0.5 + 0.5) * innerWidth, sy = (-_v.y * 0.5 + 0.5) * innerHeight;
         n.el.style.left = sx + "px";
-        n.el.style.top = sy + "px";
+        // A named label goes in a ROW, at one screen height. Set at a common
+        // WORLD height instead they came out between 34 and 106 px down,
+        // because perspective does not preserve a plane's height on screen.
+        // "Bien alignes" is a screen property, so it is set on screen.
+        n.el.style.top = (n.avec ? LABEL_ROW : sy) + "px";
+        if (n.avec) _lay.push({ n: n, x: sx });        // to be spread along the row
         if (openNote === i) {
           // Set BESIDE the dot, and on whichever side keeps it off the object
           // it is naming: to the left when the dot is right of centre.
@@ -3181,9 +3906,35 @@
           const cw = 330 + 36;
           const raw = (sx > innerWidth * 0.56) ? sx - cw - 34 : sx + 34;
           cardEl.style.left = Math.min(Math.max(16, raw), innerWidth - cw - 16) + "px";
-          cardEl.style.top = Math.min(Math.max(16, sy - 26), innerHeight - 200) + "px";
+          // Clamped by the card's OWN height. It used to be innerHeight - 200,
+          // a guessed card height, and it held only while every card was
+          // short: the room's card is 370 tall and ran 128px off the bottom of
+          // the window, taking its two links with it. A guessed size is a bug
+          // waiting for content.
+          const ch = cardEl.offsetHeight || 200;
+          cardEl.style.top =
+            Math.min(Math.max(16, sy - 26), Math.max(16, innerHeight - ch - 16)) + "px";
         }
       }
+      spreadLabels();
+
+      // The hairline, last, because the label may have just been moved: it runs
+      // from wherever the dot ENDED UP down to the object itself. Only one is
+      // ever needed, so there is one line in the page.
+      const n = NOTES[openNote];
+      if (n && n.avec && n.el.style.opacity !== "0") {
+        _v.copy(n.avec).project(camera);
+        if (_v.z < 1) {
+          const ax = (_v.x * 0.5 + 0.5) * innerWidth;
+          const ay = (-_v.y * 0.5 + 0.5) * innerHeight;
+          const r = n.el.getBoundingClientRect();
+          lineSeg.setAttribute("x1", (r.left + 13).toFixed(1));
+          lineSeg.setAttribute("y1", (r.top + r.height / 2).toFixed(1));
+          lineSeg.setAttribute("x2", ax.toFixed(1));
+          lineSeg.setAttribute("y2", ay.toFixed(1));
+          lineEl.classList.add("on");
+        } else lineEl.classList.remove("on");
+      } else lineEl.classList.remove("on");
     }
 
     // ---- the walk, one breath at a time ------------------------------------
@@ -3193,7 +3944,7 @@
     // happen to pass through. Scrolling let the visitor rush and made every
     // stop a coincidence.
     const MARKS = [0].concat(STOPS.map((st) => st.u));
-    let markIdx = 0, currentU = 0, walkPrev = null;
+    let markIdx = 0, currentU = 0, walkPrev = null, roamPrev = null;
     let fromU = 0, toU = 0, glideT0 = 0, glideDur = 0, moving = false;
     let lookW = 1, lookTarget = 1;
     const breathe = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
@@ -3210,6 +3961,52 @@
       lookTarget = 0;
       markIdx = next;
     }
+    // The entrance shortcut, and it FADES rather than cuts: through the page's
+    // OWN veil, the same element the loading screen holds and site.js reuses to
+    // leave the page, so there is one dissolve in the project and not a second
+    // invented here. Crossing the whole garden in two seconds would have looked
+    // like a flight forward; a dissolve simply says you were at the gate and
+    // now you are seated.
+    //
+    // Only from the entrance, and that is the point: it is a door, not a
+    // teleport. Once you have set out, the path is the path. The walk is left
+    // parked on the LAST mark rather than in some other mode, so SPACE and R
+    // keep working from the seat exactly as if you had walked in: `?room` would
+    // have looked equivalent and is not, because it takes the static branch
+    // where both keys are dead and you cannot come back out.
+    const VEIL_MS = 750;               // site.css: #veil transition .75s
+    let skipping = false;
+    function skipToRoom() {
+      if (skipping || currentU > 0.001) return;
+      skipping = true;
+      const v = document.getElementById("veil");
+      if (v) v.classList.remove("gone");
+      setTimeout(() => {
+        currentU = 1;
+        markIdx = MARKS.length - 1;
+        fromU = toU = 1;
+        moving = false;
+        manualDir = 0; manualV = 0;
+        walkPrev = null;               // or the first frame back sees a huge dt
+        lookTarget = 1; lookW = 1;
+        // Seated facing what the room was composed to show, head neutral: the
+        // mouse may have been anywhere on the way to pressing the key.
+        targetAngle = currentAngle = 0;
+        targetTilt = currentTilt = 0;
+        // Two frames, so the jump is PAINTED before the veil starts lifting.
+        // With a timer behind them, because rAF is not guaranteed to run: a
+        // background tab stops it, and then pressing T and stepping away would
+        // leave the visitor behind an opaque veil with no way out. Measured
+        // 2026-09-10 in a harness that starves rAF, which is exactly what a
+        // hidden tab does. Whichever fires first lifts it; the second is a
+        // no-op because the class is already there.
+        const lift = () => { if (v) v.classList.add("gone"); };
+        if (v) requestAnimationFrame(() => requestAnimationFrame(lift));
+        setTimeout(lift, 260);
+        skipping = false;
+      }, VEIL_MS + 60);
+    }
+
     // ---- two ways to walk ---------------------------------------------------
     // AUTO, the default and the piece as composed: press SPACE and the path
     //   carries you to the next stop on a long eased glide you cannot hurry.
@@ -3268,6 +4065,16 @@
 
     addEventListener("keydown", (e) => {
       if (e.code === "KeyM") { e.preventDefault(); setMode(MODE === "auto" ? "manual" : "auto"); return; }
+      if (e.code === "KeyT") { e.preventDefault(); skipToRoom(); return; }
+      // The room's own controls. They are read wherever you are but only ACT
+      // in the room, because roamStep is what applies them and it is idle
+      // anywhere else. Arrows on purpose: this page tests `e.code`, which is a
+      // PHYSICAL key, and letter codes move under a French keyboard while the
+      // arrows do not.
+      {
+        const k = ROOM_KEYS[e.code];
+        if (k) { e.preventDefault(); push[k[0]] = k[1]; return; }
+      }
       if (MODE === "manual") {
         if (e.code === "Space") { e.preventDefault(); manualDir = 1; }
         else if (e.code === "KeyR") { e.preventDefault(); manualDir = -1; }
@@ -3277,11 +4084,16 @@
       else if (e.code === "KeyR") { e.preventDefault(); goTo(markIdx - 1); }
     });
     addEventListener("keyup", (e) => {
+      const k = ROOM_KEYS[e.code];
+      if (k) { if (push[k[0]] === k[1]) push[k[0]] = 0; return; }
       if (MODE !== "manual") return;
       if ((e.code === "Space" && manualDir > 0) || (e.code === "KeyR" && manualDir < 0)) manualDir = 0;
     });
     // a key held while the window loses focus would otherwise walk forever
-    addEventListener("blur", () => { manualDir = 0; });
+    addEventListener("blur", () => {
+      manualDir = 0;
+      push.f = push.s = push.h = push.l = 0;   // a key held as focus leaves
+    });
 
     // The side menu is dark-on-dark inside the room, and would break the
     // journey anyway. Hide it for the walk, hand it back on arrival.
@@ -3484,9 +4296,56 @@
       if (t0 === null) t0 = now;
       const t = (now - t0) / 1000;
 
-      if (STATIC_VIEW) {
+      // The visitor's own step, once per frame and before either branch, so
+      // the seated entrance and the walked arrival get exactly the same room.
+      // It is idle outside the room: on the path the arrows do nothing, which
+      // is deliberate. The garden is composed for one corridor and stepping
+      // off it would find the edge of the world.
+      const rdt = roamPrev === null ? 0 : Math.min(0.1, (now - roamPrev) / 1000);
+      roamPrev = now;
+      roamStep(rdt, DIRECT || (!STATIC_VIEW && currentU > 0.995));
+
+      if (DIRECT) {
+        // Seated, and the head turns WHERE IT STANDS. The camera holds its
+        // place and the look target swings about it, which is the gesture
+        // Nicolas asked for on the walk; the frozen ?cam= views below still
+        // orbit, because for a debug frame that is useful.
         if (nijiriDoor && staticDoorOpen) {
-          nijiriDoor.position.x = DOOR_CX + (DOOR_W + 0.10) * 0.92;
+          nijiriDoor.position.x = DOOR_CX + DOOR_SLIDE;
+          staticDoorOpen = false;
+        }
+        // The mouse gives an angle bounded by LOOK_SWING, which is the walk's
+        // 33 degrees: enough to glance about while standing on a path, far too
+        // little in a room where the two things worth looking at are 66 degrees
+        // apart. So the seat scales it. At 125 degrees each way the head
+        // reaches the alcove, the window and most of the way to the door, and
+        // the tilt widens with it so the mats and the ceiling both come in.
+        const K = SWING_D * Math.PI / 180 / LOOK_SWING;
+        currentAngle += (targetAngle - currentAngle) * 0.055;
+        currentTilt += (targetTilt - currentTilt) * 0.055;
+        const dx = LOOK_BASE.x - CAM_BASE.x, dz = LOOK_BASE.z - CAM_BASE.z;
+        const R = Math.hypot(dx, dz);
+        const ang = Math.atan2(dx, dz) + spin + currentAngle * K;
+        // The head still turns where it stands; what moved is where it stands.
+        // The aim's height carries the same drop as the eye, or crouching would
+        // leave you staring at the ceiling.
+        _eye.copy(CAM_BASE).add(ROAM);
+        _eye.y = eyeY === null ? CAM_BASE.y : eyeY;
+        camera.position.copy(_eye);
+        camera.lookAt(_eye.x + R * Math.sin(ang),
+                      LOOK_BASE.y + currentTilt * K * R * 0.42 + (_eye.y - CAM_BASE.y),
+                      _eye.z + R * Math.cos(ang));
+
+        // The annotations belong here too. placeNotes was only ever called from
+        // the walk, so on the direct entrance not one dot appeared: the room's
+        // own card, the scroll's, the flower's and the kettle's were all in the
+        // page and none of them could be reached. u = 1 is the seated stop and
+        // the gate is open, because someone who arrived without walking is
+        // standing still by definition.
+        placeNotes(1, 1);
+      } else if (STATIC_VIEW) {
+        if (nijiriDoor && staticDoorOpen) {
+          nijiriDoor.position.x = DOOR_CX + DOOR_SLIDE;
           staticDoorOpen = false;
         }
         currentAngle += (targetAngle - currentAngle) * 0.05;
@@ -3528,10 +4387,16 @@
         if (w > 0.001) {
           const dx = _l.x - _p.x, dz = _l.z - _p.z;
           const R = Math.hypot(dx, dz);
-          const ang = Math.atan2(dx, dz) + currentAngle * w;
+          const ang = Math.atan2(dx, dz) + spin + currentAngle * w;
           _l.x = _p.x + R * Math.sin(ang);
           _l.z = _p.z + R * Math.cos(ang);
           _l.y += currentTilt * w * R * 0.42;
+        }
+        // The same offset on BOTH, so the direction the head is facing survives
+        // the move: _l was computed from _p, and shifting the pair keeps it.
+        if (ROAM.lengthSq() > 1e-9 || (eyeY !== null && Math.abs(eyeY - _p.y) > 1e-4)) {
+          _p.add(ROAM); _l.add(ROAM);
+          if (eyeY !== null) { const dy = eyeY - _p.y; _p.y += dy; _l.y += dy; }
         }
         camera.position.copy(_p);
         camera.lookAt(_l);
@@ -3548,7 +4413,7 @@
         // threshold (0.93), so the interior is revealed by the sliding and not
         // before it.
         if (nijiriDoor)
-          nijiriDoor.position.x = DOOR_CX + (DOOR_W + 0.10) * 0.92
+          nijiriDoor.position.x = DOOR_CX + DOOR_SLIDE
             * smooth(Math.min(1, Math.max(0, (currentU - 0.86) / 0.07)));
         window.__u = currentU;      // so a capture harness can wait for the glide
         window.__moving = moving;
