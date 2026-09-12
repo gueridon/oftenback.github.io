@@ -262,7 +262,13 @@
         "<b>" + t.jp + " &nbsp; " + t.rom + (reversed ? ", reversed" : "") +
         ".</b> " + t.note +
         (reversed ? " Reversed: the hearth to the right and the guests on the " +
-                    "host's left, which is the same room seen in a looking glass." : "");
+                    "host's left, which is the same room seen in a looking glass." : "") +
+        // The room beside the plan is empty in seven of the eight, and the
+        // reader is told why here rather than left to wonder what broke.
+        ((cur === 0 && !reversed) ? ""
+          : " <i>The room beside this plan carries no utensils in this " +
+            "arrangement: they are set out only in the four-and-a-half in its " +
+            "normal style, the one placing we are sure of.</i>");
       document.querySelectorAll(".eight button").forEach((b) => {
         b.classList.toggle("on", +b.dataset.i === cur && (b.dataset.rev === "1") === reversed);
       });

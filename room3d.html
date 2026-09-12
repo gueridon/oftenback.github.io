@@ -307,9 +307,19 @@
       guideName.innerHTML =
         '<span class="j">' + TYPE.jp + "</span>" + TYPE.rom +
         (REV ? ", inverse" : "");
+      // English, like the rest of the house. This clause was in French, alone
+      // on the whole site, and the chashitsu chapter says the same thing in
+      // English a page away.
       guideNote.textContent = TYPE.note +
-        (REV ? " Inverse: le foyer a droite et les invites a la gauche de " +
-               "l'hote, la meme salle vue dans un miroir." : "");
+        (REV ? " Reversed: the hearth to the right and the guests on the " +
+               "host's left, which is the same room seen in a looking glass."
+             : "") +
+        // AND WHY THE FLOOR IS EMPTY. A room that shows nothing has to say
+        // that it is showing nothing on purpose, or it reads as unfinished.
+        ((TI === 0 && !REV) ? ""
+          : " No utensils stand in this arrangement: they are set out only in " +
+            "the four-and-a-half in its normal style, the one placing we are " +
+            "sure of. The other seven wait rather than guess.");
       window.__frame = { FWD: R.FWD, LFT: R.LFT, KNEE: R.KNEE, RC: R.RC, RO: u(RO) };
     }
 

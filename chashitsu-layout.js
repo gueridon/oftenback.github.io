@@ -415,177 +415,23 @@
       ladle.rotation.z = -0.7545;
       ladle.position.y = 0.06615;
     } else {
-      // ---- three rules of alignment -----------------------------------------
-      // Nicolas's, and they place everything from the hearth's own diagonal:
+      // NOTHING, and that is the point.
       //
-      //   the bowl sits at the corner of the hearth nearest his left knee;
-      //   the lid rest, with the ladle, sits at the OPPOSITE corner;
-      //   the water jar and the caddy line up on that same diagonal, running
-      //     OUTWARD from the hearth past the bowl, the jar furthest out and
-      //     the caddy between it and the bowl.
+      // Nicolas, 2026-09-12: "je propose d'enlever les ustensils des sept
+      // arrangements de pieces dont nous ne sommes pas encore surs. mieux vaut
+      // rien que faux."
       //
-      // So the hearth's diagonal does the whole arrangement, and there is
-      // nothing left to place by eye.
-      const knee = KNEE.clone().addScaledVector(LFT, 0.10);   // his left knee
-      let near = null, far = null;
-      const corners = [];
-      for (const cx of [roX, roX + RO]) {
-        for (const cz of [roY, roY + RO]) corners.push(new THREE.Vector3(u(cx), 0, u(cz)));
-      }
-      for (const q of corners) {
-        const d = q.distanceTo(knee);
-        if (!near || d < near.d) near = { q: q, d: d };
-      }
-      // The bowl turns so that the SCOOP lies parallel to the mat with its
-      // handle toward the host. The scoop's handle is its local +X, measured:
-      // that end is 6.1mm wide and 2.4mm thick where the other is 16.8mm
-      // thick, the bend of the scoop. And bear() aims local +X. So aiming it
-      // at -FWD is the whole instruction, and that is SET_AZ, already the
-      // host's own bearing. It used to point back at the FIRE, which turned
-      // the scoop across the mat in every room but the first.
-      const set = DOGU.chawanSet();
-      set.position.copy(near.q);
-      set.rotation.y = SET_AZ;
-      set.name = "set";
-      into.add(set);
-
-      // ---- the free square beside the hearth --------------------------------
-      // Corrected by Nicolas, and his correction is a better rule than mine:
-      // the water jar and the caddy do not run out along the hearth's
-      // diagonal, they stand in the SQUARE BESIDE THE HEARTH, the part of the
-      // hearth's own mat that the hearth leaves free across its width, with
-      // the jar deepest and the caddy between it and the bowl.
+      // What stood here was a hundred and seventy lines that placed all nine
+      // utensils in any of the eight rooms, out of three rules of his and a
+      // frame read off the first room. The arithmetic was sound and it
+      // reproduced his own placing to a tenth of a millimetre. What it was not
+      // is VERIFIED. A bowl standing on a mat is a claim about a practice, and
+      // a room that shows one is teaching it whether or not we meant to.
       //
-      // My version ran the diagonal outward past the bowl and straight into
-      // the host: measured, the caddy landed 51mm from his left knee where it
-      // needed 94. Beside the hearth there is room, and the arrangement is
-      // the one he laid out by hand in the first room.
-      //
-      // So the frame is the free square's own: ACROSS from the hearth's edge
-      // toward the free side, ALONG from the hearth's far end back toward the
-      // host. Read out of the first room, his two objects sit at
-      //     jar    across 287, along 160
-      //     caddy  across 290, along 354
-      // and putting those numbers back through this frame reproduces his
-      // placing to a tenth of a millimetre, which is the check that the frame
-      // is the same idea he had. Turned by the free side, they follow into any
-      // of the eight.
-      const across = (() => {
-        // which side of the hearth the mat leaves free, across its width
-        const lo = longX ? hostMat.y : hostMat.x;
-        const hi = lo + (longX ? hostMat.h : hostMat.w);
-        const c0 = longX ? roY : roX, c1 = c0 + RO;
-        const toLo = c0 - lo, toHi = hi - c1;
-        const sgn = toHi >= toLo ? 1 : -1;
-        return longX ? new THREE.Vector3(0, 0, sgn) : new THREE.Vector3(sgn, 0, 0);
-      })();
-      const half = u(RO) / 2;
-      const O = new THREE.Vector3(RCX, 0, RCZ)
-        .addScaledVector(FWD, half).addScaledVector(across, half);
-      const BACK = FWD.clone().negate();
-      const inSquare = (ac, al) => O.clone()
-        .addScaledVector(across, ac).addScaledVector(BACK, al);
-      putAt("mizusashi", inSquare(0.287, 0.160));
-      putAt("natsume", inSquare(0.290, 0.354));
-
-      // ---- the lid rest and the ladle ---------------------------------------
-      // His rule, exactly: the corner opposite the bowl, on the SIDE OF THE
-      // HEARTH THE HOST SITS AT. So the two corners of the hearth's near edge
-      // are the bowl's and the rest's. The bowl already took the one nearest
-      // his left knee, so the rest takes its mirror across the hearth, same
-      // distance forward.
-      const RC = new THREE.Vector3(RCX, 0, RCZ);
-      const bowlRel = near.q.clone().sub(RC).setY(0);
-      let restQ = RC.clone()
-        .addScaledVector(FWD, bowlRel.dot(FWD))
-        .addScaledVector(LFT, -bowlRel.dot(LFT));
-      const side = bowlRel.dot(LFT) >= 0 ? 1 : -1;   // the side the bowl took
-
-      // In the corner-hearth the fire touches the wall, so that corner IS the
-      // wall: the rest's own box left the mats by 24mm there. So it is pulled
-      // straight back in along the hearth's edge, by the least that puts both
-      // the rest and the ladle on the floor.
-      //
-      // And the handle takes the FIRST of his two allowed directions that can
-      // be made to fit, aimed at his knee before parallel to the mat, with
-      // the pull searched inside that choice. Ordered the other way round the
-      // corner-hearth kept the smallest pull, 25mm, and paid for it with the
-      // one handle direction nobody wants: the ladle lying back across the
-      // bowl, because parallel-toward-the-host missed the mat by 2mm.
-      //
-      // bear() aims the ladle's local +X, which is its handle: in his room 1
-      // the ladle and the scoop carry the SAME rotation.y, -2.4550, because
-      // both are that one axis.
-      const inMats = (o) => { o.updateMatrixWorld(true);
-        const bb = new THREE.Box3().setFromObject(o);
-        return bb.min.x > 0 && bb.max.x < u(U) && bb.min.z > 0 && bb.max.z < u(U); };
-      const towardBowl = near.q.clone().sub(restQ).setY(0).normalize();
-      // The handle stands at 45 degrees to the hearth's edge, turned back
-      // toward the host: the edge runs along towardBowl, the host lies along
-      // -FWD, so the bisector of the two is the direction. That is also what
-      // he drew by hand in room 1, where the handle came out at 39 degrees
-      // from the edge. The other diagonal and the straight-back parallel are
-      // kept only as fallbacks for a corner with no floor.
-      const D45 = (a1, b1) => a1.clone().add(b1).setY(0).normalize();
-      const HANDLES = [
-        ["45 vers le bol", () => D45(FWD.clone().negate(), towardBowl)],
-        ["45 de l'autre cote", () => D45(FWD.clone().negate(), towardBowl.clone().negate())],
-        ["parallele, vers l'hote", () => FWD.clone().negate()],
-      ];
-      const fut = putAt("futaoki", restQ);
-      let ladle = null, PULL = 0, HAND = "";
-      outer:
-      for (const [label, dirOf] of HANDLES) {
-        for (let d = 0; d <= 0.30; d += 0.005) {
-          fut.position.copy(restQ.clone().addScaledVector(towardBowl, d));
-          if (!inMats(fut)) continue;
-          const dir = dirOf(fut.position);
-          if (ladle) into.remove(ladle);
-          ladle = putAt("hishaku", fut.position.clone().addScaledVector(dir, -0.008),
-                        bear(dir.x, dir.z));
-          ladle.rotation.z = -0.7545;
-          ladle.position.y = 0.06615;
-          if (inMats(ladle)) { PULL = d; HAND = label; break outer; }
-        }
-      }
-      window.__rest = { pull: Math.round(PULL * 1000), handle: HAND };
-
-      // The slop bowl has no rule of his, so it took a guess of mine, 440 back
-      // and 160 to his left, and the guess was wrong: the knee marker is
-      // 400 x 550, so 160 across is INSIDE it. The bowl was standing on the
-      // host. His own room 1 puts it 377 back and 325 to his left, just clear
-      // of the marker's width, so those are the numbers, mirrored to whichever
-      // side the bowl took, and pulled in if that side is a wall.
-      // ---- the slop bowl, beside him ----------------------------------------
-      // Nicolas's rule, and the one object that had none: BESIDE the host,
-      // not behind him and not under him, and always on the side that hides
-      // it from the guests, which is the side of him away from them. That is
-      // right for what it is: the water already used, kept out of their sight
-      // until it leaves the room.
-      //
-      // Beside is a measurement, not a feeling. The marker is 400 wide and
-      // the bowl's own radius is 72, so anything under 272 across is standing
-      // on him: 302 across leaves 30mm of daylight, and he confirmed that
-      // distance. Along, he put it level with the host's FEET, which is his
-      // own room 1, 377 back. The marker runs from 97 in front of the knees
-      // to 453 behind, so 377 is near its foot without being at its heels.
-      //
-      // Two wrong ones of mine on the way: 160 across, which put the bowl
-      // inside his body, and 453 back, which put it behind him.
-      //
-      // Where the guests sit is a field of the room table, not a guess, and
-      // REV mirrors it with everything else, so the side follows the eight
-      // layouts by itself.
-      const GUESTS = (() => {
-        const g = TYPE.guests;
-        let x = 0, z = 0;
-        g.forEach((q) => { x += mirror(q[0]); z += q[1]; });
-        return new THREE.Vector3(u(x / g.length), 0, u(z / g.length));
-      })();
-      window.__guests = GUESTS.clone().sub(KNEE).setY(0).dot(LFT);
-      const away = GUESTS.clone().sub(KNEE).setY(0).dot(LFT) >= 0 ? -1 : 1;
-      putAt("kensui", KNEE.clone().addScaledVector(FWD, -0.377)
-                                  .addScaledVector(LFT, 0.302 * away));
+      // So the other seven rooms keep their mats, their hearth and their
+      // kettle, and their floor stays empty until someone who practises has
+      // placed them -- which is what temaeza.html is for. The rules are not
+      // lost: they are in this file's history, one commit back.
     }
 
     // And the kettle stands ON THE TRIVET, down in the hearth, not on the

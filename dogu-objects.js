@@ -1609,6 +1609,10 @@
   //     down and a stick laid on it rests on the crests.
   // The three run on one bearing, and the whisk stands 20mm to the side of the
   // scoop so the two do not cross.
+  // NOT CALLED at present. It was the composite the other seven rooms used
+  // before their arrangement was removed as unverified; it stays because "the
+  // three that arrive in one hand" is a real notion and the temae will want
+  // it, but nothing in the site builds it today.
   function chawanSet() {
     const by = (k) => OBJECTS.find((o) => o.key === k).build();
     const g = new THREE.Group();
