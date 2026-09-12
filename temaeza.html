@@ -1,0 +1,823 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>temaeza &middot; oftenback</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="site.css">
+  <!--
+    THE HOST'S PLACE, and an instrument rather than a picture.
+
+    It began as a working tool: the Urasenke alignment had moved the hearth and
+    the man and left every utensil where it was, and the question of where the
+    utensils go is not one I can answer by reading a scanned diagram. Nicolas
+    asked for a plan he could place on, so the plan was built true to the
+    millimetre, reading the same table the room in three dimensions is built
+    from (chashitsu-room.js), with every utensil at its measured footprint.
+
+    He then said practitioners would want it, which is the right instinct: what
+    a beginner lacks is not a diagram, it is a diagram that can be MOVED and
+    that answers in centimetres from the knees. So it is published, and the
+    only thing that changed is honesty: the page now says what it does not
+    claim. The placing is ours. The instrument is the offer.
+
+    Kept from the working version: the placing is written into the URL's hash,
+    so a link hands a room to someone else, a bookmark keeps a lesson, and
+    print gives a sheet. ?dev adds the panel that writes the lines for
+    chashitsu-layout.js; ?selftest dispatches real pointer and key events
+    through the real handlers and reports PASS in the panel.
+  -->
+  <style>
+    :root{ --ro:#e34234; }
+    html,body{overflow-y:auto;height:auto;min-height:100%;}
+    .room{align-items:flex-start;min-height:auto;
+      padding-top:clamp(40px,7vh,80px);padding-bottom:clamp(40px,7vh,80px);}
+    .room-content{width:100%;align-items:stretch;}
+
+    /* ONE measure for the writing, and a wider one for the instrument: a plan
+       you work on wants the room, a paragraph does not. */
+    .cs{width:100%;max-width:790px;margin:0 auto;text-align:left;
+      display:flex;gap:26px;align-items:flex-start;}
+    .vtitle{flex:0 0 auto;display:flex;gap:12px;padding-top:2px;}
+    .vtitle span{writing-mode:vertical-rl;line-height:1;}
+    .vtitle .jp{font:400 34px/1 serif;letter-spacing:.16em;color:var(--ink);
+      text-orientation:upright;}
+    .vtitle .rom{font-size:10px;letter-spacing:.34em;text-transform:uppercase;
+      color:var(--dim);font-weight:600;padding-top:4px;}
+    .col{flex:1 1 auto;min-width:0;}
+    .cs p{max-width:none;}
+    .cs .lede{margin-bottom:26px;color:var(--dim);font-weight:300;
+      line-height:1.75;font-size:15px;text-align:justify;hyphens:auto;}
+    .cs .lede em{font-style:italic;color:var(--ink);}
+    .cs h2{font-size:10px;letter-spacing:.22em;text-transform:uppercase;
+      color:var(--soft);font-weight:600;margin:34px 0 10px;}
+    .cs p.tx{color:var(--ink);font-weight:300;line-height:1.8;font-size:14.5px;
+      margin:0 0 12px;text-align:justify;hyphens:auto;}
+    .cs p.tx em{font-style:normal;color:var(--ink);
+      border-bottom:1px solid var(--border);}
+    .cs .cite{color:var(--soft);font-size:12.5px;font-weight:300;line-height:1.7;}
+
+    /* ---- the instrument ------------------------------------------------- */
+    /* text-align:left: .room-content centres, which is right for a landing
+       and wrong for a column of figures. */
+    .bench{text-align:left;width:100%;max-width:1020px;margin:26px auto 0;
+      padding-right:clamp(0px,8vw,140px);
+      display:flex;gap:26px;align-items:flex-start;}
+    .drawing{flex:1 1 auto;min-width:0;}
+    .drawing svg{display:block;width:100%;height:auto;touch-action:none;}
+    .panel{flex:0 0 auto;width:330px;}
+    .panel h3{font-size:10px;letter-spacing:.22em;text-transform:uppercase;
+      color:var(--soft);font-weight:600;margin:0 0 8px;}
+    .panel pre{font:11.5px/1.55 "SF Mono",Menlo,Consolas,monospace;
+      background:#fffdf8;border:1px solid var(--border);border-radius:4px;
+      padding:10px;margin:0 0 16px;white-space:pre;overflow-x:auto;
+      color:var(--ink);}
+    .panel .pnote{font-size:12.5px;line-height:1.6;color:var(--dim);
+      font-weight:300;margin:0 0 16px;max-width:none;}
+    .panel .pnote b{color:var(--ro);font-weight:600;}
+    .panel .kept{font-size:11.5px;line-height:1.6;color:var(--soft);
+      font-weight:300;margin:14px 0 0;max-width:none;}
+    .acts{display:flex;flex-direction:column;align-items:flex-start;gap:7px;}
+    .acts button{font:inherit;font-size:12px;font-weight:400;padding:6px 12px;
+      border:1px solid var(--border);border-radius:4px;background:#fffdf8;
+      color:var(--ink);cursor:pointer;text-align:left;}
+    .acts button:hover{background:#f7f0e3;border-color:var(--soft);}
+    .panel .keys{margin:22px 0 0;font-size:11.5px;line-height:2.1;
+      color:var(--dim);font-weight:300;max-width:none;}
+    .panel .keys kbd{font:inherit;font-size:10.5px;border:1px solid var(--border);
+      border-bottom-width:2px;border-radius:3px;padding:1px 5px;
+      background:#fffdf8;margin-right:7px;}
+
+    /* the drawing's own ink, monochrome and one accent, the accent being the
+       hearth -- the same rule the chashitsu chapter keeps */
+    .mat{fill:#efe7da;stroke:#c9bfae;stroke-width:3;}
+    .mat.temae{fill:#e7dcc9;}
+    .matname{fill:#a2978a;font-size:44px;letter-spacing:.12em;
+      text-transform:uppercase;text-anchor:middle;}
+    .wall{fill:none;stroke:var(--ink);stroke-width:9;}
+    .toko{fill:#e3d9c9;stroke:var(--ink);stroke-width:5;}
+    .grid{stroke:#d3c9b7;stroke-width:3;}
+    .grid5{stroke:#bdb19c;stroke-width:6;}
+    .tick{fill:#9b9080;font-size:36px;text-anchor:middle;}
+    .tickl{fill:#9b9080;font-size:36px;text-anchor:end;}
+    .ro{fill:none;stroke:var(--ro);stroke-width:7;}
+    .rofill{fill:rgba(227,66,52,.10);}
+    .aim{fill:var(--ro);}
+    .knee{fill:none;stroke:var(--ro);stroke-width:13;stroke-linecap:round;
+      opacity:.85;}
+    .fwd{stroke:var(--ro);stroke-width:5;stroke-dasharray:18 12;opacity:.7;}
+    .guest{fill:none;stroke:#a2978a;stroke-width:4;stroke-dasharray:14 10;}
+    .glab{fill:#a2978a;font-size:34px;text-anchor:middle;}
+    .ghost{fill:none;stroke:#b8ac97;stroke-width:2.5;stroke-dasharray:10 8;}
+    .tok{cursor:grab;}
+    .tok .body{fill:rgba(61,53,48,.10);stroke:var(--ink);stroke-width:4;}
+    .tok .lab{fill:var(--ink);font-size:38px;text-anchor:middle;
+      pointer-events:none;}
+    .tok .end{fill:#8a7f70;font-size:30px;text-anchor:middle;
+      pointer-events:none;}
+    .tok.on .body{fill:rgba(227,66,52,.18);stroke:var(--ro);stroke-width:6;}
+    .tok.on .lab{fill:var(--ro);}
+    .tok.on .end{fill:var(--ro);}
+    .fix .body{fill:rgba(61,53,48,.05);stroke:#a2978a;stroke-dasharray:12 9;}
+    .fix{cursor:default;}
+
+    #printfoot{display:none;}
+
+    .printlede{display:none;}
+
+    @media (max-width: 960px) {
+      .bench{flex-direction:column;}
+      .panel{width:100%;}
+
+    /* ---- a hand-out ------------------------------------------------------
+       What a printed sheet is for: the plan at the size of the paper, the
+       distances from the knees beside it, and the address it came from,
+       hash included, so whoever holds the sheet can open the same room. The
+       furniture and every control go. */
+    @media print {
+      @page { margin: 14mm; }
+      body{background:#fff;}
+      /* site.js reveals the page by adding .in inside an animation frame. A
+         browser asked to print before that frame has run would put out a sheet
+         of nothing, so paper does not wait for it. */
+      main{opacity:1 !important;}
+      .side, .brand-mini, #veil, .acts, .keys, .panel .kept, #devbox,
+      .noprint{display:none !important;}
+      .room{padding:0 !important;}
+      .room-content{padding:0;}
+      /* The vertical title is 380px tall, which on paper is most of a page:
+         printed, the heading is the one line under it. */
+      .vtitle{display:none;}
+      .cs{display:block;max-width:none;}
+      /* NO page-break-inside:avoid here. With it, the bench would not share
+         a page with its own heading and was pushed to a second sheet. */
+      .bench{max-width:none;margin:0;padding:0;gap:14px;}
+      /* MILLIMETRES on paper, not percentages: a percentage of a printed
+         flex row depends on what the other column's content wants, and the
+         plan came out at 46 per cent of a box asked for 62. */
+      .bench{flex-direction:column !important;align-items:center;gap:5mm;}
+      .drawing{flex:none;width:112mm;}
+      .drawing svg{width:112mm;max-height:none;}
+      .panel{flex:none;width:118mm;min-width:0;}
+      /* no scrollbar on paper, and nothing clipped */
+      .panel pre{overflow:visible;font-size:8.6px;line-height:1.7;padding:0;
+        border:0;background:none;}
+      #cur{display:none !important;}
+      #printfoot{font-size:6.8px;line-height:1.5;margin-top:4mm;}
+      .cs{max-width:none;margin-bottom:10px;}
+      .cs .lede, .cs h2, .cs p.tx, .cs .cite{display:none;}
+      .cs .printlede{display:block !important;font-size:11px;color:#444;
+        margin:0;text-align:left;}
+      #printfoot{display:block;font:9.5px/1.6 "SF Mono",Menlo,monospace;
+        color:#777;margin-top:10px;word-break:break-all;}
+    }
+
+    }
+  </style>
+</head>
+<body>
+  <div id="veil"></div>
+  <main class="room">
+    <div class="room-content">
+
+      <div class="cs">
+        <div class="vtitle">
+          <span class="jp">&#x70b9;&#x524d;&#x5ea7;</span>
+          <span class="rom">temaeza</span>
+        </div>
+        <div class="col">
+          <p class="lede">Everything in a tea room is measured from
+          <em>where the host kneels</em>. Move him and every distance moves with
+          him. So this is that plan, drawn true to the millimetre, with the
+          utensils at their own size and free to be picked up and set down. It
+          is an instrument, not a diagram: it will not tell you where a thing
+          goes, it will tell you exactly where you have put it.</p>
+          <p class="printlede">temaeza &middot; the four-and-a-half mat room
+          with the hearth at yojohangiri, drawn true to the millimetre.
+          Distances are centimetres from the host's knees.</p>
+        </div>
+      </div>
+
+      <div class="bench">
+        <div class="drawing" id="plan"></div>
+        <div class="panel">
+          <p class="pnote" id="cur">Nothing selected. Drag a utensil, or the host himself.</p>
+          <h3>from where he kneels</h3>
+          <pre id="frame"></pre>
+          <div class="acts">
+            <button id="align">point the front along his gaze</button>
+            <button id="share">copy a link to this placing</button>
+            <button id="print">print a hand-out</button>
+            <button id="reset">back to the placing in the room</button>
+          </div>
+          <p class="keys">
+            <kbd>drag</kbd>to move a utensil, or the host<br>
+            <kbd>arrows</kbd>5 mm, with <kbd>shift</kbd>20 mm<br>
+            <kbd>[ ]</kbd>to turn it, 5 degrees<br>
+          </p>
+          <p class="kept" id="kept"></p>
+          <div id="devbox" hidden>
+            <h3>for chashitsu-layout.js</h3>
+            <pre id="out"></pre>
+            <div class="acts"><button id="copy">copy</button></div>
+          </div>
+          <div id="printfoot"></div>
+        </div>
+      </div>
+
+      <div class="cs">
+        <div class="vtitle"><span class="rom">&nbsp;</span></div>
+        <div class="col">
+
+          <h2>if you practise</h2>
+          <p class="tx">Take the placing shown as <em>ours and not a
+          school's</em>. It is where we set the utensils down for one moment of
+          one procedure, in one room, and a temae is a thing that moves: a plan
+          can only ever hold a single instant of it. What this page offers a
+          practitioner is not the arrangement. It is the surface: lay out what
+          you were taught, read the distances off it in centimetres from the
+          knees, keep it in a bookmark, hand it to someone as a link, print it
+          as a sheet.</p>
+
+          <h2>how it is drawn</h2>
+          <p class="tx">A Kyoto mat is 1910 by 955 millimetres. Four of them
+          turning about a half mat come to a square of exactly three mat
+          widths, 2865 each way, which is why four <em>and a half</em> is the
+          number and why the half mat is at the centre rather than tucked in a
+          corner. The hearth is a 420 millimetre square, a little under
+          one and two fifths shaku.</p>
+          <p class="tx">Every utensil is at its measured footprint and not at
+          the size of a symbol: the water jar 175 across, the kettle 250, the
+          lid rest 46, the tea scoop 185 long. If two of them overlap on this
+          plan they would touch in the room. The drawing and the room in three
+          dimensions read <em>one table</em>, so the two cannot drift apart,
+          and a correction is a number in one place.</p>
+
+          <h2>the mats, and which names are the school's</h2>
+          <p class="tx">Three of the names on this plan are Urasenke's, out of
+          the glossary of their own guidebook: the <em>temaedatami</em>, which
+          the host works from and which is tinted here; the
+          <em>kyakudatami</em>, the guests'; the <em>fumikomidatami</em>,
+          stepped in from the crawl-in door, the nijiriguchi, which is the gap
+          drawn in the lower wall. The two remaining labels, tokonoma-mae and
+          the half mat, are descriptions of ours rather than terms of the
+          school, and are marked as such because a beginner cannot tell our
+          words from theirs by looking.</p>
+
+          <h2>what the hearth decides</h2>
+          <p class="tx">A room is classified by <em>where the hearth is
+          cut</em>, and this one is the position Urasenke calls
+          <em>yojohangiri</em>. The hearth then decides the host: their
+          glossary gives the rule at <em>uchizumi</em>, that the corners of the
+          hearth frame nearest the utensil mat serve as aiming points for the
+          host's prescribed sitting position. So his facing is not a matter of
+          taste, and the small vermillion dot on the frame is that corner.</p>
+          <p class="tx">One distance on the plan comes from the book and is
+          drawn faint, in grey, so it can be used or ignored: the water jar is
+          set down <em>24 centimetres in front of the knees</em>. It follows
+          the host when he is moved, because it is a relation and not a
+          place.</p>
+          <p class="cite">Urasenke Tea Procedure Guidebook 2, Usucha Tea
+          Procedure, Urasenke Foundation 2018: the glossary and the plate of
+          the four hearth positions. Nothing of the procedure itself is
+          reproduced here.</p>
+
+          <h2>what this plan cannot say</h2>
+          <p class="tx">Where the hearth belongs in a four-and-a-half is a
+          question we have <em>open with a teacher</em>, and it is honest to
+          say so on the page rather than in a comment. Our reading of the
+          school's diagrams puts it at the corner of the half mat against the
+          host's own, which is where it is drawn; but the book stages its
+          procedures in an eight-mat room whose mats do not carry the same
+          names, and a position does not transpose between the two by analogy.
+          The host, likewise, was placed here by hand and not derived.</p>
+          <p class="tx">And only this one room can be placed on today. The
+          other seven arrangements are drawn flat in the
+          <a href="chashitsu.html">chashitsu chapter</a> and standing in
+          <a href="room3d.html">the room</a>.</p>
+
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="chashitsu-room.js"></script>
+  <script>
+(function () {
+  "use strict";
+  const NS = "http://www.w3.org/2000/svg";
+  const T = ROOM.TYPES[0];                       // yojohangiri
+  const M = ROOM.MAT_WIDE, RO = ROOM.RO, U = ROOM.U;
+  const u = (a) => a * M;                        // plan units -> metres
+  const mm = (metres) => metres * 1000;          // metres -> the drawing's unit
+
+  // ---- the host, by the same rule the room uses ---------------------------
+  // Mirrored from chashitsu-layout.js rather than remembered, so the mark on
+  // this plan cannot drift away from the man in the room. See the note at
+  // `uchizumi` in chashitsu-room.js for why he aims at a corner.
+  const hostMat = ROOM.MATS[T.temae];
+  const longX = hostMat.w > hostMat.h;
+  const across = longX ? hostMat.y + hostMat.h / 2 : hostMat.x + hostMat.w / 2;
+  const roX = T.ro[0], roY = T.ro[1];
+  const alongK = (longX ? roX : roY) + RO / 2;
+  const KNEE = { x: u(longX ? alongK : across), z: u(longX ? across : alongK) };
+  const nearX = (roX > (longX ? alongK : across)) ? roX : roX + RO;
+  const nearY = (roY > (longX ? alongK : across)) ? roY : roY + RO;
+  const AIM = { x: u(longX ? roX + RO / 2 : nearX), z: u(longX ? nearY : roY) };
+  const fl = Math.hypot(AIM.x - KNEE.x, AIM.z - KNEE.z);
+  const FWD = { x: (AIM.x - KNEE.x) / fl, z: (AIM.z - KNEE.z) / fl };
+  // THE TABLE WINS, and it has to win here for the same reason it wins in the
+  // room: a placed host beats a rule. Without this the plan drew the man where
+  // the aiming-corner rule puts him and every distance in the panel was
+  // measured from the wrong person -- 25cm out, and silently.
+  if (T.host && T.facing !== undefined) {
+    KNEE.x = u(T.host[0]); KNEE.z = u(T.host[1]);
+    const fa = T.facing * Math.PI / 180;
+    FWD.x = Math.cos(fa); FWD.z = -Math.sin(fa);
+  }
+  const LFT0 = { x: FWD.z, z: -FWD.x };
+  // The rule puts him here, and from here he is Nicolas's to move: if the man
+  // is wrong every distance measured from him is wrong, so he drags like
+  // anything else. `rot` is the bearing of his forward, in the drawing's own
+  // sense (x right, z down the page).
+  const HOST = { x: KNEE.x, z: KNEE.z,
+                 rot: Math.atan2(FWD.z, FWD.x) * 180 / Math.PI };
+  // and KNEE now comes from the table, which holds his placing, so the two
+  // agree without a second set of numbers living here
+  const fwdNow = () => ({ x: Math.cos(HOST.rot * Math.PI / 180),
+                          z: Math.sin(HOST.rot * Math.PI / 180) });
+  const RC = { x: u(roX + RO / 2), z: u(roY + RO / 2) };   // the kettle
+
+  // ---- the utensils, to their real footprints ----------------------------
+  // WHERE THEY START: Nicolas's own placing, made on this plan 2026-09-11.
+  // Diameters read off dogu-objects.js, in millimetres.
+  //
+  // TWO CONVENTIONS, and they are MEASURED off the real objects rather than
+  // assumed (work-probe.html, since deleted, asked the built meshes):
+  //
+  //   1. A utensil's point is its OWN ORIGIN, which is not always its centre.
+  //      The chashaku is centred (local x -0.093 to +0.093) but the HISHAKU'S
+  //      ORIGIN IS ITS CUP (local x -0.027 to +0.279): the handle runs out one
+  //      way only. Drawn centred, as it was at first, the whole ladle sat
+  //      168mm off where the room would put it.
+  //   2. `rot` is the bearing of the object's local +x in the drawing's sense
+  //      (x right, z down the page), and `rotation.y` in three.js is its
+  //      NEGATIVE: turning about +y takes +x toward -z. So ry = -rot. Drawn
+  //      with the wrong sign, as it was at first, every long object lay
+  //      mirrored in z against the room.
+  //
+  // `front` says which way the end that MATTERS points, in local x: the
+  // chashaku's scoop is at local -x (measured: the blade is 5.25mm half-wide
+  // there against 3.07 at the cut end), and the hishaku's cup is its origin,
+  // so -1 for both. It is what the "align" button aims at his gaze.
+  const START = {
+    mizusashi: { x: 0.485, z: 0.630, r: 87.5, lab: "mizusashi" },
+    natsume:   { x: 0.675, z: 0.740, r: 33,   lab: "natsume" },
+    chawan:    { x: 0.830, z: 1.025, r: 58,   lab: "chawan" },
+    chasen:    { x: 0.845, z: 0.875, r: 31,   lab: "chasen" },
+    chashaku:  { x: 0.685, z: 0.730, rot: -200.7, lab: "chashaku", front: -1 },
+    kensui:    { x: 0.095, z: 1.000, r: 72.5, lab: "kensui" },
+    futaoki:   { x: 1.030, z: 1.445, r: 23,   lab: "futaoki" },
+    hishaku:   { x: 1.025, z: 1.445, rot: -175.7, lab: "hishaku", front: -1 },
+  };
+  const ORDER = ["mizusashi", "natsume", "chashaku", "chasen", "chawan",
+                 "kensui", "hishaku", "futaoki"];
+  const state = {};
+  const reset = () => {
+    ORDER.forEach((k) => {
+      state[k] = { x: START[k].x, z: START[k].z, rot: START[k].rot || 0 };
+    });
+    if (typeof HOST !== "undefined") {
+      HOST.x = KNEE.x; HOST.z = KNEE.z;
+      HOST.rot = Math.atan2(FWD.z, FWD.x) * 180 / Math.PI;
+    }
+  };
+  reset();
+
+  // ---- the drawing -------------------------------------------------------
+  const svg = document.createElementNS(NS, "svg");
+  // the room, plus the alcove above it and a margin for the rules
+  const X0 = -300, Y0 = -mm(0.62) - 300, X1 = mm(u(U)) + 300, Y1 = mm(u(U)) + 300;
+  svg.setAttribute("viewBox", X0 + " " + Y0 + " " + (X1 - X0) + " " + (Y1 - Y0));
+  svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
+  document.getElementById("plan").appendChild(svg);
+
+  const el = (tag, attrs, parent) => {
+    const n = document.createElementNS(NS, tag);
+    for (const a in attrs) n.setAttribute(a, attrs[a]);
+    (parent || svg).appendChild(n); return n;
+  };
+  const text = (s, x, y, cls, parent) => {
+    const n = el("text", { x: x, y: y, class: cls }, parent);
+    n.textContent = s; return n;
+  };
+
+  const W = mm(u(U));                               // 2865
+  const TOKO_D = mm(0.62);
+
+  // the alcove, a recess BEYOND the wall, so it is drawn outside the square
+  el("rect", { class: "toko", x: 0, y: -TOKO_D, width: mm(u(2)), height: TOKO_D });
+  text("tokonoma", mm(u(1)), -TOKO_D / 2 + 14, "matname");
+
+  for (let g = 0; g <= 2800; g += 500) {
+    text((g / 10) + "", g, -TOKO_D - 90, "tick");
+    text((g / 10) + "", -70, g + 13, "tickl");
+  }
+  text("cm", -70, -TOKO_D - 90, "tickl");
+
+  // the five mats, named
+  const NAMES = {
+    left:  "temaedatami",     // the host's
+    half:  "the half mat",
+    toko:  "tokonoma-mae",
+    right: "kyakudatami",     // the guests'
+    lower: "fumikomidatami",  // stepped in from the nijiriguchi
+  };
+  for (const k in ROOM.MATS) {
+    const s = ROOM.MATS[k];
+    el("rect", { class: "mat" + (k === T.temae ? " temae" : ""),
+      x: mm(u(s.x)), y: mm(u(s.y)), width: mm(u(s.w)), height: mm(u(s.h)) });
+  }
+  for (const k in ROOM.MATS) {
+    const s = ROOM.MATS[k];
+    const cx = mm(u(s.x + s.w / 2)), cy = mm(u(s.y + s.h / 2));
+    const g = el("g", { transform: s.h > s.w ? "rotate(-90 " + cx + " " + cy + ")" : "" });
+    text(NAMES[k], cx, cy + 14, "matname", g);
+  }
+
+  // The rule, every 100mm and heavier every 500. AFTER the mats: they are
+  // opaque, and drawn first they swallowed it whole.
+  for (let g = 0; g <= 2900; g += 100) {
+    const c = (g % 500 === 0) ? "grid5" : "grid";
+    if (g <= W) {
+      el("line", { class: c, x1: g, y1: 0, x2: g, y2: W });
+      el("line", { class: c, x1: 0, y1: g, x2: W, y2: g });
+    }
+  }
+
+  // the walls, and the two openings
+  // three sides and a stub: the top wall stops at the alcove's mouth, because
+  // a tokonoma is a recess THROUGH that wall and not a cupboard against it.
+  el("path", { class: "wall", d: "M 0 0 L 0 " + W + " L " + W + " " + W +
+    " L " + W + " 0 L " + mm(u(2)) + " 0" });
+  // nijiriguchi: DOOR_CX 700 right of the room's centre in the roji, so 2132 here
+  const NIJ = { c: mm(0.7) + W / 2, w: mm(0.7) };
+  el("line", { class: "wall", x1: NIJ.c - NIJ.w / 2, y1: W, x2: NIJ.c + NIJ.w / 2, y2: W,
+               stroke: "#efe7da", "stroke-width": 17 });
+  text("nijiriguchi", NIJ.c, W + 96, "glab");
+  // the big shoji, on the +x wall, the sun's side
+  const SH = { c: mm(2.0 - 2.865 / 2 - 0.10 + 0.865), w: mm(2.865 * 0.80) };
+  el("line", { x1: W, y1: SH.c - SH.w / 2, x2: W, y2: SH.c + SH.w / 2,
+               stroke: "#ece2cd", "stroke-width": 14 });
+  text("shoji", W + 150, SH.c, "glab");
+
+  // the hearth, its frame and the aiming corner
+  el("rect", { class: "rofill", x: mm(u(roX)), y: mm(u(roY)),
+               width: mm(u(RO)), height: mm(u(RO)) });
+  el("rect", { class: "ro", x: mm(u(roX)), y: mm(u(roY)),
+               width: mm(u(RO)), height: mm(u(RO)) });
+  el("circle", { class: "aim", cx: mm(AIM.x), cy: mm(AIM.z), r: 16 });
+
+  // the guests
+  (T.guests || []).forEach((q, i) => {
+    el("circle", { class: "guest", cx: mm(u(q[0])), cy: mm(u(q[1])), r: 200 });
+    text((i === 0 ? "first" : "second") + " guest", mm(u(q[0])), mm(u(q[1])) + 13, "glab");
+  });
+
+  // the host: his two knees and where he looks
+  const rayEl = el("line", { class: "fwd" });
+  const hostG = (function knees() {
+    const g = el("g", { class: "tok", "data-k": "host" });
+    // Nicolas: "je n'ai pas reussi a faire pivoter l'hote." The keys were
+    // fine; the man was not selectable, because a cursive M is a stroke with
+    // no fill and only the line itself answered the pointer. He gets a body.
+    el("circle", { cx: 0, cy: 160, r: 300, fill: "rgba(0,0,0,0)",
+                   "pointer-events": "all" }, g);
+    // a cursive M, its two humps his two knees, drawn with forward up the page
+    // forward is UP the page in the mark's own frame, and the two dots sit on
+    // the knee point itself: everything else is placed from it.
+    el("path", { class: "knee", d: "M -200 380 C -200 100 -170 0 -100 0 " +
+      "C -30 0 0 150 0 360 C 0 150 30 0 100 0 C 170 0 200 100 200 380" }, g);
+    text("host", 0, 500, "glab", g);
+    return g;
+  })();
+
+  // The one hard number the book gives, page 55 step 7: the water jar is set
+  // down 24cm in front of the knees. Drawn faint, as a place rather than a
+  // rule, because the rest of the arrangement is Nicolas's to judge.
+  const a24 = el("circle", { r: 12, fill: "#8a7f70" });
+  const a24t = text("24 cm", 0, 0, "glab");
+
+  // the kettle, fixed in the hearth
+  (function kama() {
+    const g = el("g", { class: "tok fix",
+      transform: "translate(" + mm(RC.x) + "," + mm(RC.z) + ")" });
+    el("circle", { class: "body", cx: 0, cy: 0, r: 125 }, g);
+    text("kama", 0, 13, "lab", g);
+  })();
+
+  // ---- the draggable utensils --------------------------------------------
+  const tok = {};
+  ORDER.forEach((k) => {
+    const d = START[k];
+    // where it stands now, left as a dashed ghost so a move is visible
+    el("g", { class: "ghost-g", transform: xf(d.x, d.z, d.rot || 0) });
+    const gh = svg.lastChild;
+    shape(gh, d, "ghost");
+
+    const g = el("g", { class: "tok", "data-k": k });
+    shape(g, d, "body");
+    text(d.lab, 0, (d.r ? (d.r >= 55 ? 13 : -d.r - 22) : 58), "lab", g);
+    tok[k] = g;
+  });
+
+  // Every measurement here is off the object itself. The point (0,0) of each
+  // shape is the object's own origin, so what is drawn is where it lands.
+  function shape(g, d, cls) {
+    if (d.r) { el("circle", { class: cls, cx: 0, cy: 0, r: d.r }, g); return; }
+    if (d.lab === "hishaku") {
+      // the cup IS the origin; the handle runs out to +x and rests on nothing
+      el("rect", { class: cls, x: 20, y: -5, width: 259, height: 10, rx: 5 }, g);
+      el("circle", { class: cls, cx: 0, cy: 0, r: 27 }, g);
+      if (cls === "body") {
+        text("cup", 0, -44, "end", g);
+        text("handle", 240, -20, "end", g);
+      }
+      return;
+    }
+    // the chashaku: the blade is the wide thin end, the node stands at 48 per
+    // cent from it, the cut end is narrow. Scoop at local -x, measured.
+    el("rect", { class: cls, x: -60, y: -3.3, width: 153, height: 6.6, rx: 3 }, g);
+    el("path", { class: cls, d: "M -60 -5.5 C -78 -5.5 -93 -3 -93 0 " +
+      "C -93 3 -78 5.5 -60 5.5 Z" }, g);
+    if (cls === "body") {
+      el("line", { x1: -4, y1: -7, x2: -4, y2: 7, stroke: "#3d3530",
+                   "stroke-width": 3 }, g);
+      text("scoop", -104, -18, "end", g);
+      text("cut end", 93, -18, "end", g);
+    }
+  }
+  function xf(x, z, rot) {
+    return "translate(" + mm(x) + "," + mm(z) + ") rotate(" + rot + ")";
+  }
+  const S = (k) => (k === "host" ? HOST : state[k]);
+  const DEV = location.search.indexOf("dev") >= 0;
+
+  // ---- keeping a placing --------------------------------------------------
+  // An arrangement takes a while to get right and a closed tab must not undo
+  // it. Written to BOTH the URL's hash and localStorage, because file:// is an
+  // opaque origin and Chrome can refuse the store outright: the hash always
+  // works, travels in a bookmark, and can be pasted to me as it stands.
+  const KEY = "temaeza-yojohangiri";
+  const TESTING = location.search.indexOf("selftest") >= 0;
+  const encode = () => ORDER.concat("host").map((k) => {
+    const q = S(k);
+    return k + ":" + q.x.toFixed(3) + "," + q.z.toFixed(3) + "," + q.rot.toFixed(1);
+  }).join(";");
+  function decode(str) {
+    let got = 0;
+    (str || "").split(";").forEach((bit) => {
+      const c = bit.indexOf(":");
+      if (c < 0) return;
+      const k = bit.slice(0, c), n = bit.slice(c + 1).split(",").map(Number);
+      if (!S(k) || n.length !== 3 || n.some((v) => !isFinite(v))) return;
+      S(k).x = n[0]; S(k).z = n[1]; S(k).rot = n[2]; got++;
+    });
+    return got;
+  }
+  function save() {
+    if (TESTING) return;
+    const str = encode();
+    try { localStorage.setItem(KEY, str); } catch (err) {}
+    try { history.replaceState(null, "", "#" + str); } catch (err) {}
+  }
+  function load() {
+    const fromHash = decodeURIComponent(location.hash.replace(/^#/, ""));
+    if (decode(fromHash)) return "the link";
+    let stored = null;
+    try { stored = localStorage.getItem(KEY); } catch (err) {}
+    if (stored && decode(stored)) return "your last visit";
+    return null;
+  }
+  function paint() {
+    ORDER.forEach((k) => tok[k].setAttribute("transform",
+      xf(state[k].x, state[k].z, state[k].rot)));
+    // the mark's own up is his forward, so it turns a quarter further
+    hostG.setAttribute("transform", xf(HOST.x, HOST.z, HOST.rot + 90));
+    const F = fwdNow();
+    rayEl.setAttribute("x1", mm(HOST.x)); rayEl.setAttribute("y1", mm(HOST.z));
+    rayEl.setAttribute("x2", mm(HOST.x + F.x * 0.95));
+    rayEl.setAttribute("y2", mm(HOST.z + F.z * 0.95));
+    a24.setAttribute("cx", mm(HOST.x + F.x * 0.24));
+    a24.setAttribute("cy", mm(HOST.z + F.z * 0.24));
+    a24t.setAttribute("x", mm(HOST.x + F.x * 0.24) + 40);
+    a24t.setAttribute("y", mm(HOST.z + F.z * 0.24) - 30);
+    save();
+    readout();
+  }
+
+  // ---- dragging ----------------------------------------------------------
+  let sel = null, grab = null;
+  const pt = svg.createSVGPoint();
+  const at = (e) => {
+    pt.x = e.clientX; pt.y = e.clientY;
+    const p = pt.matrixTransform(svg.getScreenCTM().inverse());
+    return { x: p.x / 1000, z: p.y / 1000 };            // back to metres
+  };
+  const snap = (v) => Math.round(v * 200) / 200;        // 5mm
+  const select = (k) => {
+    sel = k;
+    ORDER.concat("host").forEach((j) => tok[j].classList.toggle("on", j === k));
+    const s = S(k);
+    document.getElementById("cur").innerHTML = k
+      ? "<span class='sel'>" + k + "</span> at x " + s.x.toFixed(3) +
+        ", z " + s.z.toFixed(3) + ", turned " + s.rot.toFixed(1) + "&deg;"
+      : "Nothing selected. Drag a utensil, or the host himself.";
+    readout();
+  };
+  tok.host = hostG;
+  ORDER.concat("host").forEach((k) => {
+    tok[k].addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      select(k);
+      const p = at(e);
+      grab = { dx: S(k).x - p.x, dz: S(k).z - p.z };
+      try { tok[k].setPointerCapture(e.pointerId); } catch (err) {}
+    });
+    tok[k].addEventListener("pointermove", (e) => {
+      if (!grab || sel !== k) return;
+      const p = at(e);
+      S(k).x = snap(p.x + grab.dx);
+      S(k).z = snap(p.z + grab.dz);
+      paint(); select(k);
+    });
+    tok[k].addEventListener("pointerup", () => { grab = null; });
+    tok[k].addEventListener("pointercancel", () => { grab = null; });
+  });
+
+  const NUDGE = { ArrowLeft: [-1, 0], ArrowRight: [1, 0],
+                  ArrowUp: [0, -1], ArrowDown: [0, 1] };
+  addEventListener("keydown", (e) => {
+    if (!sel) return;
+    if (NUDGE[e.key]) {
+      const step = (e.shiftKey ? 0.020 : 0.005);
+      S(sel).x += NUDGE[e.key][0] * step;
+      S(sel).z += NUDGE[e.key][1] * step;
+    } else if (e.key === "[") { S(sel).rot -= 5; }
+    else if (e.key === "]") { S(sel).rot += 5; }
+    else return;
+    e.preventDefault(); paint(); select(sel);
+  });
+
+  // ---- what comes out ----------------------------------------------------
+  // Two readings of the same placing. The metres go straight into the layout;
+  // the host's frame is the one that tells us whether a thing is in front of
+  // him or behind him, which is the whole question we are trying to settle.
+  function readout() {
+    const fr = [], out = [];
+    const F = fwdNow(), L = { x: F.z, z: -F.x };
+    // CENTIMETRES, and measured from the man: the only frame in which a
+    // placing can be read, remembered, or compared with what you were taught.
+    fr.push("he kneels at " + cm(HOST.x) + ", " + cm(HOST.z) + " cm");
+    fr.push("he faces " + (-HOST.rot).toFixed(1) + " deg");
+    fr.push("off the mat's short axis");
+    fr.push("");
+    fr.push("              in front   to his left");
+    ORDER.forEach((k) => {
+      const dx = state[k].x - HOST.x, dz = state[k].z - HOST.z;
+      const f = dx * F.x + dz * F.z, l = dx * L.x + dz * L.z;
+      fr.push(k.padEnd(12) + sgn(f) + "     " + sgn(l));
+    });
+    fr.push("");
+    fr.push("a minus is behind him, or to his right");
+    ORDER.forEach((k) => {
+      const s = state[k];
+      // ry = -rot: turning about +y takes +x toward -z. Always written for
+      // the two long ones, whose angle is half of what they are.
+      const r = (START[k].front || s.rot !== (START[k].rot || 0))
+        ? ", " + (-s.rot * Math.PI / 180).toFixed(4) : "";
+      out.push('putAt("' + k + '", new THREE.Vector3(' +
+               s.x.toFixed(3) + ", 0, " + s.z.toFixed(3) + ")" + r + ");");
+    });
+    out.unshift("// chashitsu-room.js, yojohangiri:  host [" +
+      (HOST.x / M).toFixed(3) + ", " + (HOST.z / M).toFixed(3) + "]" +
+      "  facing " + (-HOST.rot).toFixed(1) + " deg");
+    document.getElementById("frame").textContent = fr.join("\n");
+    if (DEV) document.getElementById("out").textContent = out.join("\n");
+    // a printed sheet has to say where it came from, exactly, hash and all
+    document.getElementById("printfoot").textContent = location.href;
+  }
+  const sgn = (v) => ((v >= 0 ? "+" : "-") + (Math.abs(v) * 100).toFixed(1)).padStart(7);
+  const cm = (v) => (v * 100).toFixed(1);
+
+  // "faire pivoter le chashaku, scoop vers l'avant, parallele au regard de
+  // l'hote". Turned by hand that is a fiddle with two keys; as a relation it
+  // is one click, and it stays true if he moves the man afterwards.
+  document.getElementById("align").addEventListener("click", () => {
+    if (!sel || sel === "host") return;
+    const f = START[sel].front || 1;
+    S(sel).rot = HOST.rot + (f < 0 ? 180 : 0);
+    paint(); select(sel);
+  });
+  if (DEV) {
+    document.getElementById("devbox").hidden = false;
+    document.getElementById("copy").addEventListener("click", () => {
+      navigator.clipboard.writeText(document.getElementById("out").textContent);
+    });
+  }
+  // The placing lives in the address, so sharing one is copying the address.
+  // This is the whole reason a teacher can hand a room to a student.
+  document.getElementById("share").addEventListener("click", (e) => {
+    navigator.clipboard.writeText(location.href);
+    e.target.textContent = "link copied";
+    setTimeout(() => { e.target.textContent = "copy a link to this placing"; }, 1800);
+  });
+  document.getElementById("print").addEventListener("click", () => window.print());
+  document.getElementById("reset").addEventListener("click", () => {
+    try { localStorage.removeItem(KEY); } catch (err) {}
+    reset(); paint(); select(null);
+    document.getElementById("kept").textContent = "";
+  });
+
+  const restored = load();
+  paint(); select(null);
+  document.getElementById("kept").textContent = restored
+    ? "Restored from " + restored + ". A placing is kept in the address itself, "
+      + "so a bookmark holds it and a link hands it to someone else."
+    : "Every move is written into the address, so nothing is lost by closing "
+      + "the tab, and a link carries the placing with it.";
+  window.__place = { state: state, host: HOST, KNEE: KNEE, FWD: FWD, AIM: AIM };
+
+  // ---- a self test, because a drag is the one thing a screenshot cannot show -
+  // Reached with ?selftest. It dispatches REAL pointer events through the real
+  // handlers, so it exercises the screen-to-millimetre transform too, which is
+  // the part most likely to be wrong. Result goes in the panel, where a DOM
+  // dump can read it.
+  if (location.search.indexOf("selftest") >= 0) {
+    const scr = (x, z) => {                    // metres -> client pixels
+      const m = svg.getScreenCTM();
+      return { x: m.a * mm(x) + m.e, y: m.d * mm(z) + m.f };
+    };
+    const send = (type, p) => tok.mizusashi.dispatchEvent(new PointerEvent(type,
+      { clientX: p.x, clientY: p.y, bubbles: true, pointerId: 1, isPrimary: true }));
+    const from = scr(state.mizusashi.x, state.mizusashi.z);
+    const TO = { x: 0.700, z: 0.900 };
+    send("pointerdown", from);
+    send("pointermove", scr(TO.x, TO.z));
+    send("pointerup", scr(TO.x, TO.z));
+    const err = Math.hypot(state.mizusashi.x - TO.x, state.mizusashi.z - TO.z);
+    // and the host, who was the point of the refactor: drag him, then turn him
+    const was = HOST.rot;
+    hostG.dispatchEvent(new PointerEvent("pointerdown", {
+      clientX: scr(HOST.x, HOST.z).x, clientY: scr(HOST.x, HOST.z).y,
+      bubbles: true, pointerId: 2, isPrimary: true }));
+    hostG.dispatchEvent(new PointerEvent("pointermove", {
+      clientX: scr(0.600, 1.300).x, clientY: scr(0.600, 1.300).y,
+      bubbles: true, pointerId: 2, isPrimary: true }));
+    dispatchEvent(new KeyboardEvent("keydown", { key: "]" }));
+    const hostOk = Math.abs(HOST.x - 0.600) < 1e-6 && Math.abs(HOST.z - 1.300) < 1e-6 &&
+                   Math.abs(HOST.rot - was - 5) < 1e-6;
+    // the panel must be reading the man where he now IS, in his own words
+    const frameOk = document.getElementById("frame").textContent
+      .indexOf("he kneels at 60.0, 130.0") >= 0;
+    // encode, scramble, decode, compare: the placing must survive a reload
+    // the align button, and the check that matters: after it, does the end
+    // that was aimed actually point along his gaze in the ROOM's arithmetic?
+    select("chashaku");
+    document.getElementById("align").click();
+    const ry = -state.chashaku.rot * Math.PI / 180;      // what goes to three.js
+    // three.js: local +x lands on (cos ry, -sin ry); the scoop is at local -x
+    const sx = -Math.cos(ry), sz = Math.sin(ry);
+    const F2 = fwdNow();
+    const aimErr = Math.acos(Math.min(1, sx * F2.x + sz * F2.z)) * 180 / Math.PI;
+    const alignOk = aimErr < 0.05;
+
+    const snapshot = encode();
+    reset();
+    const back = decode(snapshot);
+    const tripOk = back === ORDER.length + 1 && encode() === snapshot;
+    // can this browser actually keep it? On file:// both stores can refuse.
+    let hashOk = false, lsOk = false;
+    try { history.replaceState(null, "", "#probe"); hashOk = location.hash === "#probe"; }
+    catch (err) {}
+    try { localStorage.setItem(KEY + "-probe", "1");
+          lsOk = localStorage.getItem(KEY + "-probe") === "1";
+          localStorage.removeItem(KEY + "-probe"); } catch (err) {}
+    document.getElementById("cur").textContent =
+      "SELFTEST " + (err < 0.006 && hostOk && frameOk && tripOk && alignOk ? "PASS" : "FAIL") +
+      " jar at " + state.mizusashi.x.toFixed(3) + "," + state.mizusashi.z.toFixed(3) +
+      " err " + (err * 1000).toFixed(1) + "mm" +
+      " | host " + (hostOk ? "moved+turned" : "STUCK") +
+      " | readout " + (frameOk ? "follows" : "STALE") +
+      " | scoop aimed to " + aimErr.toFixed(2) + " deg" +
+      " | round trip " + (tripOk ? "exact" : "LOSSY") +
+      " | address " + (hashOk ? "writable" : "REFUSED") +
+      " | localStorage " + (lsOk ? "writable" : "REFUSED");
+  }
+})();
+  </script>
+  <script src="blob.js"></script>
+  <script src="site.js"></script>
+</body>
+</html>

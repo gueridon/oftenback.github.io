@@ -83,6 +83,7 @@ document.addEventListener("DOMContentLoaded", () => {
     { href: "chanoyu.html", label: "chanoyu", chapters: [
       { href: "tearoom-roji.html", label: "roji" },
       { href: "chashitsu.html", label: "chashitsu" },
+      { href: "temaeza.html", label: "temaeza" },
       { href: "dogu.html", label: "dogu" },
     ] },
   ];

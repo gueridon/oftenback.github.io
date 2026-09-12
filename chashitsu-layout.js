@@ -355,11 +355,11 @@
       k.bezierCurveTo(128, 170, 144, 62, 180, 62);  // up over the right knee
       k.bezierCurveTo(216, 62, 232, 150, 232, 320); // and down
       k.stroke();
-      // the knees themselves, so the two points are unambiguous
-      k.fillStyle = "rgba(227,66,52,0.95)";
-      [[76, 62], [180, 62]].forEach((q) => {
-        k.beginPath(); k.arc(q[0], q[1], 13, 0, 6.2832); k.fill();
-      });
+      // No discs on the knees. They were there to make the two points
+      // unambiguous, and Nicolas's eye says the two humps already are: the
+      // dots read as objects set on the mat, which is exactly what a guide
+      // must not do. Taken out of the plan and out of this mark together, so
+      // the two drawings of the same man cannot part company.
       const tex = new THREE.CanvasTexture(c);
       tex.colorSpace = THREE.SRGBColorSpace;
       const mk = new THREE.Mesh(new THREE.PlaneGeometry(KW, KD),
@@ -387,7 +387,7 @@
     if (TI === 0 && !REV) {
       // HIS OWN PLACING, kept verbatim -- and now placed on a drawing of the
       // room instead of by eye in three dimensions. Nicolas laid these out on
-      // the flat plan in work-place-dogu.html, 2026-09-11, and the numbers are
+      // the flat plan in temaeza.html, 2026-09-11, and the numbers are
       // his to the millimetre. Two conventions had to be got right first, both
       // measured off the built objects rather than assumed: a utensil's point
       // is its own ORIGIN, which for the hishaku is its CUP and not its

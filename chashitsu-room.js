@@ -98,7 +98,7 @@
   // follows from those, so a correction is a number.
   const TYPES = [
     // WHERE THE HOST KNEELS, and this one is not a rule: Nicolas placed him,
-    // 2026-09-11, on the plan in work-place-dogu.html. 0.764 of the mat's
+    // 2026-09-11, on the plan in temaeza.html. 0.764 of the mat's
     // width, which is 730mm across a 955 mat -- and the schema on page 84,
     // measured independently off his screenshot, puts the host's mark at 0.71
     // of the same width. Two readings that never met agree to five centimetres.
