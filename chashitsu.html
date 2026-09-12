@@ -141,6 +141,21 @@
     /* No rule over it either. With the legend's gone and the tags' gone, one
        remaining line would have been the only drawn separator on the page, and
        a single line is louder than none. The space does the work. */
+    /* THE SAME ROOM IN VOLUME. The chapter used to be the plan alone, and the
+       room in three dimensions was a page of its own; they were one subject cut
+       in two by their technique rather than by their meaning. So the room is
+       framed here, driven by the same eight buttons as the drawing, and it is
+       no longer a destination of its own.
+       It is a WINDOW and not a copy: one source for the room, addressed with
+       ?bare so it arrives without the guide this page already carries. */
+    .roomview{margin-top:26px;position:relative;
+      border:1px solid var(--border);border-radius:6px;overflow:hidden;
+      background:#1c1712;}
+    .roomview iframe{display:block;width:100%;height:clamp(260px,42vh,420px);
+      border:0;}
+    .roomview figcaption{position:absolute;left:12px;bottom:9px;
+      font-size:10px;letter-spacing:.14em;text-transform:lowercase;
+      color:rgba(255,255,255,.52);pointer-events:none;}
     .src{margin-top:44px;font-size:11px;line-height:1.8;letter-spacing:.06em;
       color:var(--soft);}
     .src em{font-style:italic;}
@@ -189,6 +204,13 @@
             </div>
           </div>
 
+          <figure class="roomview">
+            <iframe id="roomframe" src="room3d.html?bare&amp;ti=0"
+              title="the same room, in three dimensions"
+              loading="lazy"></iframe>
+            <figcaption>drag to turn the head</figcaption>
+          </figure>
+
           <div class="eight" id="eight"></div>
 
           <p class="src">A. L. Sadler, <em>Cha-No-Yu: The Japanese Tea
@@ -222,8 +244,19 @@
     // IS: Sadler's reverse style is the normal one seen in a looking glass.
     let cur = 0, reversed = false;
 
+    const frame = document.getElementById("roomframe");
+    // The room is told, not reloaded: a new src would rebuild the whole scene
+    // and flash on every one of the eight.
+    const tellRoom = () => {
+      if (frame.contentWindow)
+        frame.contentWindow.postMessage(
+          { kind: "chashitsu", ti: cur, rev: reversed }, "*");
+    };
+    frame.addEventListener("load", tellRoom);
+
     function draw() {
       PLAN.draw(cur, reversed);
+      tellRoom();
       const t = TYPES[cur];
       document.getElementById("note").innerHTML =
         "<b>" + t.jp + " &nbsp; " + t.rom + (reversed ? ", reversed" : "") +

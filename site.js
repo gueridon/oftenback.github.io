@@ -1,6 +1,11 @@
 // Shared across every page: inject the side menu (mark + room list, which
 // never fades, ever), and fade in the page's own content on load.
 document.addEventListener("DOMContentLoaded", () => {
+  // The site's furniture belongs to the TOP document. The chashitsu chapter
+  // frames the room in three dimensions, and that page loads this file too:
+  // unguarded, it injected a second menu inside the frame and drew its cream
+  // veil over the room. A framed page is a component, not a visit.
+  if (window !== window.top) return;
   const here = location.pathname.split("/").pop() || "";
   // The cherry window IS the home page now: room one is where you arrive, and
   // the blob is its overture rather than a page of its own. The old cream
@@ -71,12 +76,13 @@ document.addEventListener("DOMContentLoaded", () => {
     // New chapters get added to `chapters` and nothing else has to change.
     // The chapters carry their own labels now, because the menu SHOWS them:
     // standing anywhere in the chanoyu house, its rooms open underneath the
-    // stop as a sub-list. room3d is one of them -- it was reachable only from
-    // inside two other pages, which is no way to find a room.
+    // stop as a sub-list.
+    // Ordered as the house is: what you WALK first, then what you consult.
+    // room3d is no longer among them -- it is framed inside the chashitsu
+    // chapter now, a window rather than a destination.
     { href: "chanoyu.html", label: "chanoyu", chapters: [
       { href: "tearoom-roji.html", label: "roji" },
       { href: "chashitsu.html", label: "chashitsu" },
-      { href: "room3d.html", label: "the room" },
       { href: "dogu.html", label: "dogu" },
     ] },
   ];

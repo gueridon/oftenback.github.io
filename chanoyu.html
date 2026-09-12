@@ -70,6 +70,16 @@
       letter-spacing:.14em;margin-right:9px;}
 
     /* the chapters */
+    /* TWO WINGS, and the split is a way of reading rather than a ranking. One
+       side is walked: each thing exists by its place in the whole. The other is
+       consulted: the names, the arrangements, the detail. Nicolas, 2026-09-11.
+       The menu does not carry this level -- it names the house and stops. A
+       page holds a structure better than a menu does. */
+    .wing{margin:34px 0 2px;display:flex;align-items:baseline;gap:14px;}
+    .wing h2{font:600 9.5px/1 system-ui,sans-serif;letter-spacing:.26em;
+      text-transform:uppercase;color:var(--ink);}
+    .wing p{font-size:12px;color:var(--soft);font-weight:300;}
+    .wing + .chapters{margin-top:2px;}
     .chapters{list-style:none;}
     .chapters a,.chapters .soon{display:flex;align-items:flex-start;gap:20px;
       padding:16px 2px;text-decoration:none;}
@@ -124,6 +134,8 @@
           name. What takes hours to do could be done in minutes, and the
           difference between the two is the whole of it.</p>
 
+          <div class="wing"><h2>the ceremony</h2>
+            <p>walked, and each thing by its place in the whole</p></div>
           <ul class="chapters">
           <li>
             <a href="tearoom-roji.html">
@@ -131,16 +143,13 @@
               <span class="body"><span class="cr">roji</span><span class="cd">The dewy path. A garden whose only purpose is to take the street out of you before you arrive. Walk it.</span></span>
             </a>
           </li>
+          <!-- The same 茶室 as the documentation wing below, and deliberately:
+               one room, walked or consulted. This door is not a page, it is the
+               path's last stop, entered without the path. -->
           <li>
-            <a href="chashitsu.html">
+            <a href="tearoom-roji.html?room">
               <span class="cj">茶室</span>
-              <span class="body"><span class="cr">chashitsu</span><span class="cd">The room itself, classified by where its hearth is cut. Four positions, each normal and reversed: the eight.</span></span>
-            </a>
-          </li>
-          <li>
-            <a href="dogu.html">
-              <span class="cj">道具</span>
-              <span class="body"><span class="cr">dogu</span><span class="cd">Not equipment: named individuals. One object at a time, in a field of nothing.</span></span>
+              <span class="body"><span class="cr">the room</span><span class="cd">Seated inside at once, for anyone who has walked the garden before. You can still step back out of it on foot.</span></span>
             </a>
           </li>
           <li>
@@ -160,6 +169,22 @@
               <span class="cj">立礼</span>
               <span class="body"><span class="cr">ryurei</span><span class="cd">Tea at a table, standing. Devised in 1872 so that guests who do not kneel could still be served.</span></span>
             </span>
+          </li>
+          </ul>
+          <div class="wing"><h2>documentation</h2>
+            <p>consulted: the names, the arrangements, the detail</p></div>
+          <ul class="chapters">
+          <li>
+            <a href="chashitsu.html">
+              <span class="cj">茶室</span>
+              <span class="body"><span class="cr">chashitsu</span><span class="cd">The room itself, classified by where its hearth is cut. Four positions, each normal and reversed: the eight.</span></span>
+            </a>
+          </li>
+          <li>
+            <a href="dogu.html">
+              <span class="cj">道具</span>
+              <span class="body"><span class="cr">dogu</span><span class="cd">Not equipment: named individuals. One object at a time, in a field of nothing.</span></span>
+            </a>
           </li>
           <li>
             <span class="soon">

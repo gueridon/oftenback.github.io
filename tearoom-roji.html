@@ -656,11 +656,16 @@
     const PARAMS = new URLSearchParams(location.search);
     const PERF = PARAMS.has("perf");
     // ?room is the DIRECT ENTRANCE: seated inside at once, for anyone who has
-    // walked the roji before and wants the room, and for the link from the
-    // chashitsu chapter. It is not a debug view: it gets the full head turn and
-    // the pivot in place, where ?cam= keeps the old orbit.
-    const DIRECT = PARAMS.has("room");
-    const CAM_MODE = DIRECT ? "in" : PARAMS.get("cam");
+    // walked the roji before and wants the room, and for the door in the
+    // chanoyu house.
+    //
+    // It used to be a CAMERA MODE of its own, and that was the fault in it: it
+    // took the frozen branch, where SPACE and R do nothing, so you arrived in
+    // the room and could not leave it on foot. Now it simply PARKS THE WALK at
+    // its last mark, which is what the T shortcut already did, so the room you
+    // enter is the room you would have walked into, keys and all.
+    const ENTER_ROOM = PARAMS.has("room");
+    const CAM_MODE = PARAMS.get("cam");
     const STATIC_VIEW = CAM_MODE !== null;
     const CAM_BASE =
       CAM_MODE === "in"   ? CAM_IN.clone() :
@@ -670,8 +675,6 @@
       CAM_MODE === "in"   ? LOOK_IN.clone() :
       CAM_MODE === "door" ? new THREE.Vector3(0.7, 0.42, 2.0) :
                             new THREE.Vector3(-0.15, 0.75, CZ - 0.4);
-    camera.fov = (CAM_MODE === "out") ? 38 : 54;
-    camera.updateProjectionMatrix();
 
     // And the FIELD is checked rather than assumed: the lens opens until the
     // EMBERS are inside 0.6 of the frame. Not the aim point, the embers -- the
@@ -682,10 +685,19 @@
     // With the aim on the fire this comes back 54, so it is a guard rather than
     // a correction today. It will earn its keep on the other seven layouts,
     // where the hearth stands somewhere else.
-    if (DIRECT) {
+    // THE ROOM'S OWN LENS, computed always and not only for the direct
+    // entrance, because the room wants it whichever way you came in. Measured
+    // from the SEAT, so it does not depend on a camera mode that may not be
+    // in use: the lens opens until the EMBERS are inside 0.6 of the frame. Not
+    // the aim point, the embers -- the aim is the kettle's body 340 up, and a
+    // test written on it passed at once while what actually glows sat outside
+    // the frame. Solved by trying, because the projection is not worth
+    // inverting by hand.
+    const PATH_FOV = (CAM_MODE === "out") ? 38 : 54;
+    const ROOM_FOV = (function () {
       const holds = (fov) => {
         camera.fov = fov; camera.updateProjectionMatrix();
-        camera.position.copy(CAM_BASE); camera.lookAt(LOOK_BASE);
+        camera.position.copy(CAM_IN); camera.lookAt(LOOK_IN);
         camera.updateMatrixWorld(true);
         const inside = (v) => { const q = v.clone().project(camera);
           return Math.abs(q.x) < 0.6 && Math.abs(q.y) < 0.6; };
@@ -693,20 +705,27 @@
       };
       // A four-and-a-half read through a 54 degree lens looks like a corridor:
       // it is a room whose corners are all within reach, and that is a wide
-      // impression. ?fov= turns it; the guard below only opens it further if
-      // the embers would fall out.
+      // impression. ?fov= turns it; the guard only opens it further if the
+      // embers would fall out.
       let fov = isFinite(parseFloat(Q.get("fov"))) ? parseFloat(Q.get("fov")) : 64;
       while (fov < 92 && !holds(fov)) fov += 1;
-      camera.fov = fov;
-      camera.updateProjectionMatrix();
-      window.__fov = fov;
-    }
+      return fov;
+    })();
+    window.__fov = ROOM_FOV;
+    camera.fov = PATH_FOV;          // the guard moved the lens; the path owns it now
+    camera.updateProjectionMatrix();
 
     // How far the head turns and tilts. Hoisted here from the walk because the
     // direct entrance needs them too, and because STATIC_AMP is expressed as a
     // fraction of the swing: at 0.14 of 0.58 the frozen views allow 24% of a
     // head turn, which is right for a debug frame and wrong for a destination.
     const LOOK_SWING = 0.58, LOOK_TILT = 0.20;
+    // The mouse gives an angle bounded by LOOK_SWING, which is the walk's 33
+    // degrees: enough to glance about while standing on a path, far too little
+    // in a room where the two things worth looking at are 66 degrees apart. So
+    // the room scales it. At SWING_D each way the head reaches the alcove, the
+    // window and most of the way to the door.
+    const SWING_K = SWING_D * Math.PI / 180 / LOOK_SWING;
     const _so = new THREE.Vector3().subVectors(CAM_BASE, LOOK_BASE);
     const STATIC_RADIUS = Math.hypot(_so.x, _so.z);
     const ORBIT_BASE_ANGLE_STATIC = Math.atan2(_so.x, _so.z);
@@ -3766,9 +3785,9 @@
       "<span class='rom'>Yojohan</span></span>" +
       "<span class='tx'>" + "Four and a half mats, 2865mm square: a mat is 1910 by 955, " +
            "and four of them turning about a half mat at the centre come to exactly " +
-           "three mat widths each way. The hearth is a 420mm square cut in the corner " +
-           "of the host's mat, and everything here stands where the plan puts it, at " +
-           "its own size. " +
+           "three mat widths each way. The hearth is a 420mm square at the corner of " +
+           "the half mat, against the host's, and everything here stands where the " +
+           "plan puts it, at its own size. " +
            "<br><br>This is one arrangement of eight: four hearth positions, each in a " +
            "normal and a reversed style." +
            "<br><br><a href='room3d.html'>See all eight, in the room</a>" +
@@ -3945,6 +3964,8 @@
     // stop a coincidence.
     const MARKS = [0].concat(STOPS.map((st) => st.u));
     let markIdx = 0, currentU = 0, walkPrev = null, roamPrev = null;
+    // The direct entrance, parked: the walk's own state, set to its end.
+    if (ENTER_ROOM) { markIdx = MARKS.length - 1; currentU = 1; }
     let fromU = 0, toU = 0, glideT0 = 0, glideDur = 0, moving = false;
     let lookW = 1, lookTarget = 1;
     const breathe = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
@@ -4303,47 +4324,9 @@
       // off it would find the edge of the world.
       const rdt = roamPrev === null ? 0 : Math.min(0.1, (now - roamPrev) / 1000);
       roamPrev = now;
-      roamStep(rdt, DIRECT || (!STATIC_VIEW && currentU > 0.995));
+      roamStep(rdt, !STATIC_VIEW && currentU > 0.995);
 
-      if (DIRECT) {
-        // Seated, and the head turns WHERE IT STANDS. The camera holds its
-        // place and the look target swings about it, which is the gesture
-        // Nicolas asked for on the walk; the frozen ?cam= views below still
-        // orbit, because for a debug frame that is useful.
-        if (nijiriDoor && staticDoorOpen) {
-          nijiriDoor.position.x = DOOR_CX + DOOR_SLIDE;
-          staticDoorOpen = false;
-        }
-        // The mouse gives an angle bounded by LOOK_SWING, which is the walk's
-        // 33 degrees: enough to glance about while standing on a path, far too
-        // little in a room where the two things worth looking at are 66 degrees
-        // apart. So the seat scales it. At 125 degrees each way the head
-        // reaches the alcove, the window and most of the way to the door, and
-        // the tilt widens with it so the mats and the ceiling both come in.
-        const K = SWING_D * Math.PI / 180 / LOOK_SWING;
-        currentAngle += (targetAngle - currentAngle) * 0.055;
-        currentTilt += (targetTilt - currentTilt) * 0.055;
-        const dx = LOOK_BASE.x - CAM_BASE.x, dz = LOOK_BASE.z - CAM_BASE.z;
-        const R = Math.hypot(dx, dz);
-        const ang = Math.atan2(dx, dz) + spin + currentAngle * K;
-        // The head still turns where it stands; what moved is where it stands.
-        // The aim's height carries the same drop as the eye, or crouching would
-        // leave you staring at the ceiling.
-        _eye.copy(CAM_BASE).add(ROAM);
-        _eye.y = eyeY === null ? CAM_BASE.y : eyeY;
-        camera.position.copy(_eye);
-        camera.lookAt(_eye.x + R * Math.sin(ang),
-                      LOOK_BASE.y + currentTilt * K * R * 0.42 + (_eye.y - CAM_BASE.y),
-                      _eye.z + R * Math.cos(ang));
-
-        // The annotations belong here too. placeNotes was only ever called from
-        // the walk, so on the direct entrance not one dot appeared: the room's
-        // own card, the scroll's, the flower's and the kettle's were all in the
-        // page and none of them could be reached. u = 1 is the seated stop and
-        // the gate is open, because someone who arrived without walking is
-        // standing still by definition.
-        placeNotes(1, 1);
-      } else if (STATIC_VIEW) {
+      if (STATIC_VIEW) {
         if (nijiriDoor && staticDoorOpen) {
           nijiriDoor.position.x = DOOR_CX + DOOR_SLIDE;
           staticDoorOpen = false;
@@ -4384,13 +4367,26 @@
         // In manual the look is never gated: being able to turn wherever you
         // have chosen to stand is the whole reason the mode exists.
         const w = (MODE === "manual") ? 1 : lookW * stopWeight(currentU);
+        // ENTERING, the lens opens and the head's reach widens, both on the
+        // same ramp as the door sliding aside. Ramped and not switched, so it
+        // happens while you bow through rather than as a jump once you are in.
+        // The old ?room branch did this in one step and was the only place it
+        // happened; folding it into the walk is what made the two entrances
+        // the same room.
+        const roomness = smooth(Math.min(1, Math.max(0, (currentU - 0.93) / 0.07)));
+        const wantFov = PATH_FOV + (ROOM_FOV - PATH_FOV) * roomness;
+        if (Math.abs(camera.fov - wantFov) > 0.02) {
+          camera.fov = wantFov;
+          camera.updateProjectionMatrix();
+        }
+        const kNow = 1 + (SWING_K - 1) * roomness;
         if (w > 0.001) {
           const dx = _l.x - _p.x, dz = _l.z - _p.z;
           const R = Math.hypot(dx, dz);
-          const ang = Math.atan2(dx, dz) + spin + currentAngle * w;
+          const ang = Math.atan2(dx, dz) + spin + currentAngle * w * kNow;
           _l.x = _p.x + R * Math.sin(ang);
           _l.z = _p.z + R * Math.cos(ang);
-          _l.y += currentTilt * w * R * 0.42;
+          _l.y += currentTilt * w * kNow * R * 0.42;
         }
         // The same offset on BOTH, so the direction the head is facing survives
         // the move: _l was computed from _p, and shifting the pair keeps it.
@@ -4415,6 +4411,7 @@
         if (nijiriDoor)
           nijiriDoor.position.x = DOOR_CX + DOOR_SLIDE
             * smooth(Math.min(1, Math.max(0, (currentU - 0.86) / 0.07)));
+        window.__fovNow = camera.fov;
         window.__u = currentU;      // so a capture harness can wait for the glide
         window.__moving = moving;
         window.__mark = markIdx;

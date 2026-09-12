@@ -264,27 +264,62 @@
       usedMats[mk] = { x: sm.x, y: sm.y, w: sm.w, h: sm.h };
       if (mk === TYPE.temae && TYPE.shorten) usedMats[mk].h *= TYPE.shorten;
     }
-    let hostMat = null;
-    for (const mk in usedMats) {
-      const m2 = usedMats[mk];
-      if (roX >= m2.x - 1e-6 && roX + RO <= m2.x + m2.w + 1e-6 &&
-          roY >= m2.y - 1e-6 && roY + RO <= m2.y + m2.h + 1e-6) { hostMat = m2; break; }
-    }
-    if (!hostMat) hostMat = usedMats[TYPE.temae];   // should not happen; say so if it does
+    // WHERE HE KNEELS, and this is URASENKE's rule as of 2026-09-11, replacing
+    // four rules of Nicolas's. Sources: the schema on page 84, his own reading
+    // of it ("l'hote est en diagonale sur la natte, plus dans la largeur que
+    // la longueur"), and the glossary at `uchizumi`, page 128: the corners of
+    // the ro frame nearest the dogudatami "are used in ro temae as AIMING
+    // POINTS for the host's prescribed sitting position at the temaeza."
+    //
+    // His mat is the TEMAEDATAMI, always. It used to be taken as whichever mat
+    // CONTAINED the ro, which only held while the ro was cut in his own mat --
+    // and Urasenke puts it in the ro mat for yojohangiri and daimegiri, which
+    // would have seated him on the wrong tatami.
+    const hostMat = usedMats[TYPE.temae];
     const longX = hostMat.w > hostMat.h;
-    const a0 = longX ? hostMat.x : hostMat.y;
-    const a1 = longX ? hostMat.x + hostMat.w : hostMat.y + hostMat.h;
-    const r0 = longX ? roX : roY, r1 = r0 + RO;
-    const onHigh = (a1 - r1) >= (r0 - a0);         // which part is larger
-    // How far the knees stand clear of the hearth's edge is the one thing the
-    // four rules do not fix, so it is a number here and Nicolas can change it:
-    const KNEE_CLEAR = 0.120;
-    const alongK = onHigh ? r1 + KNEE_CLEAR / M : r0 - KNEE_CLEAR / M;
     const across = longX ? hostMat.y + hostMat.h / 2 : hostMat.x + hostMat.w / 2;
-    const KNEE = new THREE.Vector3(u(longX ? alongK : across), 0,
-                                   u(longX ? across : alongK));
-    const FWD = longX ? new THREE.Vector3(onHigh ? -1 : 1, 0, 0)
-                      : new THREE.Vector3(0, 0, onHigh ? -1 : 1);
+    const roInHis =
+      roX >= hostMat.x - 1e-6 && roX + RO <= hostMat.x + hostMat.w + 1e-6 &&
+      roY >= hostMat.y - 1e-6 && roY + RO <= hostMat.y + hostMat.h + 1e-6;
+    let KNEE, FWD;
+    if (roInHis) {
+      // mukogiri and sumiro: the ro is cut in his OWN mat and divides it, so
+      // he kneels in the larger of the two parts it leaves, square to the
+      // mat's edges and facing it. Nicolas's rule, kept because the schema on
+      // page 84 does not cover these two and because it is the only thing that
+      // makes sense when the hearth is in the mat you are sitting on.
+      const a0 = longX ? hostMat.x : hostMat.y;
+      const a1 = longX ? hostMat.x + hostMat.w : hostMat.y + hostMat.h;
+      const r0 = longX ? roX : roY, r1 = r0 + RO;
+      const onHigh = (a1 - r1) >= (r0 - a0);
+      const KNEE_CLEAR = 0.120;      // how far his knees stand clear of the edge
+      const alongK = onHigh ? r1 + KNEE_CLEAR / M : r0 - KNEE_CLEAR / M;
+      KNEE = new THREE.Vector3(u(longX ? alongK : across), 0, u(longX ? across : alongK));
+      FWD = longX ? new THREE.Vector3(onHigh ? -1 : 1, 0, 0)
+                  : new THREE.Vector3(0, 0, onHigh ? -1 : 1);
+    } else if (TYPE.host && TYPE.facing !== undefined) {
+      // A PLACED HOST BEATS A RULE. yojohangiri carries one: Nicolas sat him
+      // down himself on the flat plan, and where a man is is not the sort of
+      // thing to derive when the man who practises has put him there. The
+      // rule below still serves every room he has not placed.
+      KNEE = new THREE.Vector3(u(TYPE.host[0]), 0, u(TYPE.host[1]));
+      const fa = TYPE.facing * Math.PI / 180;
+      FWD = new THREE.Vector3(Math.cos(fa), 0, -Math.sin(fa));
+    } else {
+      // yojohangiri and daimegiri: the ro is in the NEXT mat, so it divides
+      // nothing. He sits at his mat's width centre, level with the middle of
+      // the ro, and TURNS TO AIM at the frame corner nearest him -- which
+      // makes him sit diagonally, the across component dominating. That is
+      // exactly what page 84 draws and what Nicolas read in it.
+      const alongK = (longX ? roX : roY) + RO / 2;
+      KNEE = new THREE.Vector3(u(longX ? alongK : across), 0, u(longX ? across : alongK));
+      // the corner nearest his mat, at the end the utensils stand at
+      const nearX = (roX > (longX ? alongK : across)) ? roX : roX + RO;
+      const nearY = (roY > (longX ? alongK : across)) ? roY : roY + RO;
+      const aim = new THREE.Vector3(u(longX ? roX + RO / 2 : nearX), 0,
+                                    u(longX ? nearY : roY));
+      FWD = aim.clone().sub(KNEE).setY(0).normalize();
+    }
     // and the rest of him is behind his knees
     const H = KNEE.clone().addScaledVector(FWD, -0.178);
     const LFT = new THREE.Vector3(FWD.z, 0, -FWD.x);        // up cross forward
@@ -350,18 +385,33 @@
     };
 
     if (TI === 0 && !REV) {
-      // his own placing, kept verbatim
-      putAt("mizusashi", new THREE.Vector3(0.248, 0, 1.172));
-      putAt("kensui", new THREE.Vector3(0.153, 0, 1.929));
-      const natP = new THREE.Vector3(0.245, 0, 1.366);
-      putAt("natsume", natP);
-      const scoop = putAt("chashaku", natP, -2.4550);
+      // HIS OWN PLACING, kept verbatim -- and now placed on a drawing of the
+      // room instead of by eye in three dimensions. Nicolas laid these out on
+      // the flat plan in work-place-dogu.html, 2026-09-11, and the numbers are
+      // his to the millimetre. Two conventions had to be got right first, both
+      // measured off the built objects rather than assumed: a utensil's point
+      // is its own ORIGIN, which for the hishaku is its CUP and not its
+      // middle; and `rotation.y` is the NEGATIVE of a bearing read on the
+      // plan, because turning about +y takes +x toward -z.
+      putAt("mizusashi", new THREE.Vector3(0.485, 0, 0.630));
+      putAt("kensui", new THREE.Vector3(0.095, 0, 1.000));
+      putAt("natsume", new THREE.Vector3(0.675, 0, 0.740));
+      // "il faut faire pivoter le chashaku, scoop vers l'avant, parallel au
+      // regard de l'hote", and he turned it himself. The scoop is the piece's
+      // local -x (measured: the blade is 5.25mm half-wide there against 3.07
+      // at the cut end), local -x lands on (-cos ry, sin ry), and this figure
+      // sends it along his gaze to within 2.0 degrees. Exactly parallel would
+      // be `Math.atan2(FWD.z, -FWD.x)`; the two degrees are his, from aligning
+      // the scoop before he made the last turn of the man.
+      const scoop = putAt("chashaku", new THREE.Vector3(0.685, 0, 0.730), 3.5029);
       scoop.position.y = 0.0728;        // the lid is at 64.5, the scoop dips 8.3
       scoop.name = "chashaku";
-      putAt("chasen", new THREE.Vector3(0.292, 0, 1.447)).name = "chasen";
-      putAt("chawan", new THREE.Vector3(0.540, 0, 1.515));
-      putAt("futaoki", new THREE.Vector3(0.885, 0, 1.480));
-      const ladle = putAt("hishaku", new THREE.Vector3(0.8927, 0, 1.4737), -2.4550);
+      putAt("chasen", new THREE.Vector3(0.845, 0, 0.875)).name = "chasen";
+      putAt("chawan", new THREE.Vector3(0.830, 0, 1.025));
+      putAt("futaoki", new THREE.Vector3(1.030, 0, 1.445));
+      // The cup rests on the lid rest, which is why its point is the futaoki's
+      // to five millimetres: a hishaku's point IS its cup, not its middle.
+      const ladle = putAt("hishaku", new THREE.Vector3(1.025, 0, 1.445), 3.0665);
       ladle.rotation.z = -0.7545;
       ladle.position.y = 0.06615;
     } else {
