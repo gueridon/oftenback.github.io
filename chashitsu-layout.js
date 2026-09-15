@@ -385,35 +385,76 @@
     };
 
     if (TI === 0 && !REV) {
-      // HIS OWN PLACING, kept verbatim -- and now placed on a drawing of the
-      // room instead of by eye in three dimensions. Nicolas laid these out on
-      // the flat plan in temaeza.html, 2026-09-11, and the numbers are
-      // his to the millimetre. Two conventions had to be got right first, both
-      // measured off the built objects rather than assumed: a utensil's point
-      // is its own ORIGIN, which for the hishaku is its CUP and not its
-      // middle; and `rotation.y` is the NEGATIVE of a bearing read on the
-      // plan, because turning about +y takes +x toward -z.
+      // HIS "SETUP", placed on the plan 2026-09-12 and named by him: "c'est la
+      // que viennent se poser les objets. Le couvercle du kama reste sur le
+      // kama, deja la." These are his coordinates to the millimetre, in the
+      // layout's own frame, and the angles are his too. See temae-steps.md for
+      // the placing verbatim and for the three readings I had to make where a
+      // flat plan cannot say what it means.
+      //
+      // Two conventions, both measured off the built objects rather than
+      // assumed: a utensil's point is its own ORIGIN, which for the hishaku is
+      // its CUP and not its middle; and `rotation.y` is the NEGATIVE of a
+      // bearing read on the plan, because turning about +y takes +x toward -z.
+      const ry = (deg) => -deg * Math.PI / 180;
+
+      // The first thing carried in: the cherry board with its three sweets, one
+      // pressed as a cherry blossom. It arrives whole, so it is one object
+      // here.
+      const tray = DOGU.higashiSet();
+      tray.position.set(0.485 + 1.365, 0, 0.490);   // 1.850, his point
+      tray.position.x = 1.850;
+      tray.rotation.y = ry(90.0);
+      tray.name = "higashibon";
+      into.add(tray);
+
       putAt("mizusashi", new THREE.Vector3(0.485, 0, 0.630));
-      putAt("kensui", new THREE.Vector3(0.095, 0, 1.000));
-      putAt("natsume", new THREE.Vector3(0.675, 0, 0.740));
-      // "il faut faire pivoter le chashaku, scoop vers l'avant, parallel au
-      // regard de l'hote", and he turned it himself. The scoop is the piece's
-      // local -x (measured: the blade is 5.25mm half-wide there against 3.07
-      // at the cut end), local -x lands on (-cos ry, sin ry), and this figure
-      // sends it along his gaze to within 2.0 degrees. Exactly parallel would
-      // be `Math.atan2(FWD.z, -FWD.x)`; the two degrees are his, from aligning
-      // the scoop before he made the last turn of the man.
-      const scoop = putAt("chashaku", new THREE.Vector3(0.685, 0, 0.730), 3.5029);
-      scoop.position.y = 0.0728;        // the lid is at 64.5, the scoop dips 8.3
-      scoop.name = "chashaku";
-      putAt("chasen", new THREE.Vector3(0.845, 0, 0.875)).name = "chasen";
-      putAt("chawan", new THREE.Vector3(0.830, 0, 1.025));
-      putAt("futaoki", new THREE.Vector3(1.030, 0, 1.445));
-      // The cup rests on the lid rest, which is why its point is the futaoki's
-      // to five millimetres: a hishaku's point IS its cup, not its middle.
-      const ladle = putAt("hishaku", new THREE.Vector3(1.025, 0, 1.445), 3.0665);
-      ladle.rotation.z = -0.7545;
-      ladle.position.y = 0.06615;
+      putAt("natsume", new THREE.Vector3(0.565, 0, 0.795));
+
+      // THE WHOLE HAND, at his word: "peux tu utiliser le composite pour le
+      // bol/chasen/chasaku?" So the bowl arrives with the whisk and the cloth
+      // in it and the scoop across its rim, which is how the four travel and
+      // how they are set down.
+      //
+      // One thing the plan could not say, and this is my reading of it: the
+      // composite FIXES the scoop on the rim, while he had given the scoop an
+      // angle of its own, -270.7, which points it at the alcove. His angle is
+      // the more deliberate of the two signals -- a thing you turn on purpose
+      // -- so the whole hand turns with it and the scoop ends up lying the way
+      // he laid it. One number to change if he meant the other reading: drop
+      // the rotation and the scoop points along +x instead.
+      const bowl = DOGU.chawanSet();
+      bowl.position.set(0.385, 0, 0.810);
+      bowl.rotation.y = ry(-270.7);
+      bowl.name = "chawan";
+      into.add(bowl);
+
+      // THE WHOLE WASTE-WATER HAND, ladle included, and this one was found by
+      // measuring rather than by reading the plan. Laid as a separate object
+      // at his point and his angle, the ladle pointed STRAIGHT AT the jar: the
+      // handle's direction came to (-0.858, 0.513) and the direction from its
+      // cup to the kensui's centre to (-0.854, 0.522), the same axis. A
+      // hundred and five millimetres along, the handle has risen 67 -- into the
+      // belly. "je vois toujours le hishaku passe a travers le kensui", and he
+      // was right.
+      //
+      // A flat plan cannot say that a handle rises, so 90mm away pointing at
+      // the jar is as close as he could draw "on it". And he had just approved
+      // the composite's own pose: "ici c'est bon". So the hand arrives whole,
+      // turned so that the ladle lies along the bearing he gave it.
+      //
+      // -1.983 is that bearing: within the composite the handle runs at 35.5
+      // degrees, he laid it at 149.1, and a ry turn subtracts from a bearing.
+      // One line to separate them again if he meant the ladle on the mat.
+      const slop = DOGU.kensuiSet();
+      slop.position.set(0.165, 0, 0.950);
+      slop.rotation.y = -1.983;
+      slop.name = "kensui";
+      into.add(slop);
+
+      // THE LID IS ON THE KETTLE IN THIS STEP, and that is a fact about the
+      // step and not about the room. He put the loose lid at the hearth's own
+      // centre, which is how a flat plan says "not taken off yet".
     } else {
       // NOTHING, and that is the point.
       //
@@ -440,6 +481,31 @@
     const kettle = putAt("kama", new THREE.Vector3(RCX, 0, RCZ));
     kettle.position.y = ASH + 0.061;
 
+    // ---- and the lid comes off ----------------------------------------------
+    // Nicolas, correcting me while I was writing the opposite: "a un moment de
+    // la procedure, il faudra que le Kamabuta puisse etre mis sur le futaoki."
+    //
+    // So the two lids are ONE SWITCH rather than two facts. The kettle builds
+    // its own as a named group -- it always has, so that a room could set it
+    // ajar -- and `kamabuta` is the same construction standing free. Lifting
+    // the lid is hiding the first and showing the second at a given point, and
+    // the room hands the switch out so that a scene can throw it without
+    // knowing how either lid is built.
+    //
+    // This is the first object here with a STATE rather than only a place, and
+    // it will not be the last: see procedure-tool-plan.md.
+    const kamaLid = kettle.getObjectByName("lid");
+    const looseLid = DOGU.OBJECTS.find((o) => o.key === "kamabuta").build();
+    looseLid.name = "kamabuta";
+    looseLid.visible = false;
+    into.add(looseLid);
+    const lidOff = (yes, at) => {
+      if (kamaLid) kamaLid.visible = !yes;
+      looseLid.visible = !!yes;
+      if (at) looseLid.position.set(at.x, at.y || 0, at.z);
+      return looseLid;
+    };
+
     // The seat and what it faces belong to the room, so they are set here and
     // the looking-about machinery lives outside: registering the pointer
     // listeners in here would have stacked a new pair on every change of
@@ -461,12 +527,24 @@
 
   return { TYPE: TYPE, RC: new THREE.Vector3(RCX, 0, RCZ), KNEE: KNEE,
            FWD: FWD, LFT: LFT, seat: seat, aim: aim,
+           // the switch, so a scene can lift the kettle's lid onto the lid
+           // rest without knowing how either lid is built
+           lidOff: lidOff,
            // The EMBERS, down on the ash at -85, and NOT the same point as
            // `aim`, which is the kettle's body 340 up. A page framing the fire
            // must frame what glows: framed by `aim` the test passed at once
            // while the embers sat 8% outside the frame, and the fire stayed
            // out of shot. That was the whole of "on ne voit pas le feu".
            ember: new THREE.Vector3(RCX, ASH + 0.02, RCZ),
+           // THE ALCOVE'S OWN PLACE, because a scene now has to put a bowl
+           // "entre le kama et le tokonoma". The alcove is a recess in the
+           // back wall, a bay deep and two bays wide, so its middle is one
+           // bay along and half its depth back. It was drawn here and
+           // nowhere named; naming it is cheaper than a page guessing.
+           toko: new THREE.Vector3(u(1), 0, -TOKO_D / 2),
+           // and the hearth's own size in metres, because a bowl set down
+           // beside it has to clear its frame and not the kettle's width
+           roSize: u(RO),
            roX: roX, roY: roY, hostMat: hostMat };
   }
 
@@ -534,6 +612,9 @@
         new THREE.PlaneGeometry(0.400, 1.164),
         new THREE.MeshStandardMaterial({ map: scroll, roughness: 0.92, metalness: 0 }));
       kake.position.set(u(1), 0.435 + 1.164 / 2, -TOKO_D + 0.014);
+      // NAMED, so that a visitor can look at the scroll itself instead of at a
+      // disc floating in front of it. The roji picks by name.
+      kake.name = "kakejiku";
       into.add(kake);
       // its rods
       slab(0.420, 0.012, 0.012, mat(0x2b2119, 0.8), u(1), 1.605, -TOKO_D + 0.020);
@@ -553,6 +634,7 @@
       const vm = new THREE.Mesh(vase, mat(0xffffff, 0.55));
       vm.material.vertexColors = true; vm.material.side = THREE.DoubleSide;
       vm.position.set(u(1) - 0.30, 0.045, -TOKO_D + 0.19);
+      vm.name = "ikebana";                  // the vase answers for the flower
       into.add(vm);
       // A bare branch and one bud, which is all a tea room allows. Both were
       // placed by typed coordinates and both were wrong for it: the stem was a
@@ -568,6 +650,7 @@
       const spray = new THREE.Group();
       spray.position.set(u(1) - 0.30, VASE_Y + MOUTH - 0.026, -TOKO_D + 0.19);
       spray.rotation.z = -0.30; spray.rotation.x = 0.12;
+      spray.name = "ikebana";
       into.add(spray);
       const STEM_L = 0.210;
       const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.0022, 0.0032, STEM_L, 5),

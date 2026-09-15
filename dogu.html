@@ -150,7 +150,18 @@
     // same geometry at the same real size. A copy is taken because this page
     // reorders the list for its rack, and a shared list should not be left
     // sorted by whoever loaded it last.
-    const OBJECTS = DOGU.OBJECTS.slice();
+    const ORDER = ["set", "kama", "mizusashi", "fukusa",
+                   "natsume", "chawan", "chasen", "chashaku",
+                   "kensui", "hishaku", "futaoki"];
+    // WHAT THIS CHAPTER SHOWS is the list below and nothing else. It used to
+    // be every object in the module, sorted by ORDER -- and an object missing
+    // from ORDER sorts to -1, which is to say it would appear FIRST, unheaded,
+    // the moment anything new was modelled. The chakin and the kettle's loose
+    // lid were modelled for the roji's scene and have no place written for
+    // them here yet, so they are not shown. Adding one is an editorial act:
+    // put its key in ORDER and give it a group.
+    const OBJECTS = DOGU.OBJECTS.filter((o) => ORDER.indexOf(o.key) >= 0);
+    OBJECTS.sort((a, b) => ORDER.indexOf(a.key) - ORDER.indexOf(b.key));
     // The order is not Sadler's: the natsume
     // first, then the bowl with the whisk and the scoop standing in it, then the
     // waste water with the ladle and its rest. That is the whole of what is
@@ -166,10 +177,6 @@
     // Sorted by key rather than written in order, so that the one object with a
     // hundred lines of geometry can stay where it is in the file while the rack
     // reads the way the tea is actually made.
-    const ORDER = ["set", "kama", "mizusashi", "fukusa",
-                   "natsume", "chawan", "chasen", "chashaku",
-                   "kensui", "hishaku", "futaoki"];
-    OBJECTS.sort((a, b) => ORDER.indexOf(a.key) - ORDER.indexOf(b.key));
     const mark = (key, f) => Object.assign(OBJECTS.find((o) => o.key === key), f);
     // The set needs no heading: 一式 says it. The two short groups join it on
     // the same line, and what is carried in takes the line below, whole.

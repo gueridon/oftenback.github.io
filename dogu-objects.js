@@ -317,7 +317,7 @@
 
         // and the tray, cut to the line it carries: built after the objects so
         // it can be measured to them rather than guessed at.
-        const box = new THREE.Box3().setFromObject(g);
+        const box = new THREE.Box3().setFromObject(g, true);
         const sz = box.getSize(new THREE.Vector3());
         const ctr = box.getCenter(new THREE.Vector3());
         const tray = new THREE.Mesh(
@@ -356,26 +356,32 @@
           side: THREE.DoubleSide,
         });
         const g = new THREE.Group();
-        // the body, closing flat under the lid
-        g.add(new THREE.Mesh(lathe([
+        // NAMED, both of them, because the caddy is opened in the room: the
+        // lid has to be liftable by something that did not build it. The
+        // names are not DOGU keys, so they raise no dot of their own.
+        const body = new THREE.Mesh(lathe([
           [0.0000, 0.0000],
           [0.0000, 0.0290], [0.0000, 0.0290],
           [0.0030, 0.0322], [0.0030, 0.0322],
           [0.0120, 0.0329], [0.0230, 0.0331], [0.0320, 0.0330],
           [0.0358, 0.0328], [0.0358, 0.0328],
           [0.0358, 0.0250], [0.0358, 0.0000],
-        ], 96, 4.7, 0), lac()));
+        ], 96, 4.7, 0), lac());
+        body.name = "natsume-body";
+        g.add(body);
         // the lid, a hair wider than the body and a fifth of a millimetre
         // clear of it. That gap IS the seam: on a real natsume the join reads
         // as one dark hairline, and modelling the two pieces as touching
         // would have given a join that disappears wherever the light is even.
-        g.add(new THREE.Mesh(lathe([
+        const lid = new THREE.Mesh(lathe([
           [0.0362, 0.0000], [0.0362, 0.0250],
           [0.0362, 0.0334], [0.0362, 0.0334],
           [0.0450, 0.0335], [0.0530, 0.0334], [0.0580, 0.0328],
           [0.0612, 0.0300], [0.0632, 0.0235], [0.0642, 0.0140],
           [0.0645, 0.0000],
-        ], 96, 8.2, 0), lac()));
+        ], 96, 8.2, 0), lac());
+        lid.name = "natsume-lid";
+        g.add(lid);
         return g;
       },
     },
@@ -583,12 +589,25 @@
 
         // t runs 0 at the tip of the blade to 1 at the cut end.
         // n is the measured top edge, positive DOWNWARD.
+        // THE BEND IS A FIFTH OF THE PIECE, not half. It was measured off a
+        // photograph and the shape is right, but it ran to t 0.50 -- ninety-two
+        // millimetres of a hundred and eighty-five -- which left a straight
+        // shaft of only 98. That is shorter than a bowl is wide, so the scoop
+        // could not lie level near the middle of a rim: the dip was always
+        // over the bowl, pointing into it.
+        //
+        // Nicolas put his own scoop on his own bowl, photographed it from
+        // straight above on a cutting mat, and measured against that grid it
+        // lies at 0.30 of the bowl's radius. His instruction: "raccourcis le
+        // coude pour qu'il ressemble a la vraie piece". So every t is scaled by
+        // 0.44, which ends the bend at 0.22 and leaves 144mm of straight shaft.
+        // The n values, which are the shape of the S, are untouched.
         const BEND = [
-          [0.000, -32.8], [0.022, -34.2], [0.045, -19.1], [0.067, -0.1],
-          [0.090, 18.3], [0.112, 30.6], [0.135, 37.2], [0.157, 39.0],
-          [0.180, 35.8], [0.202, 33.6], [0.258, 24.3], [0.303, 17.6],
-          [0.337, 12.8], [0.371, 8.5], [0.404, 3.9], [0.449, 0.8],
-          [0.500, 0.0], [1.000, 0.0],
+          [0.0000, -32.8], [0.0097, -34.2], [0.0198, -19.1], [0.0295, -0.1],
+          [0.0396, 18.3], [0.0493, 30.6], [0.0594, 37.2], [0.0691, 39.0],
+          [0.0792, 35.8], [0.0889, 33.6], [0.1135, 24.3], [0.1333, 17.6],
+          [0.1483, 12.8], [0.1632, 8.5], [0.1778, 3.9], [0.1976, 0.8],
+          [0.2200, 0.0], [1.0000, 0.0],
         ];
         // Width, from the top view: widest just behind the rounded tip, then
         // a long even taper down to the node at 48 per cent, and dead
@@ -980,7 +999,13 @@
                          ca.getZ(i) * 0.175 * f0);
           }
         })(cg);
-        g.add(new THREE.Mesh(cg, bamboo()));
+        // NAMED, both of them, because the tea room has to ask this object
+        // questions: where its cup's mouth is, which way that mouth looks,
+        // and where the handle runs. A ladle that dips into a kettle and
+        // pours into a bowl cannot be aimed by a bounding box.
+        const cupMesh = new THREE.Mesh(cg, bamboo());
+        cupMesh.name = "hishaku-cup";
+        g.add(cupMesh);
 
         // ---- the handle -------------------------------------------------
         // Perpendicular to the cup's axis, which is what makes the cup hang
@@ -1077,7 +1102,9 @@
         hg.setAttribute("color", new THREE.Float32BufferAttribute(col, 3));
         hg.setIndex(idx);
         hg.computeVertexNormals();
-        g.add(new THREE.Mesh(hg, bamboo()));
+        const handMesh = new THREE.Mesh(hg, bamboo());
+        handMesh.name = "hishaku-handle";
+        g.add(handMesh);
 
         // Stood on the handle, cup uppermost, and then turned so the mouth
         // comes round toward the camera: the cup's axis and the handle are
@@ -1410,46 +1437,11 @@
           g.add(L);
         });
 
-        // The lid is BRONZE, not iron: a flat disc with a stepped edge that
-        // overhangs the mouth by a hair, dark brown with a warm sheen.
-        const lid = lathe([
-          [0.2050, 0.0000], [0.2050, 0.0400], [0.2050, 0.0628],
-          [0.2050, 0.0628], [0.2062, 0.0649], [0.2062, 0.0649],
-          [0.2092, 0.0645], [0.2100, 0.0600], [0.2104, 0.0400],
-          [0.2108, 0.0180], [0.2110, 0.0000],
-        ], 100, 2.4, 0);
-        // The lid and its knob go in a group NAMED, because a room may want to
-        // set it ajar: a kettle just off the boil has its lid pushed aside and
-        // that is where the steam comes from. Anonymous meshes cannot be found
-        // by a page, and copying the kettle to open one would be the fifth
-        // copy of a thing this project has learned not to copy.
-        const lidG = new THREE.Group();
-        lidG.name = "lid";
-        g.add(lidG);
-        lidG.add(new THREE.Mesh(lid, new THREE.MeshStandardMaterial({
-          color: 0x4e3226, roughness: 0.38, metalness: 0.62,
-          side: THREE.DoubleSide,
-        })));
+        // The lid comes from kettleLid(), shared with the loose lid that can be
+        // set on the lid rest. It arrives in the KETTLE'S own frame, already at
+        // its 205mm, and it is still a named group so a room can find it.
+        g.add(kettleLid());
 
-        // and the knob is SILVER, a small ribbed bud on a washer. Three
-        // metals in one object, which is the point of it: iron for the fire,
-        // bronze for the lid, silver for the finger.
-        const knobMat = new THREE.MeshStandardMaterial({
-          color: 0xc9c9ce, roughness: 0.24, metalness: 0.94,
-        });
-        const knob = lathe([
-          [0.2108, 0.0000], [0.2108, 0.0105], [0.2114, 0.0108],
-          [0.2118, 0.0060], [0.2128, 0.0038], [0.2150, 0.0034],
-          [0.2168, 0.0055], [0.2186, 0.0092], [0.2205, 0.0113],
-          [0.2224, 0.0108], [0.2238, 0.0082], [0.2246, 0.0046],
-          [0.2249, 0.0028], [0.2258, 0.0034], [0.2264, 0.0026],
-          [0.2266, 0.0000],
-        ], 40, 3.1, 0);
-        lidG.add(new THREE.Mesh(knob, knobMat));
-
-        // tipped a little, so the lid and its knob are read as a lid and not
-        // as a line: the shared camera sits nine degrees up and this object
-        // is wider than it is tall
         return g;
       },
       // The POSE is kept OUT of the geometry. build() returns the object in
@@ -1464,6 +1456,76 @@
       },
     },
     {
+      key: "higashi", jp: "干菓子", rom: "higashi",
+      desc: "Dry sweets, pressed sugar, about two centimetres across and eaten " +
+            "before the thin tea. They keep, unlike the moist sweets that go " +
+            "with thick tea, and they are the one thing in the room that is " +
+            "meant to be a small pleasure and nothing more. This one is " +
+            "pressed as a cherry blossom: five petals, each notched at the " +
+            "tip, which is what tells a cherry from a plum.",
+      build() {
+        return pressedSweet(radSakura,
+          { r: 0.0100, h: 0.0070, c: [0.949, 0.831, 0.847] });
+      },
+    },
+    {
+      key: "higashibon", jp: "干菓子盆", rom: "higashibon",
+      desc: "The tray the dry sweets come in on, and the first thing carried " +
+            "into the room. A board of cherry with its corners taken off and " +
+            "nothing else: no lip, no foot, no moulding.",
+      build() {
+        return cherryBoard({ w: 0.135, d: 0.092, h: 0.0130, corner: 0.009 });
+      },
+    },
+    {
+      key: "chakin", jp: "茶巾", rom: "chakin",
+      desc: "A small cloth of bleached hemp, wetted and wrung out before the " +
+            "guests come and carried folded in the bowl. It is what the bowl " +
+            "is wiped dry with, and the only cloth here meant to be damp. " +
+            "Hemp and not silk, and undyed: its work is work, and it is the " +
+            "one object in the room that is expected to look used.",
+      build() {
+        // The same fold as the fukusa, and the same code: a cloth folded in
+        // three and then in half comes to about 45 by 62, which is what stands
+        // in the bowl. The numbers are mine off a photograph rather than off an
+        // object in my hand, so they are Nicolas's to correct by eye.
+        //
+        // Hemp takes the light almost flat where silk takes it by sheen, so
+        // the bright and the shadow sit close together and the weave is
+        // coarser. That is the whole difference in the parameters.
+        return foldedCloth({
+          w: 0.045, d: 0.062, t: 0.00110, r: 0.00165,
+          bright: [0.930, 0.918, 0.872], deep: [0.735, 0.722, 0.680],
+          sheen: 0.85, rough: 0.80, weave: [0.026, 0.019, 0.030],
+        });
+      },
+      pose(o) {
+        const t = new THREE.Group(); t.add(o); t.rotation.y = -0.55;
+        return t;
+      },
+    },
+    {
+      key: "kamabuta", jp: "釜蓋", rom: "kamabuta",
+      desc: "The kettle's lid, bronze where the kettle is iron and silver at " +
+            "the knob. Lifted off, it is not put down on the mat: it goes on " +
+            "the lid rest, which is what a lid rest is for.",
+      build() {
+        // The kettle's own lid, taken out of its frame and set on the mat, so
+        // it can be placed like any other utensil. Shared construction: see
+        // kettleLid(). Its origin is the underside of the disc, which is what
+        // a putAt() wants.
+        const g = new THREE.Group();
+        const lid = kettleLid();
+        lid.position.y = -LID_Y;
+        g.add(lid);
+        return g;
+      },
+      pose(o) {
+        const t = new THREE.Group(); t.add(o); t.rotation.x = 0.20;
+        return t;
+      },
+    },
+    {
       key: "fukusa", jp: "帛紗", rom: "fukusa",
       desc: "A square of silk, folded, and the only thing here that is never " +
             "set down: it is worn, tucked at the waist, and taken out to wipe " +
@@ -1472,112 +1534,22 @@
             "colour is not a matter of taste either: vermilion for a woman, " +
             "purple for a man, and past those a whole vocabulary of silks.",
       build() {
-        // The one object with neither an axis of revolution nor a wire to run
-        // along. A folded cloth is best described as a RIBBON THAT DOUBLES BACK
-        // ON ITSELF: its centreline runs the length of a layer, turns through
-        // half a circle at the fold, runs back, turns again. So it is a sweep
-        // after all, only the line it follows is the fold pattern rather than
-        // the shape of the object.
-        //
         // A fukusa is about 285mm square. Folded in half one way and in four
         // the other, it makes a packet of roughly 142 by 70 with four
         // thicknesses, which is what is carried at the waist.
-        const W = 0.070, D = 0.142, T = 0.00105, R = 0.00175;
-        const path = [];
-        const p2 = (x, y) => path.push([x, y]);
-        const arc = (cx, cy, a0, a1, n) => {
-          for (let i = 1; i <= n; i++) {
-            const a = a0 + (a1 - a0) * i / n;
-            p2(cx + R * Math.cos(a), cy + R * Math.sin(a));
-          }
-        };
-        // The free edges are STAGGERED, not flush: a cloth folded by hand never
-        // quite lines up, and the little step is most of what says cloth rather
-        // than card.
-        p2(0.0020, 0); p2(W, 0);
-        arc(W, R, -Math.PI / 2, Math.PI / 2, 9);           // fold, right
-        p2(0, 2 * R);
-        arc(0, 3 * R, -Math.PI / 2, -Math.PI * 1.5, 9);    // fold, left
-        p2(W, 4 * R);
-        arc(W, 5 * R, -Math.PI / 2, Math.PI / 2, 9);       // fold, right
-        p2(0.0062, 6 * R);
-        const cl = chaikin(path, 1);
-
-        // The section is a STADIUM, a millimetre of thickness by the full depth
-        // of the packet with its ends rounded off. Silk has no edge to speak
-        // of, so a square end would read as sheet metal.
-        const NS = 14, EX = 0.5;
-        const pos = [], idx = [], col = [];
-        // Vermilion, and the choice is settled twice over: it is a true fukusa
-        // colour, the one worn by a woman, and it is the only colour this site
-        // allows itself. Purple, which is the man's, would be a second accent
-        // and the site does not have room for one. So the fact goes into the
-        // description instead of into the dye, which is the right place for it:
-        // a visitor would otherwise read the colour as a decision.
-        const SILK = [0.760, 0.235, 0.150], DEEP = [0.395, 0.105, 0.072];
-        let prev = -1;
-        for (let i = 0; i < cl.length; i++) {
-          const P = cl[i];
-          const a = cl[Math.max(0, i - 1)], b = cl[Math.min(cl.length - 1, i + 1)];
-          let tx = b[0] - a[0], ty = b[1] - a[1];
-          const L = Math.hypot(tx, ty) || 1; tx /= L; ty /= L;
-          const nx = -ty, ny = tx;
-          const base = pos.length / 3;
-          for (let sg = 0; sg < NS; sg++) {
-            const ph = sg / NS * Math.PI * 2;
-            const cp = Math.cos(ph), sp = Math.sin(ph);
-            const u = (T / 2) * Math.sign(cp) * Math.pow(Math.abs(cp), EX);
-            const v = (D / 2) * Math.sign(sp) * Math.pow(Math.abs(sp), EX);
-            // WHAT MAKES IT CLOTH rather than a stack of card, and it took
-            // three tries: a folded cloth is not four flat layers with air
-            // between them, it BOWS. Each layer arches a little along its
-            // length, and the higher ones arch more because they have the ones
-            // below to ride over, so the packet opens toward its free edges
-            // instead of closing like a book. And it WAVES across its width,
-            // which is the only thing here that could not be a rigid object.
-            const along = Math.min(1, Math.max(0, P[0] / W));
-            const layer = P[1] / (6 * R);                 // 0 at the bottom, 1 at the top
-            const bow = 0.0019 * Math.sin(Math.PI * along) * layer;
-            const wave = 0.0011 * Math.sin(v * 27.0 + layer * 2.4)
-                       * (0.35 + 0.65 * Math.sin(Math.PI * along));
-            pos.push(P[0] + u * nx, P[1] + u * ny + bow + wave, v);
-            // Silk reads by its SHEEN, which runs with the weave: brighter
-            // where the surface faces the light and deepening fast as it turns
-            // away, much faster than a matt cloth would.
-            // The surface normal, not the centreline's. Around the section the
-            // outward direction is cos(ph) along the in-plane normal and
-            // sin(ph) along the depth, so its upward component is cp * ny. I
-            // used ny alone, which is the same for every point around a given
-            // section: the top face and the underside came out identical and
-            // the sheen landed on the edges instead.
-            const face = Math.max(0, (cp * ny) * 0.80 + 0.20);
-            const k = Math.pow(face, 0.55);
-            const w = 0.020 * Math.sin(v * 420) + 0.014 * Math.sin(P[0] * 380)
-                    + 0.055 * Math.sin(v * 9.5 + 1.1);
-            for (let c = 0; c < 3; c++)
-              col.push(toLin(Math.max(0, Math.min(1,
-                DEEP[c] + (SILK[c] - DEEP[c]) * k + w))));
-          }
-          if (prev >= 0) {
-            for (let sg = 0; sg < NS; sg++) {
-              const n = (sg + 1) % NS;
-              idx.push(prev + sg, prev + n, base + n, prev + sg, base + n, base + sg);
-            }
-          }
-          prev = base;
-        }
-        const g = new THREE.BufferGeometry();
-        g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
-        g.setAttribute("color", new THREE.Float32BufferAttribute(col, 3));
-        g.setIndex(idx);
-        g.computeVertexNormals();
-        const m = new THREE.Mesh(g, new THREE.MeshStandardMaterial({
-          color: 0xffffff, vertexColors: true, roughness: 0.44,
-          metalness: 0.0, side: THREE.DoubleSide,
-        }));
-        m.position.x = -W / 2;
-        const grp = new THREE.Group(); grp.add(m);
-        return grp;
+        //
+        // MAUVE, at his word, 2026-09-13: "Fait le mauve." It had been
+        // vermilion on the argument that the site allows itself one accent
+        // colour and that vermilion is a true fukusa colour, the woman's. His
+        // is purple, the man's, and the cloth in the room is folded in front
+        // of the visitor for half a minute: it is an object with a colour
+        // before it is a mark on a page. Same two values as fukusa-fold.js,
+        // so the packet at the waist and the cloth being folded are one silk.
+        return foldedCloth({
+          w: 0.070, d: 0.142, t: 0.00105, r: 0.00175,
+          bright: [0.146, 0.077, 0.342], deep: [0.037, 0.021, 0.088],
+          sheen: 0.55, rough: 0.44, weave: [0.020, 0.014, 0.055],
+        });
       },
       // Tipped and turned a little, so both the folded edge and the staggered
       // free edges are in view: those two edges are the whole of what tells you
@@ -1613,7 +1585,334 @@
   // before their arrangement was removed as unverified; it stays because "the
   // three that arrive in one hand" is a real notion and the temae will want
   // it, but nothing in the site builds it today.
-  function chawanSet() {
+  // ---- the sweets, and one of them is a blossom ---------------------------
+  // Nicolas, 2026-09-12: "un plat de bois de cerisier tres epure, et dessus
+  // quelques sucreries... on peut meme creer une sucrerie en forme de
+  // l'embleme nakata... ces higashi sont generalement d'environ 2 cm."
+  //
+  // A SAKURA, AND NOT OUR MARK, which is his correction of 2026-09-13: "tu dis
+  // que le Higashi a notre marque, mais en fait, on montre le sakura." He is
+  // right twice over. The outline was traced from nakata_sakura.png, which is a
+  // cherry blossom and not the emblem -- the emblem is the cat in
+  // assets/emblem-nakata.svg -- and the tracing then AVERAGED the five sectors,
+  // which is exactly the step that would have removed any mark of our own had
+  // there been one. What is pressed into the sugar is a cherry blossom. Anyone
+  // tempted to call it the mark again: it is not, and this is why.
+  //
+  // The trace itself is sound and stays. The silhouette is star-convex about
+  // its own centre, so a radius per angle describes it exactly; the five
+  // sectors agreed to within 0.024, which is the raster's noise and not the
+  // shape's, so they were averaged into one petal and repeated. The notch in
+  // the petal tip is real and survives, and it is what tells a cherry from a
+  // plum.
+  const SAKURA = [
+    0.9116, 0.8916, 0.8667, 0.8345, 0.8032, 0.7574,
+    0.7052, 0.6346, 0.6008, 0.5960, 0.6032, 0.6378,
+    0.7068, 0.7534, 0.8016, 0.8337, 0.8659, 0.8884,
+    0.9084, 0.9261, 0.9454, 0.9582, 0.9743, 0.9936,
+    0.9920, 0.9221, 0.8667, 0.8595, 0.8683, 0.9221,
+    0.9928, 0.9944, 0.9759, 0.9606, 0.9470, 0.9285,
+  ];
+  // t runs in TURNS, 0 to 1, which keeps every outline here interchangeable.
+  const radSakura = (t) => {
+    const f = (((t * 5) % 1) + 1) % 1 * SAKURA.length;
+    const i = Math.floor(f), g = f - i;
+    const a = SAKURA[i % SAKURA.length], b = SAKURA[(i + 1) % SAKURA.length];
+    return a + (b - a) * g;
+  };
+  const radRound = () => 1;
+  // a soft-cornered square, the plainest mould there is
+  const radSquare = (t) => {
+    const c = Math.abs(Math.cos(t * 6.2832)), sn = Math.abs(Math.sin(t * 6.2832));
+    return 1 / Math.pow(Math.pow(c, 6) + Math.pow(sn, 6), 1 / 6);
+  };
+
+  // A dry sweet is sugar pressed in a wooden mould: flat, a little proud, and
+  // soft at the edge where it left the wood. So it is a BEVELLED extrusion of
+  // its own outline, and the bevel is most of what says pressed sugar rather
+  // than cut card. Twenty millimetres across, which is his figure.
+  function pressedSweet(rad, o) {
+    const N = 240, R = o.r, BEV = o.bev === undefined ? 0.0012 : o.bev;
+    const pts = [];
+    for (let i = 0; i < N; i++) {
+      const t = i / N, rr = R * rad(t);
+      pts.push(new THREE.Vector2(rr * Math.cos(t * 6.2832), rr * Math.sin(t * 6.2832)));
+    }
+    const g = new THREE.ExtrudeGeometry(new THREE.Shape(pts), {
+      depth: Math.max(0.0005, o.h - 2 * BEV), bevelEnabled: true,
+      bevelThickness: BEV, bevelSize: BEV, bevelSegments: 3, curveSegments: 1,
+    });
+    // extruded along +z, so it is laid flat and set on the mat
+    g.rotateX(-Math.PI / 2);
+    g.translate(0, BEV, 0);
+    // Sugar is not a flat colour: it is a pressed powder, brighter on the
+    // faces and grainier at the edge. A little mottle by position, the same
+    // way every other surface here is made.
+    const pos = g.getAttribute("position");
+    const col = [];
+    for (let i = 0; i < pos.count; i++) {
+      const x = pos.getX(i), y = pos.getY(i), z = pos.getZ(i);
+      const m = 0.035 * Math.sin(x * 640 + z * 410) + 0.022 * Math.sin(z * 900)
+              + 0.030 * (y / Math.max(1e-6, o.h));
+      col.push(toLin(Math.min(1, o.c[0] + m)), toLin(Math.min(1, o.c[1] + m)),
+               toLin(Math.min(1, o.c[2] + m)));
+    }
+    g.setAttribute("color", new THREE.Float32BufferAttribute(col, 3));
+    g.computeVertexNormals();
+    return new THREE.Mesh(g, new THREE.MeshStandardMaterial({
+      color: 0xffffff, vertexColors: true, roughness: 0.86, metalness: 0.0,
+    }));
+  }
+
+  // ---- the dish: a board of cherry, and nothing else ----------------------
+  // "tres epure", so no lip, no foot, no moulding: a board with its corners
+  // taken off and its top edge softened, which is all a higashi tray needs to
+  // be. Cherry is a warm red-brown with a fine, almost straight grain, and the
+  // grain runs the LENGTH of a board because that is how a board is cut.
+  function cherryBoard(o) {
+    const w = o.w / 2, d = o.d / 2, r = o.corner, BEV = 0.0010;
+    const sh = new THREE.Shape();
+    sh.moveTo(-w + r, -d);
+    sh.lineTo(w - r, -d); sh.quadraticCurveTo(w, -d, w, -d + r);
+    sh.lineTo(w, d - r);  sh.quadraticCurveTo(w, d, w - r, d);
+    sh.lineTo(-w + r, d); sh.quadraticCurveTo(-w, d, -w, d - r);
+    sh.lineTo(-w, -d + r); sh.quadraticCurveTo(-w, -d, -w + r, -d);
+    const g = new THREE.ExtrudeGeometry(sh, {
+      depth: o.h - 2 * BEV, bevelEnabled: true, bevelThickness: BEV,
+      bevelSize: BEV, bevelSegments: 2, curveSegments: 8,
+    });
+    g.rotateX(-Math.PI / 2);
+    g.translate(0, BEV, 0);
+    // A GRAIN CANNOT BE PAINTED BY VERTEX COLOURS HERE, and that is a fact
+    // about extruded geometry rather than about wood: the top face is a
+    // triangulated polygon with vertices only on its OUTLINE, so there is
+    // nothing in the middle to colour. Two frequencies later the board was
+    // still a flat slab. So the face gets a TEXTURE, drawn once into a canvas,
+    // and the vertex colours are left to shade the sides.
+    //
+    // The UVs of an extruded front face are the shape's own coordinates, in
+    // metres, so the repeat is one over the board and the offset is a half:
+    // that lays the drawing across the board exactly once.
+    const cv = document.createElement("canvas");
+    cv.width = 512; cv.height = 256;
+    const k2 = cv.getContext("2d");
+    k2.fillStyle = "#a3623f"; k2.fillRect(0, 0, 512, 256);
+    // the grain runs the LENGTH of a board, because that is how a board is cut
+    // SEEDED, not random. Math.random here would have made a different board
+    // on every load, and a board that is not the same board twice is not an
+    // object: the raku bowl is one bowl, and this is one plank.
+    const rnd = (i, j) => hash3(7.31, i * 1.7 + 0.3, j * 3.1 + 1.9);
+    for (let i = 0; i < 150; i++) {
+      const y = rnd(i, 1) * 256;
+      const wob = 2 + rnd(i, 2) * 7;
+      k2.strokeStyle = "rgba(" + (92 + rnd(i, 3) * 34).toFixed(0) + "," +
+        (44 + rnd(i, 4) * 22).toFixed(0) + "," +
+        (26 + rnd(i, 5) * 16).toFixed(0) + "," +
+        (0.05 + rnd(i, 6) * 0.16).toFixed(3) + ")";
+      k2.lineWidth = 0.6 + rnd(i, 7) * 2.2;
+      k2.beginPath();
+      for (let x = 0; x <= 512; x += 16)
+        k2.lineTo(x, y + Math.sin(x / 90 + i) * wob * 0.5);
+      k2.stroke();
+    }
+    const tex = new THREE.CanvasTexture(cv);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(1 / o.w, 1 / o.d);
+    tex.offset.set(0.5, 0.5);
+
+    const pos = g.getAttribute("position");
+    const col = [];
+    const BASE = [0.640, 0.392, 0.279], DARK = [0.442, 0.243, 0.170];
+    for (let i = 0; i < pos.count; i++) {
+      const x = pos.getX(i), y = pos.getY(i), z = pos.getZ(i);
+      // THE GRAIN RUNS ALONG THE BOARD, so the colour varies ACROSS it, in z.
+      // My first frequency was 74 radians per metre: one and a half bands over
+      // the whole width, which is not a grain, it is a gradient. 1100 gives a
+      // line about every six millimetres, which is cherry.
+      const grain = 0.5 + 0.5 * Math.sin(z * 1100 + Math.sin(x * 9) * 1.1);
+      const fine = 0.5 + 0.5 * Math.sin(z * 3300 + x * 20);
+      const k = 0.58 * grain + 0.22 * fine + (y < o.h * 0.4 ? -0.15 : 0.22);
+      for (let c = 0; c < 3; c++)
+        col.push(toLin(Math.max(0, Math.min(1,
+          DARK[c] + (BASE[c] - DARK[c]) * Math.max(0, Math.min(1, k))))));
+    }
+    g.setAttribute("color", new THREE.Float32BufferAttribute(col, 3));
+    g.computeVertexNormals();
+    return new THREE.Mesh(g, new THREE.MeshStandardMaterial({
+      color: 0xffffff, vertexColors: true, map: tex,
+      roughness: 0.46, metalness: 0.0,
+    }));
+  }
+
+  // ---- the first thing carried in -----------------------------------------
+  // The board with its sweets, because that is one hand and it arrives whole.
+  // Three sweets, spaced along the board: the blossom in the middle, plainer
+  // ones either side, which is how a tray of higashi is usually set and also
+  // what makes the shaped one the thing you notice.
+  function higashiSet() {
+    const g = new THREE.Group();
+    const board = cherryBoard({ w: 0.135, d: 0.092, h: 0.0130, corner: 0.009 });
+    board.name = "higashibon";
+    g.add(board);
+    const put = (m, x, z, ry) => {
+      m.position.set(x, 0.0130, z);
+      if (ry !== undefined) m.rotation.y = ry;
+      g.add(m); return m;
+    };
+    const sakura = pressedSweet(radSakura,
+      { r: 0.0100, h: 0.0070, c: [0.949, 0.831, 0.847] });
+    sakura.name = "higashi";
+    put(sakura, 0, 0.002, 0.30);
+    put(pressedSweet(radRound, { r: 0.0092, h: 0.0075, c: [0.964, 0.950, 0.922] }),
+        -0.038, -0.014);
+    put(pressedSweet(radSquare, { r: 0.0086, h: 0.0072, c: [0.876, 0.894, 0.812] }),
+        0.038, 0.016, 0.22);
+    return g;                                  // origin at the board's centre
+  }
+
+  // ---- the kettle's lid, and it is now two objects ------------------------
+  // The kama has always built its lid as a NAMED group so that a room could
+  // set it ajar. Nicolas, 2026-09-12: "il faut aussi rajouter le couvercle du
+  // kama, qui doit etre separable" -- and he is right that this is a different
+  // thing: a lid taken OFF is set down on the lid rest, so it has a place of
+  // its own and must be placeable like any other utensil. The construction
+  // therefore comes out here and the two share it.
+  //
+  // It is built in the KETTLE'S frame: the disc lives at 205mm, which is where
+  // it sits on a kettle 192 tall. LID_Y is published so the loose one can be
+  // dropped to the mat.
+  //
+  // Three metals in one object, which is the point of it: iron for the fire,
+  // bronze for the lid, silver for the finger.
+  const LID_Y = 0.2050;
+  function kettleLid() {
+    const g = new THREE.Group();
+    g.name = "lid";
+    // BRONZE, not iron: a flat disc with a stepped edge that overhangs the
+    // mouth by a hair, dark brown with a warm sheen.
+    g.add(new THREE.Mesh(lathe([
+      [0.2050, 0.0000], [0.2050, 0.0400], [0.2050, 0.0628],
+      [0.2050, 0.0628], [0.2062, 0.0649], [0.2062, 0.0649],
+      [0.2092, 0.0645], [0.2100, 0.0600], [0.2104, 0.0400],
+      [0.2108, 0.0180], [0.2110, 0.0000],
+    ], 100, 2.4, 0), new THREE.MeshStandardMaterial({
+      color: 0x4e3226, roughness: 0.38, metalness: 0.62,
+      side: THREE.DoubleSide,
+    })));
+    // and the knob is SILVER, a small ribbed bud on a washer
+    g.add(new THREE.Mesh(lathe([
+      [0.2108, 0.0000], [0.2108, 0.0105], [0.2114, 0.0108],
+      [0.2118, 0.0060], [0.2128, 0.0038], [0.2150, 0.0034],
+      [0.2168, 0.0055], [0.2186, 0.0092], [0.2205, 0.0113],
+      [0.2224, 0.0108], [0.2238, 0.0082], [0.2246, 0.0046],
+      [0.2249, 0.0028], [0.2258, 0.0034], [0.2264, 0.0026],
+      [0.2266, 0.0000],
+    ], 40, 3.1, 0), new THREE.MeshStandardMaterial({
+      color: 0xc9c9ce, roughness: 0.24, metalness: 0.94,
+    })));
+    return g;
+  }
+
+  // ---- a folded cloth, and there are two of them --------------------------
+  // Extracted when the chakin arrived, because the fukusa had already solved
+  // the whole problem and copying it would have been the copy this project
+  // keeps learning not to make. A folded cloth is a RIBBON THAT DOUBLES BACK
+  // ON ITSELF: swept along its own fold pattern with a stadium section, bowing
+  // along its length and waving across its width, because four flat layers
+  // with air between them read as a stack of card.
+  //
+  // What differs between a silk and a hemp cloth is size, colour, and how the
+  // surface takes the light: silk by its SHEEN, which runs with the weave and
+  // deepens fast as it turns away, hemp by having almost none. So those are
+  // the parameters and nothing else is. The bow and the wave scale with the
+  // cloth, so a small one is proportionally as soft as a large one and the
+  // fukusa's own numbers are untouched.
+  function foldedCloth(o) {
+    const W = o.w, D = o.d, T = o.t, R = o.r;
+    const SILK = o.bright, DEEP = o.deep;
+    const SHEEN = o.sheen === undefined ? 0.55 : o.sheen;
+    const WV = o.weave || [0.020, 0.014, 0.055];
+    const SC = W / 0.070;                       // against the fukusa's width
+    const path = [];
+    const p2 = (x, y) => path.push([x, y]);
+    const arc = (cx, cy, a0, a1, n) => {
+      for (let i = 1; i <= n; i++) {
+        const a = a0 + (a1 - a0) * i / n;
+        p2(cx + R * Math.cos(a), cy + R * Math.sin(a));
+      }
+    };
+    // The free edges are STAGGERED, not flush: a cloth folded by hand never
+    // quite lines up, and the little step is most of what says cloth rather
+    // than card.
+    p2(R * 1.143, 0); p2(W, 0);
+    arc(W, R, -Math.PI / 2, Math.PI / 2, 9);           // fold, right
+    p2(0, 2 * R);
+    arc(0, 3 * R, -Math.PI / 2, -Math.PI * 1.5, 9);    // fold, left
+    p2(W, 4 * R);
+    arc(W, 5 * R, -Math.PI / 2, Math.PI / 2, 9);       // fold, right
+    p2(R * 3.543, 6 * R);
+    const cl = chaikin(path, 1);
+
+    const NS = 14, EX = 0.5;
+    const pos = [], idx = [], col = [];
+    let prev = -1;
+    for (let i = 0; i < cl.length; i++) {
+      const P = cl[i];
+      const a = cl[Math.max(0, i - 1)], b = cl[Math.min(cl.length - 1, i + 1)];
+      let tx = b[0] - a[0], ty = b[1] - a[1];
+      const L = Math.hypot(tx, ty) || 1; tx /= L; ty /= L;
+      const nx = -ty, ny = tx;
+      const base = pos.length / 3;
+      for (let sg = 0; sg < NS; sg++) {
+        const ph = sg / NS * Math.PI * 2;
+        const cp = Math.cos(ph), sp = Math.sin(ph);
+        const u = (T / 2) * Math.sign(cp) * Math.pow(Math.abs(cp), EX);
+        const v = (D / 2) * Math.sign(sp) * Math.pow(Math.abs(sp), EX);
+        const along = Math.min(1, Math.max(0, P[0] / W));
+        const layer = P[1] / (6 * R);                 // 0 at the bottom, 1 at the top
+        const bow = 0.0019 * SC * Math.sin(Math.PI * along) * layer;
+        const wave = 0.0011 * SC * Math.sin(v * 27.0 / SC + layer * 2.4)
+                   * (0.35 + 0.65 * Math.sin(Math.PI * along));
+        pos.push(P[0] + u * nx, P[1] + u * ny + bow + wave, v);
+        // The surface normal, not the centreline's: around the section the
+        // outward direction is cos(ph) along the in-plane normal and sin(ph)
+        // along the depth, so its upward component is cp * ny. ny alone is the
+        // same for every point around a section, and the top face and the
+        // underside came out identical with the sheen on the edges.
+        const face = Math.max(0, (cp * ny) * 0.80 + 0.20);
+        const k = Math.pow(face, SHEEN);
+        const w = WV[0] * Math.sin(v * 420) + WV[1] * Math.sin(P[0] * 380)
+                + WV[2] * Math.sin(v * 9.5 + 1.1);
+        for (let c = 0; c < 3; c++)
+          col.push(toLin(Math.max(0, Math.min(1,
+            DEEP[c] + (SILK[c] - DEEP[c]) * k + w))));
+      }
+      if (prev >= 0) {
+        for (let sg = 0; sg < NS; sg++) {
+          const n = (sg + 1) % NS;
+          idx.push(prev + sg, prev + n, base + n, prev + sg, base + n, base + sg);
+        }
+      }
+      prev = base;
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+    g.setAttribute("color", new THREE.Float32BufferAttribute(col, 3));
+    g.setIndex(idx);
+    g.computeVertexNormals();
+    const m = new THREE.Mesh(g, new THREE.MeshStandardMaterial({
+      color: 0xffffff, vertexColors: true,
+      roughness: o.rough === undefined ? 0.44 : o.rough,
+      metalness: 0.0, side: THREE.DoubleSide,
+    }));
+    m.position.x = -W / 2;
+    const grp = new THREE.Group(); grp.add(m);
+    return grp;
+  }
+
+  function chawanSet(opt) {
+    const O = opt || {};
     const by = (k) => OBJECTS.find((o) => o.key === k).build();
     const g = new THREE.Group();
     // Named, like the whisk and the scoop beside it, so a room can point at the
@@ -1623,27 +1922,228 @@
     bowl.name = "chawan";
     g.add(bowl);
 
+    // THE HANDLE RESTS AGAINST THE WALL, it does not go through it. Nicolas:
+    // "le manche du chasen est a travers la paroi du bol, et il devrait
+    // reposer contre la paroi."
+    //
+    // Solved off the bowl's own profile rather than by eye. Its inner lip is
+    // at r 52.5 for y 74 and its inside floor at y 13, so a shaft from the
+    // floor's centre must satisfy tan(theta) * 0.061 + rh / cos(theta) <=
+    // 0.0525 at the lip, which is where it binds. At 40 degrees the AXIS
+    // cleared by 1.3mm and the handle's SURFACE did not: it bit 1.5mm into the
+    // lip. 37 degrees leaves the surface a millimetre clear, which is a shaft
+    // leaning on a rim.
+    // IT IS THE TINES, not the handle, and they are 58mm across: the ring digs
+    // into the floor and the wall long before the shaft touches the lip. Found
+    // by measuring the composite's own parts: the whisk ran from y -0.6, below
+    // the mat, out to x 69.9, past the rim.
+    //
+    // So the whisk is SAT ON THE FLOOR by its own bounding box rather than by
+    // its tip, and the tilt is a parameter that was swept against the bowl's
+    // inner profile instead of chosen -- and then swept AGAIN, with a proper
+    // clash test, once Box3 stopped lying. Nicolas: "abaisse l'extremite du
+    // manche qui pointe vers le haut vers le bord du bol."
+    //
+    // 48 degrees and 15mm along. The sweep, measuring how many of the whisk's
+    // 19000 vertices enter the bowl's wall: clear at 40, 44 and 48, then 87
+    // vertices at 54 and 629 at 60. So 48 is the most lean the tines allow,
+    // and it brings the handle's end from y 110 down to 98. The 15mm along x
+    // is what lets the end REACH the rim: it comes out at x 60.1 against a rim
+    // of 58.5, one and a half millimetres past it and touching nothing, where
+    // 16 already bites the lip by four tenths.
+    //
+    // Centring the whole BOX, which is what this did before, made the handle's
+    // reach symmetrical with the tines' far edge, so it could never lean out
+    // over the rim at all -- which is what his photograph plainly shows it
+    // doing.
+    //
+    // AND THE LIMIT, because he asked for the end at the rim and it is 18mm
+    // above it: our ring is 58 wide in a bowl whose inside is 100, and at 54
+    // degrees the tines enter the wall. His own bowl is relatively wider, so
+    // his whisk can lie further over. To go lower here the ring would have to
+    // narrow or the bowl to widen.
     const whiskG = new THREE.Group();
     const whisk = by("chasen");
-    whisk.rotation.z = Math.PI - 40 * Math.PI / 180;
+    whisk.rotation.z = Math.PI - (O.tilt === undefined ? 48 : O.tilt) * Math.PI / 180;
     whiskG.add(whisk);
-    const tip = new THREE.Vector3(0, 0.1040, 0).applyEuler(whisk.rotation);
-    whiskG.position.set(-tip.x, 0.0120 - tip.y, -tip.z);
-    whiskG.position.z -= 0.020;               // clear of the scoop
-    whiskG.name = "chasen";
+    // CENTRED, as his photograph has it: measured against the mat's grid his
+    // ligature sits 4mm from the bowl's centre. It used to be pushed 20 aside
+    // to clear the scoop, and with a shorter bend the scoop no longer needs it.
+    whiskG.position.set(0, 0, 0);
     g.add(whiskG);
+    whiskG.updateMatrixWorld(true);
+    const wb = new THREE.Box3().setFromObject(whiskG, true);
+    // the inside floor is at 13, and the tines rest ON it
+    whiskG.position.y += 0.0130 - wb.min.y;
+    // and then moved along x. Centring the whole BOX was wrong: it makes the
+    // handle's reach symmetrical with the tines' far edge, so the handle can
+    // never lean out over the rim, which is what his photograph shows it doing.
+    whiskG.position.x += -(wb.min.x + wb.max.x) / 2 +
+                         (O.wx === undefined ? 0.015 : O.wx);
+    whiskG.name = "chasen";
 
-    const scoop = by("chashaku");
-    scoop.position.set(0.050, 0.0776 + 0.0034, 0);
-    scoop.rotation.z = 0.1586;
-    scoop.name = "chashaku";
-    g.add(scoop);
+    if (O.scoop !== false) {
+      // HORIZONTAL, AND RESTING ON THE RIM AT TWO POINTS. Nicolas: "il faut
+      // qu'elle soit horizontale et repose sur le bord du bol en deux points.
+      // elle ne doit pas pointer vers le bas et au travers de la paroi."
+      //
+      // The bench was taught to report an UNDERSIDE slice by slice, because a
+      // bounding box cannot answer "does it rest on two points". The scoop's
+      // underside is FLAT at -1.2 from x -6 all the way to +92, which is the
+      // shaft from the node to the cut end, and then it DIPS to -9.0 at -64
+      // and lifts again at the very tip: that is the blade.
+      //
+      // And that measurement decides the whole pose. The flat run is 98mm and
+      // the rim is 117 across, so THE PIECE CANNOT REST ON A DIAMETER: the dip
+      // would always be over the bowl, pointing down into it, which is exactly
+      // what he saw. Laid along a CHORD it can. A chord 38 from the centre is
+      // 2*sqrt(57.5^2 - 38^2) = 86 long, the flat run spans it, and the blade
+      // then hangs in the air 48mm clear of the rim rather than through the
+      // wall. The near contact sits where the underside reads -2.6, so the
+      // piece's own height is the rim's 78 plus 1.35, which is 79.4: the two
+      // contacts land at local -0.2 and +86.2, where the underside reads -1.35
+      // and -1.2, fifteen hundredths of a millimetre apart. It rests level
+      // because it is level.
+      //
+      // No rotation at all. Level is what he asked for and level is what the
+      // two contacts give; the 9 degrees that were here tipped the blade 20mm
+      // below the rim.
+      // NEAR THE CENTRE, which is where his own photograph puts it: measured
+      // against the mat's grid the scoop's axis lies at 0.30 of the bowl's
+      // radius, parallel to the whisk's handle, 23mm from it.
+      //
+      // 0.30 of our rim is 17.5, where the chord is 111.6 -- and the shortened
+      // bend leaves 139 of straight shaft, so it spans it. The two contacts
+      // land at local -45.8 and +65.8, inside the flat run that starts at -52.
+      // -10 along the piece makes the two overhangs nearly even, 44mm past the
+      // rim on the blade's side and 24 on the cut end's, which is what the
+      // photograph shows. Six degrees of yaw so it reads as laid down.
+      //
+      // At the scoop's own height the whisk is its handle, 4.5 of radius at
+      // z 0, so the two pass 9.7mm apart.
+      //
+      // 81.4 and not 79.4: THE RIM IS NOT LEVEL. Its profile stops at 78 but
+      // its bounding box reaches 79.9, because the lathe waves a raku bowl's
+      // lip on purpose -- "the rim of a raku bowl is never level, it is the
+      // first thing the reference photograph says". Sat on the profile's 78
+      // the scoop was 1.7mm INTO the rim's high points. It rests on the
+      // highest of them now, which is what resting on a wavy rim means.
+      //
+      // 79.0 in the end, not 81.4: sat on the rim's GLOBAL maximum it floated
+      // 2.6mm, because the wave's high point is not where the scoop crosses.
+      // Measured at its own crossings and lowered to meet them.
+      const scoop = by("chashaku");
+      scoop.position.set(-0.010, 0.0790, 0.0175);
+      // The yaw's SIGN matters and I had it backwards: turned this way the far
+      // end of the scoop moves away from the whisk's handle. The other way it
+      // swung 5.8mm toward it and the two came to within half a millimetre,
+      // measured -- which on a drawing reads as touching.
+      scoop.rotation.y = -0.105;
+      scoop.name = "chashaku";
+      g.add(scoop);
+    }
+
+    // THE CHAKIN, which Nicolas added to this hand: "quelque chose qu'on
+    // appelle le chakin, qui va dans le bol aussi... place sous le chasen dans
+    // le composite." Flat on the bowl's floor with the whisk standing over it.
+    // He said it need not be SHOWN, and mostly it is not: the bowl's wall hides
+    // it from anywhere but straight down. It is here anyway, because a thing
+    // that is in the bowl should be in the bowl.
+    const cloth = by("chakin");
+    cloth.position.set(-0.004, 0.0210, 0.004);
+    cloth.rotation.y = 0.22;
+    cloth.name = "chakin";
+    g.add(cloth);
     return g;                                  // origin at the bowl's centre, on the mat
+  }
+
+  // ---- the fourth hand: the waste water, the lid rest and the ladle -------
+  // Nicolas's entry order, 2026-09-12: the sweets, then the water jar, then
+  // the bowl with its whisk, scoop and cloth together with the caddy, and last
+  // this. Three objects in one hand, and each keeps its own name so a room can
+  // point at the ladle rather than at the group.
+  //
+  // THE ARRANGEMENT IS MY READING and not a fact he has given me: the lid rest
+  // stood inside the waste water, and the ladle laid across its mouth with the
+  // cup over it and the handle out. It is what the three shapes want to do, and
+  // it is his to correct -- he has offered to place them himself.
+  // THE LADLE LIES LEVEL ON THE RIM, on two points, cup forward. Nicolas:
+  // "actuellement, il est incline et traverse la parois du kensui. Le hishaku
+  // doit etre pose sur le kensui, en deux point, scoop forward."
+  //
+  // Measured, not guessed, and the measurements are the whole of the pose. The
+  // bench's underside profile says the ladle is FLAT from x -17 to +21, which
+  // is the cup's own bottom, and then a straight line rising 158.9 over 249,
+  // which is 32.5 degrees: the culm's own rise. Its top profile says the
+  // kensui's rim is at y 107.4 out to a radius of about 60.
+  //
+  // So about -30 degrees lays the handle's underside level. -32.5, the rise
+  // measured off the profile, overshot: the underside still fell 10.7mm over
+  // 263, which is 2.3 degrees, so -0.527 rather than -0.567. Level it spans
+  // 295mm, more than the 120 mouth. Unlike the scoop, THIS piece can rest on a
+  // diameter. Level, its underside reads +6.3 in its own turned frame, so its
+  // height is the rim's 107.4 LESS that: 101.1. Computed the other way round
+  // it floated seventeen millimetres above the rim.
+  //
+  // Along the diameter it is pushed back to -95 so the cup clears the rim
+  // entirely (it spans -118 to -70 against a rim of 63) and the two contacts
+  // land at -60 and +60, both well inside the level run. The cup then hangs
+  // 3.4mm below the handle's line, in the air, which is a ladle set down and
+  // not a ladle through a wall.
+  const LADLE_TILT = -0.527, LADLE_Y = 0.1011, LADLE_X = -0.095;
+  function kensuiSet(opt) {
+    const O = opt || {};
+    const by = (k) => OBJECTS.find((o) => o.key === k).build();
+    const g = new THREE.Group();
+
+    const bowl = by("kensui");
+    bowl.name = "kensui";
+    g.add(bowl);
+
+    const rest = by("futaoki");
+    rest.position.set(0, 0.008, 0);            // down inside it
+    rest.name = "futaoki";
+    g.add(rest);
+
+    // The ladle's origin IS its cup, which is the fact that made the plan tool
+    // wrong for a day. The cup rides on the near rim, the handle goes away and
+    // up, and the culm's own 30 degree rise does the rest.
+    // TWO NESTED FRAMES, and not two Euler angles on one object: three.js
+    // composes XYZ, so a z-tilt applied after a y-spin no longer lies in the
+    // handle's own plane and the ladle stood up in the air, 226mm tall by the
+    // bench's own measurement. The inner object tips, the group turns.
+    //
+    // -0.489 brings the handle level: the culm rises 28 degrees of its own,
+    // measured here (y 171.6 at x 279.3), and level is how a ladle is set
+    // down. It also tips the cup forward, which is the attitude for pouring.
+    // Set from the measurements above rather than by eye. My earlier attempt
+    // reasoned from a bounding box and was wrong twice; an underside profile
+    // answers it in one reading.
+    if (O.ladle === false) return g;
+    const ladle = by("hishaku");
+    ladle.rotation.z = LADLE_TILT;
+    // THREE FRAMES, and the middle one is why. The turn has to happen about
+    // the KENSUI'S axis, not about the ladle's own origin: spun about its own
+    // origin the piece swings bodily sideways and the two contacts I had
+    // computed at the rim no longer land on it. So an outer group sits at the
+    // jar's centre and carries the turn, the ladle's frame is offset within
+    // it, and the piece tips inside that.
+    const spin = new THREE.Group();
+    spin.rotation.y = -0.62;
+    g.add(spin);
+    const lg = new THREE.Group();
+    lg.position.set(LADLE_X, LADLE_Y, 0.0);
+    lg.name = "hishaku";
+    lg.add(ladle);
+    spin.add(lg);
+    return g;                                  // origin at the kensui's foot
   }
 
   global.DOGU = {
     OBJECTS: OBJECTS,
     chawanSet: chawanSet,
+    kensuiSet: kensuiSet,
+    higashiSet: higashiSet,
     // the tools too: the room will want to build a mat and a hearth, and
     // whatever builds them should be able to speak the same language
     lathe: lathe, glaze: glaze, chaikin: chaikin, hash3: hash3, toLin: toLin,

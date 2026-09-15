@@ -83,6 +83,22 @@
       border:1px solid var(--border);border-radius:4px;background:#fffdf8;
       color:var(--ink);cursor:pointer;text-align:left;}
     .acts button:hover{background:#f7f0e3;border-color:var(--soft);}
+    .acts input{font:inherit;font-size:12px;padding:6px 9px;width:100%;
+      border:1px solid var(--border);border-radius:4px;background:#fffdf8;
+      color:var(--ink);}
+    /* the steps, a strip and not a table: a sequence should read down */
+    .panel ol.steps{list-style:none;margin:0 0 12px;padding:0;}
+    .panel ol.steps li{display:flex;align-items:baseline;gap:8px;
+      font-size:12.5px;line-height:1.55;color:var(--dim);padding:3px 0;
+      border-bottom:1px solid var(--border);}
+    .panel ol.steps li .no{font-size:10px;letter-spacing:.16em;font-weight:600;
+      color:var(--soft);flex:0 0 auto;}
+    .panel ol.steps li .nm{flex:1 1 auto;cursor:pointer;}
+    .panel ol.steps li .nm:hover{color:var(--ink);}
+    .panel ol.steps li.on .nm{color:var(--ro);font-weight:600;}
+    .panel ol.steps li .x{flex:0 0 auto;cursor:pointer;color:var(--soft);
+      font-size:14px;line-height:1;}
+    .panel ol.steps li .x:hover{color:var(--ro);}
     .panel .keys{margin:22px 0 0;font-size:11.5px;line-height:2.1;
       color:var(--dim);font-weight:300;max-width:none;}
     .panel .keys kbd{font:inherit;font-size:10.5px;border:1px solid var(--border);
@@ -125,6 +141,35 @@
     #printfoot{display:none;}
 
     .printlede{display:none;}
+
+    /* FRAMED. The drawing is the whole component: no title, no prose, no
+       panel, no furniture, and no background of its own, so the chapter that
+       frames it decides what it sits on. */
+    /* FRAMED, THIS PAGE MUST REVEAL ITSELF. site.js is what lifts the veil and
+       adds `main.in`, and site.js deliberately does nothing inside a frame --
+       "a framed page is a component, not a visit". site.css sets
+       `main{opacity:0}` until that class arrives, so without these two lines
+       the component is not merely veiled, it is fully transparent: a blank
+       rectangle beside the steps. room3d.html never hit this because it
+       carries no #veil of its own.
+       Found by Nicolas, and hidden from me by my own test: I had defeated the
+       veil in the framing page AND in the frame, so I never saw the thing he
+       saw. Defeat the harness where the harness is the problem, never in the
+       component under test. */
+    body[data-bare] #veil{display:none;}
+    /* transition:none as well as opacity:1. site.css fades a main in over
+       0.6s, and a framed component has no business fading on a schedule of
+       its own: the page that frames it decides when it appears. It also made
+       every static render of the frame a coin toss, since a transition needs
+       frames and headless Chrome does not give them. */
+    body[data-bare] main{opacity:1;transition:none;}
+    body[data-bare]{background:transparent;}
+    body[data-bare] .cs, body[data-bare] .panel{display:none;}
+    body[data-bare] .room{padding:0;}
+    body[data-bare] .room-content{padding:0;}
+    body[data-bare] .bench{max-width:none;margin:0;padding:0;display:block;}
+    body[data-bare] .drawing{width:100%;}
+    body[data-bare] .drawing svg{width:100%;height:auto;}
 
     @media (max-width: 960px) {
       .bench{flex-direction:column;}
@@ -216,6 +261,16 @@
             <kbd>arrows</kbd>5 mm, with <kbd>shift</kbd>20 mm<br>
             <kbd>[ ]</kbd>to turn it, 5 degrees<br>
           </p>
+          <h3>steps</h3>
+          <p class="pnote" id="stepnote"></p>
+          <ol class="steps" id="steplist"></ol>
+          <div class="acts">
+            <input id="stepname" type="text" placeholder="what this moment is"
+                   maxlength="60">
+            <button id="stepadd">keep this placing as a step</button>
+            <button id="stepcopy">copy every step</button>
+          </div>
+
           <p class="kept" id="kept"></p>
           <div id="devbox" hidden>
             <h3>for chashitsu-layout.js</h3>
@@ -380,9 +435,24 @@
     kensui:    { x: 0.095, z: 1.000, r: 72.5, lab: "kensui" },
     futaoki:   { x: 1.030, z: 1.445, r: 23,   lab: "futaoki" },
     hishaku:   { x: 1.025, z: 1.445, rot: -175.7, lab: "hishaku", front: -1 },
+    // Modelled for the ceremony's arrival, 2026-09-12, and placeable here
+    // because they have places of their own: the cloth lives in the bowl and
+    // the lid, once lifted, goes on the lid rest. Their footprints are MEASURED
+    // (work-dogu-bench.html reports each object's own bounding box): the cloth
+    // 49 by 61, the lid 130 across. They START where they live, which means
+    // they start under other things -- which is the truth about them.
+    chakin:    { x: 0.830, z: 1.025, w: 49, d: 61, rot: 12, lab: "chakin" },
+    kamabuta:  { x: 1.030, z: 1.445, r: 64.9, lab: "kamabuta" },
+    // The first thing carried in, and it arrives whole: the cherry board with
+    // its three sweets on it, one of them pressed as a blossom. 135 by 92,
+    // measured. It starts on the stepping-in mat, near the crawl-in door, which
+    // is where a tray just carried in would be set down -- and that is a guess,
+    // so it is the first thing worth moving.
+    higashibon: { x: 1.900, z: 2.300, w: 135, d: 92, rot: 0, lab: "higashibon" },
   };
   const ORDER = ["mizusashi", "natsume", "chashaku", "chasen", "chawan",
-                 "kensui", "hishaku", "futaoki"];
+                 "chakin", "kensui", "hishaku", "futaoki", "kamabuta",
+                 "higashibon"];
   const state = {};
   const reset = () => {
     ORDER.forEach((k) => {
@@ -528,7 +598,8 @@
 
     const g = el("g", { class: "tok", "data-k": k });
     shape(g, d, "body");
-    text(d.lab, 0, (d.r ? (d.r >= 55 ? 13 : -d.r - 22) : 58), "lab", g);
+    text(d.lab, 0, (d.r ? (d.r >= 55 ? 13 : -d.r - 22)
+                        : (d.w ? -d.d / 2 - 20 : 58)), "lab", g);
     tok[k] = g;
   });
 
@@ -536,6 +607,19 @@
   // shape is the object's own origin, so what is drawn is where it lands.
   function shape(g, d, cls) {
     if (d.r) { el("circle", { class: cls, cx: 0, cy: 0, r: d.r }, g); return; }
+    if (d.w) {
+      // a folded cloth: its own outline, rounded, and no more. 49 by 61 is not
+      // a symbol, it is the packet.
+      el("rect", { class: cls, x: -d.w / 2, y: -d.d / 2, width: d.w,
+                   height: d.d, rx: 5 }, g);
+      return;
+    }
+    if (d.lab === "kamabuta") {
+      el("circle", { class: cls, cx: 0, cy: 0, r: d.r }, g);
+      if (cls === "body") el("circle", { class: "end", cx: 0, cy: 0, r: 11,
+                                         fill: "#8a7f70" }, g);
+      return;
+    }
     if (d.lab === "hishaku") {
       // the cup IS the origin; the handle runs out to +x and rests on nothing
       el("rect", { class: cls, x: 20, y: -5, width: 259, height: 10, rx: 5 }, g);
@@ -563,6 +647,13 @@
   }
   const S = (k) => (k === "host" ? HOST : state[k]);
   const DEV = location.search.indexOf("dev") >= 0;
+  // FRAMED, for a chapter that wants the drawing and nothing else. Same idea
+  // as room3d's ?bare: the page becomes a component, its own furniture goes,
+  // and the placing arrives by message instead of from the address. FROZEN
+  // stops the hands: a moment being SHOWN is not one to nudge by accident.
+  const FRAMED = location.search.indexOf("bare") >= 0;
+  const FROZEN = FRAMED || location.search.indexOf("frozen") >= 0;
+  if (FRAMED) document.body.setAttribute("data-bare", "");
 
   // ---- keeping a placing --------------------------------------------------
   // An arrangement takes a while to get right and a closed tab must not undo
@@ -587,7 +678,7 @@
     return got;
   }
   function save() {
-    if (TESTING) return;
+    if (TESTING || FRAMED) return;
     const str = encode();
     try { localStorage.setItem(KEY, str); } catch (err) {}
     try { history.replaceState(null, "", "#" + str); } catch (err) {}
@@ -637,7 +728,7 @@
     readout();
   };
   tok.host = hostG;
-  ORDER.concat("host").forEach((k) => {
+  if (!FROZEN) ORDER.concat("host").forEach((k) => {
     tok[k].addEventListener("pointerdown", (e) => {
       e.preventDefault();
       select(k);
@@ -659,7 +750,7 @@
   const NUDGE = { ArrowLeft: [-1, 0], ArrowRight: [1, 0],
                   ArrowUp: [0, -1], ArrowDown: [0, 1] };
   addEventListener("keydown", (e) => {
-    if (!sel) return;
+    if (FROZEN || !sel) return;
     if (NUDGE[e.key]) {
       const step = (e.shiftKey ? 0.020 : 0.005);
       S(sel).x += NUDGE[e.key][0] * step;
@@ -740,7 +831,7 @@
     document.getElementById("kept").textContent = "";
   });
 
-  const restored = load();
+  const restored = FRAMED ? null : load();
   paint(); select(null);
   document.getElementById("kept").textContent = restored
     ? "Restored from " + restored + ". A placing is kept in the address itself, "
@@ -748,6 +839,89 @@
     : "Every move is written into the address, so nothing is lost by closing "
       + "the tab, and a link carries the placing with it.";
   window.__place = { state: state, host: HOST, KNEE: KNEE, FWD: FWD, AIM: AIM };
+
+  // Told, not reloaded, exactly as the chashitsu chapter tells the room in
+  // three dimensions: a new src would rebuild the drawing and flash on every
+  // step. The message carries a PLACING IN THE SAME FORM THE ADDRESS USES, so
+  // a moment handed to a chapter and a moment handed to a person are one
+  // thing, and `decode` is already the only reader of it.
+  addEventListener("message", (e) => {
+    const d = e.data;
+    if (!d || d.kind !== "temaeza" || typeof d.placing !== "string") return;
+    if (!decode(d.placing)) return;
+    paint(); select(null);
+  });
+  if (FRAMED && window.parent !== window)
+    window.parent.postMessage({ kind: "temaeza-ready" }, "*");
+
+  // ---- a sequence of placings --------------------------------------------
+  // Nicolas: "si tu ajoutes les nouveaux objets... je peux te les positioner
+  // etape apres etape." One placing was never going to carry that: the
+  // ceremony is an order of arrivals, so the plan has to hold a STRIP of
+  // placings and hand the lot over at once.
+  //
+  // A step is a name and a placing, and the placing is the same string the
+  // address uses, so nothing new was invented to store one. They live in
+  // localStorage rather than in the address: six of them would make a URL
+  // nobody could read, and the point of them is to be copied out as text.
+  const SKEY = KEY + "-steps";
+  let steps = [], curStep = -1;
+  const loadSteps = () => {
+    try { steps = JSON.parse(localStorage.getItem(SKEY) || "[]"); }
+    catch (err) { steps = []; }
+    if (!Array.isArray(steps)) steps = [];
+  };
+  const saveSteps = () => {
+    try { localStorage.setItem(SKEY, JSON.stringify(steps)); } catch (err) {}
+  };
+  const listEl = document.getElementById("steplist");
+  const noteEl = document.getElementById("stepnote");
+  function drawSteps() {
+    listEl.innerHTML = "";
+    steps.forEach((st, i) => {
+      const li = document.createElement("li");
+      if (i === curStep) li.className = "on";
+      const no = document.createElement("span");
+      no.className = "no"; no.textContent = (i + 1) + "";
+      const nm = document.createElement("span");
+      nm.className = "nm"; nm.textContent = st.name || "(unnamed)";
+      nm.title = "show this placing";
+      nm.addEventListener("click", () => {
+        if (!decode(st.placing)) return;
+        curStep = i; paint(); select(null); drawSteps();
+      });
+      const x = document.createElement("span");
+      x.className = "x"; x.textContent = "\u00d7"; x.title = "remove";
+      x.addEventListener("click", () => {
+        steps.splice(i, 1);
+        if (curStep >= steps.length) curStep = -1;
+        saveSteps(); drawSteps();
+      });
+      li.appendChild(no); li.appendChild(nm); li.appendChild(x);
+      listEl.appendChild(li);
+    });
+    noteEl.textContent = steps.length
+      ? steps.length + (steps.length === 1 ? " step kept." : " steps kept.") +
+        " Click one to see it again. They are yours until you clear them."
+      : "None yet. Arrange the room, name the moment, and keep it. " +
+        "Then arrange the next one.";
+  }
+  document.getElementById("stepadd").addEventListener("click", () => {
+    const f = document.getElementById("stepname");
+    steps.push({ name: (f.value || "").trim(), placing: encode() });
+    f.value = ""; curStep = steps.length - 1;
+    saveSteps(); drawSteps();
+  });
+  document.getElementById("stepcopy").addEventListener("click", (e) => {
+    const txt = steps.map((st, i) =>
+      "step " + (i + 1) + " | " + (st.name || "(unnamed)") + " | " + st.placing
+    ).join("\n");
+    navigator.clipboard.writeText(txt);
+    e.target.textContent = steps.length ? "copied " + steps.length : "nothing to copy";
+    setTimeout(() => { e.target.textContent = "copy every step"; }, 1800);
+  });
+  loadSteps(); drawSteps();
+  window.__steps = () => steps;
 
   // ---- a self test, because a drag is the one thing a screenshot cannot show -
   // Reached with ?selftest. It dispatches REAL pointer events through the real
@@ -793,6 +967,15 @@
     const aimErr = Math.acos(Math.min(1, sx * F2.x + sz * F2.z)) * 180 / Math.PI;
     const alignOk = aimErr < 0.05;
 
+    // a step must survive being kept and recalled, since that is now the path
+    // his work leaves by
+    steps = [];
+    const before = encode();
+    steps.push({ name: "t", placing: before });
+    saveSteps(); loadSteps();
+    const stepOk = steps.length === 1 && steps[0].placing === before;
+    steps = []; saveSteps();
+
     const snapshot = encode();
     reset();
     const back = decode(snapshot);
@@ -805,12 +988,13 @@
           lsOk = localStorage.getItem(KEY + "-probe") === "1";
           localStorage.removeItem(KEY + "-probe"); } catch (err) {}
     document.getElementById("cur").textContent =
-      "SELFTEST " + (err < 0.006 && hostOk && frameOk && tripOk && alignOk ? "PASS" : "FAIL") +
+      "SELFTEST " + (err < 0.006 && hostOk && frameOk && tripOk && alignOk && stepOk ? "PASS" : "FAIL") +
       " jar at " + state.mizusashi.x.toFixed(3) + "," + state.mizusashi.z.toFixed(3) +
       " err " + (err * 1000).toFixed(1) + "mm" +
       " | host " + (hostOk ? "moved+turned" : "STUCK") +
       " | readout " + (frameOk ? "follows" : "STALE") +
       " | scoop aimed to " + aimErr.toFixed(2) + " deg" +
+      " | step kept " + (stepOk ? "and read back" : "LOST") +
       " | round trip " + (tripOk ? "exact" : "LOSSY") +
       " | address " + (hashOk ? "writable" : "REFUSED") +
       " | localStorage " + (lsOk ? "writable" : "REFUSED");
