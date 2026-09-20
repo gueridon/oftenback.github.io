@@ -75,6 +75,15 @@ a:hover,button:not([disabled]):hover{cursor:url('data:image/svg+xml;utf8,<svg xm
 .side .link.sub{height:11px;margin:3px 0;}
 .side .stop.sub{font-size:10.5px;letter-spacing:.18em;text-align:left;
   padding:7px 16px;margin:-7px -16px;}
+/* A THIRD LEVEL, for a chapter that is several places. The roji is a
+   garden, a room and a temae in one file, and the three are told apart by
+   their query. Indented again, smaller again, and joined by a shorter
+   thread: the same rule as the level above it, applied once more, so the
+   depth reads without a new kind of mark being invented. */
+.side .subs.ways{margin-left:14px;}
+.side .link.sub.way{height:7px;margin:2px 0;}
+.side .stop.sub.way{font-size:9.5px;letter-spacing:.16em;
+  padding:5px 16px;margin:-5px -16px;}
 /* the float lives on the room list only, NOT on .side itself -- .side also
    contains .brand-mini, whose position must stay perfectly static to match
    the landing blob's measured dock target. A shared animation on the parent
