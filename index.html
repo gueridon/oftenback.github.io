@@ -19,12 +19,13 @@
        now, it is the page: it arrives in the middle and it stays there, and
        the greeting comes to join it rather than replacing it.
 
-       WHICH IS WHY THE CORNER MARK IS GONE HERE. Two of the same mark on one
-       screen, one large and one small, is one too many, and the small one is
-       a way home from a page you are standing on. The room list stays; only
-       the mark above it goes, and only here. Wide screens only: where the
-       menu is a bar across the top the mark is the bar's own identity and it
-       stays. body.at-home carries all of it, set by site.js. */
+       AND THERE IS NO ROOM LIST HERE AT ALL. It went in two steps and the
+       second is the one that made sense of the first: the corner mark was a
+       small copy of the mark already in the middle of the page and a way
+       home from the page you are standing on, and once it was gone the list
+       under it was hanging from nothing. What is left is one door, in the
+       sentence, where someone arriving is already reading. site.js simply
+       does not build the menu on this page. */
     .room-content{gap:clamp(34px,7vh,64px);}
     /* not a link here: you are already where it would take you */
     #mark{cursor:default;}
@@ -49,6 +50,14 @@
     .hello .rom i{font-style:normal;}
     .note{max-width:400px;font-size:14px;line-height:1.95;font-weight:300;
       color:var(--dim);}
+    /* THE ONLY DOOR ON THE PAGE, now that the room list has gone from it, so
+       it is allowed to be one: the accent, and a rule under it that is there
+       at rest rather than on hover. A link you have to find with the pointer
+       is not a way in. */
+    .note a{color:var(--clay);text-decoration:none;
+      border-bottom:1px solid var(--clay);padding-bottom:1px;
+      transition:color .35s ease,border-color .35s ease;}
+    .note a:hover{color:var(--clay-deep);border-bottom-color:var(--clay-deep);}
     @media (max-width:760px){ .note{max-width:none;} }
   </style>
 </head>
@@ -65,9 +74,9 @@
           <span class="jp">ようこそ</span>
           <span class="rom"><i>welcome</i><i>bienvenue</i></span>
         </div>
-        <p class="note">This house is being built one room at a time. The rooms
-        under our hands now are the ones given to chanoyu; the rest is still
-        sky.</p>
+        <p class="note">The personal website of Nicholas Bacuez, an ongoing
+        project.<br><a href="chanoyu.html">Enter chanoyu</a>, the Japanese tea
+        ceremony.</p>
       </div>
     </div>
   </main>
@@ -89,6 +98,14 @@
         const w = document.getElementById("welcome");
         if (w) w.classList.add("in");
       }, 1000);
+    });
+    // and the one door fades out like every other one on the site
+    document.querySelectorAll(".note a").forEach((a) => {
+      a.addEventListener("click", (ev) => {
+        if (!window.__leaveTo) return;
+        ev.preventDefault();
+        window.__leaveTo(a.getAttribute("href"));
+      });
     });
   </script>
 </body>

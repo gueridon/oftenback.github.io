@@ -50,10 +50,12 @@ document.addEventListener("DOMContentLoaded", () => {
   // cherry window for a while and that page is kept whole and unlinked at
   // index-sakura.html, as landing-blob.html is.
   const isHome = here === "" || here === "index.html";
-  // HOME CARRIES ITS OWN MARK, in the middle of the page, so the small one
-  // above the room list would be a second copy of it and a way home from
-  // where you are standing. The stylesheet takes it from there.
-  if (isHome) document.body.classList.add("at-home");
+  // NO MENU ON HOME. The mark is already in the middle of that page, so the
+  // small one above the list was a second copy of it and a way home from
+  // where you are standing; and with the mark gone the list was hanging from
+  // nothing. Home carries one door instead, in its own sentence. Not hidden
+  // with a rule: not built, so there is no dead markup and nothing invisible
+  // to click.
 
 
   // ---- the veil: every crossing fades, none of them flips ------------------
@@ -106,6 +108,12 @@ document.addEventListener("DOMContentLoaded", () => {
     requestAnimationFrame(() => v.classList.remove("gone"));
     setTimeout(() => { location.href = href; }, 780);
   }
+  // EVERY CROSSING FADES, and that has to include the ones the menu does not
+  // make. The room list used to be the only way out of a page, so leaving
+  // was always its business; home has no list now and one plain link in a
+  // sentence, which would flip to the next page while every other door on
+  // the site dissolves.
+  window.__leaveTo = leaveTo;
 
   const stops = [
     // room one is gone from the list because room one is the home page, and
@@ -250,7 +258,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // the mark lives INSIDE the side nav (its first item) -- mark and room
   // list read as one continuous stack, centred together, mark above menu.
   // Not shown on the landing itself -- there, only the big blob and title show.
-  if (!document.querySelector(".side")) {
+  if (!isHome && !document.querySelector(".side")) {
     const aside = document.createElement("aside");
     aside.className = "side map";
     aside.innerHTML = sideHtml;
