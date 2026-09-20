@@ -38,6 +38,12 @@ document.addEventListener("DOMContentLoaded", () => {
       near ? "rgba(61,53,48,0.14)"
            : `rgba(12,9,7,${(0.22 + 0.34 * (1 - t)).toFixed(2)})`);
     el.style.setProperty("--side-blur", near ? "8px" : "3px");
+    // AND THE NARROW BAR'S BACKDROP with them. It is invisible on a wide
+    // screen, but the same reading answers it: a strip of cream over a
+    // sunlit wall, a strip of ink over a dark corner. Without this the bar
+    // was a pale band across the top of the tea garden at every hour.
+    el.style.setProperty("--bar-bg",
+      near ? "rgba(244,237,226,0.93)" : "rgba(18,14,10,0.62)");
   };
   const hereQ = new URLSearchParams(location.search);
   // The cherry window IS the home page now: room one is where you arrive, and
@@ -223,7 +229,13 @@ document.addEventListener("DOMContentLoaded", () => {
   // same element the roll never happened: an animation's transform beats a
   // transition's, so the list only faded and the scale was thrown away --
   // measured, the transform at rest was the float's own translation.
-  const sideHtml = brandHtml +
+  // THE HAMBURGER exists in the markup at every width and is shown by the
+  // stylesheet only when the menu has become a bar. Built here rather than
+  // in the narrow branch of anything, because there is no narrow branch:
+  // the layout is the stylesheet's business and this is only the control.
+  const burgerHtml = '<button class="burger" type="button" ' +
+    'aria-label="rooms" aria-expanded="false"><i></i><i></i><i></i></button>';
+  const sideHtml = brandHtml + burgerHtml +
     '<div class="stops-wrap"><div class="roll">' +
     '<span class="link"></span>' + stopsHtml + '</div></div>';
 
@@ -261,6 +273,31 @@ document.addEventListener("DOMContentLoaded", () => {
     // opening on the mark alone would shut again the moment the pointer
     // set off down the rooms, and opening on a band of the window would
     // have the list appear at a corner the reader was only passing.
+    // ---- and where it is a bar, a button opens it ------------------------
+    // Two ways in, and only one of them alive at a time: the approach of a
+    // pointer where the menu hangs in the margin, a press where it is a bar.
+    // The same .open class, so the roll is one mechanism.
+    const asBar = matchMedia("(max-width:760px)");
+    (function hamburger() {
+      const b = aside.querySelector(".burger");
+      if (!b) return;
+      const set = (on) => {
+        aside.classList.toggle("open", on);
+        b.setAttribute("aria-expanded", on ? "true" : "false");
+      };
+      b.addEventListener("click", (ev) => {
+        ev.preventDefault(); ev.stopPropagation();
+        set(!aside.classList.contains("open"));
+      });
+      // A PRESS ANYWHERE ELSE SHUTS IT. An open panel over the page with no
+      // way back but the button again is a trap on a screen this size.
+      addEventListener("pointerdown", (ev) => {
+        if (!asBar.matches || !aside.classList.contains("open")) return;
+        if (!aside.contains(ev.target)) set(false);
+      }, { passive: true });
+      // and it never survives the width it belongs to
+      asBar.addEventListener("change", () => set(false));
+    })();
     (function unroll() {
       const mark = aside.querySelector(".brand-mini");
       const wrap = aside.querySelector(".roll");
@@ -273,6 +310,7 @@ document.addEventListener("DOMContentLoaded", () => {
       };
       let shut = 0;
       addEventListener("pointermove", (e) => {
+        if (asBar.matches) return;      // there, the button owns .open
         const open = aside.classList.contains("open");
         const on = near(e, mark, PAD) || (open && near(e, wrap, PAD));
         if (on) {

@@ -227,6 +227,9 @@
        lit, so the name changes without moving. Left edge on the keys' own. */
     #topleft{position:fixed;left:clamp(20px,4.4vw,60px);top:clamp(22px,3.4vh,44px);
       z-index:6;pointer-events:none;}
+    /* UNDER THE BAR. Below 760 the site's menu leaves the right margin and
+       becomes a strip across the top, and the cards were opening behind it. */
+    @media (max-width:760px){ #topleft{top:66px;left:16px;} }
     /* THE NARRATION, in the invitation's own place: it is what the invitation
        leads to, so it speaks from where the question was asked. Wider than the
        question and quieter than it -- nothing here asks for a decision. */
@@ -5066,6 +5069,15 @@
     // one word. What is asked: that it is rolled up to begin with, that
     // coming near the mark unrolls it, that travelling down the rooms does
     // NOT shut it, and that leaving does.
+    //
+    // AND IT ASKS THE CONTRACT THAT APPLIES HERE. There are three, not one:
+    // a pointer that can hover rolls the list; a touch screen has no
+    // approach so the list stands open; under 760 the menu is a bar and the
+    // hamburger owns it. Headless reports no hover, so for a long time this
+    // test read "rolled up at rest" in an environment where standing open
+    // was the right answer, and passed because a specificity bug in the
+    // stylesheet was making the wrong thing happen. A test that names its
+    // environment cannot be fooled that way. The bar has ?bartest.
     if (new URLSearchParams(location.search).has("rolltest")) {
       setTimeout(() => {
         const out = [];
@@ -5083,7 +5095,31 @@
             clientX: r.left + r.width / 2 + (dx || 0),
             clientY: r.top + r.height / 2 + (dy || 0) }));
         };
+        const asBar = matchMedia("(max-width:760px)").matches;
+        const canHover = matchMedia("(hover:hover)").matches;
         const shut0 = getComputedStyle(wrap).transform;
+        if (asBar) {
+          out.push("this window is " + innerWidth + " wide, so the menu is " +
+                   "the bar and not the scroll -- see ?bartest");
+          document.body.setAttribute("data-rolltest", out.join(" | "));
+          return;
+        }
+        if (!canHover) {
+          // NO APPROACH, ONLY AN ARRIVAL: the list stands open, and the
+          // pointer must not be what decides it.
+          out.push("no hover here, so at rest the list is " +
+                   (open() || shut0 === "none" ? "open, as it should be"
+                                               : "ROLLED UP AND UNREACHABLE") +
+                   " (transform " + shut0 + ")");
+          at(mark);
+          dispatchEvent(new PointerEvent("pointermove", { bubbles: true,
+            clientX: 20, clientY: innerHeight / 2 }));
+          out.push("and a pointer crossing the page left it " +
+                   (getComputedStyle(wrap).transform === "none"
+                      ? "open -- nothing to shut" : "SHUT"));
+          document.body.setAttribute("data-rolltest", out.join(" | "));
+          return;
+        }
         out.push("at rest the list is " + (open() ? "OPEN" : "rolled up") +
                  ", its transform " + shut0 +
                  (!open() && shut0 !== "none" ? " -- only the mark shows"
@@ -5110,6 +5146,83 @@
                            : ""));
           document.body.setAttribute("data-rolltest", out.join(" | "));
         }, 500);
+      }, 1000);
+    }
+
+    // ---- and under 760, is it a bar with a hamburger ----------------------
+    // ?bartest, run in a narrow window. "En dessous de 760, le menu devrait
+    // disparaitre du cote et l'embleme oftenback et le titre oftenback
+    // devraient aller en haut de l'ecran." Four things: the strip is across
+    // the top and spans it, the mark is in it, the button is the only way
+    // the rooms open, and a press anywhere else shuts them.
+    if (new URLSearchParams(location.search).has("bartest")) {
+      setTimeout(() => {
+        const out = [];
+        const aside = document.querySelector(".side");
+        const roll = aside && aside.querySelector(".roll");
+        const mark = aside && aside.querySelector(".brand-mini");
+        const burg = aside && aside.querySelector(".burger");
+        if (!aside || !roll || !mark || !burg) {
+          document.body.setAttribute("data-bartest", "no menu");
+          return;
+        }
+        if (!matchMedia("(max-width:760px)").matches) {
+          document.body.setAttribute("data-bartest",
+            "this window is " + innerWidth + " wide: run it under 760");
+          return;
+        }
+        const box = (el) => { const r = el.getBoundingClientRect();
+          return [r.left, r.top, r.width, r.height].map(Math.round); };
+        // THE CLASS, NOT THE PIXELS, and the rule beside it. The roll is a
+        // transition and a transition does not advance in a headless run:
+        // read straight after a click, the computed transform is still the
+        // one it is leaving, so "it did not open" is what a correct menu
+        // reports. So the state is read from the class and the endpoint is
+        // read from the stylesheet.
+        const shown = () => aside.classList.contains("open");
+        const ruleFor = (sel) => {
+          for (const sh of document.styleSheets) {
+            let rs; try { rs = sh.cssRules; } catch (e) { continue; }
+            for (const r of rs) {
+              if (r.selectorText === sel) return r.style.cssText;
+              if (r.cssRules) for (const q of r.cssRules)
+                if (q.selectorText === sel) return q.style.cssText;
+            }
+          }
+          return "";
+        };
+        const a = box(aside), m = box(mark), b = box(burg);
+        out.push("the strip runs " + a[0] + " to " + (a[0] + a[2]) + " of " +
+                 innerWidth + ", " + a[3] + " tall at the top" +
+                 (a[0] === 0 && a[2] >= innerWidth - 1 && a[1] === 0
+                    ? "" : " -- IT IS NOT A BAR"));
+        out.push("the mark sits at " + m[0] + "," + m[1] + " and the button " +
+                 "at " + b[0] + "," + b[1] +
+                 (m[0] < innerWidth / 2 && b[0] > innerWidth / 2
+                    ? " -- one at each end" : " -- NOT AT THE ENDS"));
+        out.push("at rest the rooms are " + (shown() ? "SHOWING" : "folded"));
+        // THE POINTER IS NOT A WAY IN HERE, which is the whole difference
+        // from the margin: reaching for the tab bar must not open a menu.
+        const r = mark.getBoundingClientRect();
+        dispatchEvent(new PointerEvent("pointermove", { bubbles: true,
+          clientX: r.left + r.width / 2, clientY: r.top + r.height / 2 }));
+        out.push("a pointer on the mark: " +
+                 (shown() ? "IT OPENED ANYWAY" : "still folded"));
+        burg.click();
+        out.push("the button: " + (shown() ? "they drop" : "NOTHING HAPPENED") +
+                 ", and it says aria-expanded=" + burg.getAttribute("aria-expanded"));
+        const openRule = ruleFor(".side.open .roll");
+        out.push("and open, the rule says {" + openRule + "}" +
+                 (/transform:\s*none/.test(openRule) &&
+                  /opacity:\s*1/.test(openRule) ? "" : " -- IT DOES NOT UNFOLD"));
+        const rb = box(roll);
+        out.push("the panel hangs at " + rb[1] + ", under a bar " + a[3] +
+                 " tall" + (rb[1] >= a[3] - 1 ? "" : " -- IT IS BEHIND THE BAR"));
+        // and a press anywhere else puts it away
+        document.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true,
+          clientX: 12, clientY: innerHeight - 24 }));
+        out.push("a press elsewhere: " + (shown() ? "IT STAYS OPEN" : "it folds"));
+        document.body.setAttribute("data-bartest", out.join(" | "));
       }, 1000);
     }
 

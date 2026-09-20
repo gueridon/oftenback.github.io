@@ -62,6 +62,12 @@ a:hover,button:not([disabled]):hover{cursor:url('data:image/svg+xml;utf8,<svg xm
   --soft:#b3a89c;
   --side-shadow:rgba(61,53,48,0.14);
   --side-blur:8px;
+  /* What the narrow bar is read against; set with the rest by setMenuTone on
+     a page that measures its own background. OPAQUE by default: translucent
+     at 95 per cent it still let five per cent of a large dark glyph through,
+     and five per cent of a glyph is not transparency, it is a smudge. A page
+     with a scene worth seeing under the bar says so by measuring. */
+  --bar-bg:var(--bg);
   transition:--soft .5s linear;
   /* a soft lift so the menu reads as its own layer floating above the page,
      the way it naturally does over the tea room's real depth -- here there's
@@ -160,9 +166,71 @@ a:hover,button:not([disabled]):hover{cursor:url('data:image/svg+xml;utf8,<svg xm
   transition:transform .42s cubic-bezier(.33,0,.2,1),opacity .34s ease;}
 .side:not(.open) .roll{transform:scaleY(.04);opacity:0;pointer-events:none;}
 /* A POINTER THAT CANNOT HOVER cannot come near: on a touch screen there is
-   no approach, only an arrival, so the list simply stands open. */
-@media (hover:none){.side .roll{transform:none;opacity:1;
+   no approach, only an arrival, so the list simply stands open.
+   :not(.open) HERE TOO, and that is not noise. Written as `.side .roll` this
+   rule lost to the closed one above it, which carries three classes to its
+   two, and lost silently: the list stayed rolled up on every touch device
+   and the comment above said otherwise. Media queries add no specificity. */
+@media (hover:none){.side:not(.open) .roll{transform:none;opacity:1;
   pointer-events:auto;}}
+
+/* THE HAMBURGER, in the same hairlines as everything else in the menu: three
+   1px strokes, not an icon font and not a glyph. Hidden until the bar exists.
+   Open, the outer two cross and the middle goes. */
+.side .burger{display:none;flex-direction:column;justify-content:center;gap:5px;
+  width:36px;height:36px;padding:8px 5px;border:0;background:none;
+  pointer-events:auto;}
+.side .burger i{display:block;height:1px;background:var(--soft);opacity:.72;
+  transition:transform .3s cubic-bezier(.33,0,.2,1),opacity .3s ease;}
+.side.open .burger i:nth-child(1){transform:translateY(6px) rotate(45deg);}
+.side.open .burger i:nth-child(2){opacity:0;}
+.side.open .burger i:nth-child(3){transform:translateY(-6px) rotate(-45deg);}
+@media (prefers-reduced-motion:reduce){.side .burger i{transition:none;}}
+/* DECLARED ABOVE THE NARROW BLOCK and not below it: `display:none` here and
+   `display:flex` there carry the same specificity, so the one written last
+   wins and the button stayed hidden at every width.
+   */
+
+/* ---- NARROW: the menu leaves the margin and becomes a bar --------------
+   Under 760 the right margin is not a margin, it is a third of the screen.
+   The list used to hang there and the pages reserved 134px of gutter for
+   it, which left a phone with a column of about 190px. So: the mark and
+   the word go to the top edge, the rooms fold behind a hamburger, and the
+   gutter goes back to the text.
+   THE BAR IS A LAYER, NOT A ROW: it floats over the page rather than
+   pushing it, because half these pages are a single full screen canvas
+   with nothing to push. What it needs in exchange is something to be read
+   against, hence --bar-bg, which follows the same measurement of the
+   background that the lettering already follows. */
+@media (max-width:760px){
+  .side{left:0;right:0;top:0;bottom:auto;
+    flex-direction:row;align-items:center;justify-content:space-between;
+    padding:9px 16px;background:var(--bar-bg);
+    -webkit-backdrop-filter:blur(9px);backdrop-filter:blur(9px);}
+  .brand-mini{flex-direction:row;align-items:center;gap:11px;margin-bottom:0;}
+  .brand-mini canvas{width:34px;height:34px;}
+  .brand-mini span{padding-left:0;font-size:8.5px;}
+  .side .burger{display:flex;}
+  /* the rooms drop from under the bar, right hanging as they always were.
+     THE BACKDROP BELONGS TO THE OPEN PANEL, not to the box that holds it:
+     the roll is a transform and a transform takes no room, so a wrapper
+     with a background of its own painted a pale block three hundred pixels
+     down the page with nothing in it. */
+  .stops-wrap{position:absolute;top:100%;left:0;right:0;animation:none;
+    padding:4px 16px 20px;}
+  .side:not(.open) .stops-wrap{pointer-events:none;}
+  /* and the threads shorten: hung down a tall margin they set the rhythm of
+     the whole right edge, dropped from a bar they are just a gap */
+  .side .link{height:18px;margin:6px 0;}
+  .side.open .stops-wrap{background:var(--bar-bg);
+    -webkit-backdrop-filter:blur(9px);backdrop-filter:blur(9px);}
+  /* and the hamburger governs it, not the approach of a pointer: on a
+     touch screen there is no approach, and on a narrow desktop window a
+     list that unrolls when the pointer passes the top edge would unroll
+     every time you reached for the tab bar. */
+  .side:not(.open) .roll{transform:scaleY(.04);opacity:0;pointer-events:none;}
+  .side.open .roll{transform:none;opacity:1;pointer-events:auto;}
+}
 
 /* No more cross-page transition choreography -- .side never fades, on any
    page, at any time, full stop. Each page just fades its OWN content in on
@@ -189,14 +257,18 @@ main.in{opacity:1;}
 /* just a plain centring frame on the page's own off-white background -- the
    3D room shell (room-box.js) didn't earn its keep, so it's gone. */
 .room{position:relative;min-height:100%;display:flex;align-items:center;justify-content:center;}
-/* The room list is fixed to the right edge and the room's content is centred
-   in the whole viewport, so on a narrow screen they collide -- measured at
-   430px wide, the paragraph ran straight through OFTENBACK. The list occupies
-   22px of offset plus a 102px mark, so reserve that gutter. Wide screens are
-   untouched: the centring there is deliberate. */
+/* The list used to be fixed to the right edge at every width, and the room's
+   content is centred in the whole viewport, so on a narrow screen they
+   collided: measured at 430px wide, the paragraph ran straight through
+   OFTENBACK. The answer then was to reserve the 134px the list stood in,
+   which cost a phone two thirds of its column. The list is a bar at the top
+   now, so the gutter comes back to the text and what is reserved is a strip
+   of height instead. Wide screens are untouched: the centring there is
+   deliberate. */
 @media (max-width:760px){
-  .room{padding-right:134px;padding-left:22px;}
+  .room{padding-right:22px;padding-left:22px;padding-top:78px;}
   .room p{max-width:none;}
+  .constellation{padding:78px 22px 40px;}
 }
 .room-content{position:relative;z-index:1;display:flex;flex-direction:column;
   align-items:center;gap:22px;text-align:center;padding:48px;}
