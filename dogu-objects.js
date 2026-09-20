@@ -1296,11 +1296,17 @@
             ca.setXYZ(i, ca.getX(i) * k, ca.getY(i) * k * 0.94, ca.getZ(i) * k * 0.86);
           }
         })(bg);
-        g.add(new THREE.Mesh(bg, new THREE.MeshStandardMaterial({
+        const body = new THREE.Mesh(bg, new THREE.MeshStandardMaterial({
           color: 0xffffff, vertexColors: true, roughness: 0.62,
           metalness: 0.0, side: THREE.DoubleSide,
-        })));
+        }));
+        body.name = "mizu-body";
+        g.add(body);
 
+        // TWO PIECES, and named so that a scene can take one off: "le
+        // mizusashi et son couvercle doivent etre detachables". The lid is
+        // lifted once in the ceremony and stood against the jar, so it has
+        // to be able to leave the group it was built in.
         // The lid is BLACK LACQUER, a nuri-buta, and that pairing is a real
         // thing in the room rather than a decision of mine: the coldest,
         // plainest, heaviest object in the set wears the same finish as the
@@ -1318,10 +1324,12 @@
           [0.1752, 0.0113], [0.1763, 0.0098], [0.1769, 0.0058],
           [0.1771, 0.0000],
         ], 80, 4.2, 0);
-        g.add(new THREE.Mesh(lg, new THREE.MeshStandardMaterial({
+        const buta = new THREE.Mesh(lg, new THREE.MeshStandardMaterial({
           color: 0x0e0d0f, roughness: 0.085, metalness: 0.0,
           side: THREE.DoubleSide,
-        })));
+        }));
+        buta.name = "mizu-buta";
+        g.add(buta);
         return g;
       },
     },
