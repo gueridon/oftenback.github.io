@@ -1016,24 +1016,42 @@
         // face of the wall by only three or four millimetres. Not at the node,
         // not under the rim, and not across the mouth.
         //
-        // I had it crossing the whole interior, because a line runs right
-        // across the inside of the cup in one of his photographs and I took
-        // it for the handle's end. It cannot be: the stub is 4mm long. So
-        // that line is something else, a split in the node most likely. Twice
-        // now on this object I have read a mark in a photograph as the thing
-        // I was looking for. A photograph shows what is there; it does not say
-        // what it is.
+        // TSUKIGATA, and the name is the answer to an argument this comment
+        // used to carry on with itself. A line runs right across the inside
+        // of the cup in one of his photographs; I read it as the handle's
+        // end, then overruled myself on the grounds that a handle cannot
+        // cross a cup, and called the line a split in the node.
+        //
+        // A reference manual names BOTH constructions. `sashitoshi` is the
+        // handle driven straight through, and its end does cross the whole
+        // bore: the thing I had declared impossible is a named type. And
+        // `tsukigata` is this one, the end cut as a crescent that stops
+        // against the inner wall, which is what Nicolas has in his hand.
+        //
+        // So the verdict stands and the reasoning was worthless. What was
+        // wrong was not the reading of the photograph, it was ruling out a
+        // construction I had never heard of because it did not fit the one
+        // I had.
+        //
+        // THE CRESCENT IS CUT, NOT MODELLED. The strip is swept past the
+        // bore as before and every vertex that ends up inside the bore is
+        // pushed out onto it, so the end face is the intersection of the
+        // handle with the cylinder and nothing else. A crescent drawn by
+        // hand would be a guess at that intersection; this IS it, and it
+        // stays right if the bore or the slope ever changes.
         // THIRTY DEGREES, RISING. The handle is not perpendicular to the cup's
         // axis, which is what I had assumed and what would make the cup hang
         // level from a level handle. It leaves the cup and goes away and UP at
         // about 30 degrees, so with the handle held level the mouth tips
         // FORWARD, away from you: which is the attitude for pouring out.
+        const TSUME = 0.0020;             // how far the crescent stands proud
         const SLOPE = 30 * Math.PI / 180;
         const DX = Math.cos(SLOPE), DY = Math.sin(SLOPE);
         const YH = HT * 0.565;                    // a little above half height
-        // s runs along the handle's OWN axis from the stub to the cut end,
-        // through the wall at (R, YH). The stub reaches 3.6mm past the inner
-        // face of the wall, measured along that axis.
+        // s runs along the handle's OWN axis from the tsume to the cut end,
+        // through the wall at (R, YH). It is swept well past the bore and
+        // then cut back to it, so S0 only has to be deep enough to leave
+        // material for the crescent: the crescent's own depth is TSUME.
         const sIn = (R - WALL - R) / DX;          // where it leaves the inner face
         const S0 = sIn - 0.0036, S1 = 0.2910;
         const px_ = (s) => R + DX * s, py_ = (s) => YH + DY * s;
@@ -1081,8 +1099,16 @@
             // the section's thin axis is the handle's own normal, so it tilts
             // with the slope instead of staying vertical
             const ux = -DY * u, uy = DX * u;
-            pos.push(x + ux + dxx * DX - scarf * 0.011 * (0.5 + 0.5 * Math.sign(u)),
-                     y + uy + dxx * DY - scarf * h * 0.6, v);
+            let X = x + ux + dxx * DX - scarf * 0.011 * (0.5 + 0.5 * Math.sign(u));
+            const Y = y + uy + dxx * DY - scarf * h * 0.6;
+            let Z = v;
+            // flush with the bore: anything further in than the tsume
+            // belongs to the cup
+            const rr = Math.hypot(X, Z);
+            if (rr > 1e-6 && rr < R - WALL - TSUME) {
+              const kx = (R - WALL - TSUME) / rr; X *= kx; Z *= kx;
+            }
+            pos.push(X, Y, Z);
             const node = Math.max(0, 1 - Math.abs(Math.max(0, d) - 0.160) / 0.0022);
             const gr = 0.900 - 0.050 * Math.abs(v) / Math.max(1e-9, w)
                      + 0.018 * Math.sin(sg * 2.7 + 1.1);

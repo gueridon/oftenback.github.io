@@ -2636,14 +2636,84 @@
     water.position.set(TSU_X, BASIN_TOP - 0.062, TSU_Z);
     scene.add(outdoor(water));
 
-    // mae-ishi, the front stone you crouch on, plus the two flanking stones
-    [[0.60, 0.42, 0.10, 52.3], [-0.62, -0.30, 0.30, 63.1], [0.10, -0.66, 0.26, 71.9]]
-      .forEach(([dx, dz, r, seed]) => {
-        const st = new THREE.Mesh(makeStoneGeo(r, 0.13, seed), stoneMat);
-        st.position.set(TSU_X + dx, groundAt(TSU_X + dx, TSU_Z + dz) + 0.035, TSU_Z + dz);
-        st.castShadow = true; st.receiveShadow = true;
-        scene.add(outdoor(st));
+    // ---- the four stones, and each of them has a job -----------------------
+    // There were three here, placed by eye, and the comment called them
+    // "mae-ishi plus the two flanking stones", which is one name and two
+    // shrugs. A tsukubai is a set arrangement and every stone in it is for
+    // something:
+    //
+    //   chozubachi   the basin, on the far side
+    //   maeishi      the front stone, nearest the approach: you CROUCH on it
+    //   teshokuishi  the candlestick stone, on the right, for a night
+    //                gathering: the guest sets the light down to use both
+    //                hands
+    //   yuokeishi    the bucket stone, on the left, where the pail of hot
+    //                water stands in winter so the rinsing does not freeze
+    //   suimon       the drain at the centre, under the spill
+    //
+    // and the four stand in a cross about the drain, not about the basin.
+    // Left and right are the GUEST'S, crouched on the maeishi and facing
+    // the water.
+    //
+    // WHICH WAY THAT IS, THE SCENE ANSWERS. He kneels at the tsukubai at
+    // u=0.70, at (-0.05, 4.42), and looks at the basin at (-0.85, 3.60):
+    // the approach runs along that line and nothing here is free to be
+    // chosen. ?tsukubaitest asks the arrangement whether it still agrees
+    // with where he actually crouches.
+    const TSU_F = (function () {
+      const fx = TSU_X - (-0.05), fz = TSU_Z - 4.42;
+      const L = Math.hypot(fx, fz);
+      return { x: fx / L, z: fz / L };
+    })();
+    const TSU_L = { x: TSU_F.z, z: -TSU_F.x };        // the guest's left
+    // the drain sits between the basin and the stone he crouches on
+    const SUI_X = TSU_X - TSU_F.x * 0.45, SUI_Z = TSU_Z - TSU_F.z * 0.45;
+    const tsuStone = (name, ax, al, r, h, seed) => {
+      const x = SUI_X + TSU_F.x * ax + TSU_L.x * al;
+      const z = SUI_Z + TSU_F.z * ax + TSU_L.z * al;
+      const st = new THREE.Mesh(makeStoneGeo(r, h, seed), stoneMat);
+      st.position.set(x, groundAt(x, z) + 0.035, z);
+      st.castShadow = true; st.receiveShadow = true;
+      st.name = name;
+      scene.add(outdoor(st));
+      return st;
+    };
+    // BROADEST AND LOWEST of the four, because it is the only one meant to
+    // be stood on: a stone you crouch on cannot be a boulder.
+    tsuStone("maeishi", -0.58, 0.00, 0.30, 0.12, 63.1);
+    tsuStone("teshokuishi", 0.02, -0.50, 0.24, 0.15, 52.3);
+    tsuStone("yuokeishi", -0.04, 0.50, 0.22, 0.14, 71.9);
+
+    // ---- the suimon, the drain --------------------------------------------
+    // AND ONLY THE DRAIN. The plan also shows a bed of loose stone around
+    // the four and a course of small ones linking them, and both were
+    // already here: the umi has been a dish of bare pebbles from 0.235 out
+    // to 1.20 since it was built, with its own scatter and its own wet
+    // colouring near the water. Adding a second bed inside the first is not
+    // following the documentation, it is not having read the code.
+    //
+    // What was genuinely absent is the mouth the spill goes into: a small
+    // dark sink at the centre of the cross with three stones standing round
+    // it, which is how the plan draws it and all it draws.
+    {
+      const sinkMat = new THREE.MeshStandardMaterial({
+        color: 0x2e2b25, roughness: 1, metalness: 0,
       });
+      const sink = new THREE.Mesh(new THREE.CircleGeometry(0.11, 22), sinkMat);
+      sink.rotation.x = -Math.PI / 2;
+      sink.position.set(SUI_X, groundAt(SUI_X, SUI_Z) + 0.004, SUI_Z);
+      sink.receiveShadow = true;
+      sink.name = "suimon";
+      scene.add(outdoor(sink));
+      [[0.00, 0.10, 0.055, 17.3], [-0.095, -0.06, 0.048, 29.7],
+       [0.100, -0.055, 0.043, 41.1]].forEach(([dx, dz, r, seed]) => {
+        const x = SUI_X + dx, z = SUI_Z + dz;
+        const pb = new THREE.Mesh(makeStoneGeo(r, 0.07, seed), stoneMat);
+        pb.position.set(x, groundAt(x, z) + 0.012, z);
+        pb.castShadow = true; pb.receiveShadow = true;
+        scene.add(outdoor(pb));
+      });
+    }
 
     // kakei, the bamboo spout: without it this is a bowl on a rock
     const bambooPale = mat(PALETTE.plinth);
@@ -3199,6 +3269,45 @@
     chumon.position.set(CHUMON_X, groundAt(CHUMON_X, CHUMON_Z), CHUMON_Z);
     chumon.rotation.y = CHUMON_RY;
     scene.add(outdoor(chumon));
+
+    // ---- and the stones that make the gate an event ------------------------
+    // The gate had architecture and no ground. Two posts, a lintel and a
+    // roof are what you pass UNDER; what happens at a chumon happens on
+    // four stones, and the plan names each of them:
+    //
+    //   norikoeishi  the stepping-over stone, straddling the threshold
+    //   teishuishi   the host's stone, just inside. He kneels on it
+    //   kyakuishi    the guest's stone, just outside. The guest kneels on
+    //                it, and the two bow to each other through the open
+    //                gate WITHOUT SPEAKING. That silent greeting is the
+    //                whole reason the middle gate exists, and we had built
+    //                the doorway and left out the meeting.
+    //   jikyakuishi  the next guest's stone, behind the first
+    //
+    // Laid in the gate's OWN frame, so they stay square with it if it is
+    // ever turned: local +z is the outer garden, the side you arrive from.
+    {
+      const cz = Math.cos(CHUMON_RY), sz = Math.sin(CHUMON_RY);
+      const gateStone = (name, lx, lz, r, h, seed) => {
+        const x = CHUMON_X + lx * cz + lz * sz;
+        const z = CHUMON_Z - lx * sz + lz * cz;
+        const st = new THREE.Mesh(makeStoneGeo(r, h, seed), stoneMat);
+        st.position.set(x, groundAt(x, z) + 0.035, z);
+        st.castShadow = true; st.receiveShadow = true;
+        st.name = name;
+        scene.add(outdoor(st));
+      };
+      // BROAD AND LOW, and it straddles the line rather than sitting beside
+      // it: the name says stepping-over, so the threshold runs across it.
+      gateStone("norikoeishi", -0.04, 0.02, 0.31, 0.11, 91.4);
+      // OFF THE LINE OF WALKING, both of them. Set near the centre they
+      // read as more paving and the four became a file of stones down the
+      // middle of the doorway; the plan sets them to one side, inside the
+      // posts, because you kneel BESIDE the way through and not on it.
+      gateStone("teishuishi", -0.40, -0.58, 0.23, 0.13, 103.7);
+      gateStone("kyakuishi", -0.36, 0.56, 0.25, 0.13, 117.2);
+      gateStone("jikyakuishi", -0.22, 1.08, 0.18, 0.11, 129.5);
+    }
 
     // ---- chiriana: the symbolic waste pit, beside the inner path ----------
     {
@@ -5147,6 +5256,51 @@
           document.body.setAttribute("data-rolltest", out.join(" | "));
         }, 500);
       }, 1000);
+    }
+
+    // ---- do the tsukubai stones stand where the plan puts them ------------
+    // ?tsukubaitest. Four stones in a cross about the drain, and the cross
+    // is oriented by the GUEST: crouched on the maeishi facing the water,
+    // the candlestick stone is on his right and the bucket stone on his
+    // left. So the test takes his own crouching pose out of the walk and
+    // asks each stone which way it lies from there. Placed by eye, three
+    // of them were merely near the basin and the arrangement had no front.
+    if (new URLSearchParams(location.search).has("tsukubaitest")) {
+      setTimeout(() => {
+        const out = [];
+        // where he actually kneels, read from the walk rather than assumed
+        sampleJourney(0.70);
+        const eye = _p.clone(), aim = _l.clone();
+        const f = new THREE.Vector3(aim.x - eye.x, 0, aim.z - eye.z).normalize();
+        const left = new THREE.Vector3(f.z, 0, -f.x);
+        const find = (n) => { let m = null;
+          scene.traverse((o) => { if (o.name === n) m = o; }); return m; };
+        const at = (n) => { const m = find(n); if (!m) return null;
+          const w = m.getWorldPosition(new THREE.Vector3());
+          const d = new THREE.Vector3(w.x - eye.x, 0, w.z - eye.z);
+          return { ahead: d.dot(f), left: d.dot(left), far: d.length() }; };
+        const bas = new THREE.Vector3(TSU_X, 0, TSU_Z);
+        const bd = new THREE.Vector3(bas.x - eye.x, 0, bas.z - eye.z);
+        out.push("he kneels at " + eye.x.toFixed(2) + "," + eye.z.toFixed(2) +
+                 " and the basin is " + bd.dot(f).toFixed(2) + "m ahead, " +
+                 Math.abs(bd.dot(left)).toFixed(2) + "m off his line" +
+                 (bd.dot(f) > 0.5 && Math.abs(bd.dot(left)) < 0.25
+                    ? " -- squarely in front of him" : " -- NOT IN FRONT"));
+        const want = [["maeishi", "under him", (v) => Math.abs(v.left) < 0.25 && v.far < 0.45],
+                      ["teshokuishi", "on his right", (v) => v.left < -0.30],
+                      ["yuokeishi", "on his left", (v) => v.left > 0.30],
+                      ["suimon", "between him and the water",
+                       (v) => v.ahead > 0.25 && v.ahead < bd.dot(f) && Math.abs(v.left) < 0.25]];
+        want.forEach(([n, says, ok]) => {
+          const v = at(n);
+          if (!v) { out.push(n + " -- MISSING"); return; }
+          out.push(n + " lies " + v.ahead.toFixed(2) + "m ahead and " +
+                   (v.left >= 0 ? v.left.toFixed(2) + "m left"
+                                : (-v.left).toFixed(2) + "m right") +
+                   " -- " + says + (ok(v) ? "" : ", WHICH IT IS NOT"));
+        });
+        document.body.setAttribute("data-tsukubaitest", out.join(" | "));
+      }, 1200);
     }
 
     // ---- and under 760, is it a bar with a hamburger ----------------------
@@ -13833,6 +13987,12 @@
     // stop a coincidence.
     const MARKS = [0].concat(STOPS.map((st) => st.u));
     let markIdx = 0, currentU = 0, walkPrev = null, roamPrev = null;
+    // ?u=0.70 stands where the walk would be at that point. For looking at
+    // one place in the garden without walking to it.
+    (function atU() {
+      const v = parseFloat(new URLSearchParams(location.search).get("u"));
+      if (isFinite(v)) { currentU = Math.max(0, Math.min(1, v)); markIdx = 0; }
+    })();
     // The direct entrance, parked: the walk's own state, set to its end.
     if (ENTER_ROOM) { markIdx = MARKS.length - 1; currentU = 1; }
     let fromU = 0, toU = 0, glideT0 = 0, glideDur = 0, moving = false;

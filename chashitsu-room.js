@@ -65,14 +65,31 @@
   // the schema does not cover them, and the ro is in the temaedatami there
   // anyway.
 
-  // Mats, in the pinwheel. Named by where they lie so the eight can point at
-  // them without repeating coordinates.
+  // Mats, in the pinwheel, AND BY THEIR OWN NAMES. They were keyed by where
+  // they lie -- toko, right, lower, left, half -- which was enough for the
+  // eight to point at them and wrong in two ways. A mat in this room is
+  // named for what the gathering does on it, not for which wall it is
+  // against; and `toko` is the ALCOVE, so using it for the mat in front of
+  // the alcove put the room's one fixed landmark under two meanings.
+  //
+  // From the yojohan layout in the reference: kinindatami along the alcove
+  // (the mat of honour, where the ranking guest is seated), kyakudatami for
+  // the guests, temaedatami for the host and his utensils, fumikomidatami
+  // the stepping-in mat at the sadoguchi, and the half mat at the centre.
+  //
+  // THE CENTRE MAT IS NAMED BY THE HEARTH, not by the season, and that is
+  // the fact worth keeping. It is the kayoidatami, the mat of coming and
+  // going, whenever it carries no hearth -- all through furo season, and
+  // all year for mukogiri and sumiro, where the ro is cut in the host's own
+  // mat instead. Only when the ro is cut into it is it the rodatami, which
+  // is the case here for yojohangiri and daimegiri. So the key is its
+  // general name and the hearth decides the rest.
   const MATS = {
-    toko:  { x: 0, y: 0, w: 2, h: 1 },   // along the alcove
-    right: { x: 2, y: 0, w: 1, h: 2 },
-    lower: { x: 1, y: 2, w: 2, h: 1 },
-    left:  { x: 0, y: 1, w: 1, h: 2 },
-    half:  { x: 1, y: 1, w: 1, h: 1 },
+    kinindatami:   { x: 0, y: 0, w: 2, h: 1 },   // along the alcove
+    kyakudatami:   { x: 2, y: 0, w: 1, h: 2 },
+    fumikomidatami:{ x: 1, y: 2, w: 2, h: 1 },
+    temaedatami:   { x: 0, y: 1, w: 1, h: 2 },
+    kayoidatami:   { x: 1, y: 1, w: 1, h: 1 },   // rodatami when the ro is in it
   };
 
   // ---- the eight ----------------------------------------------------------
@@ -106,14 +123,14 @@
     // than derived because the aiming-corner rule only gave 23.7 from the
     // mat's centre: from where he now sits that corner would turn him to 39.
     { key: "yojohangiri", jp: "四畳半切", rom: "yojohangiri", pillar: false,
-      temae: "left", ro: [1.00, 1.00], host: [0.7644, 1.1832], facing: 18.7,
+      temae: "temaedatami", ro: [1.00, 1.00], host: [0.7644, 1.1832], facing: 18.7,
       guests: [[2.5, 0.5], [2.5, 1.5]],
       note: "The ordinary room, and the original. Said to be so proportioned " +
             "because an eighteen mat hall at Kamakura was divided in four and " +
             "one quarter screened off for tea. The hearth is cut at the corner " +
             "of the half mat at the centre, against the host's own." },
     { key: "daimegiri", jp: "台目切", rom: "daimegiri", pillar: true,
-      temae: "left", shorten: 0.75, ro: [1.00, 1.00], host: [0.50, 1.22],
+      temae: "temaedatami", shorten: 0.75, ro: [1.00, 1.00], host: [0.50, 1.22],
       guests: [[2.5, 0.5], [2.5, 1.5]],
       note: "A mat cut about a quarter short, used as the utensil mat, with " +
             "the hearth beside it. Being LARGER than half a mat it has a " +
@@ -121,12 +138,12 @@
             "at the hearth: Rikyu's son Do-an suggested it, and Oribe made the " +
             "three mat daime popular." },
     { key: "mukogiri", jp: "向切", rom: "mukogiri", pillar: false,
-      temae: "left", ro: [0.56, 2.50], host: [0.42, 2.00], guests: [[2.5, 0.5], [2.5, 1.5]],
+      temae: "temaedatami", ro: [0.56, 2.50], host: [0.42, 2.00], guests: [[2.5, 0.5], [2.5, 1.5]],
       note: "The hearth cut at the far END of the mat instead of in the " +
             "middle. The host works turned away from the centre of the room, " +
             "which changes the whole choreography of the procedure." },
     { key: "sumiro", jp: "隅炉", rom: "sumiro", pillar: false,
-      temae: "left", ro: [0.00, 1.06], host: [0.52, 1.62], guests: [[2.5, 0.5], [2.5, 1.5]],
+      temae: "temaedatami", ro: [0.00, 1.06], host: [0.52, 1.62], guests: [[2.5, 0.5], [2.5, 1.5]],
       note: "Cut in the OUTER corner of the mat rather than on the inner " +
             "side, so the hearth sits against the wall. Sadler: these came " +
             "from lack of space, or from having to enter by a different " +
