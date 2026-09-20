@@ -633,7 +633,17 @@
     // near and far are independent, and the two wishes need different ones:
     // a CLOSE near is what veils the far end of the scrub band, a DISTANT far
     // is what stops the hills washing out to flat fog colour.
-    scene.fog = new THREE.Fog(PALETTE.bg, 8, 68);
+    // AND THE HAZE IS FOR A WALKER. Eight metres to sixty-eight is the
+    // depth of a garden seen from inside it; from fifteen metres up the
+    // whole roji sits in the far half of that and comes out milky. The
+    // plate pushes it back -- the same air, seen from further off.
+    // READ FROM THE URL AND NOT FROM CAM_MODE, which is declared four
+    // hundred lines below this and is in its dead zone here: naming it
+    // threw before the first frame and the page sat on its loading veil
+    // for every address, not just this one. The same trap the beat list
+    // fell into.
+    const _sky = new URLSearchParams(location.search).get("cam") === "sky";
+    scene.fog = new THREE.Fog(PALETTE.bg, _sky ? 34 : 8, _sky ? 150 : 68);
 
     // a real chashitsu is small and low-ceilinged
     // The room is a REAL four-and-a-half: 2865mm, three mat widths, the same
@@ -960,6 +970,7 @@
     // out  = the old doll's-house framing, kept for comparison
     // in   = the destination, static
     // door = looking back at the nijiriguchi, to check the opening
+    // sky  = the whole roji from above, for a plate on the index page
     const PARAMS = new URLSearchParams(location.search);
     const PERF = PARAMS.has("perf");
     // ?room is the DIRECT ENTRANCE: seated inside at once, for anyone who has
@@ -977,10 +988,12 @@
     const CAM_BASE =
       CAM_MODE === "in"   ? CAM_IN.clone() :
       CAM_MODE === "door" ? new THREE.Vector3(-0.75, 0.80, CZ - 0.55) :
+      CAM_MODE === "sky"  ? new THREE.Vector3(3.2, 14.5, 23.5) :
                             new THREE.Vector3(0.9, 0.85, 3.1);
     const LOOK_BASE =
       CAM_MODE === "in"   ? LOOK_IN.clone() :
       CAM_MODE === "door" ? new THREE.Vector3(0.7, 0.42, 2.0) :
+      CAM_MODE === "sky"  ? new THREE.Vector3(2.0, 0.0, 8.0) :
                             new THREE.Vector3(-0.15, 0.75, CZ - 0.4);
 
     // And the FIELD is checked rather than assumed: the lens opens until the
@@ -1000,7 +1013,8 @@
     // test written on it passed at once while what actually glows sat outside
     // the frame. Solved by trying, because the projection is not worth
     // inverting by hand.
-    const PATH_FOV = (CAM_MODE === "out") ? 38 : 54;
+    const PATH_FOV = (CAM_MODE === "out") ? 38
+                   : (CAM_MODE === "sky") ? 44 : 54;
     const ROOM_FOV = (function () {
       const holds = (fov) => {
         camera.fov = fov; camera.updateProjectionMatrix();
@@ -1036,7 +1050,11 @@
     const _so = new THREE.Vector3().subVectors(CAM_BASE, LOOK_BASE);
     const STATIC_RADIUS = Math.hypot(_so.x, _so.z);
     const ORBIT_BASE_ANGLE_STATIC = Math.atan2(_so.x, _so.z);
-    const STATIC_AMP = (CAM_MODE === "out") ? 0.35 : 0.14;
+    // AND THE SKY DOES NOT DRIFT. The frozen views swing a little with the
+    // pointer, which is right for a room you are looking into; a plate is a
+    // plate and has to come out the same every time it is rendered.
+    const STATIC_AMP = (CAM_MODE === "out") ? 0.35
+                     : (CAM_MODE === "sky") ? 0 : 0.14;
     if (STATIC_VIEW) document.body.classList.add("static-view");
     let staticDoorOpen = STATIC_VIEW;   // the frozen views want the door aside
 
