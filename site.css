@@ -83,6 +83,9 @@ a:hover,button:not([disabled]):hover{cursor:url('data:image/svg+xml;utf8,<svg xm
 .side .subhead{font:600 8px/1 system-ui,sans-serif;letter-spacing:.26em;
   text-transform:uppercase;color:rgba(43,33,25,.34);
   padding:5px 0 3px;text-align:right;}
+/* a wing that follows another one's rooms needs the air the short thread
+   used to give it, or it sits on the last room above */
+.side .rooms + .subhead{padding-top:13px;}
 /* EVERYTHING HANGS FROM THE RIGHT, and each level steps IN toward the
    left. A tree indented to the right needs a left margin to hang from,
    and there is none here: the page is on that side. So the indent runs
@@ -101,8 +104,8 @@ a:hover,button:not([disabled]):hover{cursor:url('data:image/svg+xml;utf8,<svg xm
    var(--soft) at .36 and a border cannot carry an opacity of its own: as
    a border it came out six times darker than the short strokes beside it,
    measured on the pixels, and read as a rule rather than as a thread. */
-.side .rooms::after{content:"";position:absolute;right:0;top:0;bottom:0;
-  width:1px;background:var(--soft);opacity:.36;}
+.side .rooms.joined::after{content:"";position:absolute;right:0;top:0;
+  bottom:0;width:1px;background:var(--soft);opacity:.36;}
 /* the float lives on the room list only, NOT on .side itself -- .side also
    contains .brand-mini, whose position must stay perfectly static to match
    the landing blob's measured dock target. A shared animation on the parent

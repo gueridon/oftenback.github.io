@@ -157,10 +157,18 @@ document.addEventListener("DOMContentLoaded", () => {
       // THE ROOMS ARE INDENTED FROM THEIR WING, in their own box: a
       // margin on each room would have to fight the padding that makes
       // its hit zone, and the thread between them would stay behind.
-      return '<div class="subs">' + s.wings.map((w) =>
-        '<span class="link sub"></span>' +
+      //
+      // ONE THREAD PER JOIN, and no more. The short stroke belongs to the
+      // first wing only, joining it to the stop above; after that the
+      // rooms' own trunk is what carries down to the next heading, and
+      // emitting both put two strokes over DOCUMENTATION. And the last
+      // wing has nothing under it to reach, so it has no trunk.
+      const n = s.wings.length;
+      return '<div class="subs">' + s.wings.map((w, i) =>
+        (i === 0 ? '<span class="link sub"></span>' : "") +
         `<span class="subhead">${w.label}</span>` +
-        '<div class="rooms">' + roomsHtml(w.chapters, on) + "</div>"
+        `<div class="rooms${i < n - 1 ? " joined" : ""}">` +
+        roomsHtml(w.chapters, on) + "</div>"
       ).join("") + "</div>";
     }
     if (!s.chapters) return "";
