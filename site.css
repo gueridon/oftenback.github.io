@@ -71,9 +71,10 @@ a:hover,button:not([disabled]):hover{cursor:url('data:image/svg+xml;utf8,<svg xm
    right-aligned stops above it, and joined by the same thread at a third of
    its length: near enough to belong to the stop, short enough not to claim
    the same weight. */
-.side .subs{display:flex;flex-direction:column;align-items:flex-start;}
+.side .subs{display:flex;flex-direction:column;align-items:flex-end;
+  margin-right:15px;}
 .side .link.sub{height:11px;margin:3px 0;}
-.side .stop.sub{font-size:10.5px;letter-spacing:.18em;text-align:left;
+.side .stop.sub{font-size:10.5px;letter-spacing:.18em;text-align:right;
   padding:7px 16px;margin:-7px -16px;}
 /* THE TWO WINGS, named as the house's own index names them: what you walk
    and what you consult. A heading, not a link -- there is no page behind
@@ -81,11 +82,15 @@ a:hover,button:not([disabled]):hover{cursor:url('data:image/svg+xml;utf8,<svg xm
    the rooms under it, the same treatment the page gives its own wings. */
 .side .subhead{font:600 8px/1 system-ui,sans-serif;letter-spacing:.26em;
   text-transform:uppercase;color:rgba(43,33,25,.34);
-  padding:5px 0 3px;text-align:left;}
-/* and the rooms stand in from their wing, thread and all: the heading
-   names a place in the house, the rooms are inside it. */
-.side .rooms{display:flex;flex-direction:column;align-items:flex-start;
-  margin-left:15px;}
+  padding:5px 0 3px;text-align:right;}
+/* EVERYTHING HANGS FROM THE RIGHT, and each level steps IN toward the
+   left. A tree indented to the right needs a left margin to hang from,
+   and there is none here: the page is on that side. So the indent runs
+   the other way, which is the same gesture mirrored -- deeper is further
+   from the edge, and every line still ends on a common axis with the
+   others at its own level. */
+.side .rooms{display:flex;flex-direction:column;align-items:flex-end;
+  margin-right:15px;}
 /* the float lives on the room list only, NOT on .side itself -- .side also
    contains .brand-mini, whose position must stay perfectly static to match
    the landing blob's measured dock target. A shared animation on the parent
