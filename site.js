@@ -46,10 +46,14 @@ document.addEventListener("DOMContentLoaded", () => {
       near ? "rgba(244,237,226,0.93)" : "rgba(18,14,10,0.62)");
   };
   const hereQ = new URLSearchParams(location.search);
-  // The cherry window IS the home page now: room one is where you arrive, and
-  // the blob is its overture rather than a page of its own. The old cream
-  // landing is kept, unlinked, as landing-blob.html.
+  // HOME IS CREAM, and the mark stands in the middle of it. It was the
+  // cherry window for a while and that page is kept whole and unlinked at
+  // index-sakura.html, as landing-blob.html is.
   const isHome = here === "" || here === "index.html";
+  // HOME CARRIES ITS OWN MARK, in the middle of the page, so the small one
+  // above the room list would be a second copy of it and a way home from
+  // where you are standing. The stylesheet takes it from there.
+  if (isHome) document.body.classList.add("at-home");
 
 
   // ---- the veil: every crossing fades, none of them flips ------------------
@@ -67,22 +71,22 @@ document.addEventListener("DOMContentLoaded", () => {
     veil.id = "veil";
     document.body.appendChild(veil);
   }
-  // The blob on its pale field is a CURTAIN-RAISER, and a curtain rises once.
-  // On the first arrival of a visit the veil is held opaque while the blob has
-  // its moment; on every return home afterwards there is no blob and no hold --
-  // you land straight in the cherry window, which is the whole point of its
-  // being home. sessionStorage rather than localStorage: coming back to the
-  // site another day should still open with the overture.
-  const OVERTURE_KEY = "nk-overture-seen";
-  const firstArrival = isHome && !sessionStorage.getItem(OVERTURE_KEY);
-  if (firstArrival) {
-    sessionStorage.setItem(OVERTURE_KEY, "1");
-    veil.dataset.hold = "true";
-  }
+  // THE OVERTURE IS RETIRED. It held the veil down, gave the blob the middle
+  // of the screen for two and a half seconds, then faded it and let the
+  // cherry sky through -- once per visit, tracked in sessionStorage.
+  //
+  // Home is cream now and the blob does not leave the middle of it, so there
+  // is nothing to hand over to and nothing to play once: the thing the
+  // overture staged has become the page. What is left of it is a second's
+  // wait before the greeting joins the mark, which index.html does itself in
+  // four lines. A page that simply IS what it wanted to show needs no
+  // curtain, no session key, and no held veil.
   // There were once two crossings that carried the mark itself across a page
-  // boundary and so had to skip the veil. Both are gone: the blob is never
-  // large on a pale field except in the overture, which is a curtain and not a
-  // crossing. Every page now simply fades in, or holds its own veil.
+  // boundary and so had to skip the veil, and both are gone. The blob IS
+  // large on a pale field now, but it is standing still on the page it
+  // belongs to rather than travelling between two, which is the thing that
+  // had to be choreographed. Every page simply fades in, or holds its own
+  // veil.
   if (veil.dataset.hold !== "true") {
     requestAnimationFrame(() => veil.classList.add("gone"));
   }
@@ -106,7 +110,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const stops = [
     // room one is gone from the list because room one is the home page, and
     // the mark above already IS that link.
-    { href: "nakata.html", label: "nakata" },
+    //
+    // AND SO IS NAKATA, for now. The room said in as many words that it was
+    // still being thought about, which is honest in a room and a broken
+    // promise in a menu: a stop that leads to "nothing here yet" costs a
+    // visit to find out. It comes back when there is something in it.
     // The walked garden, not the frozen static room: tearoom.html is kept
     // beside it as the original, unlinked. Romanised chanoyu, as on its own
     // opening card.
@@ -369,59 +377,4 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // ---- the overture -------------------------------------------------------
-  // You arrive, the blob has the stage for a moment, then the curtain lifts
-  // and the cherry window is behind it. No page change, and no journey: the
-  // blob goes where it stands and the mark is simply waiting in the corner.
-  //
-  // Once per visit only. The veil is the curtain, held opaque above.
-  if (firstArrival) {
-    const OV_HOLD = 2300;                 // how long the blob keeps the stage
-    const OV_FADE = 620;                  // it goes; it does not travel
-    const aside = document.querySelector(".side");
-
-    const ovStyle = document.createElement("style");
-    ovStyle.textContent =
-      "#overture{position:fixed;inset:0;z-index:61;display:flex;" +
-      "align-items:center;justify-content:center;pointer-events:none;}" +
-      "#overture .center{pointer-events:auto;}";
-    document.head.appendChild(ovStyle);
-
-    const ov = document.createElement("div");
-    ov.id = "overture";
-    ov.innerHTML = '<a class="center" href="#" aria-label="oftenback">' +
-      '<canvas width="156" height="156" aria-hidden="true"></canvas>' +
-      '<span class="title">OFTENBACK</span></a>';
-    document.body.appendChild(ov);
-    const big = ov.querySelector(".center");
-    if (typeof startNakataBlob === "function") startNakataBlob(ov.querySelector("canvas"));
-
-    // the room list waits, and arrives with the mark rather than before it
-    if (aside) { aside.style.transition = "opacity .8s ease"; aside.style.opacity = "0"; }
-
-    let timer = null, played = false;
-    function raise() {
-      if (played) return;
-      played = true;
-      clearTimeout(timer);
-      veil.classList.add("gone");
-
-      // No journey. The blob used to fly from the centre to its dock -- the
-      // same crossing it made between pages -- and Nicolas read the start of
-      // that flight as the mark being redrawn in a corner and dragged across
-      // the screen. It should simply GO, and simply BE THERE: one thing
-      // leaves the middle, the same thing is waiting in the corner.
-      //
-      // Which also means all the dock measurement this used to need is gone:
-      // nothing has to land anywhere, so nothing can land wrong.
-      big.style.transition = "opacity " + OV_FADE + "ms ease";
-      big.style.opacity = "0";
-      // it reappears rather than arriving: a beat of nothing in between
-      setTimeout(() => { if (aside) aside.style.opacity = "1"; }, OV_FADE * 0.75);
-      setTimeout(() => { ov.remove(); window.__overtureDone = true; }, OV_FADE + 120);
-    }
-    timer = setTimeout(raise, OV_HOLD);
-    // and it can be skipped: impatience is allowed
-    big.addEventListener("click", (e) => { e.preventDefault(); raise(); });
-  }
 });
