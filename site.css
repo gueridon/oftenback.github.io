@@ -82,6 +82,10 @@ a:hover,button:not([disabled]):hover{cursor:url('data:image/svg+xml;utf8,<svg xm
 .side .subhead{font:600 8px/1 system-ui,sans-serif;letter-spacing:.26em;
   text-transform:uppercase;color:rgba(43,33,25,.34);
   padding:5px 0 3px;text-align:left;}
+/* and the rooms stand in from their wing, thread and all: the heading
+   names a place in the house, the rooms are inside it. */
+.side .rooms{display:flex;flex-direction:column;align-items:flex-start;
+  margin-left:15px;}
 /* the float lives on the room list only, NOT on .side itself -- .side also
    contains .brand-mini, whose position must stay perfectly static to match
    the landing blob's measured dock target. A shared animation on the parent

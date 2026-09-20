@@ -154,10 +154,13 @@ document.addEventListener("DOMContentLoaded", () => {
     // longer heading pushed its whole wing further left and the two wings
     // stopped sharing a left edge.
     if (s.wings) {
+      // THE ROOMS ARE INDENTED FROM THEIR WING, in their own box: a
+      // margin on each room would have to fight the padding that makes
+      // its hit zone, and the thread between them would stay behind.
       return '<div class="subs">' + s.wings.map((w) =>
         '<span class="link sub"></span>' +
         `<span class="subhead">${w.label}</span>` +
-        roomsHtml(w.chapters, on)
+        '<div class="rooms">' + roomsHtml(w.chapters, on) + "</div>"
       ).join("") + "</div>";
     }
     if (!s.chapters) return "";
