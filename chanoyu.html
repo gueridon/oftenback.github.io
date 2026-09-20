@@ -82,7 +82,14 @@
        and the tea house at the top with its lamp on. It is a plate rather
        than a door, so it carries no hover and no border: the door is the
        line of text under it. */
-    .plate{margin:30px 0 0;display:block;position:relative;}
+    /* ROUNDED ON THE FIGURE, not on the image. The dark wash that comes up
+       on hover is a rect covering the whole frame in the overlay above the
+       photograph, so rounding the <img> alone would leave four square
+       corners appearing out of nowhere the moment a name was pointed at.
+       overflow:hidden on the figure clips both, and the seal sits far
+       enough inside that nothing of it is cut. */
+    .plate{margin:30px 0 0;display:block;position:relative;
+      border-radius:5px;overflow:hidden;}
     .plate img{display:block;width:100%;height:auto;}
     /* THE MARKS ARE PROJECTED, not traced. The path is the walk's own beats
        sampled at forty nine values of u and put through the very camera the
