@@ -105,6 +105,19 @@
        building needs no help saying which building it is. */
     .marks .edge{opacity:0;transition:opacity .5s ease;
       fill:none;stroke:var(--clay);}
+    /* THE STAMP turns slowly, as it does in the room. transform-box is what
+       makes that true: without it an SVG group rotates about the viewBox
+       origin, which here is the top left corner of the garden. */
+    .marks .stamp{opacity:0;transition:opacity .6s ease;}
+    .marks .stamp .ring{transform-box:fill-box;transform-origin:center;
+      animation:stampturn 44s linear infinite;}
+    .marks .stamp text{font:600 24px/1 system-ui,sans-serif;
+      letter-spacing:.30em;fill:#e34234;fill-opacity:.92;
+      text-transform:uppercase;}
+    @keyframes stampturn{to{transform:rotate(360deg);}}
+    @media (prefers-reduced-motion:reduce){
+      .marks .stamp .ring{animation:none;}
+    }
     /* THREE DOORS UNDER THE PLATE, and no descriptions beside them: a row of
        names is read at a glance, and three paragraphs are read one after the
        other whether or not you wanted them. The sentence appears where the
@@ -153,6 +166,8 @@
     .visit:has(.o-house:focus-visible) .w-house{opacity:.62;}
     .visit:has(.o-path:hover) .e-path,
     .visit:has(.o-path:focus-visible) .e-path{opacity:.8;}
+    .visit:has(.o-temae:hover) .stamp,
+    .visit:has(.o-temae:focus-visible) .stamp{opacity:1;}
     /* WITH NO POINTER there is nothing to hover and nothing to reveal, so the
        four unstack and each says which door it belongs to. */
     @media (hover:none){
@@ -246,6 +261,8 @@
                 <filter id="soften" x="-20%" y="-20%" width="140%" height="140%">
                   <feGaussianBlur stdDeviation="16" />
                 </filter>
+                <path id="stamp-round"
+                  d="M 0,0 m -154,0 a 154,154 0 1,1 308,0 a 154,154 0 1,1 -308,0"/>
                 <mask id="keep-path">
                   <rect width="1600" height="930" fill="#fff" />
                   <path d="M654 1080 L681 1040 L740 954 L799 869 L837 814 L851 803 L904 780 L972 750 L1022 729 L990 706 L942 683 L900 662 L882 653 L877 641 L867 614 L857 589 L853 577 L852 554 L851 512 L851 491 L844 473 L830 435 L817 399 L811 384 L799 373 L773 351 L748 329 L737 319 L720 306 L710 298 L724 291 L737 283 L749 275 L756 262 L758 250 L760 238 L760 234" fill="none" stroke="#000" stroke-width="150"
@@ -263,6 +280,24 @@
                 fill="#241d16" mask="url(#keep-path)" />
               <rect class="wash w-house" width="1600" height="930"
                 fill="#241d16" mask="url(#keep-house)" />
+              <!-- THE INVITATION, beside the hut it leads into: the same
+                   whisk and the same turning ring that stand in the corner
+                   of the tea room, because it is the same invitation and a
+                   second drawing of it would be a second thing.
+                   The whisk is not drawn either: it is the chasen out of
+                   dogu-objects.js, rendered once through an orthographic
+                   camera with a flat vermilion and no light at all, which
+                   is what a silhouette is. Rendered ONCE, into a file: a
+                   page of prose has no business loading a 3D engine to
+                   stamp a mark on a photograph. -->
+              <g class="stamp" transform="translate(1040,200)">
+                <image class="whisk" href="assets/chasen-mark.png"
+                  x="-125" y="-125" width="250" height="250" />
+                <g class="ring">
+                  <text><textPath href="#stamp-round" startOffset="0%"
+                    >ENTER THE CEREMONY &#183; ENTER THE CEREMONY &#183;</textPath></text>
+                </g>
+              </g>
               <path class="edge e-path" stroke-width="5" d="M654 1080 L681 1040 L740 954 L799 869 L837 814 L851 803 L904 780 L972 750 L1022 729 L990 706 L942 683 L900 662 L882 653 L877 641 L867 614 L857 589 L853 577 L852 554 L851 512 L851 491 L844 473 L830 435 L817 399 L811 384 L799 373 L773 351 L748 329 L737 319 L720 306 L710 298 L724 291 L737 283 L749 275 L756 262 L758 250 L760 238 L760 234"
                 stroke-linecap="round" stroke-linejoin="round" />
             </svg>
