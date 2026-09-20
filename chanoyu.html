@@ -82,10 +82,90 @@
        and the tea house at the top with its lamp on. It is a plate rather
        than a door, so it carries no hover and no border: the door is the
        line of text under it. */
-    .plate{margin:30px 0 4px;display:block;}
+    .plate{margin:30px 0 0;display:block;position:relative;}
     .plate img{display:block;width:100%;height:auto;}
-    .plate figcaption{margin-top:9px;font-size:11.5px;color:var(--soft);
-      font-weight:300;letter-spacing:.02em;}
+    /* THE MARKS ARE PROJECTED, not traced. The path is the walk's own beats
+       sampled at forty nine values of u and put through the very camera the
+       plate was rendered from; the house is the convex hull of the real
+       vertices of the roof and the three walls. Traced by eye they would be
+       nearly right, and nearly right on a map is wrong.
+       A bounding box was the first attempt and it failed in a way worth
+       keeping: a hip roof narrows to a ridge, so the top corners of its box
+       project a hundred pixels up into empty canopy. */
+    .marks{position:absolute;inset:0;width:100%;height:100%;
+      pointer-events:none;}
+    /* DARKEN THE REST rather than paint the part. A coloured shape laid over
+       a garden is a diagram of a garden; taking the light off everything
+       else leaves the thing itself, which is what there is to look at. */
+    .marks .wash{opacity:0;transition:opacity .5s ease;}
+    /* ONE LINE, AND ONLY ON THE PATH. Taking the light off the rest says
+       roughly where; a garden path is a ROUTE and the route is the thing
+       being named, so it gets the accent. The house had an outline too for
+       a while and it was a diagram of a house drawn over a house: a lit
+       building needs no help saying which building it is. */
+    .marks .edge{opacity:0;transition:opacity .5s ease;
+      fill:none;stroke:var(--clay);}
+    /* THREE DOORS UNDER THE PLATE, and no descriptions beside them: a row of
+       names is read at a glance, and three paragraphs are read one after the
+       other whether or not you wanted them. The sentence appears where the
+       placeholder was, so the block never changes height and nothing below
+       it moves.
+       THE FOUR SENTENCES ARE STACKED IN ONE GRID CELL, which is what makes
+       that true without a number in it. The first try reserved the height as
+       padding, measured at 74px; measured again at a narrower window the
+       longest ran to three lines and 92. A height measured at one width is
+       wrong at another, and a grid cell is as tall as its tallest child at
+       every width there is. */
+    .visit{position:relative;}
+    .opts{list-style:none;display:grid;grid-template-columns:repeat(3,1fr);
+      margin-top:14px;}
+    .opts a{display:block;text-align:center;padding:14px 6px 16px;
+      text-decoration:none;color:inherit;border-top:1px solid var(--border);
+      transition:border-color .35s ease;}
+    .opts a:hover,.opts a:focus-visible{border-top-color:var(--clay);}
+    .opts .cj{display:block;font:400 19px/1 serif;color:var(--ink);
+      letter-spacing:.14em;transition:color .35s ease;}
+    .opts .cr{display:block;margin-top:9px;font-size:9.5px;letter-spacing:.26em;
+      text-transform:uppercase;color:var(--dim);font-weight:600;
+      transition:color .35s ease;}
+    .opts a:hover .cr,.opts a:focus-visible .cr{color:var(--clay);}
+    /* the four sentences share one place: the placeholder and each door's own */
+    .slot{display:grid;margin-top:18px;}
+    .slot p{grid-area:1/1;margin:0;font-size:14px;color:var(--dim);
+      font-weight:300;line-height:1.65;opacity:0;transition:opacity .4s ease;}
+    .slot .s0{opacity:1;}
+    .slot b{display:none;}
+    .visit:has(.opts a:hover) .s0,
+    .visit:has(.opts a:focus-visible) .s0{opacity:0;}
+    .visit:has(.o-path:hover) .s-path,
+    .visit:has(.o-path:focus-visible) .s-path,
+    .visit:has(.o-room:hover) .s-room,
+    .visit:has(.o-room:focus-visible) .s-room,
+    .visit:has(.o-temae:hover) .s-temae,
+    .visit:has(.o-temae:focus-visible) .s-temae{opacity:1;}
+    /* AND THE PICTURE ANSWERS THE NAME. :has() reads upward, which is the
+       only way a link can speak to a figure that stands before it in the
+       document without a line of script. Where it is not understood the
+       page is exactly what it was: three doors and their sentences. */
+    .visit:has(.o-path:hover) .w-path,
+    .visit:has(.o-path:focus-visible) .w-path{opacity:.62;}
+    .visit:has(.o-house:hover) .w-house,
+    .visit:has(.o-house:focus-visible) .w-house{opacity:.62;}
+    .visit:has(.o-path:hover) .e-path,
+    .visit:has(.o-path:focus-visible) .e-path{opacity:.8;}
+    /* WITH NO POINTER there is nothing to hover and nothing to reveal, so the
+       four unstack and each says which door it belongs to. */
+    @media (hover:none){
+      .opts{grid-template-columns:1fr;}
+      .opts a{text-align:left;padding:16px 2px;}
+      .opts .cj{display:inline-block;}
+      .opts .cr{display:inline-block;margin:0 0 0 12px;}
+      .slot{display:block;}
+      .slot p{opacity:1;margin-bottom:10px;}
+      .slot b{display:inline;font-weight:600;font-size:9.5px;
+        letter-spacing:.26em;text-transform:uppercase;color:var(--clay);
+        margin-right:9px;}
+    }
     .wing{margin:34px 0 2px;display:flex;align-items:baseline;gap:14px;}
     .wing h2{font:600 9.5px/1 system-ui,sans-serif;letter-spacing:.26em;
       text-transform:uppercase;color:var(--ink);}
@@ -145,43 +225,89 @@
           name. What takes hours to do could be done in minutes, and the
           difference between the two is the whole of it.</p>
 
+          <div class="wing"><h2>the ceremony</h2>
+            <p>walked, and each thing by its place in the whole</p></div>
+
+          <!-- THE PLATE IS THE INDEX. Three doors into one scene, and rather
+               than describe where each one puts you, the picture is asked:
+               point at a name and the garden shows you the part of itself it
+               means. The room and the procedure light the same house, because
+               they are the same house. -->
+          <div class="visit">
           <figure class="plate">
             <img src="assets/roji-sky.jpg" width="1600" height="930"
               alt="The roji seen from above: a path of stepping stones
                    through bamboo, a middle gate, a waiting shelter, and the
                    tea house at the far end with its lamp lit." />
-            <figcaption>The roji from above, and the whole of the walk in
-              one frame: the stones at the foot, the middle gate, the
-              waiting shelter, the tea house at the end.</figcaption>
+            <svg class="marks" viewBox="0 0 1600 930" aria-hidden="true">
+              <defs>
+                <!-- SOFT EDGED, both of them. A hard cut through a photograph
+                     is a cut; a blurred one is light falling somewhere. -->
+                <filter id="soften" x="-20%" y="-20%" width="140%" height="140%">
+                  <feGaussianBlur stdDeviation="16" />
+                </filter>
+                <mask id="keep-path">
+                  <rect width="1600" height="930" fill="#fff" />
+                  <path d="M654 1080 L681 1040 L740 954 L799 869 L837 814 L851 803 L904 780 L972 750 L1022 729 L990 706 L942 683 L900 662 L882 653 L877 641 L867 614 L857 589 L853 577 L852 554 L851 512 L851 491 L844 473 L830 435 L817 399 L811 384 L799 373 L773 351 L748 329 L737 319 L720 306 L710 298 L724 291 L737 283 L749 275 L756 262 L758 250 L760 238 L760 234" fill="none" stroke="#000" stroke-width="150"
+                    stroke-linecap="round" stroke-linejoin="round"
+                    filter="url(#soften)" />
+                </mask>
+                <mask id="keep-house">
+                  <rect width="1600" height="930" fill="#fff" />
+                  <polygon points="618,162 654,60 662,55 669,50 680,44 690,38 699,34 726,22 769,35 777,38 793,45 803,50 811,53 818,57 826,61 833,65 824,171 819,188 797,241 660,235 624,180" fill="#000" stroke="#000"
+                    stroke-width="56" stroke-linejoin="round"
+                    filter="url(#soften)" />
+                </mask>
+              </defs>
+              <rect class="wash w-path" width="1600" height="930"
+                fill="#241d16" mask="url(#keep-path)" />
+              <rect class="wash w-house" width="1600" height="930"
+                fill="#241d16" mask="url(#keep-house)" />
+              <path class="edge e-path" stroke-width="5" d="M654 1080 L681 1040 L740 954 L799 869 L837 814 L851 803 L904 780 L972 750 L1022 729 L990 706 L942 683 L900 662 L882 653 L877 641 L867 614 L857 589 L853 577 L852 554 L851 512 L851 491 L844 473 L830 435 L817 399 L811 384 L799 373 L773 351 L748 329 L737 319 L720 306 L710 298 L724 291 L737 283 L749 275 L756 262 L758 250 L760 238 L760 234"
+                stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
           </figure>
-          <div class="wing"><h2>the ceremony</h2>
-            <p>walked, and each thing by its place in the whole</p></div>
-          <ul class="chapters">
-          <li>
-            <a href="tearoom-roji.html">
-              <span class="cj">露地</span>
-              <span class="body"><span class="cr">roji</span><span class="cd">The dewy path. A garden whose only purpose is to take the street out of you before you arrive. Walk it.</span></span>
-            </a>
-          </li>
-          <!-- The same 茶室 as the documentation wing below, and deliberately:
-               one room, walked or consulted. This door is not a page, it is the
-               path's last stop, entered without the path. -->
-          <li>
-            <a href="tearoom-roji.html?room">
-              <span class="cj">茶室</span>
-              <span class="body"><span class="cr">the room</span><span class="cd">Seated inside at once, for anyone who has walked the garden before. You can still step back out of it on foot.</span></span>
-            </a>
-          </li>
-          <!-- The third door into the same file, and the reason the roji is
-               one page: the garden, the room and the procedure are one
-               continuous approach. This one opens seated, with everything
-               already set out, at the first movement. -->
-          <li>
-            <a href="tearoom-roji.html?room&amp;pure=0">
-              <span class="cj">点前</span>
-              <span class="body"><span class="cr">temae</span><span class="cd">The procedure. Sixty movements to make one bowl of tea, arranged so that they look like none. Watch it from the guest's place, or press A and let it play itself.</span></span>
-            </a>
-          </li>
+          <ul class="opts">
+            <li>
+              <a class="o-path" href="tearoom-roji.html">
+                <span class="cj">露地</span><span class="cr">roji</span>
+              </a>
+            </li>
+            <!-- The same 茶室 as the documentation wing below, and
+                 deliberately: one room, walked or consulted. This door is not
+                 a page, it is the path's last stop, entered without the path. -->
+            <li>
+              <a class="o-house o-room" href="tearoom-roji.html?room">
+                <span class="cj">茶室</span><span class="cr">the room</span>
+              </a>
+            </li>
+            <!-- The third door into the same file, and the reason the roji is
+                 one page: the garden, the room and the procedure are one
+                 continuous approach. This one opens seated, with everything
+                 already set out, at the first movement. -->
+            <li>
+              <a class="o-house o-temae" href="tearoom-roji.html?room&amp;pure=0">
+                <span class="cj">点前</span><span class="cr">temae</span>
+              </a>
+            </li>
+          </ul>
+          <div class="slot">
+            <p class="s0">A garden, a room and a procedure, all three in one
+              scene drawn live in the browser. Point at a name to see where in
+              the picture it puts you.</p>
+            <p class="s-path"><b>roji</b>The dewy path. A garden whose only
+              purpose is to take the street out of you before you arrive.
+              Walk it.</p>
+            <p class="s-room"><b>the room</b>Seated inside at once, for anyone
+              who has walked the garden before. You can still step back out of
+              it on foot.</p>
+            <p class="s-temae"><b>temae</b>The procedure. Sixty movements to
+              make one bowl of tea, arranged so that they look like none.
+              Watch it from the guest's place, or press A and let it play
+              itself.</p>
+          </div>
+          </div>
+
           <!-- NOT YET BUILT, and kept here rather than deleted: the text is
                written and the door is not. A greyed-out entry is a promise
                made to a reader who cannot collect on it, and the index had
@@ -201,7 +327,6 @@
             </span>
           </li>
           -->
-          </ul>
           <div class="wing"><h2>documentation</h2>
             <p>consulted: the names, the arrangements, the detail</p></div>
           <ul class="chapters">

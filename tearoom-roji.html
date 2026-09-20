@@ -997,6 +997,11 @@
       CAM_MODE === "door" ? new THREE.Vector3(-0.75, 0.80, CZ - 0.55) :
       CAM_MODE === "sky"  ? new THREE.Vector3(3.2, 14.5, 23.5) :
                             new THREE.Vector3(0.9, 0.85, 3.1);
+    // THE SKY POSE IS LOAD BEARING ELSEWHERE. chanoyu.html lays an overlay on
+    // assets/roji-sky.jpg that marks the path and the tea house, and its
+    // coordinates were projected through THIS camera at 1600x990 with the top
+    // 60px cropped off. Move it and the plate must be re-rendered and the
+    // overlay re-projected, or the marks will point at the wrong trees.
     const LOOK_BASE =
       CAM_MODE === "in"   ? LOOK_IN.clone() :
       CAM_MODE === "door" ? new THREE.Vector3(0.7, 0.42, 2.0) :
@@ -2167,6 +2172,7 @@
       }));
       roof.castShadow = true;
       roof.receiveShadow = true;
+      roof.name = "roof";          // named so a probe can find the house from above
       roof.position.z = SHELL_CZ;  // built about the origin, so it rides with the shell
       scene.add(outdoor(roof));
     }
