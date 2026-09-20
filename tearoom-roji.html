@@ -545,15 +545,15 @@
     <div id="intro-card">
       <div class="chip"><span class="jp">露地</span><span class="rom">roji</span></div>
       <div class="body">
-      <p>The dewy path. Rikyu took the name from the Lotus Sutra, where those who
-      escape the burning house take their seats on dewy ground.</p>
-      <p>It is not a garden to be admired: it is a passage, and nothing in it is
-      allowed to be remarkable. Ordinary trees, valueless stones, moss. Asked to
-      describe the ideal one, Rikyu answered only <em>thick green moss, all pure
-      and sunny warm</em>.</p>
-      <p>It is two gardens rather than one. An outer, sanded, where guests wait;
-      an inner, mossy, past the middle gate. Crossing that gate is meant to feel
-      like a change of scene. It ends at a door too low to pass standing.</p>
+      <p>The garden between the street and the tea house. Rikyu took the name
+      from the Lotus Sutra, where those who escape the burning house take their
+      seats on dewy ground.</p>
+      <p>It is a passage and not a garden to be viewed: ordinary trees, plain
+      stones, moss. Asked to describe the ideal one, Rikyu answered only
+      <em>thick green moss, all pure and sunny warm</em>.</p>
+      <p>There are two. An outer roji, sanded, where the guests wait; an inner
+      roji, mossy, past the middle gate. It ends at a door too low to pass
+      upright.</p>
       <p class="go"><kbd>SPACE</kbd> to set out</p>
       <p class="go"><kbd>T</kbd> straight to the room</p>
       </div>
@@ -4216,35 +4216,35 @@
     // littered with dots while you are moving.
     const NOTES = [
       { at: 0.100, p: [5.82, groundAt(5.55, 13.60) + 1.05, 13.99], t: "Koshikake machiai",
-        jp: "腰掛待合", d: "The waiting bench. The one place in a roji where you are meant to stop. Guests sit here until the host comes to call them, and look out over the outer garden while the world they arrived from falls away." },
+        jp: "腰掛待合", d: "The waiting bench, in the outer roji. The guests sit here until the host comes to call them." },
       { at: 0.170, p: [2.30, groundAt(2.30, 9.90) + 0.75, 9.90], t: "Takegaki",
-        jp: "竹垣", d: "The bamboo fence. Its culms are set almost touching, so that the inner garden stays hidden. It keeps nothing out; it delays the eye." },
+        jp: "竹垣", d: "The bamboo fence. Its culms are set almost touching, so the inner garden is not seen from the outer one." },
       { at: 0.340, p: [2.98, groundAt(2.98, 9.90) + 2.05, 9.90], t: "Chumon",
-        jp: "中門", d: "The middle gate, the hinge of the garden. What lies before it belongs to the world you came from; what lies beyond belongs to the tea. You pass through once, in one direction." },
+        jp: "中門", d: "The middle gate, between the outer and the inner roji. Host and guests greet each other here, kneeling on stones set either side of it, without speaking." },
       { at: 0.340, p: [2.85, groundAt(2.85, 8.60) + 0.18, 8.60], t: "Nobedan",
-        jp: "延段", d: "The paved stretch. Where the path stops being a file of separate stones it becomes fitted paving, and that change of material marks the threshold underfoot before the eye can name it." },
+        jp: "延段", d: "The paved stretch. Fitted stone in place of separate stepping stones, laid where the path changes." },
       { at: 0.340, p: [1.20, groundAt(1.20, 5.60) + 0.16, 5.60], t: "Tobi-ishi",
-        jp: "飛石", d: "The stepping stones. Spaced on purpose and never in line, they force you to slow down and to look down, which is the first thing a roji asks of you." },
+        jp: "飛石", d: "The stepping stones. Spaced and offset rather than laid in line, which sets the pace of the walk." },
       { at: 0.700, p: [-0.72, -0.015, 3.83], t: "Tsukubai",
-        jp: "蹲踞", d: "The purification basin. It sits low deliberately: the architecture is what makes you crouch. Guests rinse their hands and their mouth before entering." },
+        jp: "蹲踞", d: "The purification basin, set low so that it is used crouching. The guests rinse their hands and mouth before entering. Four stones stand about it: the maeishi to crouch on, the teshokuishi for a candle at a night gathering, the yuokeishi for hot water in winter, and the suimon, the drain, at the centre." },
       { at: 0.700, p: [-1.13, 0.21, 3.76], t: "Kakei",
-        jp: "筧", d: "The bamboo spout. A split pipe bringing the water down in one thin unbroken thread. The sound it makes counts as an element of the garden, no less than the stones." },
+        jp: "筧", d: "The bamboo spout. A split pipe feeding the basin in one thin stream." },
       { at: 0.700, p: [-0.28, groundAt(-0.28, 3.02) + 0.22, 3.02], t: "Chiriana",
-        jp: "塵穴", d: "The refuse pit, and purely symbolic. Nothing is thrown into it. It stands as evidence that the garden was swept for this meeting, and that someone tended it before you came." },
+        jp: "塵穴", d: "The refuse pit. Symbolic: nothing is thrown into it. It shows that the garden was swept before the gathering." },
       { at: 0.900, p: [0.70, 0.44, 2.10], t: "Nijiriguchi",
-        jp: "躙口", d: "The crawling-in entrance, seventy centimetres square. Nobody enters a tea room standing. The bow is not politeness: the architecture imposes it, on the lord exactly as on the farmer." },
+        jp: "躙口", d: "The crawling-in entrance, about seventy centimetres square. It cannot be passed upright, whatever the rank of the guest." },
       { at: 0.340, p: [0.0, 2.30, 2.55], t: "Kayabuki",
-        jp: "茅葺", d: "The thatched roof, of miscanthus. Thick, cut clean at the eave, and steep enough to shed the rain. It is what keeps the room in shadow, by holding the sun off it." },
+        jp: "茅葺", d: "The thatched roof, of miscanthus. Thick, cut clean at the eave, and steep enough to shed rain. It keeps the room in shadow." },
       // bare: the two in the tokonoma carry the dot alone. A vertical name set
       // over the alcove covered the very things it named, and the tokonoma is
       // the one place in the room you are meant to look at, so nothing may sit
       // in front of it. The name is not lost, it is in the card on click.
       { at: 1.000, bare: true, key: "kakejiku", p: [TOKO_SCROLL.x, TOKO_SCROLL.y, TOKO_SCROLL.z], t: "Kakejiku",
-        jp: "和敬清寂", d: "The scroll in the tokonoma. Wa-kei-sei-jaku: harmony, respect, purity, stillness. The four principles Rikyu is said to have given, and the only thing the room says to you. It hangs in the one place here you are meant to look at." },
+        jp: "和敬清寂", d: "The scroll in the tokonoma. Wa-kei-sei-jaku: harmony, respect, purity, tranquillity. The four principles attributed to Rikyu." },
       { at: 1.000, bare: true, key: "ikebana", p: [TOKO_FLOWER.x, TOKO_FLOWER.y, TOKO_FLOWER.z], t: "Ikebana",
-        jp: "生花", d: "The flower in the tokonoma. One bud on a bare branch, in a length of bamboo. You do not arrange a bouquet here; you let a season be seen, and a season in one bud is more of it than a season in twelve." },
+        jp: "生花", d: "The flower in the tokonoma. One bud on a bare branch, in a length of bamboo. Chabana is set as the flower would stand in the field, and is not arranged." },
       { at: 1.000, p: [-0.688, 0.20, 0.357], t: "Kama",
-        jp: "釜", d: "The kettle, and the only thing in the room that makes a sound. Cast iron, filled once and kept just off the boil; its note over the fire has names, and wind in the pines is the one everybody knows. Its lid is pushed aside because the water is ready." },
+        jp: "釜", d: "The kettle. Cast iron, filled once and kept just off the boil. The sounds it makes are named; matsukaze, wind in the pines, is the best known. Its lid is pushed aside because the water is ready." },
     ];
 
     // ---- a dot on every utensil ---------------------------------------------
@@ -9208,13 +9208,13 @@
     ];
     const PURIFY = [
       { act: "appear", t: 2.2, names: ["fukusa"],
-        line: "The silk comes out. It is the one thing here that is never set " +
-              "down: it is worn, and taken out to wipe what holds the tea." },
+        line: "The silk comes out. It is worn at the waist rather than set " +
+              "out with the utensils, and is used to wipe what holds the tea." },
       // FOURTEEN SECONDS for eight creases, where six read as a man in a
       // hurry: "on a l'impression que l'hote est frenetique."
       { act: "fold", t: 14.0, names: ["fukusa"],
-        line: "It is folded. Nothing on the caddy needs cleaning: the folding " +
-              "and the wiping are the gesture, not the cleaning." },
+        line: "It is folded. The wiping is formal; the caddy is not " +
+              "soiled." },
       { act: "lift", t: 3.2, names: ["natsume"],
         line: "The caddy is raised before the host's knees." },
       { act: "wipe", t: 6.6, names: ["natsume", "fukusa"],
@@ -9347,7 +9347,7 @@
       { act: "pour", t: 14.0, names: ["hishaku", "chawan"],
         line: "Hot water is ladled onto the powder." },
       { act: "whip", t: 19.0, names: ["chasen", "chawan"],
-        line: "And the whisk works it until it is tea." },
+        line: "And the whisk works it to a foam." },
       // ---- AND IT IS TURNED AND SET DOWN FOR THE GUEST --------------------
       // "l'hote met le bol sur sa main gauche et le tourne de 2 quarts de
       // tours clockwise sur sa main avant de poser le bol de l'autre cote du
@@ -9457,9 +9457,7 @@
         line: "A ladle of fresh water is taken from the jar and given to " +
               "the kettle." },
       { act: "warmladle", t: 13.0, names: ["hishaku", "kama"],
-        line: "And one of the kettle's own, poured straight back: it mixes " +
-              "the two waters and warms the ladle, which will dry the " +
-              "sooner for it." },
+        line: "And one of the kettle's own, poured straight back." },
       // AND THE JAR STAYS OPEN UNTIL THE VERY END. His order, and it is
       // not the one I had: the ladle is taken up, the kettle shut, the
       // ladle laid down, the lid rest brought in, and only then the water
@@ -9484,7 +9482,7 @@
         line: "Then the bowl, with the whisk, the scoop and the linen in " +
               "it, and the tea caddy beside it." },
       { act: "outJar", t: 8.0, names: ["mizusashi"],
-        line: "And last the fresh water, and the room is as it was." },
+        line: "And last the fresh water. The mat is clear." },
     ];
     let purIdx = -1, purT = 0, purDone = 0, purFrom = null, purLid = null;
     let purCarry = null, purTo = null, purScoopQ = null;
@@ -13288,8 +13286,8 @@
            "three mat widths each way. The hearth is a 420mm square at the corner of " +
            "the half mat, against the host's, and everything here stands where the " +
            "plan puts it, at its own size. " +
-           "<br><br>This is one arrangement of eight: four hearth positions, each in a " +
-           "normal and a reversed style." +
+           "<br><br>This is one arrangement of eight: four hearth positions, " +
+           "each in a standard and a reversed layout." +
            "<br><br><a href='room3d.html'>See all eight, in the room</a>" +
            "<br><a href='chashitsu.html'>The chashitsu chapter, drawn flat</a>" +
       "</div>";

@@ -334,11 +334,8 @@
     },
     {
       key: "natsume", jp: "棗", rom: "natsume",
-      desc: "The caddy for thin tea, and the opposite of the bowl in every " +
-            "way: turned on a lathe, perfectly round, lacquered black and " +
-            "polished until it reflects the room. Named after the jujube " +
-            "fruit whose shape it takes. The lid comes off in one movement " +
-            "and is set down without a sound.",
+      desc: "The caddy for thin tea. Turned on a lathe, round, lacquered black " +
+                  "and polished. Named after the jujube fruit whose shape it takes.",
       build() {
         // LACQUER, not clay, and the whole point of this object next to the
         // raku bowl is that it is perfect. So every irregularity the lathe can
@@ -387,11 +384,11 @@
     },
     {
       key: "chasen", jp: "茶筅", rom: "chasen",
-      desc: "The whisk. One piece of bamboo, split above the node into " +
-            "eighty fine slivers and then split again inward, so the ring " +
-            "you see is only the outside of it. The tips are curled by hand " +
-            "over heat. It is used until it breaks and then it is not " +
-            "mended: a chasen has a working life of a few months.",
+      desc: "The whisk. One piece of bamboo, split above the node into fine " +
+                  "slivers and then split again inward, so the ring seen from outside " +
+                  "is only half of them. The tips are curled by hand over heat. It is " +
+                  "used until it breaks and is not mended; a chasen lasts a few " +
+                  "months.",
       build() {
         // The first object here that is NOT a lathe. A whisk has no axis of
         // revolution: it has a hundred and twelve separate slivers, each one
@@ -568,11 +565,9 @@
     },
     {
       key: "chashaku", jp: "茶杓", rom: "chashaku",
-      desc: "The scoop. One splinter of bamboo, steamed and bent, with the " +
-            "node left standing in the middle of it. It carries about two " +
-            "grams of powder. A host may cut one for a single gathering and " +
-            "give it a name, which is why a chashaku can be the most " +
-            "personal object in the room and the least valuable.",
+      desc: "The scoop. One splinter of bamboo, steamed and bent, with the node " +
+                  "left standing in the middle. It carries about two grams of powder. " +
+                  "A host may cut one for a single gathering and give it a name.",
       build() {
         // MEASURED, off four photographs: a clean top view for the width and
         // a side view for the bend, both of nakabushi scoops.
@@ -769,11 +764,9 @@
     },
     {
       key: "kensui", jp: "建水", rom: "kensui",
-      desc: "The waste water. What the bowl is rinsed into, and the one " +
-            "vessel in the room that is allowed to be plain, because the " +
-            "guests are not meant to look at it: it stands behind the host " +
-            "and leaves first. Free in form and in material, so this is one " +
-            "kensui and not the kensui.",
+      desc: "The waste water. The bowl is rinsed into it. It stands behind the " +
+                  "host and is carried out first. Free in form and in material; this " +
+                  "is one of many.",
       build() {
         // Profile measured off a photograph by GRADIENT rather than by
         // threshold. A streaked glaze defeats a threshold: the pale runs read
@@ -925,11 +918,12 @@
     },
     {
       key: "hishaku", jp: "柄杓", rom: "hishaku",
-      desc: "The ladle. A length of bamboo culm cut just below a node, so " +
-            "the node itself is the floor of the cup and no joint has to " +
-            "hold water. The handle is a second piece driven through the " +
-            "wall, and its end shows on the inside. Water is taken from the " +
-            "kettle with it and half of it goes back.",
+      desc: "The ladle. A length of bamboo culm cut just below a node, so the " +
+                  "node is the floor of the cup and no joint has to hold water. The " +
+                  "handle is a second piece let into the wall. Where its end is cut " +
+                  "in a crescent against the bore the ladle is a tsukigata; where it " +
+                  "is driven right through and crosses the cup, a sashitoshi. This " +
+                  "one is a tsukigata.",
       build() {
         // Two pieces, and the construction is the whole interest of the
         // object: the cup is a section of CULM cut just below a node, so the
@@ -1170,10 +1164,9 @@
     },
     {
       key: "futaoki", jp: "蓋置", rom: "futaoki",
-      desc: "The rest, and the smallest thing in the room. The lid of the " +
-            "kettle is set on it, and the ladle after that. A ring of bamboo " +
-            "cut so that a node falls inside it, which is why it has a floor " +
-            "without anyone having given it one.",
+      desc: "The rest. The kettle's lid is set on it, and the ladle after that. " +
+                  "A ring of bamboo cut so that a node falls inside it, which gives " +
+                  "it a floor.",
       build() {
         // Measured off the photograph marked for the ro: as tall as it is
         // wide, the node three tenths of the way down from the rim, and the
@@ -1279,10 +1272,9 @@
     },
     {
       key: "mizusashi", jp: "水指", rom: "mizusashi",
-      desc: "The fresh water, and the only cold thing in the room. It is " +
-            "already standing when the guests come in, and everything after " +
-            "that is drawn from it: the kettle is topped up from it, the " +
-            "bowl is rinsed from it. Stoneware, under a flat lacquer lid.",
+      desc: "The fresh water, and the only cold water in the room. It stands " +
+                  "ready before the guests come in; the kettle is topped up from it " +
+                  "and the bowl rinsed from it. Stoneware, under a flat lacquer lid.",
       build() {
         // Straight-sided, which is the plain form. A mizusashi is the biggest
         // object in the set and the least demonstrative: it stands at the
@@ -1361,11 +1353,10 @@
     },
     {
       key: "kama", jp: "釜", rom: "kama",
-      desc: "The kettle, and the only thing in the room that makes a sound. " +
-            "Cast iron, never washed, filled once and kept just off the " +
-            "boil, and its note over the fire has names: wind in the pines " +
-            "is the one everybody knows. Sadler's chapter opens with kettles " +
-            "because they are the objects most often given a name.",
+      desc: "The kettle. Cast iron, never washed, filled once and kept just off " +
+                  "the boil. The sounds it makes are named; matsukaze, wind in the " +
+                  "pines, is the best known. Sadler's chapter opens with kettles, as " +
+                  "the utensils most often given individual names.",
       build() {
         // Measured off five photographs. The silhouette had to be read
         // carefully: the LUGS widen it across the shoulder and the cast
@@ -1491,12 +1482,11 @@
     },
     {
       key: "higashi", jp: "干菓子", rom: "higashi",
-      desc: "Dry sweets, pressed sugar, about two centimetres across and eaten " +
-            "before the thin tea. They keep, unlike the moist sweets that go " +
-            "with thick tea, and they are the one thing in the room that is " +
-            "meant to be a small pleasure and nothing more. This one is " +
-            "pressed as a cherry blossom: five petals, each notched at the " +
-            "tip, which is what tells a cherry from a plum.",
+      desc: "Dry sweets, pressed sugar, about two centimetres across, eaten " +
+                  "before the thin tea. They keep, unlike the moist sweets served " +
+                  "with thick tea. This one is pressed as a cherry blossom: five " +
+                  "petals, each notched at the tip, which is what distinguishes a " +
+                  "cherry from a plum.",
       build() {
         return pressedSweet(radSakura,
           { r: 0.0100, h: 0.0070, c: [0.949, 0.831, 0.847] });
@@ -1514,10 +1504,8 @@
     {
       key: "chakin", jp: "茶巾", rom: "chakin",
       desc: "A small cloth of bleached hemp, wetted and wrung out before the " +
-            "guests come and carried folded in the bowl. It is what the bowl " +
-            "is wiped dry with, and the only cloth here meant to be damp. " +
-            "Hemp and not silk, and undyed: its work is work, and it is the " +
-            "one object in the room that is expected to look used.",
+                  "guests come, and carried folded in the bowl. The bowl is wiped dry " +
+                  "with it. Hemp and not silk, and undyed.",
       build() {
         // The same fold as the fukusa, and the same code: a cloth folded in
         // three and then in half comes to about 45 by 62, which is what stands
@@ -1540,9 +1528,8 @@
     },
     {
       key: "kamabuta", jp: "釜蓋", rom: "kamabuta",
-      desc: "The kettle's lid, bronze where the kettle is iron and silver at " +
-            "the knob. Lifted off, it is not put down on the mat: it goes on " +
-            "the lid rest, which is what a lid rest is for.",
+      desc: "The kettle's lid, bronze where the kettle is iron, with a silver " +
+                  "knob. Lifted off, it is not set on the mat but on the lid rest.",
       build() {
         // The kettle's own lid, taken out of its frame and set on the mat, so
         // it can be placed like any other utensil. Shared construction: see
@@ -1561,12 +1548,10 @@
     },
     {
       key: "fukusa", jp: "帛紗", rom: "fukusa",
-      desc: "A square of silk, folded, and the only thing here that is never " +
-            "set down: it is worn, tucked at the waist, and taken out to wipe " +
-            "the caddy and the scoop. Nothing on them needs cleaning. The " +
-            "folding and refolding of it is the gesture, not the wiping. Its " +
-            "colour is not a matter of taste either: vermilion for a woman, " +
-            "purple for a man, and past those a whole vocabulary of silks.",
+      desc: "A square of silk, folded. It is worn tucked at the waist rather " +
+                  "than set out with the utensils, and taken out to wipe the caddy " +
+                  "and the scoop. The wiping is formal; neither is soiled. Its colour " +
+                  "follows the user: vermilion for a woman, purple for a man.",
       build() {
         // A fukusa is about 285mm square. Folded in half one way and in four
         // the other, it makes a packet of roughly 142 by 70 with four
