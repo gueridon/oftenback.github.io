@@ -90,7 +90,19 @@ a:hover,button:not([disabled]):hover{cursor:url('data:image/svg+xml;utf8,<svg xm
    from the edge, and every line still ends on a common axis with the
    others at its own level. */
 .side .rooms{display:flex;flex-direction:column;align-items:flex-end;
-  margin-right:15px;}
+  padding-right:15px;position:relative;}
+/* THE TRUNK. The stroke that joins one wing to the next runs the whole
+   length of the rooms between them, or the two headings read as items in
+   one list rather than as two places at the same level. It is drawn on
+   the rooms' own box, so it begins under the heading above and ends above
+   the heading below whatever number of rooms there are -- nothing here
+   counts them.
+   A PSEUDO-ELEMENT and not a border, because a thread in this menu is
+   var(--soft) at .36 and a border cannot carry an opacity of its own: as
+   a border it came out six times darker than the short strokes beside it,
+   measured on the pixels, and read as a rule rather than as a thread. */
+.side .rooms::after{content:"";position:absolute;right:0;top:0;bottom:0;
+  width:1px;background:var(--soft);opacity:.36;}
 /* the float lives on the room list only, NOT on .side itself -- .side also
    contains .brand-mini, whose position must stay perfectly static to match
    the landing blob's measured dock target. A shared animation on the parent
