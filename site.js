@@ -7,36 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // veil over the room. A framed page is a component, not a visit.
   if (window !== window.top) return;
   const here = location.pathname.split("/").pop() || "";
-  // MATCHED BY WHAT IT ASKS FOR, for the level below the chapters: three of
-  // them are the same file and only the query tells them apart. The file
-  // alone is what lights a chapter; the query is what lights a way in.
-  //
-  // AND BY WHAT IT ASKS FOR RATHER THAN BY THE WHOLE STRING. This page is
-  // opened with all sorts of extra parameters -- a beat to jump to, a
-  // camera, a test -- and a way in that only lights on an exact match would
-  // go dark the moment anything else was added. A way is where you are if
-  // every parameter IT names is set the way it names it; of several that
-  // fit, the one that names the most.
   const hereQ = new URLSearchParams(location.search);
-  function waySpan(href) {
-    const q = href.indexOf("?");
-    if (href.slice(0, q < 0 ? href.length : q) !== here) return -1;
-    const want = new URLSearchParams(q < 0 ? "" : href.slice(q + 1));
-    let n = 0;
-    for (const [k, v] of want) {
-      if (!hereQ.has(k) || (v !== "" && hereQ.get(k) !== v)) return -1;
-      n++;
-    }
-    return n;
-  }
-  function litWay(ways) {
-    let best = -1, at = null;
-    (ways || []).forEach((w) => {
-      const n = waySpan(w.href);
-      if (n > best) { best = n; at = w.href; }
-    });
-    return at;
-  }
   // The cherry window IS the home page now: room one is where you arrive, and
   // the blob is its overture rather than a page of its own. The old cream
   // landing is kept, unlinked, as landing-blob.html.
@@ -110,26 +81,34 @@ document.addEventListener("DOMContentLoaded", () => {
     // Ordered as the house is: what you WALK first, then what you consult.
     // room3d is no longer among them -- it is framed inside the chashitsu
     // chapter now, a window rather than a destination.
-    { href: "chanoyu.html", label: "chanoyu", chapters: [
-      // THE ROJI IS THREE PLACES IN ONE FILE, and the menu should say so:
-      // the garden you walk, the room you kneel in, and the temae. They
-      // are one page because they are one continuous approach -- you can
-      // walk the whole way -- but nobody who has already walked it wants
-      // to walk it again to reach the tea. So the stop keeps its own
-      // ways in, under it, and they are told apart by their query rather
-      // than by their file: three doors into the same house.
-      { href: "tearoom-roji.html", label: "roji", ways: [
-        { href: "tearoom-roji.html", label: "path" },
-        { href: "tearoom-roji.html?room", label: "room" },
+    // TWO WINGS, as the house's own index has them: what you WALK, and what
+    // you consult. The menu mirrors that page rather than inventing a
+    // second arrangement of the same rooms.
+    //
+    // 茶室 APPEARS IN BOTH, and that is not a slip -- it is one room,
+    // walked or consulted, and chanoyu.html says so in as many words. The
+    // wings are what make the repetition legible: unnamed, the same word
+    // twice would read as a bug.
+    { href: "chanoyu.html", label: "chanoyu", wings: [
+      { label: "ceremony", chapters: [
+        { href: "tearoom-roji.html", label: "roji" },
+        { href: "tearoom-roji.html?room", label: "chashitsu" },
         { href: "tearoom-roji.html?room&pure=0", label: "temae" },
       ] },
-      { href: "chashitsu.html", label: "chashitsu" },
-      { href: "temaeza.html", label: "temaeza" },
-      { href: "dogu.html", label: "dogu" },
+      { label: "documentation", chapters: [
+        { href: "chashitsu.html", label: "chashitsu" },
+        { href: "temaeza.html", label: "temaeza" },
+        { href: "dogu.html", label: "dogu" },
+      ] },
     ] },
   ];
-  const lit = (s) => s.href === here ||
-    (s.chapters || []).some((c) => c.href === here);
+  const rooms = (s) => (s.wings || []).reduce(
+    (a, w) => a.concat(w.chapters || []), s.chapters || []);
+  const lit = (s) => s.href === here || rooms(s).some((c) => fileOf(c.href) === here);
+  const fileOf = (href) => {
+    const q = href.indexOf("?");
+    return q < 0 ? href : href.slice(0, q);
+  };
   // Only the house you are IN opens. A menu listing every chapter of every
   // house would be a table of contents; this one is a place-marker, and it
   // should stay as quiet as the rest of the page.
@@ -137,21 +116,53 @@ document.addEventListener("DOMContentLoaded", () => {
   // when you are standing in that chapter, for the same reason the chapters
   // themselves are -- a menu listing every door of every house is a table of
   // contents, and this one is a place-marker.
-  const waysHtml = (c) => {
-    if (c.href !== here || !c.ways) return "";
-    const on = litWay(c.ways);
-    return '<div class="subs ways">' + c.ways.map((w) =>
-      '<span class="link sub way"></span>' +
-      `<a class="stop sub way${w.href === on ? " here" : ""}" ` +
-      `href="${w.href}">${w.label}</a>`
-    ).join("") + "</div>";
+  // WHICH OF THEM YOU ARE STANDING IN. Three of the rooms are the same
+  // file and only the query tells them apart, so a room is where you are
+  // if every parameter IT names is set the way it names it; of several
+  // that fit, the one that names the most. Matched by what it ASKS FOR
+  // rather than by the whole string: this page is opened with a beat to
+  // jump to, a camera, a test, and a room that only lit on an exact match
+  // would go dark the moment anything else was added.
+  function span(href) {
+    if (fileOf(href) !== here) return -1;
+    const q = href.indexOf("?");
+    const want = new URLSearchParams(q < 0 ? "" : href.slice(q + 1));
+    let n = 0;
+    for (const [k, v] of want) {
+      if (!hereQ.has(k) || (v !== "" && hereQ.get(k) !== v)) return -1;
+      n++;
+    }
+    return n;
+  }
+  function litRoom(s) {
+    let best = -1, at = null;
+    rooms(s).forEach((c) => {
+      const n = span(c.href);
+      if (n > best) { best = n; at = c.href; }
+    });
+    return at;
+  }
+  const roomsHtml = (cs, on) => cs.map((c) =>
+    '<span class="link sub"></span>' +
+    `<a class="stop sub${c.href === on ? " here" : ""}" href="${c.href}">${c.label}</a>`
+  ).join("");
+  const subsHtml = (s) => {
+    if (!lit(s)) return "";
+    const on = litRoom(s);
+    // ONE BOX FOR BOTH WINGS, not one each. The list is right-aligned, and
+    // a box is only as wide as its own widest word: given a box each, the
+    // longer heading pushed its whole wing further left and the two wings
+    // stopped sharing a left edge.
+    if (s.wings) {
+      return '<div class="subs">' + s.wings.map((w) =>
+        '<span class="link sub"></span>' +
+        `<span class="subhead">${w.label}</span>` +
+        roomsHtml(w.chapters, on)
+      ).join("") + "</div>";
+    }
+    if (!s.chapters) return "";
+    return '<div class="subs">' + roomsHtml(s.chapters, on) + "</div>";
   };
-  const subsHtml = (s) => (!lit(s) || !s.chapters) ? "" :
-    '<div class="subs">' + s.chapters.map((c) =>
-      '<span class="link sub"></span>' +
-      `<a class="stop sub${c.href === here ? " here" : ""}" href="${c.href}">${c.label}</a>` +
-      waysHtml(c)
-    ).join("") + "</div>";
   const stopsHtml = stops.map((s, i) =>
     `<a class="stop${lit(s) ? " here" : ""}" href="${s.href}">${s.label}</a>` +
     subsHtml(s) +
@@ -187,7 +198,10 @@ document.addEventListener("DOMContentLoaded", () => {
         // room and the temae, so compared by file alone it would be inert
         // from anywhere on that page -- which is exactly where you would
         // press it from.
-        const inert = a.classList.contains("way")
+        // Lit is not the same as here: a room that shares its file with
+        // the one you are standing in must still work, because the query
+        // is the whole difference between them.
+        const inert = a.classList.contains("sub")
           ? a.classList.contains("here") : href === here;
         if (inert) return;
         leaveTo(href);
