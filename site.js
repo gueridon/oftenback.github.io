@@ -218,8 +218,14 @@ document.addEventListener("DOMContentLoaded", () => {
   // Nakata". Its own type is untouched: the mark keeps its wider, smaller
   // lettering. The divider sits INSIDE .stops-wrap so it floats with the list,
   // leaving .brand-mini perfectly static, which the dock measurement needs.
+  // TWO BOXES AND NOT ONE. The outer one carries the slow float that the
+  // whole list has always had; the inner one carries the roll. Put on the
+  // same element the roll never happened: an animation's transform beats a
+  // transition's, so the list only faded and the scale was thrown away --
+  // measured, the transform at rest was the float's own translation.
   const sideHtml = brandHtml +
-    '<div class="stops-wrap"><span class="link"></span>' + stopsHtml + '</div>';
+    '<div class="stops-wrap"><div class="roll">' +
+    '<span class="link"></span>' + stopsHtml + '</div></div>';
 
   // the mark lives INSIDE the side nav (its first item) -- mark and room
   // list read as one continuous stack, centred together, mark above menu.
@@ -250,6 +256,37 @@ document.addEventListener("DOMContentLoaded", () => {
         leaveTo(href);
       });
     });
+    // ---- the list unrolls when something comes near it --------------------
+    // The hot zone is the MARK plus, once it is open, the list itself:
+    // opening on the mark alone would shut again the moment the pointer
+    // set off down the rooms, and opening on a band of the window would
+    // have the list appear at a corner the reader was only passing.
+    (function unroll() {
+      const mark = aside.querySelector(".brand-mini");
+      const wrap = aside.querySelector(".roll");
+      if (!mark || !wrap) return;
+      const PAD = 76;                  // how close is near, in pixels
+      const near = (e, el, pad) => {
+        const r = el.getBoundingClientRect();
+        return e.clientX > r.left - pad && e.clientX < r.right + pad &&
+               e.clientY > r.top - pad && e.clientY < r.bottom + pad;
+      };
+      let shut = 0;
+      addEventListener("pointermove", (e) => {
+        const open = aside.classList.contains("open");
+        const on = near(e, mark, PAD) || (open && near(e, wrap, PAD));
+        if (on) {
+          clearTimeout(shut);
+          aside.classList.add("open");
+        } else if (open) {
+          // A BREATH BEFORE IT ROLLS UP, because a pointer crossing the
+          // gap between the mark and the first room leaves both for an
+          // instant, and a list that flickers there is unusable.
+          clearTimeout(shut);
+          shut = setTimeout(() => aside.classList.remove("open"), 260);
+        }
+      }, { passive: true });
+    })();
     if (typeof startNakataBlob === "function") {
       // a page whose background is not cream can ask for a denser mark
       startNakataBlob(aside.querySelector(".brand-mini canvas"), undefined,

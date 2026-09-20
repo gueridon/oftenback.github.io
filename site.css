@@ -148,6 +148,21 @@ a:hover,button:not([disabled]):hover{cursor:url('data:image/svg+xml;utf8,<svg xm
 .brand-mini:hover span{color:var(--ink);}
 
 .stops-wrap{display:flex;flex-direction:column;align-items:flex-end;}
+/* IT ROLLS UP WHEN NOTHING IS NEAR IT. Most of the time the page should
+   carry one red mark and one word, and nothing else: the list of rooms is
+   a thing you go to look for, not a thing that watches you read.
+   Unrolled from the top, which is where the mark is, so it reads as a
+   scroll let down from it rather than as a panel fading in. The transform
+   does not take part in layout, so the mark never moves and the list never
+   pushes the page about as it comes and goes. */
+.side .roll{display:flex;flex-direction:column;align-items:flex-end;
+  transform-origin:top right;
+  transition:transform .42s cubic-bezier(.33,0,.2,1),opacity .34s ease;}
+.side:not(.open) .roll{transform:scaleY(.04);opacity:0;pointer-events:none;}
+/* A POINTER THAT CANNOT HOVER cannot come near: on a touch screen there is
+   no approach, only an arrival, so the list simply stands open. */
+@media (hover:none){.side .roll{transform:none;opacity:1;
+  pointer-events:auto;}}
 
 /* No more cross-page transition choreography -- .side never fades, on any
    page, at any time, full stop. Each page just fades its OWN content in on

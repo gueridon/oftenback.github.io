@@ -4978,6 +4978,58 @@
       }, 1200);
     }
 
+    // ---- does the room list roll up when nothing is near it ---------------
+    // ?rolltest. Most of the time the page should carry one red mark and
+    // one word. What is asked: that it is rolled up to begin with, that
+    // coming near the mark unrolls it, that travelling down the rooms does
+    // NOT shut it, and that leaving does.
+    if (new URLSearchParams(location.search).has("rolltest")) {
+      setTimeout(() => {
+        const out = [];
+        const aside = document.querySelector(".side");
+        const wrap = aside && aside.querySelector(".roll");
+        const mark = aside && aside.querySelector(".brand-mini");
+        if (!wrap || !mark) {
+          document.body.setAttribute("data-rolltest", "no menu");
+          return;
+        }
+        const open = () => aside.classList.contains("open");
+        const at = (el, dx, dy) => {
+          const r = el.getBoundingClientRect();
+          dispatchEvent(new PointerEvent("pointermove", { bubbles: true,
+            clientX: r.left + r.width / 2 + (dx || 0),
+            clientY: r.top + r.height / 2 + (dy || 0) }));
+        };
+        const shut0 = getComputedStyle(wrap).transform;
+        out.push("at rest the list is " + (open() ? "OPEN" : "rolled up") +
+                 ", its transform " + shut0 +
+                 (!open() && shut0 !== "none" ? " -- only the mark shows"
+                                              : " -- IT STANDS OPEN"));
+        at(mark);
+        out.push("the pointer on the mark: " +
+                 (open() ? "it unrolls" : "IT STAYS SHUT"));
+        // DOWN THE ROOMS, which is the move that a mark-only hot zone
+        // would break: the pointer leaves the mark the instant it sets off.
+        at(wrap, 0, 0);
+        const midway = open();
+        at(wrap, 0, wrap.getBoundingClientRect().height / 2 - 6);
+        out.push("travelling down the rooms: " +
+                 (midway && open() ? "it stays open" : "IT SHUTS UNDER THE HAND"));
+        // and away
+        dispatchEvent(new PointerEvent("pointermove", { bubbles: true,
+          clientX: 20, clientY: innerHeight / 2 }));
+        const before = open();
+        setTimeout(() => {
+          out.push("the pointer away: " +
+                   (before ? "" : "it shut at once, ") +
+                   (open() ? "IT STAYS OPEN" : "it rolls up") +
+                   (before ? " -- after a breath, so a gap does not flicker it"
+                           : ""));
+          document.body.setAttribute("data-rolltest", out.join(" | "));
+        }, 500);
+      }, 1000);
+    }
+
     // ---- does the shell stop the sun --------------------------------------
     // ?shadowtest. "Quand la porte se ferme, elle porte une ombre au sol
     // mais la lumiere passe a travers le reste du mur." A wall that
