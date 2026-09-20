@@ -352,15 +352,20 @@
        its switch cannot live in either panel: it stands under both of
        them, at the foot of the keys. A button, because it is one -- the S
        key does the same thing for a hand already on the keyboard. */
+    #keys #hint-sky,
     #keys #hint-sound{pointer-events:auto;cursor:pointer;background:none;
       border:0;padding:0;margin:0;color:inherit;
       display:flex;align-items:center;gap:9px;
       font:400 11px/2.0 system-ui,sans-serif;letter-spacing:.22em;}
+    #keys #hint-sky .d,
     #keys #hint-sound .d{color:rgba(255,255,255,.62);font-size:10.5px;
       letter-spacing:.10em;}
+    #keys #hint-sky.on kbd,
     #keys #hint-sound.on kbd{color:#fff;background:#e34234;
       box-shadow:0 0 0 3px rgba(227,66,52,.18);}
+    #keys #hint-sky.on .d,
     #keys #hint-sound.on .d{color:rgba(227,66,52,.92);}
+    #keys #hint-sky kbd,
     #keys #hint-sound kbd{font:600 8px/1 system-ui,sans-serif;
       letter-spacing:.16em;text-transform:uppercase;
       color:rgba(255,255,255,.94);border:0;border-radius:3px;
@@ -528,6 +533,8 @@
       <div class="krow"><kbd>MOUSE</kbd><span class="d" data-k="mouse"></span></div>
     </div>
     <div class="kgap"></div>
+    <button class="krow" id="hint-sky" type="button"
+      ><kbd>V</kbd><span class="d">the whole roji, from above</span></button>
     <button class="krow" id="hint-sound" type="button"
       ><kbd>S</kbd><span class="d">the sound of the place</span></button>
   </div>
@@ -4947,6 +4954,58 @@
                                              : " -- STILL OUTLINED"));
         document.body.setAttribute("data-modetest", out.join(" | "));
       }, 900);
+    }
+
+    // ---- up, and back down to the same place ------------------------------
+    // ?skytest. "Let's add sky view to the shift+S menu, and a toggle back
+    // to the previous view." Two halves, and the second is the one that can
+    // be got wrong quietly: going up is visible, coming back to a lens or a
+    // haze a little off is not. So the test records the lens and the haze
+    // before, and asks for them back to the decimal.
+    if (new URLSearchParams(location.search).has("skytest")) {
+      setTimeout(() => {
+        const out = [];
+        const drive = (n) => { for (let k = 0; k < n; k++) window.__skyOnce(0.05); };
+        const fog = () => [+scene.fog.near.toFixed(3), +scene.fog.far.toFixed(3)];
+        const cap = () => {
+          const k = document.querySelector("#hint-sky kbd");
+          return k ? getComputedStyle(k).backgroundColor : "none";
+        };
+        const say = () => {
+          const d = document.querySelector("#hint-sky .d");
+          return d ? d.textContent : "none";
+        };
+        drive(4);
+        const y0 = camera.position.y, f0 = camera.fov, g0 = fog();
+        const c0 = cap(), s0 = say();
+        dispatchEvent(new KeyboardEvent("keydown", { code: "KeyV" }));
+        drive(200);
+        const up = window.__sky();
+        out.push("V from " + y0.toFixed(2) + "m: it rose to " +
+                 up.y.toFixed(2) + "m, lens " + f0.toFixed(1) + " to " +
+                 up.fov.toFixed(1) + ", haze " + g0[1] + " to " + fog()[1] +
+                 (up.at === 1 && up.y > 14 && Math.abs(up.fov - 44) < 0.1
+                    ? " -- it is above the roji" : " -- IT DID NOT GET THERE"));
+        out.push("and the cap says so: " + c0 + " to " + cap() + ", '" +
+                 s0 + "' to '" + say() + "'" +
+                 (cap().indexOf("227, 66, 52") >= 0 && say() !== s0
+                    ? "" : " -- THE CAP DOES NOT SAY"));
+        dispatchEvent(new KeyboardEvent("keydown", { code: "KeyV" }));
+        drive(300);
+        const dn = window.__sky(), g1 = fog();
+        const back = dn.at === 0 && Math.abs(camera.fov - f0) < 0.01 &&
+                     Math.abs(g1[0] - g0[0]) < 0.01 &&
+                     Math.abs(g1[1] - g0[1]) < 0.01 &&
+                     Math.abs(camera.position.y - y0) < 0.01;
+        out.push("V again: back to " + camera.position.y.toFixed(2) +
+                 "m, lens " + camera.fov.toFixed(1) + ", haze " + g1[1] +
+                 (back ? " -- the same place it left"
+                       : " -- IT CAME BACK SOMEWHERE ELSE"));
+        out.push("the cap is " + (cap().indexOf("227, 66, 52") >= 0
+                   ? "STILL LIT" : "unlit again") + " and it reads '" +
+                 say() + "'" + (say() === s0 ? "" : " -- WRONG WORDS"));
+        document.body.setAttribute("data-skytest", out.join(" | "));
+      }, 1200);
     }
 
     // ---- does the menu read on what is behind it --------------------------
@@ -12220,6 +12279,11 @@
       paintDoing();
     }
     let lookLit = false;
+    // DECLARED UP HERE with the other things the panel paints, and not
+    // beside the code that moves the camera four hundred lines down: the
+    // panel is painted during setup and a `let` below that point is in its
+    // dead zone, which threw before the first frame.
+    let skyT = 0, skyWant = 0, devSkyEl = null;
     function paintLook(on) {
       if (on === lookLit) return;
       lookLit = on;
@@ -12236,7 +12300,7 @@
                   !SOUND.state().muted;
       const mOn = tour;
       keysEl.classList.toggle("doing",
-        !!(autoCer || dogMode || lookLit || sOn || mOn));
+        !!(autoCer || dogMode || lookLit || sOn || mOn || skyWant));
     }
     window.__auto = () => ({ on: autoCer, wait: +autoWait.toFixed(2),
       step: stepIdx, of: SCRIPT.length });
@@ -13032,6 +13096,13 @@
     // that S is a mute, not a switch.
     ["pointerdown", "keydown"].forEach((k) =>
       addEventListener(k, () => wakeSound(), { once: true }));
+    (function skySwitch() {
+      const b = document.getElementById("hint-sky");
+      if (!b) return;
+      b.addEventListener("click", (ev) => {
+        ev.stopPropagation(); setSky(!skyWant);
+      });
+    })();
     (function soundSwitch() {
       const b = document.getElementById("hint-sound");
       if (!b) return;
@@ -13323,6 +13394,27 @@
           devsEl.appendChild(a);
         });
       };
+      // AND THE VIEW FROM ABOVE AT THE HEAD OF IT, which is not a beat
+      // and not an address: a live lift, so the ceremony carries on
+      // underneath and pressing it again sets you back where you were.
+      (function fromTheSky() {
+        const h = document.createElement("h4");
+        h.textContent = "From above";
+        devsEl.appendChild(h);
+        const a = document.createElement("a");
+        a.href = "#";
+        a.innerHTML = "the whole roji<span class='u'>V</span>";
+        a.title = "lift the view off the garden, and set it back down";
+        a.addEventListener("click", (ev) => {
+          // AND THE LIST GOES WITH THE CLICK. Every other entry here is an
+          // address and the menu leaves with the page; this one stays put,
+          // so it would sit across the view it just asked for.
+          ev.preventDefault(); ev.stopPropagation();
+          setSky(!skyWant); toggleDevs(false);
+        });
+        devsEl.appendChild(a);
+        devSkyEl = a;
+      })();
       // the two earlier scenes have their own parameters
       put("The hands, carried in", ARRIVALS.map((h, i) => ({
         href: "?room&arrive=" + (i + 1),
@@ -13815,6 +13907,8 @@
       if (e.code === "KeyS" && e.shiftKey) {
         e.preventDefault(); toggleDevs(); return;
       }
+      // V LIFTS THE VIEW off whatever is happening and sets it back down.
+      if (e.code === "KeyV") { e.preventDefault(); setSky(!skyWant); return; }
       // S ON ITS OWN is the sound. Shift+S above it is the developer's
       // menu, and the guard is what keeps one press from doing both.
       if (e.code === "KeyS") {
@@ -14292,6 +14386,87 @@
                                  soft: document.querySelector(".side")
                                    ? getComputedStyle(document.querySelector(".side"))
                                        .getPropertyValue("--soft").trim() : "" });
+    // ---- LIFTED OFF IT ALL, AND SET BACK DOWN -----------------------------
+    // The whole roji from above, as a place you go and come back from
+    // rather than an address you load: ?cam=sky is a frozen view and
+    // arriving at it by URL would throw away the walk, or the beat of the
+    // ceremony you were watching. So it is a LAYER over whatever the page
+    // is already doing -- the ceremony carries on underneath, and at zero
+    // the camera is exactly where the page put it, to the last decimal.
+    const SKY_AT = new THREE.Vector3(3.2, 14.5, 23.5);
+    const SKY_TO = new THREE.Vector3(2.0, 0.0, 8.0);
+    const SKY_FOV = 44, SKY_FOG = [34, 150];
+    let skyQ = null, skyFov0 = 0, skyFog0 = null;
+    function skyPose() {
+      if (skyQ) return;
+      const m = new THREE.Matrix4().lookAt(SKY_AT, SKY_TO,
+        new THREE.Vector3(0, 1, 0));
+      skyQ = new THREE.Quaternion().setFromRotationMatrix(m);
+    }
+    // THE LENS AND THE HAZE ARE READ AT THE MOMENT OF LEAVING, not once and
+    // for all: the path and the room have different fields of view, and a
+    // base measured in one is the wrong place to land in the other. Position
+    // and gaze need no such care -- aimCamera writes them every frame, so
+    // zero IS wherever the page has just put them.
+    function skyBase() {
+      if (skyT !== 0) return;
+      skyFov0 = camera.fov;
+      skyFog0 = [scene.fog.near, scene.fog.far];
+    }
+    function setSky(on) {
+      skyPose();
+      if (on) skyBase();
+      skyWant = on ? 1 : 0;
+      const row = document.getElementById("hint-sky");
+      if (row) row.classList.toggle("on", !!on);
+      const d = row && row.querySelector(".d");
+      if (d) d.textContent = on ? "back down into the garden"
+                                : "the whole roji, from above";
+      if (devSkyEl) devSkyEl.firstChild.textContent =
+        on ? "back down into the garden" : "the whole roji";
+      paintDoing();
+    }
+    function skyStep(dt) {
+      if (skyT === skyWant && skyT === 0) return;
+      skyPose();
+      if (!skyFog0) skyBase();
+      if (skySnap) { skySnap = false; skyT = 1; }
+      // SLOW, and slower coming down than going up: rising is a change of
+      // mind and landing is an arrival.
+      const k = skyWant > skyT ? 0.9 : 0.7;
+      skyT += (skyWant - skyT) * Math.min(1, dt * k);
+      if (Math.abs(skyWant - skyT) < 0.001) skyT = skyWant;
+      const e = skyT < 0.5 ? 2 * skyT * skyT
+                           : 1 - Math.pow(-2 * skyT + 2, 2) / 2;
+      if (e <= 0) {
+        camera.fov = skyFov0; camera.updateProjectionMatrix();
+        scene.fog.near = skyFog0[0]; scene.fog.far = skyFog0[1];
+        return;
+      }
+      camera.position.lerp(SKY_AT, e);
+      camera.quaternion.slerp(skyQ, e);
+      camera.fov = skyFov0 + (SKY_FOV - skyFov0) * e;
+      camera.updateProjectionMatrix();
+      // and the haze goes with it: eight metres to sixty-eight is the
+      // depth of a garden seen from inside it
+      scene.fog.near = skyFog0[0] + (SKY_FOG[0] - skyFog0[0]) * e;
+      scene.fog.far = skyFog0[1] + (SKY_FOG[1] - skyFog0[1]) * e;
+    }
+    // ONE FRAME OF THE LIFT, aim included: the rise is a layer over what
+    // aimCamera has just written, so a test that drove the lift alone would
+    // be lerping from a position nothing was resetting, and would report a
+    // camera that crept to the sky and stayed there.
+    window.__skyOnce = (dt) => { aimCamera(); skyStep(dt); };
+    // ?sky lifts it AT ONCE, for a still. Not ?cam=sky, which is the frozen
+    // view the plate on chanoyu.html was cut from: this one is the live
+    // lift, over whatever the page is doing. It snaps rather than rises
+    // because headless starves rAF -- a four second climb caught after
+    // ninety seconds of virtual time was a fifth of the way up, and the
+    // still showed a camera stuck in the canopy that looked like a wrong
+    // destination and was only a slow one.
+    let skySnap = new URLSearchParams(location.search).has("sky");
+    window.__sky = () => ({ want: skyWant, at: +skyT.toFixed(3),
+      y: +camera.position.y.toFixed(2), fov: +camera.fov.toFixed(1) });
     function frame(now) {
       window.__firstFrame = true;   // the loading screen waits on this, and it
                                     // must be set for the ?cam= views too
@@ -14390,7 +14565,8 @@
       updateSteam(t);
       updateWater(t);
       soundStep(rdt);
-      menuTone();
+      if (skySnap) setSky(true);     // ?sky, once the lens has settled
+      skyStep(rdt);                  // and the view may be lifted off it all
       if (PERF) {
         if (!perfEl) perfInit();
         if (perfLastNow) perfPush(perfFrame, now - perfLastNow);
@@ -14404,6 +14580,10 @@
       } else {
         renderer.render(scene, camera);
       }
+      // AFTER THE RENDER, and that is the whole of why it works: it reads
+      // the framebuffer, and before the render the framebuffer holds the
+      // frame that has already been handed to the compositor.
+      menuTone();
       requestAnimationFrame(frame);
     }
     requestAnimationFrame(frame);
