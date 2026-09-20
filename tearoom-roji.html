@@ -4931,6 +4931,53 @@
       }, 900);
     }
 
+    // ---- does the menu read on what is behind it --------------------------
+    // ?tonetest. The side menu is one grey over a scene that runs from a
+    // sunlit paper wall to a black corner. What is asked is not that it
+    // changes but that it CONTRASTS: the tone it picks, against the tone
+    // it is standing on, in both places.
+    if (new URLSearchParams(location.search).has("tonetest")) {
+      setTimeout(() => {
+        const out = [];
+        const lumOf = (css) => {
+          const m = /rgb\((\d+),\s*(\d+),\s*(\d+)\)/.exec(css);
+          if (!m) return -1;
+          return (0.2126 * +m[1] + 0.7152 * +m[2] + 0.0722 * +m[3]) / 255;
+        };
+        // WHAT THE SCENE ACTUALLY PUTS BEHIND IT, along the real walk:
+        // the question of whether this is worth doing at all is a question
+        // about the RANGE of that background, not about the mechanism.
+        const seen = [];
+        [0, 0.25, 0.5, 0.75, 1].forEach((u) => {
+          currentU = u; markIdx = 0; moving = false;
+          if (u >= 0.999) {
+            eyeY = CER_EYE; ceremony = true; cerT = CER_ALL; cerDoor = 1;
+            lum = CER_LUM; lumDirty = true;
+          }
+          for (let k = 0; k < 120; k++) window.__aim();
+          renderer.render(scene, camera);
+          for (let k = 0; k < 40; k++) menuTone(true);
+          seen.push(window.__menuTone().raw);
+        });
+        out.push("along the walk the background behind it read " +
+                 seen.map((v) => v.toFixed(2)).join(", ") +
+                 " -- a range of " +
+                 (Math.max.apply(null, seen) - Math.min.apply(null, seen))
+                   .toFixed(2));
+        // AND THE CHOICE ITSELF, fed the two ends rather than hunted for in
+        // the scene: whether it adapts is a question about the rule.
+        setMenuTone(0.15);
+        const pale = lumOf(window.__menuTone().soft);
+        setMenuTone(0.85);
+        const dark = lumOf(window.__menuTone().soft);
+        out.push("told 0.15 it took " + pale.toFixed(2) + ", told 0.85 it " +
+                 "took " + dark.toFixed(2) +
+                 (pale - dark > 0.5 ? " -- pale on the dark, ink on the light"
+                                    : " -- IT DOES NOT ADAPT"));
+        document.body.setAttribute("data-tonetest", out.join(" | "));
+      }, 1200);
+    }
+
     // ---- does the shell stop the sun --------------------------------------
     // ?shadowtest. "Quand la porte se ferme, elle porte une ombre au sol
     // mais la lumiere passe a travers le reste du mur." A wall that
@@ -14123,6 +14170,58 @@
     }
     window.__sound = () => (global_SOUND() ? Object.assign(SOUND.state(),
       { started: soundOn }) : { started: false });
+    // ---- WHAT IS BEHIND THE MENU ------------------------------------------
+    // The side menu is one grey over a scene that goes from a sunlit paper
+    // wall to a black corner within one walk, so it tells the menu what it
+    // is standing on and the menu picks its own tone. site.js does the
+    // choosing; what is here is the reading.
+    //
+    // READ FROM THE FRAMEBUFFER, right after the render and inside the same
+    // frame. Drawing the canvas into a 2D one from a timer is the usual
+    // trick and it returns black here: the drawing buffer is not preserved,
+    // and preserving it would cost every frame to serve one in twenty.
+    //
+    // THREE SMALL PATCHES, not the whole strip: a column of eight by two
+    // hundred is sixteen hundred pixels off the GPU and a stall to fetch
+    // them, and three squares of the top, middle and foot of the menu say
+    // the same thing about a background that is smooth.
+    const _tone = new Uint8Array(8 * 8 * 4);
+    let toneAt = 0, toneLum = -1;
+    function menuTone(force) {
+      if (typeof setMenuTone !== "function") return;
+      if (!force && (window.__frames % 20) !== 0) return;
+      const el = document.querySelector(".side");
+      if (!el) return;
+      const r = el.getBoundingClientRect();
+      if (r.width < 4 || r.height < 4) return;
+      const gl = renderer.getContext();
+      const dpr = renderer.getPixelRatio();
+      const H = renderer.domElement.height;
+      let sum = 0, n = 0;
+      [0.15, 0.5, 0.85].forEach((f) => {
+        const x = Math.round((r.left + r.width * 0.5) * dpr) - 4;
+        const y = H - Math.round((r.top + r.height * f) * dpr) - 4;
+        if (x < 0 || y < 0 || x + 8 > renderer.domElement.width || y + 8 > H) return;
+        gl.readPixels(x, y, 8, 8, gl.RGBA, gl.UNSIGNED_BYTE, _tone);
+        for (let i = 0; i < _tone.length; i += 4) {
+          sum += (0.2126 * _tone[i] + 0.7152 * _tone[i + 1] +
+                  0.0722 * _tone[i + 2]) / 255;
+          n++;
+        }
+      });
+      if (!n) return;
+      const lum = sum / n;
+      // EASED, because the menu must never be caught changing: a gust of
+      // light across the mat is not a new place to stand.
+      toneLum = toneLum < 0 ? lum : toneLum + (lum - toneLum) * 0.18;
+      setMenuTone(toneLum);
+      toneAt = lum;
+    }
+    window.__menuTone = () => ({ raw: +toneAt.toFixed(3),
+                                 eased: +toneLum.toFixed(3),
+                                 soft: document.querySelector(".side")
+                                   ? getComputedStyle(document.querySelector(".side"))
+                                       .getPropertyValue("--soft").trim() : "" });
     function frame(now) {
       window.__firstFrame = true;   // the loading screen waits on this, and it
                                     // must be set for the ?cam= views too
@@ -14221,6 +14320,7 @@
       updateSteam(t);
       updateWater(t);
       soundStep(rdt);
+      menuTone();
       if (PERF) {
         if (!perfEl) perfInit();
         if (perfLastNow) perfPush(perfFrame, now - perfLastNow);

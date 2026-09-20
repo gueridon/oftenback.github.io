@@ -7,6 +7,38 @@ document.addEventListener("DOMContentLoaded", () => {
   // veil over the room. A framed page is a component, not a visit.
   if (window !== window.top) return;
   const here = location.pathname.split("/").pop() || "";
+  // ---- the menu takes its tone from what is behind it ---------------------
+  // A page with a scene to measure calls this with the mean brightness of
+  // the patch the menu stands on, 0 for black and 1 for white. Pages made
+  // of cream never call it and keep the defaults.
+  //
+  // TWO TONES AND A NARROW CROSSOVER, not a blend across the whole range: a
+  // colour interpolated through the middle is a mid grey exactly when the
+  // background is a mid grey, which is the one case that needed help. So
+  // the menu is ink or it is cream, and the few hundredths between are
+  // crossed quickly.
+  const TONE_DARK = [61, 53, 48], TONE_LIGHT = [232, 225, 214];
+  let toneNow = -1;
+  window.setMenuTone = function (lum) {
+    const el = document.querySelector(".side");
+    if (!el || !isFinite(lum)) return;
+    const t = Math.max(0, Math.min(1, (lum - 0.44) / 0.14));   // 1 = light bg
+    if (toneNow >= 0 && Math.abs(t - toneNow) < 0.02) return;
+    toneNow = t;
+    const c = TONE_DARK.map((d, i) => Math.round(TONE_LIGHT[i] +
+      (d - TONE_LIGHT[i]) * t));
+    el.style.setProperty("--soft", `rgb(${c[0]},${c[1]},${c[2]})`);
+    // AND THE LIFT GOES THE OTHER WAY, and tightens. A mean is only a
+    // mean: the menu is tall and the thing behind it is often dark at the
+    // head and bright at the foot, so pale letters end up crossing a lit
+    // path whatever tone was chosen. A wide soft shadow does nothing
+    // there; a close dark one is an outline and holds them.
+    const near = t > 0.5;
+    el.style.setProperty("--side-shadow",
+      near ? "rgba(61,53,48,0.14)"
+           : `rgba(12,9,7,${(0.22 + 0.34 * (1 - t)).toFixed(2)})`);
+    el.style.setProperty("--side-blur", near ? "8px" : "3px");
+  };
   const hereQ = new URLSearchParams(location.search);
   // The cherry window IS the home page now: room one is where you arrive, and
   // the blob is its overture rather than a page of its own. The old cream

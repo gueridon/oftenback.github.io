@@ -51,10 +51,22 @@ a:hover,button:not([disabled]):hover{cursor:url('data:image/svg+xml;utf8,<svg xm
 .side{position:fixed;right:clamp(22px,4.5vw,60px);top:0;bottom:0;z-index:2;
   display:flex;flex-direction:column;align-items:flex-end;justify-content:center;
   pointer-events:none;
+  /* IT TAKES ITS TONE FROM WHAT IS BEHIND IT. On a page of cream these are
+     the defaults and nothing moves; over the tea room the background under
+     the menu goes from a sunlit paper wall to a black corner within one
+     walk, and a single grey cannot be read on both. A page that has
+     something to measure sets these two and the whole menu follows, since
+     everything in it is drawn in var(--soft).
+     Slow, because the eye should never catch it changing: half a second is
+     longer than a gust of light and shorter than a walk. */
+  --soft:#b3a89c;
+  --side-shadow:rgba(61,53,48,0.14);
+  --side-blur:8px;
+  transition:--soft .5s linear;
   /* a soft lift so the menu reads as its own layer floating above the page,
      the way it naturally does over the tea room's real depth -- here there's
      no 3D behind it, so the shadow is doing that job on its own. */
-  filter:drop-shadow(0 3px 8px rgba(61,53,48,0.14));}
+  filter:drop-shadow(0 1px var(--side-blur) var(--side-shadow));}
 .side .stop{pointer-events:auto;text-align:right;text-decoration:none;
   font-size:11.5px;letter-spacing:.24em;text-transform:lowercase;font-weight:300;
   color:var(--soft);opacity:.58;transition:opacity .35s ease,color .35s ease;
@@ -81,7 +93,10 @@ a:hover,button:not([disabled]):hover{cursor:url('data:image/svg+xml;utf8,<svg xm
    it, and making it look pressable would be a lie. Smaller and wider than
    the rooms under it, the same treatment the page gives its own wings. */
 .side .subhead{font:600 8px/1 system-ui,sans-serif;letter-spacing:.26em;
-  text-transform:uppercase;color:rgba(43,33,25,.34);
+  /* var(--soft) like everything else in here: a hardcoded ink stayed dark
+     over the garden's foliage and the two wings went unreadable while the
+     rooms beside them turned pale. */
+  text-transform:uppercase;color:var(--soft);opacity:.62;
   padding:5px 0 3px;text-align:right;}
 /* a wing that follows another one's rooms needs the air the short thread
    used to give it, or it sits on the last room above */
