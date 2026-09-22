@@ -9625,10 +9625,10 @@
     "title": "...A Moca Vestida De Branco",
     "year": "1977",
     "format": "LP",
-    "genre": "World",
+    "genre": "Others",
     "barcode": "VNL-X3ZG0D",
     "coverImage": "covers/VNL-X3ZG0D.jpg",
-    "cube": "",
+    "cube": "12",
     "dateAdded": "2026-09-21T22:39:30.744Z",
     "printed": false
   },
@@ -9729,14 +9729,14 @@
     "printed": false
   },
   {
-    "artist": "George Winston",
+    "artist": "Winston, George",
     "title": "Winter Into Spring",
     "year": "1982",
     "format": "LP",
     "genre": "Ambient",
     "barcode": "VNL-0X8JAZ",
     "coverImage": "covers/VNL-0X8JAZ.jpg",
-    "cube": "",
+    "cube": "16",
     "dateAdded": "2026-09-21T22:55:45.362Z",
     "printed": false
   },
