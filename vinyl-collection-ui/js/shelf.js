@@ -25,10 +25,15 @@ export const CABINET_INNER_MM = 700;   // the dining cabinet, measured 2026-08-2
 // Not every shelf is a cube. Drawing the cabinet against 330mm reported it as 82% full
 // when it is 39%, which is the difference between "nearly out of room" and "the emptiest
 // space in the house" -- and it is where the box sets go, so that number matters.
-// The wall, as it physically stands (2026-08-29). Shelf 1 is the original 4x2 standing
-// up, so four rows of two. Shelf 2 is the new unit, two rows of four, and its LEFTMOST
-// COLUMN is cubes 15 and 16 -- 15 holds the computer, 16 is free. Records therefore live
-// in 1-14, which is exactly what the layout allocates.
+// The wall, as it physically stands (renumbered 2026-09-22). Shelf 1 is the original
+// 4x2 standing up, so four rows of two. Shelf 2 is the new unit, two rows of four, and
+// it is now numbered IN READING ORDER: 9-12 across the top, 13-16 across the bottom.
+//
+// That renumbering is the whole point and not tidiness. Placement splits a multi-cube
+// genre alphabetically across `sorted(cubes)`, so the numbers MUST climb the way the eye
+// travels. Before this the top row read 15, 9, 10, 11 and that assumption was simply
+// false, which is the same shape of error as the 2026-06 one this file was rewritten to
+// end. Cube 9, top left, holds the computer; records live in 1-8 and 10-16.
 //
 // Kept as data rather than baked into the page so the map is one edit away from correct
 // if the numbering reads differently from how it looks here.
@@ -37,13 +42,12 @@ export const CABINET_INNER_MM = 700;   // the dining cabinet, measured 2026-08-2
 // than absent -- the wall itself is the drawing, and it is generated from the rows below.
 export const WALL = [
   { name: 'Shelf 1', rows: [[1, 2], [3, 4], [5, 6], [7, 8]] },
-  { name: 'Shelf 2', rows: [[15, 9, 10, 11], [16, 12, 13, 14]] },
+  { name: 'Shelf 2', rows: [[9, 10, 11, 12], [13, 14, 15, 16]] },
 ];
 
 // Cubes that hold no records, and why.
 export const RESERVED = {
-  15: 'free - growth space',
-  16: 'computer / server',
+  9: 'computer / server',
 };
 
 // Places that are not cubes on the wall. The cabinet has a measured width; OVERFLOW
