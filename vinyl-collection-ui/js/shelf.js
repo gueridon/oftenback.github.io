@@ -33,7 +33,11 @@ export const CABINET_INNER_MM = 700;   // the dining cabinet, measured 2026-08-2
 // genre alphabetically across `sorted(cubes)`, so the numbers MUST climb the way the eye
 // travels. Before this the top row read 15, 9, 10, 11 and that assumption was simply
 // false, which is the same shape of error as the 2026-06 one this file was rewritten to
-// end. Cube 9, top left, holds the computer; records live in 1-8 and 10-16.
+// end. Cube 12, TOP RIGHT, holds the computer, moved there 2026-09-23 for the wiring;
+// records live in 1-11 and 13-16. The hole at 12 costs nothing because no multi-cube
+// genre spans it: Classical is 13, 14, 15 and contiguous, and 11 and 16 are single
+// cubes. Were a genre ever to straddle 11 and 13, the alphabetical split would count
+// the gap as a step and misfile every record placed after it.
 //
 // Kept as data rather than baked into the page so the map is one edit away from correct
 // if the numbering reads differently from how it looks here.
@@ -47,7 +51,7 @@ export const WALL = [
 
 // Cubes that hold no records, and why.
 export const RESERVED = {
-  9: 'computer / server',
+  12: 'computer / server',
 };
 
 // Places that are not cubes on the wall. The cabinet has a measured width; OVERFLOW
