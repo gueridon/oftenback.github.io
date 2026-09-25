@@ -22,6 +22,21 @@
   // `turn`, `at` and the rest onto the step. So every maker gets its own deep
   // copy, or two cloths in one page would fold along each other's creases.
   function makeLists(o) {
+    o = o || {};
+    const unum = (k, d) => (o[k] === undefined || o[k] === null ||
+                            (typeof o[k] === "number" && !isFinite(o[k])) ? d : o[k]);
+    // THE U, and the two numbers that decide whether it is a curve or a
+    // trough. The creases stand U_OFF either side of the middle and each
+    // bends over U_SOFT rather than over the packet's own crease radius.
+    // Wide apart with a small radius they gave a flat floor between two
+    // corners; close together with a large one they give one arc, and the
+    // scoop lies IN the U rather than on it. Swept at ?uoff= and ?usoft=.
+    //
+    // DECLARED HERE and not beside the other cloth constants, which live in
+    // make(): makeLists is a sibling of make, not a child of it, so a
+    // constant written there is not out of date here, it is out of scope.
+    const U_OFF = unum("uoff", 4) / 1000;
+    const U_SOFT = unum("usoft", 16) / 1000;
 // ---- the folds ------------------------------------------------------------
 // A crease is a LINE ON THE FLOOR, at any angle: `turn` is the direction the
 // cloth travels, in degrees, measured from +x toward +z, and `at` is how far
@@ -154,9 +169,15 @@ LISTS.so = {
     // le U dans la longueur du fukusa mais il faut qu'il soit dans la
     // largeur". So the creases run along the cloth's short way, and the two
     // flaps that come up are its long halves.
-    { along: "z", off: 0.010, from: "bottom", deg: 88, u: true,
+    // ROUNDED, not squared. Two creases at the packet's own radius gave a
+    // flat floor between two right angles: "il faudrait un arrondi plutot
+    // que deux angles droits." So the pair stands closer together and each
+    // bends over fourteen millimetres instead of six, which at 88 degrees
+    // is a radius of about nine: the floor and the two sides become one
+    // curve and the scoop lies in it rather than on it.
+    { along: "z", off: U_OFF, from: "bottom", deg: 88, u: true, soft: U_SOFT,
       note: "one side up, against the scoop" },
-    { along: "z", off: -0.010, from: "top", deg: 88, u: true,
+    { along: "z", off: -U_OFF, from: "top", deg: 88, u: true, soft: U_SOFT,
       note: "and the other: a U across the width" },
   ],
 };
@@ -232,7 +253,15 @@ const N = num("n", 96);
 // folded fukusa you could put in your hand. 7 and 0.22 made it 19 thick,
 // which is a cushion.
 const SOFT = num("soft", 6) / 1000;
-const RAMP = num("ramp", 0.14);       // how much rounder each later fold is
+// NO RAMP. It made each later crease fatter than the one before, on the
+// argument that an outer skin has to travel round everything already folded
+// inside it, and the visible result was the two soft rolls along the edges
+// of the finished packet: "une fois plie, le fukusa a deux petits boudins de
+// chaque cote." Asked for once and taken out again, 2026-09-25: "on enleve
+// les petits bourrelets des bords et on garde le tissu plat tout au long du
+// pliage." Every crease now has the same radius and the packet stays flat.
+// The knob survives at ?ramp= for anyone who wants to look at it.
+const RAMP = num("ramp", 0);
 // One thickness. Thirty two layers at 0.55 would stand 17mm tall, which is a
 // book and not a cloth, so the default is thinner than silk really is.
 const LIFT = num("lift", 0.45) / 1000;
@@ -454,7 +483,11 @@ function applyFold(arr, f, u, k) {
   // packet came out flat-sided; with it the last folds make the two soft
   // rolls he asked for: "une fois plie, le fukusa a deux petits boudins de
   // chaque cote, plutot que d'etre plat."
-  const soft = SOFT * (1 + RAMP * (k || 0));
+  // A CREASE MAY ASK FOR ITS OWN RADIUS. The packet's folds want a cloth
+  // crease, a few millimetres; the two that make the U want an arc, because
+  // a U with a radius of four millimetres is two right angles with the
+  // corners knocked off and reads as folded card.
+  const soft = f.soft !== undefined ? f.soft : SOFT * (1 + RAMP * (k || 0));
   const ang = f.deg * Math.PI / 180 * u;
   const nx = Math.cos(f.turn * Math.PI / 180);   // the way the cloth travels
   const nz = Math.sin(f.turn * Math.PI / 180);
