@@ -5258,6 +5258,58 @@
       }, 1000);
     }
 
+    // ---- does the cloth ever jump ----------------------------------------
+    // ?smoothtest. "Les mouvements sont saccades et coupes, plutot que
+    // continus." A cut is not a matter of taste, it is a distance: between
+    // two consecutive frames a thing either moves a little or it teleports.
+    // So the beat is stepped at a fixed interval and the cloth's own centre
+    // is read each time; the largest step is compared against the typical
+    // one. A continuous movement has a ratio near one, a cut has a spike.
+    //
+    // It asks the two beats that carry the cloth: the folding, and the
+    // wiping of the caddy, where two strokes used to be joined end to end
+    // with the cloth gone from one place and in another between frames.
+    if (new URLSearchParams(location.search).has("smoothtest")) {
+      setTimeout(() => {
+        const out = [];
+        // THE WHOLE BOX AND NOT ITS CENTRE. A fold turns the cloth inside
+        // out about its own middle, so the centre hardly moves and the
+        // reading came back 0.0mm for the entire folding: a measurement
+        // that cannot see the thing it is measuring reports perfection.
+        const box = new THREE.Box3();
+        const centre = () => { box.setFromObject(fuk.mesh, true);
+          return [box.min.x, box.min.y, box.min.z,
+                  box.max.x, box.max.y, box.max.z]; };
+        const gap = (a, b) => { let q = 0;
+          for (let i = 0; i < 6; i++) q += (a[i] - b[i]) * (a[i] - b[i]);
+          return Math.sqrt(q); };
+        ["fold", "wipe", "unfold"].forEach((name) => {
+          const i = PURIFY.findIndex((b) => b.act === name);
+          if (i < 0) { out.push(name + " -- NO SUCH BEAT"); return; }
+          purStart(i);
+          const H = 1 / 60, N = Math.ceil(PURIFY[i].t / H);
+          let prev = null, worst = 0, at = 0, tot = 0, n = 0;
+          for (let k = 0; k <= N; k++) {
+            purStep(k === 0 ? 0 : H);
+            const c = centre();
+            if (prev) {
+              const d = gap(c, prev);
+              tot += d; n++;
+              if (d > worst) { worst = d; at = k * H; }
+            }
+            prev = c;
+          }
+          const mean = n ? tot / n : 0;
+          const ratio = mean > 1e-9 ? worst / mean : 0;
+          out.push(name + ": worst step " + (worst * 1000).toFixed(1) +
+                   "mm at " + at.toFixed(1) + "s, typical " +
+                   (mean * 1000).toFixed(2) + "mm, ratio " + ratio.toFixed(1) +
+                   (ratio < 6 ? " -- continuous" : " -- IT JUMPS"));
+        });
+        document.body.setAttribute("data-smoothtest", out.join(" | "));
+      }, 1200);
+    }
+
     // ---- do the tsukubai stones stand where the plan puts them ------------
     // ?tsukubaitest. Four stones in a cross about the drain, and the cross
     // is oriented by the GUEST: crouched on the maeishi facing the water,
@@ -6533,13 +6585,25 @@
                    ", and " + Math.round(Math.hypot(raised.x - knee.x, raised.z - knee.z) * 1000) +
                    "mm from the host's knees, in front of them");
         } else out.push("NEVER RAISED");
-        // The first samples are the CARRY, the cloth coming down from where it
-        // was folded; after that it is on the lid and stays there.
+        // The first samples are the CARRY, the cloth coming down from where
+        // it was folded. After that it is on the lid FOR THE STROKES and
+        // lifted BETWEEN them: the returns go over rather than through, so
+        // "never leaves the lid" is no longer the rule and was reporting a
+        // deliberate 16mm hop as a fault. What must still hold is that it
+        // comes back down: it touches at least as often as it lifts, and it
+        // never rises higher than the hop it is allowed.
         const onLid = touch.filter((v, i) => i >= 2);
+        const down = onLid.filter((v) => Math.abs(v) < 1).length;
+        const HOP = 18;                      // the 16mm lift, and a little
         out.push("while wiping, the cloth's foot off the lid: " +
                  (touch.length ? touch.join(", ") + "mm -- carried down from " +
-                  touch[0] + ", then " +
-                  (onLid.every((v) => Math.abs(v) < 1) ? "on it" : "OFF IT")
+                  touch[0] + ", then down on it " + down + " of " +
+                  onLid.length + " times, never above " +
+                  Math.max.apply(null, onLid.map(Math.abs)) + "mm" +
+                  (down >= onLid.length / 2 &&
+                   onLid.every((v) => Math.abs(v) <= HOP)
+                     ? " -- on it for the strokes, over it between them"
+                     : " -- IT DOES NOT COME BACK DOWN")
                                : "NEVER MEASURED"));
         const cad = loc(pickObj("natsume", false));
         const want = window.__purify().third;
@@ -9145,9 +9209,17 @@
     const _pb = new THREE.Box3(), _pc = new THREE.Vector3();
     // The cloth put where its own box says it touches, exactly as in the
     // bench: a 9mm packet and a 67mm lid cannot be made to meet by numbers.
-    function layCloth(kind, ax, az, lid) {
+    // `lift` raises it off the lid, in metres. A cloth that is travelling
+    // back for the next stroke is not wiping, and it is not on the lid
+    // either: without somewhere to be in between, the two strokes could
+    // only be cut together.
+    // `roll` turns it from standing on its edge (0) to lying flat (1). The
+    // cloth used to change from one to the other between two frames at the
+    // moment it was opened, which is a quarter turn in no time at all.
+    function layCloth(kind, ax, az, lid, lift, roll) {
       fukHand.rotation.order = "YXZ";
-      fukHand.rotation.set(kind === "flat" || kind === "hand" ? 0 : Math.PI / 2,
+      fukHand.rotation.set(roll !== undefined ? Math.PI / 2 * (1 - roll)
+                           : (kind === "flat" || kind === "hand" ? 0 : Math.PI / 2),
                            kind === "up" ? FACE : (kind === "hand" ? handYaw() : 0), 0);
       fukHand.position.set(0, 0, 0);
       fukHand.updateMatrixWorld(true);
@@ -9165,7 +9237,7 @@
         fukHand.position.set(WORK.x - w.x, WORK_Y + FOLD_UP - (w.y - stage.position.y),
                              WORK.z - w.z);
       } else {
-        fukHand.position.set(lid.x + ax * lid.r - w.x, lid.y - foot,
+        fukHand.position.set(lid.x + ax * lid.r - w.x, lid.y - foot + (lift || 0),
                              lid.z + az * lid.r - w.z);
       }
       fukHand.updateMatrixWorld(true);
@@ -9195,16 +9267,27 @@
     // THE WIPING, as he gave it: two strokes with the thick fold, the far
     // half then the near, and then the cloth opened and passed flat, right
     // off the lid, where it folds in two again.
+    // EVERY SEGMENT BEGINS WHERE THE LAST ONE ENDED, which it did not.
+    // The far stroke finished at the right of the lid and the near stroke
+    // began at the left, so the cloth was gone from one place and in
+    // another between two frames: "le fukusa reapparait brusquement un peu
+    // plus en bas du natsume." There was a second cut at the opening, from
+    // the right of the lid to the left of it and from edge to flat at once.
+    //
+    // So the returns are movements now, and they go OVER rather than
+    // through: a hand carrying a cloth back across a lid lifts it, and
+    // `lift` is a hump that is nothing at both ends. What is left is one
+    // continuous path from the first stroke to the last.
     const STROKES = [
       // CARRIED, not cut to: the cloth travels from where it was folded down
       // to the lid, turning as it goes.
-      { carry: true, t: 1.3 },
-      { k: "edge", a: [-0.95, -0.45], b: [0.95, -0.45], t: 1.0 },
-      { k: "edge", a: [-0.95, 0.45], b: [-0.95, 0.45], t: 0.4 },
-      { k: "edge", a: [-0.95, 0.45], b: [0.95, 0.45], t: 1.0 },
-      { open: true, t: 0.8 },
-      { k: "flat", a: [-0.95, 0], b: [2.30, 0], t: 1.3 },
-      { close: true, t: 0.8 },
+      { carry: true, t: 1.5 },
+      { k: "edge", a: [-0.95, -0.45], b: [0.95, -0.45], t: 1.25 },
+      { k: "edge", a: [0.95, -0.45], b: [-0.95, 0.45], t: 1.05, lift: 0.016 },
+      { k: "edge", a: [-0.95, 0.45], b: [0.95, 0.45], t: 1.25 },
+      { open: true, a: [0.95, 0.45], b: [-0.95, 0], t: 1.25, lift: 0.016 },
+      { k: "flat", a: [-0.95, 0], b: [2.30, 0], t: 1.6 },
+      { close: true, a: [2.30, 0], b: [2.30, 0], t: 1.0 },
     ];
     const PURIFY = [
       { act: "appear", t: 2.2, names: ["fukusa"],
@@ -9217,7 +9300,7 @@
               "soiled." },
       { act: "lift", t: 3.2, names: ["natsume"],
         line: "The caddy is raised before the host's knees." },
-      { act: "wipe", t: 6.6, names: ["natsume", "fukusa"],
+      { act: "wipe", t: 8.9, names: ["natsume", "fukusa"],   // = the strokes' own sum
         line: "Two strokes with the thick fold, across the far half of the lid " +
               "and then the near; then the cloth is opened and passed flat." },
       { act: "down", t: 3.6, names: ["natsume"],
@@ -12196,6 +12279,7 @@
       const k = Math.min(n, Math.floor(q));
       return { k: k, f: glide((q - Math.floor(q)) / (1 - FOLD_HOLD)) };
     }
+    const _upP = new THREE.Vector3(), _upQ = new THREE.Quaternion();
     function purStep(dt) {
       if (purIdx < 0) return;
       const st = PURIFY[purIdx];
@@ -12222,7 +12306,14 @@
           }
           acc += k.t;
         }
-        const ce = cu < 0.5 ? 2 * cu * cu : 1 - Math.pow(-2 * cu + 2, 2) / 2;
+        // THE SAME GLIDE THE FOLDS USE, and for the same reason: the old
+        // easing here was ease-in-out quadratic, whose peak is twice its
+        // own mean, so a stroke a second long crossed the lid in a lunge.
+        // The trapezoid peaks at 1.47 instead of 2.
+        const ce = glide(cu);
+        // and the lift is a hump, nothing at either end of the segment, so
+        // the cloth leaves the lid and comes back to it within the move
+        const up = (cur.lift || 0) * Math.sin(Math.PI * cu);
         if (cur.carry) {
           fukHand.position.lerpVectors(purCarry.p, purTo.p, ce);
           fukHand.quaternion.slerpQuaternions(purCarry.q, purTo.q, ce);
@@ -12230,10 +12321,16 @@
         } else if (cur.open || cur.close) {
           const v = cur.open ? 1 - ce : ce;
           fuk.set(FOLD_N, 0, uSet({ [I_NAT]: v }));
-          layCloth("flat", cur.open ? -0.95 : 2.30, 0, purLid);
+          // OPENING IS ALSO A TURN. It comes off its edge as it comes open,
+          // over the same travel, instead of being flat from the first frame
+          // of the segment: measured, that snap was a 23mm step in a beat
+          // whose ordinary step is two.
+          layCloth("flat", cur.a[0] + (cur.b[0] - cur.a[0]) * ce,
+                   cur.a[1] + (cur.b[1] - cur.a[1]) * ce, purLid, up,
+                   cur.open ? ce : 1);
         } else {
           layCloth(cur.k, cur.a[0] + (cur.b[0] - cur.a[0]) * ce,
-                   cur.a[1] + (cur.b[1] - cur.a[1]) * ce, purLid);
+                   cur.a[1] + (cur.b[1] - cur.a[1]) * ce, purLid, up);
         }
       } else if (st.act === "unfold") {
         // OPENED RIGHT OUT and then folded again: the first half runs the
@@ -12244,8 +12341,18 @@
         if (u < 0.5) {
           const c = creaseAt(1 - u / 0.5, FOLD_N);
           fuk.set(c.k, c.f, null);
-          fukHand.position.lerpVectors(purCarry.p, purTo.p, Math.min(1, u / 0.5));
-          fukHand.quaternion.slerpQuaternions(purCarry.q, purTo.q, Math.min(1, u / 0.5));
+          // TOWARD WHERE THE CLOTH IS NOW, not toward where it was going to
+          // be. purTo was measured at the start of the beat, on a folded
+          // packet; by the middle of the beat the cloth is a 285mm square
+          // and its held pose is somewhere else entirely, so the second half
+          // began 272mm from where the first half ended. Measured by
+          // ?smoothtest. layCloth reads the cloth's own box, so asking it
+          // each frame gives the pose that belongs to this shape.
+          layCloth("up", 0, 0, purLid);
+          const w = Math.min(1, u / 0.5);
+          _upP.copy(fukHand.position); _upQ.copy(fukHand.quaternion);
+          fukHand.position.lerpVectors(purCarry.p, _upP, w);
+          fukHand.quaternion.slerpQuaternions(purCarry.q, _upQ, w);
           fukHand.updateMatrixWorld(true);
         } else {
           const c = creaseAt((u - 0.5) / 0.5, I_NAT);
