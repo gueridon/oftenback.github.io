@@ -5571,6 +5571,18 @@
                                   : " -- IT SHAVES THE LIP"));
           }
           {
+            const prof = [];
+            for (let d = 6; d <= 42; d += 6) {
+              prof.push(d + ":" + Math.round(
+                WATER.radiusAt(bowl.pr, bowl.rim - d / 1000) * 2000));
+            }
+            out.push(name + ": the bowl is " +
+                     Math.round((bb.max.x - bb.min.x) * 1000) + "mm across " +
+                     "outside, " + Math.round((bb.max.y - bb.min.y) * 1000) +
+                     " tall; the inside, by depth below the rim, " +
+                     prof.join(" "));
+          }
+          {
             const wb0 = new THREE.Box3().setFromObject(w, true);
             out.push(name + ": the whisk's ring is " +
                      Math.round(Math.max(wb0.max.x - wb0.min.x,
