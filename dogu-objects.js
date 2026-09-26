@@ -1930,6 +1930,9 @@
     return grp;
   }
 
+  // How far the whisk sits across the bowl's middle, toward the water jar.
+  // Nought put its ring against the far wall; swept on ?whisktest.
+  const WHISK_ACROSS = 0;
   function chawanSet(opt) {
     const O = opt || {};
     const by = (k) => OBJECTS.find((o) => o.key === k).build();
@@ -1999,6 +2002,20 @@
     // never lean out over the rim, which is what his photograph shows it doing.
     whiskG.position.x += -(wb.min.x + wb.max.x) / 2 +
                          (O.wx === undefined ? 0.015 : O.wx);
+    // AND ACROSS. "Le fouet n'est pas bien centre dans le bol et donc il
+    // passe toujours a travers; il faut le deplacer dans la direction du
+    // mizusashi un petit peu, de sorte que les tines ne passent plus dans
+    // la paroi." Centred in x by its handle's reach and left at nothing in
+    // z, the ring sat closer to one wall than the other, and lifting it out
+    // took the tines through that side. Swept against the tea room's own
+    // clash reading, ?whisktest, rather than chosen.
+    (function across() {
+      const q = (typeof location === "undefined") ? null
+        : new URLSearchParams(location.search).get("wz");
+      const v = q === null ? NaN : parseFloat(q);
+      whiskG.position.z += O.wz !== undefined ? O.wz
+                          : (isFinite(v) ? v : WHISK_ACROSS);
+    })();
     whiskG.name = "chasen";
 
     if (O.scoop !== false) {
