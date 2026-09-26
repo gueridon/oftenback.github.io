@@ -10025,7 +10025,7 @@
         line: "The ladle is taken up and held before him; the kettle is " +
               "opened and its lid set on the rest; and the ladle comes to " +
               "the kettle's mouth." },
-      { act: "whisk", t: 4.2, names: ["chasen"],
+      { act: "whisk", t: 5.9, names: ["chasen"],
         line: "The whisk comes out of the bowl and stands on its foot, " +
               "between the caddy and the bowl, on the same line." },
       { act: "linen", t: 4.0, names: ["chakin"],
@@ -13276,16 +13276,34 @@
             // EACH PART EASED IN ITS OWN RIGHT, as before: taken as one
             // eased curve cut in three the rate jumped at the joins and the
             // whisk came round at 288 degrees a second.
-            // AND IT TIPS AS IT RISES, which looks wrong and is not. I
-            // held the pose until the piece was clear, on the argument
-            // that a 58mm ring should not be turned at the bottom of a
-            // 100mm bowl; measured, that made it worse, 7mm in the clay
-            // against 2. Tipping is what narrows the ring's footprint, so
-            // taking it away is what drives the tines into the wall.
-            const g9 = u < 0.5 ? ease3(u / 0.5) : ease3((u - 0.5) / 0.5);
-            o.quaternion.slerpQuaternions(
-              u < 0.5 ? purScoopQ.from : purScoopQ.mid,
-              u < 0.5 ? purScoopQ.mid : purScoopQ.to, g9);
+            // IT COMES UP OUT OF THE BOWL BEFORE IT TURNS. Seen from
+            // above at ?over=chawan the old timing is plain: within a
+            // tenth of the beat the whisk has swung and slid to one side
+            // and its ring sits astride the rim, half in and half out.
+            // The turn is what carries the head sideways, and it was
+            // beginning on the first frame.
+            //
+            // So the pose is held while the piece lifts, and the turn
+            // takes the middle of the beat. Each part eased in its own
+            // right, as the two were: taken as one curve cut up, the rate
+            // jumps at the joins and the whisk came round at 288 degrees a
+            // second.
+            // AND THE BEAT IS LONGER FOR IT. Holding the pose leaves the
+            // turn a shorter window, and the same turn in less time is a
+            // faster turn: ?puretest caught it at 241 degrees a second
+            // against 183 before, which it calls too fast to read. The
+            // beat grew by the same proportion the window lost.
+            const HOLD = 0.26, FLAT = 0.63;
+            let g9, qa, qb;
+            if (u < HOLD) { qa = purScoopQ.from; qb = purScoopQ.from; g9 = 0; }
+            else if (u < FLAT) {
+              qa = purScoopQ.from; qb = purScoopQ.mid;
+              g9 = ease3((u - HOLD) / (FLAT - HOLD));
+            } else {
+              qa = purScoopQ.mid; qb = purScoopQ.to;
+              g9 = ease3((u - FLAT) / (1 - FLAT));
+            }
+            o.quaternion.slerpQuaternions(qa, qb, g9);
           } else {
             o.quaternion.slerpQuaternions(purScoopQ.from, purScoopQ.to, e);
           }
@@ -15751,6 +15769,43 @@
     let skySnap = new URLSearchParams(location.search).has("sky");
     window.__sky = () => ({ want: skyWant, at: +skyT.toFixed(3),
       y: +camera.position.y.toFixed(2), fov: +camera.fov.toFixed(1) });
+    // ---- STRAIGHT DOWN OVER ONE THING ------------------------------------
+    // ?over=chawan&overh=0.45&overfov=22. A plan view of a single utensil,
+    // for the questions a seated eye cannot answer: from the guest's place
+    // the bowl's rim is nearly edge on, so a whisk passing over it and a
+    // whisk passing through it look the same. From above they do not.
+    // Debug only; nothing links to it and it changes nothing when absent.
+    const OVER = new URLSearchParams(location.search).get("over");
+    const OVER_H = (function () {
+      const v = parseFloat(new URLSearchParams(location.search).get("overh"));
+      return isFinite(v) ? v : 0.40;
+    })();
+    const OVER_FOV = (function () {
+      const v = parseFloat(new URLSearchParams(location.search).get("overfov"));
+      return isFinite(v) ? v : 24;
+    })();
+    function overStep() {
+      if (!OVER) return;
+      const o = pickObj(OVER, true) || pickObj(OVER, false);
+      if (!o) return;
+      o.updateMatrixWorld(true);
+      const b = new THREE.Box3().setFromObject(o, true);
+      const c = b.getCenter(new THREE.Vector3());
+      if (new URLSearchParams(location.search).has("overside")) {
+        // LEVEL WITH THE RIM, which is the view that answers "over it or
+        // through it": from above you see where a thing is, from the side
+        // you see how high.
+        camera.position.set(c.x + OVER_H, b.max.y + 0.004, c.z);
+        camera.up.set(0, 1, 0);
+        camera.lookAt(c.x, b.max.y, c.z);
+      } else {
+        camera.position.set(c.x, b.max.y + OVER_H, c.z + 0.0001);
+        camera.up.set(0, 0, -1);          // north is away from the host
+        camera.lookAt(c.x, c.y, c.z);
+      }
+      camera.fov = OVER_FOV;
+      camera.updateProjectionMatrix();
+    }
     function frame(now) {
       window.__firstFrame = true;   // the loading screen waits on this, and it
                                     // must be set for the ?cam= views too
@@ -15851,6 +15906,7 @@
       soundStep(rdt);
       if (skySnap) setSky(true);     // ?sky, once the lens has settled
       skyStep(rdt);                  // and the view may be lifted off it all
+      overStep();                    // or set straight over one utensil
       if (PERF) {
         if (!perfEl) perfInit();
         if (perfLastNow) perfPush(perfFrame, now - perfLastNow);
