@@ -5439,6 +5439,36 @@
                     : Math.round(byThen * 1000) + "mm sideways" +
                       (byThen < 0.010 ? " -- straight up first"
                                       : " -- IT SLIDES")));
+          // AND WHETHER IT IS ONE GESTURE. Three legs joined end to end,
+          // each eased in its own right, bring the hand to a stop twice in
+          // the middle of a movement: "on voit trois mouvements." A stop
+          // shows up as a step far smaller than its neighbours, so the
+          // SMALLEST step in the travel is the reading, not the largest.
+          {
+            // THE MIDDLE OF THE TRAVEL, between a sixth and five sixths of
+            // the way across. Over the whole beat the lid is still for two
+            // of its three phases and eases off at both ends of its own,
+            // so the smallest step there is nought whatever the path does
+            // in between: the question is whether it stops while crossing.
+            const span = home.distanceTo(away) || 1;
+            let slow = 1e9, fast = 0, tot = 0, n2 = 0;
+            for (let k = 1; k < path.length; k++) {
+              const fr = path[k].c.distanceTo(home) / span;
+              if (fr < 0.167 || fr > 0.833) continue;
+              const d0 = path[k].c.distanceTo(path[k - 1].c);
+              slow = Math.min(slow, d0); fast = Math.max(fast, d0);
+              tot += d0; n2++;
+            }
+            if (!n2) { out.push(name + " -- NO TRAVEL TO READ"); return; }
+            const m2 = n2 ? tot / n2 : 0;
+            out.push(name + ": while it travels its slowest step is " +
+                     (slow * 1000).toFixed(1) + "mm and its fastest " +
+                     (fast * 1000).toFixed(1) + ", against " +
+                     (m2 * 1000).toFixed(1) + " typical" +
+                     (slow > m2 * 0.18
+                        ? " -- it never stops on the way"
+                        : " -- IT STOPS IN THE MIDDLE"));
+          }
           out.push(name + ": at its closest it passes " +
                    (worst > 1e8 ? "clear of the iron the whole way"
                     : Math.round(worst * 1000) + "mm over the iron, " +
@@ -8903,20 +8933,33 @@
     // a sine hump over it sets off sideways, and measured, the lid was
     // passing 28mm inside the iron halfway across.
     //
-    // Three legs and not one: straight up, across at that height, straight
-    // down. The middle leg holds its clearance over the LINE between the two
-    // ends rather than over a fixed level, so it clears the shoulder as well
-    // as the mouth, and it ends exactly where a plain lerp would.
-    const LID_UP = 0.075;                    // how far it rises before travelling
+    // ONE ARC AND NOT THREE LEGS. It was written as straight up, across,
+    // straight down, each eased in its own right: three movements with the
+    // hand stopping between them. "Il faut un geste plus doux, plus lent et
+    // plus circulaire, comme un seul geste continu."
+    //
+    // So the two components are chosen to make one curve rather than joined
+    // end to end. The travel follows (1 - cos) and the rise follows sin of
+    // the same angle, which is the parameterisation of an ELLIPSE: the path
+    // IS an arc from one place to the other, rising `clear` at its middle.
+    // Nothing is stitched, so there is nothing to stop at.
+    //
+    // And it still leaves straight up. The travel's derivative is zero at
+    // both ends while the rise's is not, so the first movement is vertical
+    // and so is the last, which is what a hand does with a lid; it simply
+    // does not have to be a separate leg to be true.
+    // ABOVE THE HIGHER END, not above the middle of the line. An arc's
+    // crown stands `clear` over the midpoint of its chord, and the chord
+    // falls 118mm from the kettle's mouth to the lid rest: asked for 75 it
+    // crowned 16mm over the mouth and grazed the iron. Half the drop is
+    // added back, so the crown is always LID_UP above whichever end is
+    // higher, whichever way the lid is going.
+    const LID_UP = 0.115;                    // the crown, over the higher end
     function overIt(o, a, b, f, clear) {
-      const RISE = 0.30, FALL = 0.30;
-      let up, across;
-      if (f < RISE) { up = ease3(f / RISE); across = 0; }
-      else if (f < 1 - FALL) {
-        up = 1; across = ease3((f - RISE) / (1 - RISE - FALL));
-      } else { up = 1 - ease3((f - (1 - FALL)) / FALL); across = 1; }
+      const th = Math.PI * Math.max(0, Math.min(1, f));
+      const across = (1 - Math.cos(th)) / 2;
       o.position.lerpVectors(a.p, b.p, across);
-      o.position.y += clear * up;
+      o.position.y += (clear + Math.abs(a.p.y - b.p.y) / 2) * Math.sin(th);
       o.quaternion.slerpQuaternions(a.q, b.q, across);
       if (f >= 1) { o.position.copy(b.p); o.quaternion.copy(b.q); }
     }
@@ -9703,7 +9746,7 @@
       // place is the rest the ladle is lying on. It ends across the kettle's
       // mouth because that is where the water is taken from, and where it
       // comes back to for the rest of the ceremony.
-      { act: "unlid", t: 12.0, names: ["hishaku", "kamabuta"],
+      { act: "unlid", t: 21.0, names: ["hishaku", "kamabuta"],
         line: "The ladle is taken up and held before him; the kettle is " +
               "opened and its lid set on the rest; and the ladle comes to " +
               "the kettle's mouth." },
@@ -9892,7 +9935,7 @@
       // not the one I had: the ladle is taken up, the kettle shut, the
       // ladle laid down, the lid rest brought in, and only then the water
       // jar closed.
-      { act: "relid", t: 18.0, names: ["hishaku", "kamabuta", "kensui"],
+      { act: "relid", t: 29.0, names: ["hishaku", "kamabuta", "kensui"],
         line: "The ladle is taken up and held; the kettle is shut; and the " +
               "ladle is laid across the waste water, along the back wall." },
       { act: "restfut", t: 6.0, names: ["futaoki", "hishaku"],
@@ -11636,7 +11679,7 @@
     function relidAt(w, u) {
       // THE LAST LEG IS THE LONGEST TRAVEL: from in front of his knees out
       // to the waste water at the far side of the mat.
-      const seg = [0.26, 0.26, 0.48];
+      const seg = [0.20, 0.42, 0.38];
       let t = u, i = 0;
       while (i < seg.length - 1 && t > seg[i]) { t -= seg[i]; i++; }
       const e = ease3(Math.max(0, Math.min(1, t / seg[i])));
@@ -11733,7 +11776,9 @@
       // THE FIRST IS THE LONGEST TRAVEL: the ladle comes the whole way from
       // beside the kettle to in front of his knees and rises as it goes, so
       // an even third of the beat carried it at 570mm a second.
-      const seg = [0.40, 0.26, 0.34];
+      // AND THE LID'S SHARE IS WIDENED, because the lid is the gesture being
+      // watched here and a quarter of the beat made an arc into a flick.
+      const seg = [0.30, 0.42, 0.28];
       let t = u, i = 0;
       while (i < seg.length - 1 && t > seg[i]) { t -= seg[i]; i++; }
       const e = ease3(Math.max(0, Math.min(1, t / seg[i])));
