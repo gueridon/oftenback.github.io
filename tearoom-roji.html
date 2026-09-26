@@ -5424,6 +5424,33 @@
                    (sb.min.y - floor < 0.004 && flap > sb.min.y
                       ? " -- in the bottom of it"
                       : " -- PERCHED ON IT"));
+          // AND HOW IT LIES. "Le chashaku devrait pointer scoop vers le bas,
+          // a un angle d'environ 35 degres, et le fukusa doit suivre la
+          // pente." Two slopes, and they have to be the same one: the blade
+          // end against the cut end for the scoop, and the cloth's own floor
+          // measured along the same direction.
+          const bo = bladeOffset(sc);                       // toward the blade
+          const runB = Math.hypot(bo.x, bo.z);
+          const tilt = runB > 1e-6 ? Math.atan2(-bo.y, runB) * 180 / Math.PI : 0;
+          // THE CLOTH'S SLOPE IS ITS FRAME'S, not a pair of vertices. Read
+          // as the lowest vertex at each end of a band it came back a third
+          // of a degree while the cloth was plainly tilted: on a packet of
+          // thirty two layers the extreme vertex at one end belongs to a
+          // different layer from the extreme at the other, so the reading
+          // was the difference between two skins and not a slope at all.
+          // The U runs along the cloth's own x, so that axis IS the slope.
+          const dirB = new THREE.Vector3(bo.x, 0, bo.z).normalize();
+          const hx = new THREE.Vector3(1, 0, 0).applyQuaternion(
+            fukHand.getWorldQuaternion(new THREE.Quaternion()));
+          const toward = Math.sign(hx.dot(dirB)) || 1;
+          const slope = Math.atan2(-hx.y * toward,
+                                   Math.hypot(hx.x, hx.z)) * 180 / Math.PI;
+          out.push(name + ": the blade end is " + tilt.toFixed(1) +
+                   " degrees below the cut end, and the cloth under it falls " +
+                   slope.toFixed(1) + " degrees the same way" +
+                   (Math.abs(tilt - 35) < 6 && Math.abs(slope - tilt) < 8
+                      ? " -- it points down and the cloth follows"
+                      : " -- NOT ON THE SLOPE"));
         });
         document.body.setAttribute("data-utest", out.join(" | "));
       }, 1200);
@@ -9190,6 +9217,17 @@
     // correction: "il faut que tu le pivotes de 90 degres". So it is the
     // short way of the cloth that runs with the scoop, and the U folds --
     // which run with the scoop too -- cross its long way.
+    // THE SCOOP LIES NOSE DOWN, and the cloth lies along with it. "Le
+    // chashaku devrait pointer scoop vers le bas, a un angle d'environ 35
+    // degres, et donc le fukusa doit suivre la pente." It is one slope and
+    // not two, so one number, and the cloth's is the negative of it: the
+    // two are yawed half a turn apart (handYaw and scoopYaw differ by pi),
+    // so their local x axes point opposite ways along the same line and the
+    // same sign would tip them against each other.
+    const STILT = (function () {
+      const v = parseFloat(new URLSearchParams(location.search).get("stilt"));
+      return (isFinite(v) ? v : 35) * Math.PI / 180;
+    })();
     function handYaw() {
       const p = bundleDir();
       return Math.atan2(-p.z, p.x);
@@ -9346,9 +9384,13 @@
     // moment it was opened, which is a quarter turn in no time at all.
     function layCloth(kind, ax, az, lid, lift, roll) {
       fukHand.rotation.order = "YXZ";
+      // YXZ, so the z is applied FIRST, about the cloth's own length: yaw,
+      // then tip along it. Only the hand pose is tipped; every other pose
+      // here is level.
       fukHand.rotation.set(roll !== undefined ? Math.PI / 2 * (1 - roll)
                            : (kind === "flat" || kind === "hand" ? 0 : Math.PI / 2),
-                           kind === "up" ? FACE : (kind === "hand" ? handYaw() : 0), 0);
+                           kind === "up" ? FACE : (kind === "hand" ? handYaw() : 0),
+                           kind === "hand" ? -STILT : 0);
       fukHand.position.set(0, 0, 0);
       fukHand.updateMatrixWorld(true);
       _pb.setFromObject(fuk.mesh, true);
@@ -11896,7 +11938,8 @@
         const sc = pickObj("chashaku", false);
         if (sc) {
           stage.attach(sc);                     // out of the bowl it rode in
-          purScoopFrom = { p: sc.position.clone(), r: sc.rotation.clone() };
+          purScoopFrom = { p: sc.position.clone(), r: sc.rotation.clone(),
+                           q: sc.quaternion.clone() };
           // MEASURED AGAINST WHERE THE CLOTH WILL BE, not where it is, and
           // that has to mean its SHAPE as well as its place. The packet is
           // turned half round during this beat, and the turn carries it
@@ -11927,7 +11970,16 @@
         // cloth a quarter left this pointing across the scoop, so the silk
         // went left and right as if sawing through it. It is the bundle's own
         // direction -- the way the blade points -- and it always was.
-        purAxis = bundleDir().clone();
+        //
+        // AND DOWN THE SLOPE WITH IT. The bundle's direction is horizontal
+        // and the scoop is not: taken flat, the stroke would leave the
+        // blade end as it travelled. The cloth's own x IS the slope, so the
+        // axis is read off the hand and only its sign comes from the
+        // bundle.
+        const hx = new THREE.Vector3(1, 0, 0).applyQuaternion(
+          fukHand.getWorldQuaternion(new THREE.Quaternion())).normalize();
+        const flat = bundleDir();
+        purAxis = hx.multiplyScalar(Math.sign(hx.dot(flat)) || 1);
       } else if (st.act === "rest") {
         const sc = pickObj("chashaku", false);
         if (sc) {
@@ -12134,8 +12186,16 @@
       const c = b.getCenter(new THREE.Vector3());
       // ALONG the cloth's length, not across it: "perpendiculaire a la
       // largeur", which is his correction of my reading.
+      // yaw, then the same tip, composed as a quaternion because an Euler
+      // in XYZ would take the second turn about a world axis and not about
+      // the piece's own length
+      const q = new THREE.Quaternion()
+        .setFromEuler(new THREE.Euler(0, scoopYaw(), 0))
+        .multiply(new THREE.Quaternion()
+          .setFromAxisAngle(new THREE.Vector3(0, 0, 1), STILT));
       return sitOn(sc, scoopYaw(), c.x - stage.position.x,
-                   c.z - stage.position.z, b.max.y - stage.position.y);
+                   c.z - stage.position.z, b.max.y - stage.position.y,
+                   0, q);
     }
     // UPRIGHT, SOLVED FROM THE PIECE ITSELF. "Le chasen doit etre debout,
     // c'est-a-dire qu'il est pose sur son pied et le fouet vers le plafond."
@@ -12522,9 +12582,18 @@
         if (sc && purScoopTo) {
           sc.position.lerpVectors(purScoopFrom.p, purScoopTo.p, e);
           sc.position.y += Math.sin(Math.PI * u) * 0.05;   // lifted, not dragged
-          sc.rotation.set(purScoopFrom.r.x * (1 - e),
-                          purScoopFrom.r.y + rywrap(purScoopTo.r.y - purScoopFrom.r.y) * e,
-                          purScoopFrom.r.z * (1 - e));
+          // BY QUATERNION when the target carries one. sitOn returns both an
+          // Euler and a quaternion, and the Euler is built from the yaw
+          // alone: turning the scoop by it threw the nose-down tip away
+          // without a word, and the piece arrived level however it had been
+          // asked to lie.
+          if (purScoopTo.q && purScoopFrom.q) {
+            sc.quaternion.slerpQuaternions(purScoopFrom.q, purScoopTo.q, e);
+          } else {
+            sc.rotation.set(purScoopFrom.r.x * (1 - e),
+                            purScoopFrom.r.y + rywrap(purScoopTo.r.y - purScoopFrom.r.y) * e,
+                            purScoopFrom.r.z * (1 - e));
+          }
         }
       } else if (st.act === "clasp" || st.act === "clasp2") {
         fuk.set(FOLD_N, 0, uSet({ [I_NAT]: 0, [I_U]: e, [I_U + 1]: e }));
