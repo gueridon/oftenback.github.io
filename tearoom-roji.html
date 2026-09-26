@@ -5385,6 +5385,27 @@
           // distance perpendicular to the scoop, in the horizontal plane.
           const ax = bundleDir().clone().setY(0).normalize();
           const cr = new THREE.Vector3(-ax.z, 0, ax.x);
+          // THE UNDERSIDE AT ITS MIDDLE, and not the bottom of its box.
+          // Tilted thirty five degrees the box minimum is the blade tip,
+          // some fifty millimetres below the middle of the piece, so a test
+          // that looked for cloth beneath THAT looked half a hand too low
+          // and reported no cloth under the scoop at all.
+          let low = 1e9;
+          (function () {
+            const w = new THREE.Vector3();
+            sc.traverse((m) => {
+              const pa2 = m.geometry && m.geometry.attributes &&
+                          m.geometry.attributes.position;
+              if (!pa2) return;
+              const step = Math.max(1, Math.floor(pa2.count / 900));
+              for (let k2 = 0; k2 < pa2.count; k2 += step) {
+                w.fromBufferAttribute(pa2, k2).applyMatrix4(m.matrixWorld);
+                if (Math.hypot(w.x - mid.x, w.z - mid.z) > 0.016) continue;
+                if (w.y < low) low = w.y;
+              }
+            });
+          })();
+          if (low > 1e8) low = sb.min.y;
           fuk.mesh.updateMatrixWorld(true);
           const pa = fuk.mesh.geometry.attributes.position;
           const v = new THREE.Vector3(), d = new THREE.Vector3();
@@ -5394,16 +5415,26 @@
             d.subVectors(v, mid);
             if (Math.abs(d.dot(ax)) > 0.030) continue;   // beside the scoop only
             const across = Math.abs(d.dot(cr));
-            // THE SURFACE IT RESTS ON: the highest cloth under the scoop,
-            // and under is the point. Taken as the highest vertex of the
-            // middle band it came back 42mm ABOVE the scoop, because once
-            // the U is closed the flaps lean in over the centre and a
-            // horizontal band cannot tell a leaning flap from the floor.
-            if (across < 0.008 && v.y <= sb.min.y + 0.001)
+            // THE SURFACE IT RESTS ON: the highest cloth in the channel and
+            // BELOW the piece, near its middle.
+            //
+            // I took that last condition out on the suspicion that it was
+            // grading its own answer, and it was not: without it the U's
+            // flaps lean in over the centre once they are up, and the
+            // reading became the height of a flap rather than of the floor.
+            // It came back 93mm with the scoop sitting where it should.
+            // Restricting to cloth BELOW the piece is what tells a floor
+            // from a wall; it does not force the answer, because cloth
+            // fifty millimetres down still reads fifty.
+            if (across < 0.008 && Math.abs(d.dot(ax)) < 0.020 &&
+                v.y <= low + 0.001)
               floor = Math.max(floor, v.y);
             else if (across < 0.040) flap = Math.max(flap, v.y);
           }
-          if (floor < -1e8 || flap < -1e8) {
+          if (floor < -1e8) {
+            out.push(name + " -- NO CLOTH UNDER THE SCOOP AT ALL"); return;
+          }
+          if (flap < -1e8) {
             const cb = new THREE.Box3().setFromObject(fuk.mesh, true);
             const cc = cb.getCenter(new THREE.Vector3());
             out.push(name + " -- NO CLOTH BESIDE THE SCOOP. scoop box " +
@@ -5418,10 +5449,10 @@
             return;
           }
           out.push(name + ": the scoop's underside sits " +
-                   Math.round((sb.min.y - floor) * 1000) +
+                   Math.round((low - floor) * 1000) +
                    "mm above the floor of the U, and the sides rise " +
-                   Math.round((flap - sb.min.y) * 1000) + "mm past it" +
-                   (sb.min.y - floor < 0.004 && flap > sb.min.y
+                   Math.round((flap - low) * 1000) + "mm past it" +
+                   (low - floor < 0.004 && flap > low
                       ? " -- in the bottom of it"
                       : " -- PERCHED ON IT"));
           // AND HOW IT LIES. "Le chashaku devrait pointer scoop vers le bas,
@@ -5452,6 +5483,31 @@
                       ? " -- it points down and the cloth follows"
                       : " -- NOT ON THE SLOPE"));
         });
+        // AND FLAT WHEN IT IS SET DOWN. "Quand le chashaku est propre, on
+        // le depose sur le natsume, mais parallele au sol, horizontal."
+        ["rest", "rest2"].forEach((name) => {
+          const want = PURIFY.findIndex((b) => b.act === name);
+          if (want < 0) { out.push(name + " -- NO SUCH BEAT"); return; }
+          for (let k = 0; k <= want; k++) {
+            purStart(k); purT = PURIFY[k].t; purStep(0);
+          }
+          const sc = pickObj("chashaku", false);
+          if (!sc) { out.push(name + " -- NO SCOOP"); return; }
+          const bo = bladeOffset(sc);
+          const run = Math.hypot(bo.x, bo.z);
+          const t = run > 1e-6 ? Math.atan2(-bo.y, run) * 180 / Math.PI : 0;
+          out.push(name + ": set down at " + t.toFixed(1) +
+                   " degrees off the level" +
+                   (Math.abs(t) < 6 ? " -- flat" : " -- STILL TILTED"));
+        });
+        if (window.__onCloth) {
+          const o2 = window.__onCloth;
+          out.push("placing: cloth box top " + (o2.boxTop * 1000).toFixed(0) +
+                   ", cloth surface under the middle " +
+                   (o2.clothY * 1000).toFixed(0) + ", scoop underside there " +
+                   (o2.scoopY * 1000).toFixed(0) + ", dropped by " +
+                   (o2.drop * 1000).toFixed(0) + "mm");
+        }
         document.body.setAttribute("data-utest", out.join(" | "));
       }, 1200);
     }
@@ -11983,7 +12039,8 @@
       } else if (st.act === "rest") {
         const sc = pickObj("chashaku", false);
         if (sc) {
-          purScoopFrom = { p: sc.position.clone(), r: sc.rotation.clone() };
+          purScoopFrom = { p: sc.position.clone(), r: sc.rotation.clone(),
+                           q: sc.quaternion.clone() };
           purScoopTo = onLid(sc, caddy);
         }
       } else if (st.act === "backCaddy" || st.act === "backBowl") {
@@ -12193,9 +12250,51 @@
         .setFromEuler(new THREE.Euler(0, scoopYaw(), 0))
         .multiply(new THREE.Quaternion()
           .setFromAxisAngle(new THREE.Vector3(0, 0, 1), STILT));
-      return sitOn(sc, scoopYaw(), c.x - stage.position.x,
-                   c.z - stage.position.z, b.max.y - stage.position.y,
-                   0, q);
+      const at = sitOn(sc, scoopYaw(), c.x - stage.position.x,
+                       c.z - stage.position.z, b.max.y - stage.position.y,
+                       0, q);
+      // AND THEN THE HEIGHT IS CORRECTED BY MEASUREMENT. sitOn stands a
+      // piece with its box's lowest point on a given level, and the level
+      // asked for was the top of the cloth's box. That was right while the
+      // packet lay flat: its box top WAS the surface. Tilted thirty five
+      // degrees the box top is the packet's raised corner, some way above
+      // the channel the scoop is meant to lie in, so the two came apart and
+      // the scoop rode in the air over it.
+      //
+      // So the piece is put there, and then the gap between its underside
+      // and the cloth DIRECTLY BENEATH IT is measured and closed. Nothing
+      // here assumes which part of either is lowest.
+      const keepP = sc.position.clone(), keepQ = sc.quaternion.clone();
+      sc.position.copy(at.p); sc.quaternion.copy(at.q);
+      sc.updateMatrixWorld(true);
+      const under = (obj, rad, want) => {
+        let best = null; const w = new THREE.Vector3();
+        obj.traverse((m) => {
+          const pa = m.geometry && m.geometry.attributes &&
+                     m.geometry.attributes.position;
+          if (!pa) return;
+          const step = Math.max(1, Math.floor(pa.count / 900));
+          for (let i = 0; i < pa.count; i += step) {
+            w.fromBufferAttribute(pa, i).applyMatrix4(m.matrixWorld);
+            if (Math.hypot(w.x - c.x, w.z - c.z) > rad) continue;
+            if (best === null || (want === "min" ? w.y < best : w.y > best))
+              best = w.y;
+          }
+        });
+        return best;
+      };
+      const scoopY = under(sc, 0.016, "min");
+      const clothY = under(fuk.mesh, 0.009, "max");
+      sc.position.copy(keepP); sc.quaternion.copy(keepQ);
+      sc.updateMatrixWorld(true);
+      if (scoopY !== null && clothY !== null) {
+        at.p.y -= (scoopY - clothY);
+      }
+      window.__onCloth = { scoopY: scoopY, clothY: clothY,
+                           drop: (scoopY !== null && clothY !== null)
+                                 ? (scoopY - clothY) : null,
+                           boxTop: b.max.y, cx: c.x, cz: c.z, py: at.p.y };
+      return at;
     }
     // UPRIGHT, SOLVED FROM THE PIECE ITSELF. "Le chasen doit etre debout,
     // c'est-a-dire qu'il est pose sur son pied et le fouet vers le plafond."
@@ -12611,8 +12710,17 @@
         if (sc && purScoopTo) {
           sc.position.lerpVectors(purScoopFrom.p, purScoopTo.p, e);
           sc.position.y += Math.sin(Math.PI * u) * 0.04;
-          sc.rotation.y = purScoopFrom.r.y +
-                          rywrap(purScoopTo.r.y - purScoopFrom.r.y) * e;
+          // LEVEL WHEN IT IS SET DOWN. "Quand le chashaku est propre, on le
+          // depose sur le natsume, mais parallele au sol." It was cleaned
+          // nose down at thirty five degrees and this step turned only its
+          // yaw, so it came to rest on the caddy still tilted. onLid's pose
+          // is level; slerping to it brings the piece flat as it lands.
+          if (purScoopFrom.q && purScoopTo.q) {
+            sc.quaternion.slerpQuaternions(purScoopFrom.q, purScoopTo.q, e);
+          } else {
+            sc.rotation.y = purScoopFrom.r.y +
+                            rywrap(purScoopTo.r.y - purScoopFrom.r.y) * e;
+          }
         }
         setAlpha(fuk.mesh, 1 - e);
         if (u >= 1) fuk.mesh.visible = false;
