@@ -5351,6 +5351,104 @@
       }, 1200);
     }
 
+    // ---- does the lid go OVER the kettle or through it --------------------
+    // ?lidtest. "Quand on ouvre la bouilloire, le couvercle glisse a
+    // l'interieur ou passe dans la bouilloire." Which is a clearance, and
+    // a clearance can be read: at each step of the beat, the lowest point
+    // of the lid against the highest iron directly beneath it. Negative
+    // means the lid is inside the kettle.
+    if (new URLSearchParams(location.search).has("lidtest")) {
+      setTimeout(() => {
+        const out = [];
+        const kama = stage.getObjectByName("kama");
+        if (!kama) { document.body.setAttribute("data-lidtest", "no kettle"); return; }
+        // the iron's own vertices, once: the kettle does not move
+        // THE BODY, AND NOT WHAT STANDS OVER IT. Three of the things under
+        // kama reach from the mouth up to 590mm: the steam. Counted as iron
+        // they put the lid four hundred millimetres inside the kettle, which
+        // is a fact about a plume and not about a collision.
+        const lipsY = (kettleLips() || { y: 0.19 }).y + stage.position.y;
+        const iron = [];
+        kama.updateMatrixWorld(true);
+        const w = new THREE.Vector3();
+        kama.traverse((m) => {
+          if (m.name === "lid") return;                  // the lid is not the kettle
+          const pa = m.geometry && m.geometry.attributes &&
+                     m.geometry.attributes.position;
+          if (!pa) return;
+          const step = Math.max(1, Math.floor(pa.count / 1200));
+          for (let i = 0; i < pa.count; i += step) {
+            w.fromBufferAttribute(pa, i).applyMatrix4(m.matrixWorld);
+            if (w.y > lipsY + 0.03) continue;            // steam, not iron
+            iron.push(w.clone());
+          }
+        });
+        ["unlid", "relid"].forEach((name) => {
+          const want = PURIFY.findIndex((b) => b.act === name);
+          if (want < 0) { out.push(name + " -- NO SUCH BEAT"); return; }
+          for (let k = 0; k < want; k++) {
+            purStart(k); purT = PURIFY[k].t; purStep(0);
+          }
+          purStart(want);
+          // WITHOUT MOVING IT. lidOff takes a place as well as a flag, and
+          // passing one put the lid back on the kettle before the closing
+          // beat had begun: the reading then said it slid, when what had
+          // slid was the test's own hand.
+          const lid = ROOM_R.lidOff(true);
+          // ONE PASS AND NOT THREE. purStep advances to the next beat of its
+          // own accord once u reaches one, so a second loop over the same
+          // beat was driving the one after it: the lid stood still and the
+          // reading said it never rose.
+          const N = 90;
+          const path = [];
+          for (let k = 0; k <= N; k++) {
+            purT = PURIFY[want].t * k / N; purStep(0);
+            lid.updateMatrixWorld(true);
+            const lb = new THREE.Box3().setFromObject(lid, true);
+            path.push({ c: lb.getCenter(new THREE.Vector3()), low: lb.min.y });
+          }
+          const home = path[0].c, away = path[path.length - 1].c;
+          const y0 = path[0].c.y;
+          let worst = 1e9, at = 0, byThen = null, hi = -1e9;
+          for (let k = 0; k < path.length; k++) {
+            const c = path[k].c;
+            hi = Math.max(hi, c.y);
+            if (byThen === null && c.y - y0 > 0.030) {
+              byThen = Math.hypot(c.x - home.x, c.z - home.z);
+            }
+            // WHILE IT IS TRAVELLING, and not while it is seated at EITHER
+            // end. A lid at rest has its skirt down in the mouth, so the
+            // clearance there is 28mm of iron above its lowest point and
+            // always will be. Guarding only the start was enough for the
+            // opening and wrong for the closing, where the seat is the
+            // place it arrives at.
+            if (Math.hypot(c.x - home.x, c.z - home.z) < 0.006) continue;
+            if (Math.hypot(c.x - away.x, c.z - away.z) < 0.006) continue;
+            let top = -1e9;
+            for (let j2 = 0; j2 < iron.length; j2++) {
+              if (Math.hypot(iron[j2].x - c.x, iron[j2].z - c.z) > 0.030) continue;
+              if (iron[j2].y > top) top = iron[j2].y;
+            }
+            if (top < -1e8) continue;                    // clear of the kettle
+            const gap = path[k].low - top;
+            if (gap < worst) { worst = gap; at = k / N; }
+          }
+          out.push(name + ": it rises " + Math.round((hi - y0) * 1000) +
+                   "mm, and by 30mm up it has gone " +
+                   (byThen === null ? "nowhere -- IT NEVER RISES 30mm"
+                    : Math.round(byThen * 1000) + "mm sideways" +
+                      (byThen < 0.010 ? " -- straight up first"
+                                      : " -- IT SLIDES")));
+          out.push(name + ": at its closest it passes " +
+                   (worst > 1e8 ? "clear of the iron the whole way"
+                    : Math.round(worst * 1000) + "mm over the iron, " +
+                      (at * 100).toFixed(0) + " per cent through" +
+                      (worst > -0.001 ? " -- over it" : " -- THROUGH IT")));
+        });
+        document.body.setAttribute("data-lidtest", out.join(" | "));
+      }, 1200);
+    }
+
     // ---- does the scoop lie IN the U or on top of it ----------------------
     // ?utest. "Le chashaku devrait etre dans le bas du U." Which is a
     // question about two heights: the floor of the U, and the underside of
@@ -8799,6 +8897,29 @@
     window.__cameFrom = () => CAME_FROM;
     const MOVE_DUR = 2.0;                    // as unhurried as a hand arriving
     const MOVE_LIFT = 0.035;                 // lifted and set down, never dragged
+    // A LID IS LIFTED OFF, NOT SLID OFF. "Le mouvement naturel pour ouvrir la
+    // bouilloire est de soulever le couvercle vers le haut un petit peu et de
+    // le redescendre, pas de le glisser lateralement." A straight travel with
+    // a sine hump over it sets off sideways, and measured, the lid was
+    // passing 28mm inside the iron halfway across.
+    //
+    // Three legs and not one: straight up, across at that height, straight
+    // down. The middle leg holds its clearance over the LINE between the two
+    // ends rather than over a fixed level, so it clears the shoulder as well
+    // as the mouth, and it ends exactly where a plain lerp would.
+    const LID_UP = 0.075;                    // how far it rises before travelling
+    function overIt(o, a, b, f, clear) {
+      const RISE = 0.30, FALL = 0.30;
+      let up, across;
+      if (f < RISE) { up = ease3(f / RISE); across = 0; }
+      else if (f < 1 - FALL) {
+        up = 1; across = ease3((f - RISE) / (1 - RISE - FALL));
+      } else { up = 1 - ease3((f - (1 - FALL)) / FALL); across = 1; }
+      o.position.lerpVectors(a.p, b.p, across);
+      o.position.y += clear * up;
+      o.quaternion.slerpQuaternions(a.q, b.q, across);
+      if (f >= 1) { o.position.copy(b.p); o.quaternion.copy(b.q); }
+    }
     let mvT = -1, mv = null, mvDone = 0;
     // THE PIECE OR THE HAND, by the same count the notes use: a composite is
     // named twice over, so the outermost match is the hand and the innermost is
@@ -11531,7 +11652,7 @@
         fly(w.hs, w.h0, kag, e, 0);
       } else if (i === 1) {
         fly(w.hs, w.h0, kag, 1, 0);
-        fly(w.lid, w.l0, w.shut, e);
+        overIt(w.lid, w.l0, w.shut, e, LID_UP);
         // and the kettle takes its own back at the end of the crossing
         if (e >= 1) ROOM_R.lidOff(false);
       } else {
@@ -11628,10 +11749,10 @@
         fly(w.hs, w.h0, kag, e, 0);        // lifted straight into the hold
       } else if (i === 1) {
         fly(w.hs, w.h0, kag, 1, 0);        // held still while the lid moves
-        fly(w.lid, w.l0, w.lTo, e);
+        overIt(w.lid, w.l0, w.lTo, e, LID_UP);
       } else {
         fly(w.hs, kag, w.hTo, e);
-        fly(w.lid, w.l0, w.lTo, 1);
+        overIt(w.lid, w.l0, w.lTo, 1, LID_UP);
       }
     }
     // WHICH WATER. "Ensuite on prend de l'eau froide, on la verse dans le
