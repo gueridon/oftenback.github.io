@@ -5283,30 +5283,149 @@
         const gap = (a, b) => { let q = 0;
           for (let i = 0; i < 6; i++) q += (a[i] - b[i]) * (a[i] - b[i]);
           return Math.sqrt(q); };
-        ["fold", "wipe", "unfold"].forEach((name) => {
-          const i = PURIFY.findIndex((b) => b.act === name);
-          if (i < 0) { out.push(name + " -- NO SUCH BEAT"); return; }
+        // THE WHOLE RUN AND NOT ONE BEAT AT A TIME, which is the fault the
+        // first version of this test had: it started each beat cleanly and
+        // so could never see the seam between two of them. "Une fois
+        // deplie, le fukusa saute plus bas pour recommencer le pliage": a
+        // cut at a boundary, invisible to a test that begins there.
+        // AGAINST ITS OWN BEAT and not against the whole run. Most of the
+        // sixty beats do not move the cloth at all, so the average step
+        // over all of them is a fifth of a millimetre and every honest
+        // movement came back as sixty times the usual. A ratio is only
+        // worth having if its denominator is the thing being compared to.
+        const H = 1 / 60;
+        let prev = null;
+        const bad = [];
+        for (let i = 0; i < PURIFY.length; i++) {
           purStart(i);
-          const H = 1 / 60, N = Math.ceil(PURIFY[i].t / H);
-          let prev = null, worst = 0, at = 0, tot = 0, n = 0;
+          const N = Math.ceil(PURIFY[i].t / H);
+          const here = [];
           for (let k = 0; k <= N; k++) {
             purStep(k === 0 ? 0 : H);
             const c = centre();
             if (prev) {
-              const d = gap(c, prev);
-              tot += d; n++;
-              if (d > worst) { worst = d; at = k * H; }
+              here.push({ d: gap(c, prev), dy: c[1] - prev[1],
+                          act: PURIFY[i].act,
+                          faded: /^appear/.test(PURIFY[i].act),
+                          seam: k === 0 ? PURIFY[i - 1] && PURIFY[i - 1].act : null,
+                          at: k * H });
             }
             prev = c;
           }
-          const mean = n ? tot / n : 0;
-          const ratio = mean > 1e-9 ? worst / mean : 0;
-          out.push(name + ": worst step " + (worst * 1000).toFixed(1) +
-                   "mm at " + at.toFixed(1) + "s, typical " +
-                   (mean * 1000).toFixed(2) + "mm, ratio " + ratio.toFixed(1) +
-                   (ratio < 6 ? " -- continuous" : " -- IT JUMPS"));
+          // the beat's own typical step, taken without its first sample so
+          // a seam cannot inflate the thing it is measured against
+          const body = here.slice(1);
+          const m = body.length
+            ? body.reduce((a, b) => a + b.d, 0) / body.length : 0;
+          here.forEach((b) => { b.m = m; b.r = m > 1e-9 ? b.d / m : 0; });
+          bad.push.apply(bad, here);
+        }
+        const mean = bad.length
+          ? bad.reduce((a, b) => a + b.d, 0) / bad.length : 0;
+        bad.sort((a, b) => b.r - a.r);
+        out.push("across all " + PURIFY.length + " beats the cloth moves " +
+                 (mean * 1000).toFixed(2) + "mm in a sixtieth on average; " +
+                 "each step below is against its own beat's typical one");
+        // AND ONLY THE ONES THAT CAN BE SEEN. The cloth is faded in at the
+        // start of each purification, so the half metre it travels to its
+        // new place happens behind nothing: a jump nobody can see is not a
+        // cut, and a test that reports it teaches you to ignore it.
+        //
+        // BY THE BEAT'S NAME and not by reading the material's opacity,
+        // which is what this asked first: that reading came back under two
+        // per cent for thirty five thousand of thirty six thousand samples
+        // and quietly hid everything, including the cut it was written to
+        // find. A filter that can be wrong in a way you cannot see is worse
+        // than no filter.
+        const seen = bad.filter((b) => !b.faded);
+        seen.slice(0, 6).forEach((b) => {
+          out.push((b.seam ? b.seam + " into " + b.act : b.act + " at " +
+                    b.at.toFixed(1) + "s") + ": " + (b.d * 1000).toFixed(1) +
+                   "mm against " + (b.m * 1000).toFixed(2) + "mm, " +
+                   b.r.toFixed(0) + " times its own beat" +
+                   (b.r < 8 ? "" : " -- A CUT"));
         });
+        const hidden = bad.length - seen.length;
+        out.push(hidden + " more were behind a fade and are not counted");
         document.body.setAttribute("data-smoothtest", out.join(" | "));
+      }, 1200);
+    }
+
+    // ---- does the scoop lie IN the U or on top of it ----------------------
+    // ?utest. "Le chashaku devrait etre dans le bas du U." Which is a
+    // question about two heights: the floor of the U, and the underside of
+    // the scoop. If the scoop's lowest point is level with the floor it is
+    // resting in the trough; if it stands above it, the cloth has closed
+    // around a scoop that is perched on the packet rather than cradled.
+    //
+    // The floor is read from the cloth itself, over the band between the
+    // two creases, and the flaps from outside them, so the test also says
+    // whether the sides come up past the scoop at all.
+    if (new URLSearchParams(location.search).has("utest")) {
+      setTimeout(() => {
+        const out = [];
+        ["clasp", "clasp2"].forEach((name) => {
+          const want = PURIFY.findIndex((b) => b.act === name);
+          if (want < 0) { out.push(name + " -- NO SUCH BEAT"); return; }
+          // RUN THE BEATS UP TO IT. Starting at the clasp alone leaves the
+          // scoop wherever the last test left it, because the beat that
+          // carries it there is the one before: asked that way the reading
+          // came back as a scoop floating 21mm over the cloth, which is a
+          // fact about the test and not about the room.
+          for (let k = 0; k <= want; k++) {
+            purStart(k); purT = PURIFY[k].t; purStep(0);
+          }
+          const sc = pickObj("chashaku", false);
+          if (!sc) { out.push(name + " -- NO SCOOP"); return; }
+          const sb = new THREE.Box3().setFromObject(sc, true);
+          const mid = sb.getCenter(new THREE.Vector3());
+          // ACROSS THE U AND NOT AROUND IT. The cloth runs the length of
+          // the scoop, so a radius from its middle puts almost every vertex
+          // outside: what separates the floor from the flaps is the
+          // distance perpendicular to the scoop, in the horizontal plane.
+          const ax = bundleDir().clone().setY(0).normalize();
+          const cr = new THREE.Vector3(-ax.z, 0, ax.x);
+          fuk.mesh.updateMatrixWorld(true);
+          const pa = fuk.mesh.geometry.attributes.position;
+          const v = new THREE.Vector3(), d = new THREE.Vector3();
+          let floor = -1e9, flap = -1e9;
+          for (let k = 0; k < pa.count; k++) {
+            v.fromBufferAttribute(pa, k).applyMatrix4(fuk.mesh.matrixWorld);
+            d.subVectors(v, mid);
+            if (Math.abs(d.dot(ax)) > 0.030) continue;   // beside the scoop only
+            const across = Math.abs(d.dot(cr));
+            // THE SURFACE IT RESTS ON: the highest cloth under the scoop,
+            // and under is the point. Taken as the highest vertex of the
+            // middle band it came back 42mm ABOVE the scoop, because once
+            // the U is closed the flaps lean in over the centre and a
+            // horizontal band cannot tell a leaning flap from the floor.
+            if (across < 0.008 && v.y <= sb.min.y + 0.001)
+              floor = Math.max(floor, v.y);
+            else if (across < 0.040) flap = Math.max(flap, v.y);
+          }
+          if (floor < -1e8 || flap < -1e8) {
+            const cb = new THREE.Box3().setFromObject(fuk.mesh, true);
+            const cc = cb.getCenter(new THREE.Vector3());
+            out.push(name + " -- NO CLOTH BESIDE THE SCOOP. scoop box " +
+              [sb.min.x, sb.min.y, sb.min.z, sb.max.x, sb.max.y, sb.max.z]
+                .map((q) => q.toFixed(3)).join(",") + "; cloth centre " +
+              cc.x.toFixed(3) + "," + cc.y.toFixed(3) + "," + cc.z.toFixed(3) +
+              "; cloth box " + ((cb.max.x - cb.min.x) * 1000).toFixed(0) + "x" +
+              ((cb.max.y - cb.min.y) * 1000).toFixed(0) + "x" +
+              ((cb.max.z - cb.min.z) * 1000).toFixed(0) + "mm; centres " +
+              (cc.distanceTo(mid) * 1000).toFixed(0) + "mm apart; axis " +
+              ax.x.toFixed(2) + "," + ax.z.toFixed(2));
+            return;
+          }
+          out.push(name + ": the scoop's underside sits " +
+                   Math.round((sb.min.y - floor) * 1000) +
+                   "mm above the floor of the U, and the sides rise " +
+                   Math.round((flap - sb.min.y) * 1000) + "mm past it" +
+                   (sb.min.y - floor < 0.004 && flap > sb.min.y
+                      ? " -- in the bottom of it"
+                      : " -- PERCHED ON IT"));
+        });
+        document.body.setAttribute("data-utest", out.join(" | "));
       }, 1200);
     }
 
@@ -9024,6 +9143,15 @@
     // became one of them.
     const I_NAT = fuk.FOLDS.findIndex((f) => f.nat);
     const I_U = fuk.FOLDS.findIndex((f) => f.u);
+    // THE PACKET IS TURNED IN THE HAND between the caddy's fold and the U,
+    // and that turn is a step in the list like any other. Nothing was ever
+    // asked to perform it: the beat that opens the U simply began from a
+    // state in which it had already happened, so a half turn of the whole
+    // cloth took place between two frames. Measured at 68mm, the largest
+    // visible cut in the purification. It is ramped over the scoop's
+    // arrival now, which is when a hand would make it.
+    const I_TURN = fuk.FOLDS.findIndex((f, k) =>
+      k > I_NAT && k < (I_U < 0 ? 1e9 : I_U) && f.orient !== undefined);
     const FOLD_N = I_U < 0 ? fuk.FOLDS.length : I_U;
     // every step at one, the scoop's two at nothing, and whatever is named
     const uSet = (over) => fuk.FOLDS.map((f, k) =>
@@ -11769,11 +11897,27 @@
         if (sc) {
           stage.attach(sc);                     // out of the bowl it rode in
           purScoopFrom = { p: sc.position.clone(), r: sc.rotation.clone() };
-          // measured against where the cloth WILL be, not where it is
+          // MEASURED AGAINST WHERE THE CLOTH WILL BE, not where it is, and
+          // that has to mean its SHAPE as well as its place. The packet is
+          // turned half round during this beat, and the turn carries it
+          // some four centimetres sideways; the scoop was being laid
+          // against the cloth as it stood before the turn, so when the U
+          // closed it closed beside the scoop rather than around it.
+          // ?utest read 39mm across, which is the whole width of the U and
+          // then some: the scoop was never in it.
+          //
+          // The turn used to happen between two frames at the start of the
+          // next beat, so the fault was hidden inside a jump. One cause,
+          // two complaints.
           const kp = fukHand.position.clone(), kq = fukHand.quaternion.clone();
+          const END = { [I_NAT]: 0, [I_U]: 0, [I_U + 1]: 0 };
+          const BEG = { [I_NAT]: 0, [I_U]: 0, [I_U + 1]: 0 };
+          if (I_TURN >= 0) { END[I_TURN] = 1; BEG[I_TURN] = 0; }
           fukHand.position.copy(purTo.p); fukHand.quaternion.copy(purTo.q);
+          if (I_TURN >= 0) fuk.set(FOLD_N, 0, uSet(END));
           fukHand.updateMatrixWorld(true);
           purScoopTo = onCloth(sc);
+          if (I_TURN >= 0) fuk.set(FOLD_N, 0, uSet(BEG));
           fukHand.position.copy(kp); fukHand.quaternion.copy(kq);
           fukHand.updateMatrixWorld(true);
         }
@@ -12289,7 +12433,13 @@
       if (st.act === "appear" || st.act === "appear2") {
         setAlpha(fuk.mesh, e);
       } else if (st.act === "fold" || st.act === "fold2") {
-        const c = creaseAt(u, FOLD_N);
+        // ONE FOLD SHORT THE SECOND TIME. The first purification gets
+        // there by opening the cloth and folding it again, stopping before
+        // the caddy's fold; the second folded it all the way and then had
+        // the fold taken off between two frames, which is 49mm of cloth
+        // moving in a sixtieth of a second. It stops where it is going to
+        // stand instead.
+        const c = creaseAt(u, st.act === "fold2" ? I_NAT : FOLD_N);
         fuk.set(c.k, c.f, null);
         layCloth("up", 0, 0, purLid);
       } else if (st.act === "lift") {
@@ -12361,6 +12511,10 @@
           layCloth("up", 0, 0, purLid);
         }
       } else if (st.act === "scoop" || st.act === "scoop2") {
+        if (I_TURN >= 0) {
+          fuk.set(FOLD_N, 0, uSet({ [I_NAT]: 0, [I_TURN]: e,
+                                    [I_U]: 0, [I_U + 1]: 0 }));
+        }
         fukHand.position.lerpVectors(purCarry.p, purTo.p, e);
         fukHand.quaternion.slerpQuaternions(purCarry.q, purTo.q, e);
         fukHand.updateMatrixWorld(true);
