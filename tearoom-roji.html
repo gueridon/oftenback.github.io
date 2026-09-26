@@ -5351,6 +5351,111 @@
       }, 1200);
     }
 
+    // ---- does the whisk come out of the bowl or through it ----------------
+    // ?whisktest. "Le chasen sort en traversant la paroi avant du bol." A
+    // wall is a place, so this is a clearance again: while the whisk stands
+    // over the bowl's wall, its lowest point must be above the rim. Under
+    // it is inside the ceramic.
+    //
+    // The side it leaves by is read as well, since that is the other half
+    // of what he asked: the bearing from the bowl's axis to the whisk at
+    // the moment it clears the rim, against the bearing to where it is
+    // going. Behind means it went over the far wall.
+    if (new URLSearchParams(location.search).has("whisktest")) {
+      setTimeout(() => {
+        const out = [];
+        ["whisk", "stand"].forEach((name) => {
+          const want = PURIFY.findIndex((b) => b.act === name);
+          if (want < 0) { out.push(name + " -- NO SUCH BEAT"); return; }
+          for (let k = 0; k < want; k++) {
+            purStart(k); purT = PURIFY[k].t; purStep(0);
+          }
+          const bowl = poolOf("chawan", true);
+          if (!bowl) { out.push(name + " -- NO BOWL"); return; }
+          const bb = vesselBox(bowl.o).clone();
+          const axis = bb.getCenter(new THREE.Vector3());
+          const outR = Math.max(bb.max.x - axis.x, bb.max.z - axis.z);
+          purStart(want);
+          const w = pickObj("chasen", false);
+          if (!w) { out.push(name + " -- NO WHISK"); return; }
+          const N = 90;
+          let worst = 1e9, at = 0, cleared = null, home = null, behind = null;
+          // HOW FAR IT GOES THE OTHER WAY before it comes round, which is
+          // the half of the question a bearing cannot answer: the whisk's
+          // box centre swings about a great deal while the piece turns from
+          // lying to standing, so where its middle happens to cross the rim
+          // says little. How far back it reaches says it plainly.
+          const goTo0 = whiskPoint();
+          const away = new THREE.Vector3(
+            axis.x - (goTo0.x + stage.position.x), 0,
+            axis.z - (goTo0.z + stage.position.z));
+          if (away.lengthSq() < 1e-9) away.set(1, 0, 0);
+          away.normalize();
+          for (let k = 0; k <= N; k++) {
+            purT = PURIFY[want].t * k / N; purStep(0);
+            w.updateMatrixWorld(true);
+            const wb = new THREE.Box3().setFromObject(w, true);
+            const c = wb.getCenter(new THREE.Vector3());
+            if (home === null) home = c.clone();
+            const r = Math.hypot(c.x - axis.x, c.z - axis.z);
+            // OVER THE WALL: not out in the room, not down the middle
+            if (r > outR * 0.55 && r < outR + 0.020) {
+              const dig = bowl.rim - wb.min.y;
+              if (dig > 0 && bowl.rim - wb.min.y > worst * -1) {
+                if (-dig < worst) { worst = -dig; at = k / N; }
+              }
+            }
+            // WHEN IT LEAVES THE BOWL, which is when its middle passes
+            // outside the rim in plan. Read instead as the moment its
+            // lowest point rises above the rim, the answer came far too
+            // late: a whisk turning from lying to standing has its foot
+            // deep in the bowl long after it has swung clear of the wall,
+            // and the bearing by then was of the place it was going to.
+            if (behind === null || (c.x - axis.x) * away.x +
+                                   (c.z - axis.z) * away.z > behind) {
+              behind = (c.x - axis.x) * away.x + (c.z - axis.z) * away.z;
+            }
+            if (cleared === null && r > outR) {
+              cleared = Math.atan2(-(c.z - axis.z), c.x - axis.x) * 180 / Math.PI;
+            }
+          }
+          const goTo = whiskPoint();
+          const bear = Math.atan2(-(goTo.z + stage.position.z - axis.z),
+                                  goTo.x + stage.position.x - axis.x) * 180 / Math.PI;
+          let off = cleared === null ? null : cleared - bear;
+          if (off !== null) { while (off > 180) off -= 360;
+                              while (off < -180) off += 360; }
+          out.push(name + ": " + (worst > 1e8
+            ? "it never stands over the wall below the rim -- it comes out clean"
+            : Math.round(-worst * 1000) + "mm of it is inside the wall at " +
+              (at * 100).toFixed(0) + " per cent -- THROUGH THE CERAMIC"));
+          out.push(name + ": it reaches " + Math.round(behind * 1000) +
+                   "mm past the bowl's middle away from where it is going" +
+                   (behind > 0.030 ? " -- up over the far wall first"
+                                   : " -- it does not go behind"));
+          out.push(name + ": it clears the rim " + (off === null
+            ? "-- NEVER, by this reading"
+            : Math.round(off) + " degrees from the way it is going" +
+              (Math.abs(off) > 90 ? " -- over the far wall"
+                                  : " -- OVER THE NEAR WALL")));
+        });
+        // and where to point a camera, for the times a number is not the
+        // question: the bowl's own place on the screen
+        {
+          for (let k = 0; k < 150; k++) window.__aim();
+          const bw = poolOf("chawan", true);
+          if (bw) {
+            const c9 = vesselBox(bw.o).getCenter(new THREE.Vector3())
+              .project(window.__cam);
+            out.push("the bowl is on screen at " +
+                     Math.round((c9.x * 0.5 + 0.5) * innerWidth) + "," +
+                     Math.round((-c9.y * 0.5 + 0.5) * innerHeight));
+          }
+        }
+        document.body.setAttribute("data-whisktest", out.join(" | "));
+      }, 1200);
+    }
+
     // ---- does the lid go OVER the kettle or through it --------------------
     // ?lidtest. "Quand on ouvre la bouilloire, le couvercle glisse a
     // l'interieur ou passe dans la bouilloire." Which is a clearance, and
@@ -8955,6 +9060,10 @@
     // added back, so the crown is always LID_UP above whichever end is
     // higher, whichever way the lid is going.
     const LID_UP = 0.115;                    // the crown, over the higher end
+    // How far past the far rim the whisk's curve reaches, and how high over
+    // it. Swept on ?whisktest until nothing of the whisk was in the clay.
+    const WHISK_OUT = 0.110, WHISK_UP = 0.165;
+    let purWhiskC = null;
     function overIt(o, a, b, f, clear) {
       const th = Math.PI * Math.max(0, Math.min(1, f));
       const across = (1 - Math.cos(th)) / 2;
@@ -11165,7 +11274,12 @@
         const B = { q: ch.quaternion.clone(),
                     p: ch.position.clone().add(new THREE.Vector3(
                          w.mid.x - mid2.x + near.x,
-                         w.bp.rim + 0.070 - mid2.y,
+                         // 70 put the whisk's MIDDLE that far over the rim,
+                         // and its foot hangs some fifty below its middle:
+                         // measured, 9mm of it was still in the clay a fifth
+                         // of the way through. The near side is his and stays
+                         // his; only the height changes.
+                         w.bp.rim + 0.105 - mid2.y,
                          w.mid.z - mid2.z + near.z)) };
         const C = { p: w.stand.p.clone(), q: w.stand.q.clone() };
         if (u < 0.45) {
@@ -12237,6 +12351,47 @@
           w.quaternion.copy(keepQ); w.updateMatrixWorld(true);
           purScoopQ = { from: keepQ, mid: midQ, to: standUp(w) };
           purScoopTo = sitOn(w, 0, at.x, at.z, 0, 0, purScoopQ.to);
+          // OUT OVER THE FAR WALL, AND ROUND. "Le chasen sort en traversant
+          // la paroi avant du bol. Il faut qu'il sorte de l'autre cote, on
+          // le souleve au dessus de la paroi arriere et on va le placer en
+          // un mouvement circulaire a sa position."
+          //
+          // A straight travel with a hump over it leaves by whichever side
+          // it is going to, which is the near one: measured, 53mm of whisk
+          // passed through the ceramic. So the path is a quadratic curve
+          // with its control point BEYOND THE FAR RIM and well above it.
+          // A quadratic's tangent at the start points at that control, so
+          // the first movement is up and backward without anything being
+          // stitched on, and the plan projection sweeps round to the place
+          // rather than crossing the bowl.
+          const bowlW = poolOf("chawan", true);
+          if (bowlW) {
+            const bx = vesselBox(bowlW.o).clone();
+            const ax2 = bx.getCenter(new THREE.Vector3());
+            const outR2 = Math.max(bx.max.x - ax2.x, bx.max.z - ax2.z);
+            // away from where it is going, which is what "the far wall" is
+            const away2 = new THREE.Vector3(
+              ax2.x - (purScoopTo.p.x + stage.position.x), 0,
+              ax2.z - (purScoopTo.p.z + stage.position.z));
+            if (away2.lengthSq() < 1e-9) away2.set(1, 0, 0);
+            away2.normalize();
+            // TWO CONTROLS AND NOT ONE. A quadratic's crown is only half
+            // way to its control, and with the destination two hundred
+            // millimetres in front the curve reached six millimetres behind
+            // the bowl's middle: technically behind, and not what anyone
+            // would call coming out over the far wall. A cubic holds the
+            // first quarter back there and still lands cleanly.
+            purWhiskC = {
+              a: new THREE.Vector3(
+                ax2.x + away2.x * (outR2 + WHISK_OUT) - stage.position.x,
+                bowlW.rim + WHISK_UP - stage.position.y,
+                ax2.z + away2.z * (outR2 + WHISK_OUT) - stage.position.z),
+              // the second stands over the place it is going, so the last
+              // of the movement is a descent onto its foot and not a swoop
+              b: new THREE.Vector3(purScoopTo.p.x,
+                                   bowlW.rim + WHISK_UP * 0.8 - stage.position.y,
+                                   purScoopTo.p.z) };
+          } else purWhiskC = null;
         }
       } else if (st.act === "take") {
         tea = teaSetup();
@@ -12907,8 +13062,21 @@
       } else if (st.act === "whisk") {
         const o = pickObj("chasen", false);
         if (o && purScoopTo && purScoopQ) {
-          o.position.lerpVectors(purScoopFrom.p, purScoopTo.p, e);
-          o.position.y += Math.sin(Math.PI * u) * 0.045;
+          if (purWhiskC) {
+            const m9 = 1 - e;
+            const w0 = m9 * m9 * m9, w1 = 3 * m9 * m9 * e,
+                  w2 = 3 * m9 * e * e, w3 = e * e * e;
+            o.position.set(
+              w0 * purScoopFrom.p.x + w1 * purWhiskC.a.x +
+                w2 * purWhiskC.b.x + w3 * purScoopTo.p.x,
+              w0 * purScoopFrom.p.y + w1 * purWhiskC.a.y +
+                w2 * purWhiskC.b.y + w3 * purScoopTo.p.y,
+              w0 * purScoopFrom.p.z + w1 * purWhiskC.a.z +
+                w2 * purWhiskC.b.z + w3 * purScoopTo.p.z);
+          } else {
+            o.position.lerpVectors(purScoopFrom.p, purScoopTo.p, e);
+            o.position.y += Math.sin(Math.PI * u) * 0.045;
+          }
           if (purScoopQ.mid) {
             // EACH HALF EASED IN ITS OWN RIGHT, not one eased curve cut in
             // two: split at the middle, the rate jumped and the whisk came
