@@ -5463,7 +5463,14 @@
               const pa9 = m9.geometry && m9.geometry.attributes &&
                           m9.geometry.attributes.position;
               if (!pa9) return;
-              const st9 = Math.max(1, Math.floor(pa9.count / 700));
+              // EVERY VERTEX WHILE IT LEAVES. "Juste au moment ou il
+              // commence a se deplacer, il passe a travers la paroi." One
+              // in twenty seven was enough to say there was a graze and far
+              // too coarse to say how deep: the tines are thin and the
+              // deepest of a hundred of them is easily the one not sampled.
+              // Dense over the first third, where he says it happens.
+              const st9 = (k / N < 0.34) ? 1
+                        : Math.max(1, Math.floor(pa9.count / 700));
               for (let i9 = 0; i9 < pa9.count; i9 += st9) {
                 _v9.fromBufferAttribute(pa9, i9).applyMatrix4(m9.matrixWorld);
                 if (_v9.y > bowl.rim) continue;
@@ -5531,6 +5538,46 @@
             out.push(name + ": at rest, before it moves, " +
                      Math.round(rest0 * 1000) + "mm of it already measures " +
                      "as being in the clay");
+          }
+          // HOW NEAR THE LIP IT PASSES, which is the thing an eye reads. A
+          // seated guest sees the rim almost edge on, so two millimetres of
+          // overlap and two millimetres of air look the same: what makes a
+          // whisk come out OVER a bowl rather than through it is visible
+          // air between the tines and the lip. The rim is a circle in the
+          // r,y plane and the distance to it is the reading.
+          {
+            let lip = 1e9, lipAt = 0;
+            const rimR = outerAtY(bowl.rim - 0.002);
+            for (let k = 0; k <= Math.floor(N * 0.4); k++) {
+              purT = PURIFY[want].t * k / N; purStep(0);
+              w.updateMatrixWorld(true);
+              const _v7 = new THREE.Vector3();
+              w.traverse((m7) => {
+                const pa7 = m7.geometry && m7.geometry.attributes &&
+                            m7.geometry.attributes.position;
+                if (!pa7) return;
+                for (let i7 = 0; i7 < pa7.count; i7++) {
+                  _v7.fromBufferAttribute(pa7, i7).applyMatrix4(m7.matrixWorld);
+                  const r7 = Math.hypot(_v7.x - axis.x, _v7.z - axis.z);
+                  const d7 = Math.hypot(r7 - rimR, _v7.y - bowl.rim);
+                  if (d7 < lip) { lip = d7; lipAt = k / N; }
+                }
+              });
+            }
+            out.push(name + ": at its nearest it passes " +
+                     Math.round(lip * 1000) + "mm from the lip, " +
+                     (lipAt * 100).toFixed(0) + " per cent through" +
+                     (lip > 0.012 ? " -- clear air over the rim"
+                                  : " -- IT SHAVES THE LIP"));
+          }
+          {
+            const wb0 = new THREE.Box3().setFromObject(w, true);
+            out.push(name + ": the whisk's ring is " +
+                     Math.round(Math.max(wb0.max.x - wb0.min.x,
+                                         wb0.max.z - wb0.min.z) * 1000) +
+                     "mm across and the bowl's inside " +
+                     Math.round(WATER.radiusAt(bowl.pr,
+                       bowl.rim - 0.012) * 2000) + "mm at the shoulder");
           }
           out.push(name + ": " + (worst > 1e8
             ? "it never stands over the wall below the rim -- it comes out clean"
@@ -13217,6 +13264,12 @@
             // EACH PART EASED IN ITS OWN RIGHT, as before: taken as one
             // eased curve cut in three the rate jumped at the joins and the
             // whisk came round at 288 degrees a second.
+            // AND IT TIPS AS IT RISES, which looks wrong and is not. I
+            // held the pose until the piece was clear, on the argument
+            // that a 58mm ring should not be turned at the bottom of a
+            // 100mm bowl; measured, that made it worse, 7mm in the clay
+            // against 2. Tipping is what narrows the ring's footprint, so
+            // taking it away is what drives the tines into the wall.
             const g9 = u < 0.5 ? ease3(u / 0.5) : ease3((u - 0.5) / 0.5);
             o.quaternion.slerpQuaternions(
               u < 0.5 ? purScoopQ.from : purScoopQ.mid,
