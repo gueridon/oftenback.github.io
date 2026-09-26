@@ -4689,6 +4689,16 @@
     // ?fill=0..1 walks the whole journey without any beat existing yet, so
     // it can be looked at and corrected before it is written into the
     // ceremony. Bookmarkable.
+    // AN ARC BETWEEN TWO PLACES, crowned over the higher of them. The same
+    // curve the kettle's lid takes: travel on (1 - cos), rise on sin of the
+    // same angle, which is an ellipse and not two legs joined.
+    const LADLE_UP = 0.055;
+    function arcBetween(a, b, f, clear) {
+      const th = Math.PI * Math.max(0, Math.min(1, f));
+      const at = a.clone().lerp(b, (1 - Math.cos(th)) / 2);
+      at.y += (clear + Math.abs(a.y - b.y) / 2) * Math.sin(th);
+      return at;
+    }
     function ladleAt(w, u) {
       const km = w.km;
       const overK = new THREE.Vector3(km.c.x, km.c.y + 0.075, km.c.z);
@@ -4748,11 +4758,24 @@
         setCup(w.h, e < 0.55 ? start.lerp(up, e / 0.55)
                              : up.lerp(overK, (e - 0.55) / 0.45));
       } else if (i === 3) {
-        ladlePose(w, overK.clone().lerp(overB, e), N * (1 - e), 0);
+        // OVER THE KETTLE AND NOT THROUGH ITS SHOULDER. A straight line
+        // from over the mouth to over the bowl descends from the moment it
+        // starts, and the kettle is widest just below where it starts:
+        // seen level with the iron at ?over=kama&overside, the cup was
+        // down in the dome by the middle of the crossing.
+        //
+        // The same arc the lid uses: the travel follows (1 - cos) and the
+        // rise sin of the same angle, so the path is an ellipse whose
+        // crown stands above the HIGHER of its two ends. It leaves upward,
+        // clears the belly while it is still climbing, and comes down onto
+        // the bowl.
+        ladlePose(w, arcBetween(overK, overB, e, LADLE_UP), N * (1 - e), 0);
       } else if (i === 4) {
         ladlePose(w, overB, 0, POUR * e);
       } else {
-        ladlePose(w, overB.clone().lerp(w.restMouth, e), 0, POUR * (1 - e));
+        // and home the same way, since the kettle is in the way of that too
+        ladlePose(w, arcBetween(overB, w.restMouth, e, LADLE_UP), 0,
+                  POUR * (1 - e));
         if (e >= 1) { w.h.position.copy(w.rest.p); w.h.quaternion.copy(w.rest.q); }
       }
       const pour = i === 4 ? e : (i > 4 ? 1 : 0);
@@ -15795,9 +15818,18 @@
         // LEVEL WITH THE RIM, which is the view that answers "over it or
         // through it": from above you see where a thing is, from the side
         // you see how high.
-        camera.position.set(c.x + OVER_H, b.max.y + 0.004, c.z);
+        // AT A HEIGHT YOU CHOOSE, as a fraction of the piece's own height.
+        // Taken at the top of the box it aimed at the wall over the kettle,
+        // because the kettle's box includes its steam, which stands half a
+        // metre over the iron. ?overy=0.85 puts it at the shoulder.
+        const fy = (function () {
+          const v = parseFloat(new URLSearchParams(location.search).get("overy"));
+          return isFinite(v) ? v : 1;
+        })();
+        const eye = b.min.y + (b.max.y - b.min.y) * fy;
+        camera.position.set(c.x + OVER_H, eye + 0.004, c.z);
         camera.up.set(0, 1, 0);
-        camera.lookAt(c.x, b.max.y, c.z);
+        camera.lookAt(c.x, eye, c.z);
       } else {
         camera.position.set(c.x, b.max.y + OVER_H, c.z + 0.0001);
         camera.up.set(0, 0, -1);          // north is away from the host
