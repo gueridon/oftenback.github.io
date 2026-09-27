@@ -1292,6 +1292,124 @@
         hifi.add(sp);
       });
 
+      // ---- le bureau bas, mur est, au sud ----------------------------------
+      // A fuzukue: a low desk you sit at on the floor, which is the only kind
+      // this room can have, since the eye in it is at 860 and the ceiling at
+      // 2120. A slab on two solid ends, against the east wall at its south
+      // end, so the zafu in the middle of the floor is what you sit on to
+      // use it.
+      //
+      // What is on it is his: the thesis, in his own words "l'essence de
+      // contours continus dans un cadre de reference", and one sheet with a
+      // single continuous contour drawn on it, which is the same idea in one
+      // line. Nothing else, because a desk with things all over it is a desk
+      // nobody works at.
+      const DESK = { w: 1.00, d: 0.42, h: 0.32, top: 0.030 };
+      {
+        const dk = new THREE.Group();
+        dk.name = "bureau";
+        const slab = new THREE.Mesh(
+          new THREE.BoxGeometry(DESK.w, DESK.top, DESK.d), WALNUT);
+        slab.position.y = DESK.h - DESK.top / 2;
+        slab.castShadow = true; slab.receiveShadow = true;
+        dk.add(slab);
+        // two solid ends, set in from the slab's own edges
+        [-1, 1].forEach((side) => {
+          const end = new THREE.Mesh(
+            new THREE.BoxGeometry(0.026, DESK.h - DESK.top, DESK.d * 0.88),
+            WALNUT_D);
+          end.position.set(side * (DESK.w / 2 - 0.075),
+                           (DESK.h - DESK.top) / 2, 0);
+          end.castShadow = true; end.receiveShadow = true;
+          dk.add(end);
+        });
+        // a rail between them, low, which is what keeps a slab from bowing
+        const rail = new THREE.Mesh(
+          new THREE.BoxGeometry(DESK.w - 0.20, 0.040, 0.018), WALNUT_D);
+        rail.position.set(0, 0.085, -DESK.d * 0.30);
+        rail.castShadow = true;
+        dk.add(rail);
+
+        // THE THESIS, bound and shut. A dark cloth board, its pages a shade
+        // off it, lying square with the desk.
+        const bk = new THREE.Group();
+        bk.name = "these";
+        const board = new THREE.Mesh(
+          new THREE.BoxGeometry(0.165, 0.028, 0.232), mat(0x2a2620, 0.95));
+        board.castShadow = true; board.receiveShadow = true;
+        bk.add(board);
+        const leaves = new THREE.Mesh(
+          new THREE.BoxGeometry(0.152, 0.021, 0.220), mat(0xc9bfa8, 0.98));
+        leaves.position.set(0.004, 0, 0);
+        bk.add(leaves);
+        bk.position.set(-0.20, DESK.h + 0.014, 0.020);
+        bk.rotation.y = 0.06;
+        dk.add(bk);
+
+        // AND ONE SHEET, with a single continuous contour on it: a pitch
+        // track, which is what the thesis was about. Drawn rather than
+        // written, because at this size a line reads and a paragraph does
+        // not.
+        const sheet = (function () {
+          const W = 420, H = 300;
+          const c = document.createElement("canvas");
+          c.width = W; c.height = H;
+          const g = c.getContext("2d");
+          g.fillStyle = "#d9d0bb";
+          g.fillRect(0, 0, W, H);
+          // the frame of reference: a baseline and a light rule above it
+          g.strokeStyle = "rgba(60,52,44,0.18)";
+          g.lineWidth = 2;
+          g.beginPath(); g.moveTo(36, H - 62); g.lineTo(W - 36, H - 62);
+          g.stroke();
+          g.beginPath(); g.moveTo(36, 62); g.lineTo(36, H - 62); g.stroke();
+          // and the contour itself, one unbroken line, rising and falling
+          g.strokeStyle = "rgba(42,36,30,0.72)";
+          g.lineWidth = 3.4;
+          g.beginPath();
+          for (let i = 0; i <= 160; i++) {
+            const t = i / 160;
+            const x = 44 + t * (W - 96);
+            const y = H - 96
+                    - 74 * Math.sin(Math.PI * Math.pow(t, 0.78))
+                    - 26 * Math.sin(Math.PI * 3.1 * t) * (1 - t)
+                    + 18 * Math.pow(t, 2.4);
+            if (i === 0) g.moveTo(x, y); else g.lineTo(x, y);
+          }
+          g.stroke();
+          const t2 = new THREE.CanvasTexture(c);
+          t2.colorSpace = THREE.SRGBColorSpace;
+          return t2;
+        })();
+        const leaf = new THREE.Mesh(
+          new THREE.PlaneGeometry(0.28, 0.20),
+          new THREE.MeshStandardMaterial({ map: sheet, roughness: 1,
+                                           metalness: 0 }));
+        leaf.name = "contour";
+        leaf.rotation.x = -Math.PI / 2;
+        leaf.rotation.z = -0.10;
+        leaf.position.set(0.16, DESK.h + 0.0015, -0.01);
+        leaf.receiveShadow = true;
+        dk.add(leaf);
+        // one pen, laid across the sheet's corner
+        const pen = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.0045, 0.0035, 0.135, 8),
+          mat(0x1a1714, 0.6));
+        pen.rotation.z = Math.PI / 2;
+        pen.rotation.y = 0.42;
+        pen.position.set(0.20, DESK.h + 0.006, -0.10);
+        pen.castShadow = true;
+        dk.add(pen);
+
+        // AGAINST THE EAST WALL, AT ITS SOUTH END, and with no turn at all:
+        // the slab is built with its length along x, which IS the line of
+        // that wall, north to south. A quarter turn put the desk across the
+        // room instead of along it.
+        dk.position.set(-ROOM.w / 2 + 0.10 + DESK.w / 2, 0,
+                        ROOM.d / 2 - DESK.d / 2 - 0.02);
+        shell.add(dk);
+      }
+
       // ---- the light -------------------------------------------------------
       // A fifth of the tea room's hemisphere, so that nothing is ever pure
       // black and nothing at all is legible from the ambient alone.
@@ -1407,6 +1525,9 @@
         "meuble": "Le meuble a disques, en bouleau, mur nord.",
         "enceinte-gauche": "Enceinte, a la hauteur du meuble.",
         "enceinte-droite": "Enceinte, a la hauteur du meuble.",
+        "bureau": "Le bureau bas, mur est. On s'y assied par terre.",
+        "these": "La these: l'essence de contours continus dans un cadre de reference.",
+        "contour": "Un contour, d'un seul trait.",
         "zafu": "Zafu, sur son zabuton. Fauve.",
         "zabuton": "Zabuton, sous le zafu.",
         "nijiriguchi": "Nijiriguchi, mur nord. 700 sur 720, fermee.",
@@ -1641,6 +1762,85 @@
         requestAnimationFrame(frame);
       }
       requestAnimationFrame(frame);
+
+      // ---- IS EVERYTHING IN THE ROOM, AND CLEAR OF EVERYTHING ELSE --------
+      // ?fittest. The room has furniture in it now, and the tea room's own
+      // lesson is that a thing can be put through a wall or into its
+      // neighbour and nobody notices for a session: eight of its seventeen
+      // stones had been swallowed by the terrain. So every named piece is
+      // read as a box: inside the walls, standing on the floor, and not
+      // crossing another.
+      if (Q.has("fittest")) {
+        setTimeout(() => {
+          const out = [];
+          const KEYS = ["akari1ar", "akariuf1o", "meuble", "platine",
+                        "enceinte-gauche", "enceinte-droite", "bureau",
+                        "zafu", "zabuton", "nijiriguchi"];
+          const box = {};
+          KEYS.forEach((k) => {
+            const o = shell.getObjectByName(k);
+            if (!o) { out.push(k + " -- MISSING"); return; }
+            o.updateMatrixWorld(true);
+            box[k] = new THREE.Box3().setFromObject(o, true);
+          });
+          // inside the walls, and on the floor. THE DOOR IS THE EXCEPTION,
+          // and it is one by construction: its panel runs on the OUTER face
+          // of the north wall, as a nijiriguchi does, so the first reading
+          // of this test accused the room of a fault that was the design.
+          let worstWall = 9, wallWho = "", worstFloor = 9, floorWho = "";
+          {
+            const d = box["nijiriguchi"];
+            if (d) {
+              const out2 = d.min.x - ROOM.w / 2;
+              out2 > 0
+                ? out.push("the door's panel stands " +
+                           Math.round(out2 * 1000) +
+                           "mm outside the north wall -- on its outer face")
+                : out.push("the door's panel is INSIDE the north wall");
+            }
+          }
+          Object.keys(box).forEach((k) => {
+            if (k === "nijiriguchi") return;
+            const b = box[k];
+            const m = Math.min(ROOM.w / 2 - b.max.x, b.min.x + ROOM.w / 2,
+                               ROOM.d / 2 - b.max.z, b.min.z + ROOM.d / 2);
+            if (m < worstWall) { worstWall = m; wallWho = k; }
+            if (Math.abs(b.min.y) < Math.abs(worstFloor)) {
+              worstFloor = b.min.y; floorWho = k;
+            }
+          });
+          out.push("the closest any piece comes to a wall is " +
+                   Math.round(worstWall * 1000) + "mm, " + wallWho +
+                   (worstWall > -0.06 ? " -- inside the room"
+                                      : " -- IT IS THROUGH THE WALL"));
+          out.push("and the lowest foot sits " +
+                   Math.round(worstFloor * 1000) + "mm off the boards, " +
+                   floorWho +
+                   (Math.abs(worstFloor) < 0.02 ? " -- on the floor"
+                                                : " -- NOT ON THE FLOOR"));
+          // and no two boxes crossing, save the pairs that are meant to
+          const OK = ["meuble|platine", "zafu|zabuton",
+                      "meuble|enceinte-gauche", "meuble|enceinte-droite"];
+          const bad = [];
+          const ks = Object.keys(box);
+          for (let i = 0; i < ks.length; i++) {
+            for (let j = i + 1; j < ks.length; j++) {
+              const a2 = ks[i], b2 = ks[j];
+              if (OK.indexOf(a2 + "|" + b2) >= 0 ||
+                  OK.indexOf(b2 + "|" + a2) >= 0) continue;
+              if (!box[a2].intersectsBox(box[b2])) continue;
+              const o = box[a2].clone().intersect(box[b2]);
+              const sz = o.getSize(new THREE.Vector3());
+              bad.push(a2 + " into " + b2 + " by " +
+                       Math.round(Math.min(sz.x, sz.z) * 1000) + "mm");
+            }
+          }
+          out.push(bad.length ? "CROSSINGS: " + bad.join("; ")
+                              : "no two pieces cross, bar the ones that sit " +
+                                "on each other");
+          document.body.setAttribute("data-fittest", out.join(" | "));
+        }, 1200);
+      }
 
       // ---- CAN THE HEAD REACH THE RECORD ----------------------------------
       // ?armtest. His ask, and it is geometry rather than taste: "pendant la
