@@ -721,12 +721,16 @@
         geo.computeVertexNormals();
         return geo;
       }
+      // ONE NUMBER PER HEIGHT, each needed twice: by the shape, and by where
+      // the shape sits. Written out twice, a cushion floats or sinks into the
+      // floor the moment one of the two is changed.
+      const ZABU_H = 0.062, ZAFU_H = 0.120;
       const zabuton = new THREE.Mesh(
-        pillow(0.575, 0.062, 0.575, 0.022),
+        pillow(0.575, ZABU_H, 0.575, 0.022),
         new THREE.MeshStandardMaterial({ color: FAUVE_DEEP, roughness: 1,
                                          metalness: 0 }));
       zabuton.name = "zabuton";
-      zabuton.position.set(0, 0.031, 0);
+      zabuton.position.set(0, ZABU_H / 2, 0);
       zabuton.castShadow = true;
       zabuton.receiveShadow = true;
       shell.add(zabuton);
@@ -754,21 +758,14 @@
         return geo;
       }
       const zafu = new THREE.Mesh(
-        zafuGeo(0.175, 0.150, 20),
+        zafuGeo(0.175, ZAFU_H, 20),
         new THREE.MeshStandardMaterial({ color: FAUVE, roughness: 0.96,
                                          metalness: 0 }));
       zafu.name = "zafu";
-      zafu.position.set(0, 0.062 + 0.075, 0);
+      zafu.position.set(0, ZABU_H + ZAFU_H / 2, 0);
       zafu.castShadow = true;
       zafu.receiveShadow = true;
       shell.add(zafu);
-      // the button the pleats are gathered into, on top
-      const knot = new THREE.Mesh(
-        new THREE.SphereGeometry(0.019, 12, 8),
-        mat(FAUVE_DEEP, 0.9));
-      knot.position.set(0, 0.062 + 0.150 - 0.004, 0);
-      knot.castShadow = true;
-      shell.add(knot);
 
       // ---- the light -------------------------------------------------------
       // A fifth of the tea room's hemisphere, so that nothing is ever pure
