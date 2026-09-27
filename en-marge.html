@@ -336,9 +336,9 @@
     //
     // And the middle of the floor is the zafu, which belongs to no wall.
     //
-    // One consequence worth knowing before it surprises anyone: the overhead
-    // view puts north to the RIGHT of the frame, not at the top, because its
-    // up vector leans to the room's far wall rather than to its north.
+    // And the overhead view is a PLAN: its up vector leans to the north wall
+    // as the eye rises, so north is at the top of the frame where a plan
+    // keeps it.
     const ROOM = {
       w: 3.30,          // across, x
       d: 3.60,          // deep, z
@@ -1507,12 +1507,13 @@
           new THREE.Vector3(eye.x - Math.sin(yaw), eye.y + Math.tan(pitch),
                             eye.z - Math.cos(yaw)),
           new THREE.Vector3(0, 0, 0), top);
-        // AND THE UP VECTOR TURNS OVER WITH IT. Looking straight down, up is
-        // parallel to the line of sight and the roll comes out of nowhere:
-        // the room arrived on a slant. So up leans from the world's own to
-        // the room's far wall as the eye rises, which is what the tea room's
-        // overhead camera does.
-        camera.up.set(0, 1 - top, -top).normalize();
+        // AND THE UP VECTOR TURNS OVER WITH IT, to the NORTH. Looking
+        // straight down, up is parallel to the line of sight and the roll
+        // comes out of nowhere: the room arrived on a slant. So up leans
+        // from the world's own to the room's north wall as the eye rises,
+        // which is where a plan wants its north, and the room reads as a
+        // plan rather than as a picture taken from a ladder.
+        camera.up.set(top, 1 - top, 0).normalize();
         camera.lookAt(aim);
         return true;
       }
