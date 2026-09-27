@@ -38,7 +38,11 @@
     the darkness is the subject, so a light that ignores walls would undo the
     page.
 
-    ?yaw= and ?pitch= freeze the head, ?ex= sets the exposure by looking, and
+    THE ARROWS WALK YOU ABOUT and turn you the whole way round. The pointer
+    turns the head as well, so a visitor who presses nothing can still look.
+
+    ?yaw= and ?pitch= freeze the head, ?at=x,z stands the eye somewhere, ?ex=
+    sets the exposure by looking, ?open takes the curtain away at once, and
     ?litetest measures the dark instead of arguing about it. ?nogl serves the
     page a visitor without WebGL gets.
   -->
@@ -202,7 +206,6 @@
 
       const camera = new THREE.PerspectiveCamera(58, innerWidth / innerHeight,
                                                  0.05, 40);
-      camera.position.set(ROOM.seat.x, ROOM.seat.y, ROOM.seat.z);
 
       // ---- materials: matte, flat, no shine and no photographs ------------
       const mat = (hex, rough) => new THREE.MeshStandardMaterial({
@@ -390,40 +393,165 @@
       }
       shell.add(shoji);
 
-      // ---- the lamp, and the only warm light in the room -------------------
-      const ANDON = { x: 0.78, z: -1.12 };
-      const lamp = new THREE.Group();
-      lamp.name = "lampe";
-      lamp.position.set(ANDON.x, 0, ANDON.z);
-      // it stands ON its foot: the shade was floating 135mm over it, which
-      // reads as a lantern hanging from nothing
-      const shade = new THREE.Mesh(
-        new THREE.BoxGeometry(0.21, 0.375, 0.21),
-        new THREE.MeshBasicMaterial({ color: 0xd9a86a, toneMapped: false }));
-      shade.position.y = 0.028 + 0.375 / 2;
-      lamp.add(shade);
-      const foot = new THREE.Mesh(
-        new THREE.BoxGeometry(0.25, 0.028, 0.25), mat(0x1b150e, 0.9));
-      foot.position.y = 0.014;
-      foot.castShadow = true;
-      lamp.add(foot);
-      // OPEN AT THE TOP, which is how an andon is made and also the only
-      // thing in the room that gives the ceiling and the beams anything to
-      // catch. A solid lid measured two per cent of the frame at under a
-      // four thousandth: a pool of light on the wood above a lamp is the
-      // most Tanizaki thing available and it was being blocked by a plank.
-      const rimMat = mat(0x1b150e, 0.9);
-      for (let i = 0; i < 4; i++) {
-        const along = i % 2 === 0;
-        const r = new THREE.Mesh(new THREE.BoxGeometry(
-          along ? 0.25 : 0.03, 0.022, along ? 0.03 : 0.25), rimMat);
-        r.position.set(along ? 0 : (i === 1 ? -0.11 : 0.11),
-                       0.028 + 0.375 + 0.011,
-                       along ? (i === 0 ? -0.11 : 0.11) : 0);
-        r.castShadow = true;
-        lamp.add(r);
+      // ---- the two Akari, his own ------------------------------------------
+      // Noguchi's lamps, and not a lantern I invented: the two he has, at
+      // their published sizes.
+      //
+      //   1AR    a round shade of red screenprinted mulberry bark washi,
+      //          254 wide and 317 high, on three steel legs, 432 overall
+      //   UF1-O  a four panel shade, 267 by 229 by 292, one plain panel, one
+      //          red screenprinted and two black, tied to four angled legs
+      //          with black cotton, 508 overall
+      //
+      // The black panels are the reason this is worth modelling rather than
+      // approximating with a glowing box: a lamp that is dark on two sides
+      // throws its light one way, which in a room whose subject is shadow is
+      // the difference between a light source and a lit object.
+      //
+      // WASHI IS DRAWN, NOT SHADED. The paper is a canvas texture with the
+      // bamboo ribbing in it and it is not tone mapped, because a lit shade
+      // is the one thing in the room that has to hold its own value.
+      function washi(r, g, b, ribs, dark) {
+        const w = 96, h = 128;
+        const c = document.createElement("canvas");
+        c.width = w; c.height = h;
+        const x = c.getContext("2d");
+        x.fillStyle = "rgb(" + r + "," + g + "," + b + ")";
+        x.fillRect(0, 0, w, h);
+        // the fibre: mulberry bark leaves long strands in the sheet
+        for (let i = 0; i < 260; i++) {
+          const fx = hash3(i, 3, 1) * w, fy = hash3(i, 1, 4) * h;
+          const len = 3 + hash3(i, 5, 2) * 14;
+          x.strokeStyle = "rgba(255,255,255," + (0.03 + hash3(i, 6, 7) * 0.05) + ")";
+          x.lineWidth = 1;
+          x.beginPath();
+          x.moveTo(fx, fy);
+          x.lineTo(fx + len * (hash3(i, 8, 9) - 0.5), fy + len * 0.25);
+          x.stroke();
+        }
+        // and the ribs, tight and evenly spaced, as the shop says
+        for (let i = 0; i <= ribs; i++) {
+          const y = h * i / ribs;
+          x.strokeStyle = "rgba(60,40,24," + (dark ? 0.55 : 0.28) + ")";
+          x.lineWidth = 1.6;
+          x.beginPath(); x.moveTo(0, y); x.lineTo(w, y); x.stroke();
+        }
+        const t = new THREE.CanvasTexture(c);
+        t.colorSpace = THREE.SRGBColorSpace;
+        t.wrapS = t.wrapT = THREE.RepeatWrapping;
+        return t;
       }
-      shell.add(lamp);
+      const paperMat = (r, g, b, ribs, dark) => new THREE.MeshBasicMaterial({
+        map: washi(r, g, b, ribs, dark), toneMapped: false,
+        side: THREE.DoubleSide,
+      });
+      const steel = mat(0x141210, 0.55);
+
+      // 1AR: the round one, in red washi
+      function akari1AR() {
+        const g = new THREE.Group();
+        g.name = "akari1ar";
+        const BASE_H = 0.114, SH_H = 0.317, SH_R = 0.127;
+        // three legs, splayed, and a ring they hold
+        for (let i = 0; i < 3; i++) {
+          const a = i * Math.PI * 2 / 3;
+          const leg = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.004, 0.004, BASE_H * 1.04, 6), steel);
+          leg.position.set(Math.cos(a) * 0.075, BASE_H / 2, Math.sin(a) * 0.075);
+          leg.rotation.set(Math.cos(a) * 0.19, 0, -Math.sin(a) * 0.19);
+          leg.castShadow = true;
+          g.add(leg);
+        }
+        const ring = new THREE.Mesh(
+          new THREE.TorusGeometry(0.052, 0.004, 5, 20), steel);
+        ring.rotation.x = Math.PI / 2;
+        ring.position.y = BASE_H;
+        g.add(ring);
+        // the shade: a barrel a little taller than it is wide, open at both
+        // poles the way a collapsible Akari is
+        const prof = [];
+        const N = 16;
+        for (let i = 0; i <= N; i++) {
+          const t = i / N;
+          const rr = SH_R * Math.pow(Math.sin(Math.PI * (0.10 + t * 0.80)), 0.62);
+          prof.push(new THREE.Vector2(Math.max(0.026, rr), t * SH_H));
+        }
+        const shade = new THREE.Mesh(
+          new THREE.LatheGeometry(prof, 28),
+          paperMat(214, 96, 74, 22, false));
+        shade.position.y = BASE_H;
+        g.add(shade);
+        return g;
+      }
+
+      // UF1-O: four panels, one plain, one red, two black
+      function akariUF1O() {
+        const g = new THREE.Group();
+        g.name = "akariuf1o";
+        const BASE_H = 0.222, SH_H = 0.292, W = 0.267, D = 0.229;
+        for (let i = 0; i < 4; i++) {
+          const sx = i < 2 ? -1 : 1, sz = i % 2 === 0 ? -1 : 1;
+          const leg = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.005, 0.005, BASE_H * 1.06, 6), steel);
+          leg.position.set(sx * 0.115, BASE_H / 2, sz * 0.095);
+          leg.rotation.set(sz * 0.16, 0, -sx * 0.16);
+          leg.castShadow = true;
+          g.add(leg);
+        }
+        // the four panels, leaning in toward the top: the shade is wider at
+        // its foot than at its head, which is what gives it the silhouette
+        const faces = [
+          paperMat(226, 214, 190, 15, false),   // the plain one
+          paperMat(198, 84, 66, 15, false),     // the red screenprint
+          paperMat(42, 34, 28, 15, true),       // and two black
+          paperMat(42, 34, 28, 15, true),
+        ];
+        for (let i = 0; i < 4; i++) {
+          const along = i % 2 === 0;
+          const w = along ? W : D;
+          const pan = new THREE.Mesh(new THREE.PlaneGeometry(w, SH_H), faces[i]);
+          const off = (along ? D : W) / 2;
+          const a = i === 0 ? 0 : i === 1 ? Math.PI / 2
+                  : i === 2 ? Math.PI : -Math.PI / 2;
+          pan.position.set(Math.sin(a) * off, BASE_H + SH_H / 2,
+                           Math.cos(a) * off);
+          pan.rotation.y = a;
+          pan.rotation.x = 0.055;              // the lean
+          // THE BLACK PANELS STOP THE LIGHT, which is the whole point of
+          // modelling this lamp instead of standing a glowing box there: two
+          // of its four faces are dark, so it throws its light in a wedge
+          // and leaves the rest of its own corner in shadow.
+          if (i >= 2) pan.castShadow = true;
+          g.add(pan);
+        }
+        // the black cotton ties, one at each top corner
+        for (let i = 0; i < 4; i++) {
+          const sx = i < 2 ? -1 : 1, sz = i % 2 === 0 ? -1 : 1;
+          const tie = new THREE.Mesh(
+            new THREE.BoxGeometry(0.012, 0.030, 0.012), mat(0x0e0c0a, 0.9));
+          tie.position.set(sx * W / 2 * 0.92, BASE_H + 0.014, sz * D / 2 * 0.92);
+          g.add(tie);
+        }
+        return g;
+      }
+
+      // WHERE THEY STAND. One by the window wall and one on the far side,
+      // which is the side that measured as a black frame when the head turned
+      // to it: the second lamp is the answer to that, and it is his own lamp
+      // rather than a light I put there to fix a reading.
+      const A1 = { x: 0.86, z: -1.18 };     // the round red one, by the wall
+      const A2 = { x: -0.62, z: 1.02 };     // the four panel one, behind
+      const lamp1 = akari1AR();
+      lamp1.position.set(A1.x, 0, A1.z);
+      shell.add(lamp1);
+      const lamp2 = akariUF1O();
+      lamp2.position.set(A2.x, 0, A2.z);
+      // ITS PLAIN PANEL TOWARD THE MIDDLE OF THE ROOM, computed from where it
+      // stands rather than guessed: at a guess it faced the corner with its
+      // two black panels to the room, and a lamp whose pool of light on the
+      // floor is brighter than the lamp reads as a dark box.
+      lamp2.rotation.y = Math.atan2(0 - A2.x, 0 - A2.z);
+      shell.add(lamp2);
 
       // ---- the light -------------------------------------------------------
       // A fifth of the tea room's hemisphere, so that nothing is ever pure
@@ -470,18 +598,81 @@
 
       // the lamp's own light: warm, close, and it falls off fast, which is
       // what makes the far corners corners
-      const glow = new THREE.PointLight(0xffb066, num("glow", 2.6), 3.4, 2.0);
-      glow.position.set(ANDON.x, 0.028 + 0.375 / 2, ANDON.z);
+      const glow = new THREE.PointLight(0xffb066, num("glow", 2.3), 3.4, 2.0);
+      glow.position.set(A1.x, 0.114 + 0.317 * 0.45, A1.z);
       glow.castShadow = true;
       glow.shadow.mapSize.set(1024, 1024);
       glow.shadow.bias = -0.002;
       scene.add(glow);
+
+      // the second lamp lights the other half of the room, which is the half
+      // that had nothing in it at all
+      const glow2 = new THREE.PointLight(0xffc089, num("glow2", 1.7), 3.0, 2.0);
+      glow2.position.set(A2.x, 0.222 + 0.292 * 0.45, A2.z);
+      glow2.castShadow = true;
+      glow2.shadow.mapSize.set(1024, 1024);
+      glow2.shadow.bias = -0.002;
+      scene.add(glow2);
+
+      // AND ONE LIGHT THAT COULD NOT EXIST, on his say: "on peut ajouter une
+      // source de lumiere, meme physiquement impossible, c'est le propre du
+      // virtuel, tout n'est pas realiste." So this one stands in the middle
+      // of the room at head height, casts no shadow, reaches almost nothing,
+      // and exists only to keep a turned head from finding a flat black wall.
+      // It is the tea room's refused bmLight, allowed here because he allowed
+      // it and for a reason the tea room did not have.
+      const unreal = new THREE.PointLight(0xe8cfae, num("fill", 0.55), 4.2, 1.4);
+      unreal.position.set(0, 1.58, 0.15);
+      scene.add(unreal);
 
       // ---- the head that turns ---------------------------------------------
       // You pivot where you sit. The pointer turns the head as it does in the
       // tea room, measured from where it was last re-centred rather than from
       // the middle of the window, and a drag turns it further: the room is
       // 360 degrees and a hover cannot reach behind you.
+      // AND YOU MOVE. The arrows walk you about the room and turn you the
+      // whole way round: up and down along the line of sight, left and right
+      // on the spot, and there is no arc you cannot reach. The pointer still
+      // turns the head, because a visitor who never presses a key should
+      // still be able to look.
+      const eye = new THREE.Vector3(ROOM.seat.x, ROOM.seat.y, ROOM.seat.z);
+      {
+        const at = (Q.get("at") || "").split(",").map(Number);
+        if (at.length === 2 && at.every(isFinite)) {
+          eye.set(at[0], ROOM.seat.y, at[1]);
+        }
+      }
+      const held = {};
+      const KEY = { ArrowUp: 1, ArrowDown: 1, ArrowLeft: 1, ArrowRight: 1 };
+      addEventListener("keydown", (e) => {
+        if (!KEY[e.code]) return;
+        held[e.code] = true;
+        e.preventDefault();          // or the page scrolls under the room
+      });
+      addEventListener("keyup", (e) => { held[e.code] = false; });
+      const STEP = 1.05;             // metres a second, an unhurried one
+      const SPIN = 1.5;              // radians a second
+      // KEPT OFF THE WALLS by half a metre, which is where a knee stops
+      // rather than where a nose does.
+      const INSET = 0.50;
+      function walk(dt) {
+        let moved = false;
+        if (held.ArrowLeft) { wantYaw += SPIN * dt; moved = true; }
+        if (held.ArrowRight) { wantYaw -= SPIN * dt; moved = true; }
+        const go = (held.ArrowUp ? 1 : 0) - (held.ArrowDown ? 1 : 0);
+        if (go) {
+          eye.x += -Math.sin(yaw) * STEP * dt * go;
+          eye.z += -Math.cos(yaw) * STEP * dt * go;
+          eye.x = Math.max(-ROOM.w / 2 + INSET, Math.min(ROOM.w / 2 - INSET, eye.x));
+          eye.z = Math.max(-ROOM.d / 2 + INSET, Math.min(ROOM.d / 2 - INSET, eye.z));
+          moved = true;
+        }
+        // the pointer's own look is measured from where it last re-centred,
+        // and walking re-centres it: a cursor left where it was is a cursor
+        // doing nothing
+        if (moved) { origin.x = null; yawBase = wantYaw; }
+      }
+
       const YAW0 = -0.62;               // opens looking at the window wall
       let yaw = num("yaw", YAW0), pitch = num("pitch", -0.05);
       let wantYaw = yaw, wantPitch = pitch;
@@ -563,9 +754,11 @@
         const dt = Math.min(0.05, (now - last) / 1000);
         last = now;
         // eased, so the head never snaps; the frozen views want it exact
+        if (!frozen) walk(dt);
         const k = frozen ? 1 : 1 - Math.pow(0.0016, dt);
         yaw += (wantYaw - yaw) * k;
         pitch += (wantPitch - pitch) * k;
+        camera.position.copy(eye);
         camera.rotation.set(0, 0, 0);
         camera.rotateY(yaw);
         camera.rotateX(pitch);
@@ -576,6 +769,61 @@
         requestAnimationFrame(frame);
       }
       requestAnimationFrame(frame);
+
+      // ---- DOES THE WALKING WALK, AND DOES IT STOP ------------------------
+      // ?walktest presses the real keys through the real handlers and reads
+      // the eye afterwards. Three claims: the arrows move you, they turn you
+      // the whole way round, and they do NOT take you through a wall. The
+      // last one is the one worth a test: this project has put a ladle
+      // through a kettle and a cloth through a bowl by trusting a straight
+      // line between two good positions.
+      if (Q.has("walktest")) {
+        setTimeout(() => {
+          const out = [];
+          const key = (code, down) => dispatchEvent(
+            new KeyboardEvent(down ? "keydown" : "keyup", { code: code }));
+          const drive = (code, secs) => {
+            key(code, true);
+            for (let i = 0; i < Math.round(secs * 60); i++) {
+              walk(1 / 60);
+              yaw += (wantYaw - yaw) * 0.6;
+            }
+            key(code, false);
+          };
+          const p0 = eye.clone();
+          drive("ArrowUp", 0.5);
+          out.push("half a second of forward is " +
+                   Math.round(p0.distanceTo(eye) * 1000) + "mm" +
+                   (p0.distanceTo(eye) > 0.2 ? " -- it walks" : " -- IT DOES NOT MOVE"));
+          const y0 = wantYaw;
+          drive("ArrowLeft", 4.4);
+          const turned = Math.abs(wantYaw - y0);
+          out.push("four and a half seconds of left is " +
+                   Math.round(turned * 180 / Math.PI) + " degrees" +
+                   (turned > Math.PI * 2 ? " -- a full turn and more"
+                                         : " -- IT CANNOT COME ROUND"));
+          // and now into the wall, from the middle, twice as long as it takes
+          eye.set(0, ROOM.seat.y, 0);
+          wantYaw = 0; yaw = 0;                 // facing -z, the far wall
+          drive("ArrowUp", 6);
+          const gap = Math.abs(-ROOM.d / 2 - eye.z);
+          out.push("driven into the far wall for six seconds it stops " +
+                   Math.round(gap * 1000) + "mm from it" +
+                   (gap > 0.4 ? " -- it stops short" : " -- IT GOES THROUGH"));
+          let worst = 1e9;
+          [[0, 1], [0, -1], [1, 0], [-1, 0]].forEach(([dx, dz]) => {
+            eye.set(0, ROOM.seat.y, 0);
+            wantYaw = Math.atan2(-dx, -dz); yaw = wantYaw;
+            drive("ArrowUp", 6);
+            worst = Math.min(worst,
+              ROOM.w / 2 - Math.abs(eye.x), ROOM.d / 2 - Math.abs(eye.z));
+          });
+          out.push("pushed at all four walls the closest it ever came is " +
+                   Math.round(worst * 1000) + "mm" +
+                   (worst > 0.4 ? " -- inside the room" : " -- IT LEAVES THE ROOM"));
+          document.body.setAttribute("data-walktest", out.join(" | "));
+        }, 1200);
+      }
 
       // ---- IS IT DARK, AND IS IT DARK THE RIGHT WAY -------------------------
       // ?litetest reads the framebuffer at named places instead of arguing
