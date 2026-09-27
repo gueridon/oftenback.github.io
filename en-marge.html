@@ -931,12 +931,48 @@
           weight.rotation.z = Math.PI / 2;
           weight.position.set(AX + 0.038, PT + 0.050, AZ);
           arm.add(weight);
-          // a real headshell is about twenty millimetres across, and it was
-          // thirty: smaller all round and narrower than it is long
-          const head = new THREE.Mesh(
-            new THREE.BoxGeometry(0.019, 0.013, 0.021), mat(0x22201c, 0.8));
-          head.position.set(AX - L + 0.004, PT + 0.044, AZ);
-          arm.add(head);
+          // THE HEAD IS FOUR SMALL PIECES, not a block. From the maker's own
+          // photograph: a thin flat plate, a neck that narrows toward the
+          // arm, a long slender finger lift sweeping out from one side, and
+          // the cartridge hanging under the plate as a wedge that tapers to
+          // the stylus. A cube at the end of the tube read as a lump; this
+          // reads as a head because its silhouette is a plate with something
+          // small under it and a blade beside it.
+          {
+            const hx = AX - L + 0.006, hy = PT + 0.044;
+            const dark = mat(0x22201c, 0.8);
+            const plate = new THREE.Mesh(
+              new THREE.BoxGeometry(0.021, 0.0035, 0.016), dark);
+            plate.position.set(hx, hy, AZ);
+            arm.add(plate);
+            const neck = new THREE.Mesh(
+              new THREE.CylinderGeometry(0.0055, 0.0075, 0.011, 10), dark);
+            neck.rotation.z = Math.PI / 2;
+            neck.position.set(hx + 0.015, hy + 0.001, AZ);
+            arm.add(neck);
+            // the finger lift: a thin blade off the side, longer than the
+            // plate, angled a little down and forward
+            const lift = new THREE.Mesh(
+              new THREE.BoxGeometry(0.019, 0.0016, 0.0032), dark);
+            lift.position.set(hx + 0.004, hy - 0.001, AZ - 0.011);
+            lift.rotation.y = -0.12;
+            lift.rotation.z = -0.06;
+            arm.add(lift);
+            // the cartridge, hanging under the plate and tapering forward
+            const cart = new THREE.Mesh(
+              new THREE.BoxGeometry(0.012, 0.0085, 0.011), mat(0x191714, 0.85));
+            cart.position.set(hx - 0.002, hy - 0.006, AZ);
+            arm.add(cart);
+            const nose = new THREE.Mesh(
+              new THREE.BoxGeometry(0.005, 0.005, 0.006), mat(0x191714, 0.85));
+            nose.position.set(hx - 0.0095, hy - 0.0085, AZ);
+            arm.add(nose);
+            const stylus = new THREE.Mesh(
+              new THREE.CylinderGeometry(0.0005, 0.0003, 0.0035, 6),
+              mat(0x6e6a63, 0.5));
+            stylus.position.set(hx - 0.0105, hy - 0.0125, AZ);
+            arm.add(stylus);
+          }
           tt.add(arm);
         }
         // ONE control, at the near left corner, and nothing else on the
