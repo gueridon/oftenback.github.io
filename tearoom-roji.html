@@ -5885,10 +5885,35 @@
           });
           return o.visible ? a : 0;
         };
-        const seen = (o) => {
+        // WHAT CAN BE SEEN OF IT, and for the cloth that is not its box.
+        // Two clipping planes trim the 300 by 150 sheet down to a bridge of
+        // 40mm outside the lip and 27 inside, so its geometry box is mostly
+        // cloth that is never drawn: measured against the packet, it put the
+        // two "in one place" while the things on the screen were not.
+        const _sv = new THREE.Vector3();
+        const seen = (o, cut) => {
           o.updateMatrixWorld(true);
-          return { c: new THREE.Box3().setFromObject(o, true)
-                        .getCenter(new THREE.Vector3()), a: alphaOf(o) };
+          if (!cut) {
+            return { c: new THREE.Box3().setFromObject(o, true)
+                          .getCenter(new THREE.Vector3()),
+                     s: new THREE.Box3().setFromObject(o, true)
+                          .getSize(new THREE.Vector3()), a: alphaOf(o) };
+          }
+          const bx = new THREE.Box3();
+          o.traverse((m) => {
+            const pa = m.geometry && m.geometry.attributes &&
+                       m.geometry.attributes.position;
+            if (!pa) return;
+            for (let j = 0; j < pa.count; j++) {
+              _sv.fromBufferAttribute(pa, j).applyMatrix4(m.matrixWorld);
+              if (CHAK_CUT.some((pl) => pl.distanceToPoint(_sv) < 0)) continue;
+              bx.expandByPoint(_sv);
+            }
+          });
+          return bx.isEmpty()
+            ? { c: new THREE.Vector3(), s: new THREE.Vector3(), a: 0 }
+            : { c: bx.getCenter(new THREE.Vector3()),
+                s: bx.getSize(new THREE.Vector3()), a: alphaOf(o) };
         };
         const N = 840, path = [];
         for (let k = 0; k <= N; k++) {
@@ -5897,7 +5922,7 @@
           purT = PURIFY[want].t * (k / N) * 0.999;
           purStep(0);
           const lin = wipeW && wipeW.dogu ? seen(wipeW.dogu) : null;
-          const clo = seen(chak.mesh);
+          const clo = seen(chak.mesh, true);
           // THE LIP AS IT STANDS AT THIS SAMPLE. Read once after the loop it
           // is the lip of a bowl that has already gone home, 600mm away, and
           // every distance taken against it is that error.
@@ -5942,6 +5967,18 @@
               "s of the beat's " + PURIFY[want].t.toFixed(0) + ", at most " +
               Math.round(apart * 1000) + "mm apart" +
               (apart > 0.025 ? " -- IT POPS ACROSS" : " -- one place, two skins"));
+          // and what each of them looks like there, because a dissolve
+          // between two outlines that do not correspond reads as a jump
+          path.forEach((sp) => {
+            if (!sp.lin || Math.abs(sp.lin.a - 0.5) > 0.06) return;
+            if (sp.clo.a <= 0.02) return;
+            out.push("mid-dissolve at " + (sp.u * 100).toFixed(0) +
+              " per cent the packet is " +
+              [sp.lin.s.x, sp.lin.s.y, sp.lin.s.z].map((v) =>
+                Math.round(v * 1000)).join("x") + " and the cloth " +
+              [sp.clo.s.x, sp.clo.s.y, sp.clo.s.z].map((v) =>
+                Math.round(v * 1000)).join("x"));
+          });
         }
         // AND IS IT HELD OVER THE MOUTH OR OVER THE RIM? A bowl tipped 45
         // degrees has its own axis leaning out across its mouth, so a lift
@@ -11097,8 +11134,22 @@
     // Up off the rim AND out from it, which is where a hand holds a cloth
     // it is about to place: a packet whose middle is put where the bridge's
     // middle will be has half its body in the wall, measured at 17mm.
-    const CHAK_LOFT = 0.090;     // above the lip, where the two meet
-    const CHAK_AWAY = 0.045;     // and out from it
+    // CLOSE TO THE RIM, because nothing in this room holds it: a cloth
+    // dissolving from one shape into another a bowl's height above the lip
+    // hangs in the air with no hand under it. It stands off it only as far
+    // as the packet needs to be clear of the clay.
+    const CHAK_LOFT = 0.030;     // above the lip, where the two meet
+    const CHAK_AWAY = 0.040;     // and out from it
+    // AND THEY BARELY OVERLAP. The two outlines do not correspond, 78 by 76
+    // of packet against 44 by 56 of bridge, so a straight cross-fade shows
+    // one through the other for a second and a half: each is given a third
+    // of the fade to share.
+    const CHAK_LAP = 0.35;
+    const fadeIn = (x) => {
+      const v = Math.max(0, Math.min(1, (x - CHAK_LAP) / (1 - CHAK_LAP)));
+      return v * v * (3 - 2 * v);
+    };
+    const fadeOut = (x) => fadeIn(1 - x);
     const CHAK_ARC = 0.130;      // the height the travel arcs over
     // the short way round, so the carry continues the turn instead of
     // unwinding it
@@ -11112,7 +11163,10 @@
     // that the test knows which pass it is looking at: the linen carried
     // over, the cloth given, three passes round the lip, the cloth taken
     // back, the linen carried away
-    const WIPE_SEG = [0.15, 0.06, 0.05, 0.47, 0.05, 0.06, 0.16];
+    // The fade is short and the placing is not: a hand-over leg of two
+    // seconds spent 0.3 of them changing and the rest standing still, which
+    // reads as hesitation.
+    const WIPE_SEG = [0.15, 0.02, 0.07, 0.51, 0.07, 0.02, 0.16];
     const WIPE_PASSES = 3;                 // which leg the passes are
     function wipeSetup() {
       const bp = poolOf("chawan", true);
@@ -11258,6 +11312,23 @@
       return { at: at, up: _wa.clone(), out: f2.clone() };
     }
     const _ct = new THREE.Vector3(), _ca = new THREE.Vector3();
+    // WHAT CAN BE SEEN OF THE CLOTH, which is not its box. The two clipping
+    // planes trim the 300 by 150 sheet to a bridge of 40mm outside the lip
+    // and 27 inside, so most of the mesh is cloth that is never drawn: the
+    // packet has to be handed over to the thing on the screen, and measured
+    // against the box the two stood 56mm apart while the reading said they
+    // were in one place.
+    function chakShown() {
+      const pa = chak.geo.attributes.position;
+      const bx = new THREE.Box3();
+      for (let i = 0; i < pa.count; i++) {
+        _ct.fromBufferAttribute(pa, i).applyMatrix4(chak.mesh.matrixWorld);
+        if (CHAK_CUT[0].distanceToPoint(_ct) < 0) continue;
+        if (CHAK_CUT[1].distanceToPoint(_ct) < 0) continue;
+        bx.expandByPoint(_ct);
+      }
+      return bx.isEmpty() ? null : bx.getCenter(new THREE.Vector3());
+    }
     function chakTop(up) {
       const pa = chak.geo.attributes.position;
       let best = -1e9;
@@ -11314,7 +11385,7 @@
       chak.set(0, 0, CHAK_U);
       chakOn(w, theta, TIP45, lift || 0, away || 0);
       chak.mesh.updateMatrixWorld(true);
-      const c = stage.worldToLocal(new THREE.Box3()
+      const c = stage.worldToLocal(chakShown() || new THREE.Box3()
         .setFromObject(chak.mesh, true).getCenter(new THREE.Vector3()));
       bw.quaternion.copy(q0); bw.updateMatrixWorld(true);
       // AND IN THE TRAVELLING LINEN'S OWN TERMS: it is placed by its origin
@@ -11369,17 +11440,18 @@
         // THE CLOTH IS GIVEN, AND GIVEN BACK: both in one place, one fading
         // as the other comes up, neither of them moving.
         const th = i === 1 ? CHAK_TH0 : CHAK_THN;
-        const a = i === 1 ? e : 1 - e;
+        const x = i === 1 ? e : 1 - e;       // packet to cloth, either way
         tipTo(1);
         w.hop = CHAK_LOFT;
         chak.set(0, 0, CHAK_U);
         chakOn(w, th, TIP45, CHAK_LOFT, CHAK_AWAY);
-        chak.mesh.visible = a > 0;
-        setAlpha(chak.mesh, a);
+        const aC = fadeIn(x), aP = fadeOut(x);
+        chak.mesh.visible = aC > 0;
+        setAlpha(chak.mesh, aC);
         if (w.dogu) {
-          w.dogu.visible = a < 1;
+          w.dogu.visible = aP > 0;
           w.dogu.position.copy(chakHover(w, th));
-          setAlpha(w.dogu, 1 - a);
+          setAlpha(w.dogu, aP);
         }
       } else if (i === 2 || i === 4) {
         // AND IT IS SET DOWN, and taken up again: the last 55mm onto the
