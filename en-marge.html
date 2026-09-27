@@ -221,8 +221,17 @@
       // rendering of a room; a few millimetres of wander reads as earth and
       // wood. The jitter is keyed on position, never on Math.random, so it
       // does not crawl between frames.
+      // AND ONE GRAIN OVER THE WHOLE ROOM. Every panel took the texture
+      // stretched to its own size, so the plaster read coarse on a small
+      // piece and fine on a big one: the strip over the door showed as a
+      // lighter rectangle. The uv is scaled by the panel's metres instead.
+      const GRAIN = 0.62;                  // repeats per metre
       function rugged(w, h, segW, segH, edge, bump, seed) {
         const geo = new THREE.PlaneGeometry(w, h, segW, segH);
+        const uv = geo.attributes.uv;
+        for (let i = 0; i < uv.count; i++) {
+          uv.setXY(i, uv.getX(i) * w * GRAIN, uv.getY(i) * h * GRAIN);
+        }
         const p = geo.attributes.position;
         for (let i = 0; i < p.count; i++) {
           const x = p.getX(i), y = p.getY(i);
@@ -262,8 +271,7 @@
         const t = new THREE.CanvasTexture(c);
         t.wrapS = t.wrapT = THREE.RepeatWrapping;
         t.colorSpace = THREE.SRGBColorSpace;
-        t.repeat.set(2, 1.4);
-        return t;
+        return t;                        // the uv carries the scale now
       }
       const wallMat = new THREE.MeshStandardMaterial({
         map: plaster(), roughness: 1, metalness: 0,
@@ -309,10 +317,93 @@
       left.rotation.y = Math.PI / 2;
       left.position.set(-ROOM.w / 2, ROOM.h / 2, 0);
       walls.add(left);
-      const right = wall(ROOM.d, ROOM.h, 4.1);
-      right.rotation.y = -Math.PI / 2;
-      right.position.set(ROOM.w / 2, ROOM.h / 2, 0);
-      walls.add(right);
+      // THE RIGHT WALL CARRIES THE DOOR, so it is not one plane but four
+      // around the opening: a PlaneGeometry cannot hold a hole, and the tea
+      // room solved this the same way rather than give up its hand jitter.
+      //
+      // The door's own numbers are that room's, because it is the same house
+      // and the same doorway: 700 wide, 720 high, a 60mm sill, and set to one
+      // side, since a real nijiriguchi is never centred. Seventy centimetres
+      // because nobody enters a tea room standing.
+      const DOOR = { w: 0.70, h: 0.72, sill: 0.06, z: -0.46 };
+      {
+        const X = ROOM.w / 2, GROW = 0.06;
+        const l = DOOR.z - DOOR.w / 2, r = DOOR.z + DOOR.w / 2;
+        const top = DOOR.sill + DOOR.h;
+        // EACH PIECE BY THE FOUR EDGES IT RUNS BETWEEN, and grown only at the
+        // edges that do NOT border the opening. Copied from the plain walls,
+        // which are grown all round, the pieces came out a centimetre small
+        // on every side and the wall showed its seams. The edges along the
+        // doorway are covered by its own timber, so they stay exact.
+        const rect = (z0, z1, y0, y1, seed, gz0, gz1, gy0, gy1) => {
+          const a2 = z0 - gz0, b2 = z1 + gz1, c2 = y0 - gy0, d2 = y1 + gy1;
+          const wz = b2 - a2, wy = d2 - c2;
+          const m = new THREE.Mesh(
+            rugged(wz, wy, Math.max(2, Math.round(wz * 4)),
+                   Math.max(2, Math.round(wy * 4)), 0.012, 0.008, seed),
+            wallMat);
+          m.rotation.y = -Math.PI / 2;
+          m.position.set(X, (c2 + d2) / 2, (a2 + b2) / 2);
+          m.receiveShadow = true;
+          walls.add(m);
+        };
+        const Z0 = -ROOM.d / 2, Z1 = ROOM.d / 2;
+        rect(Z0, l, 0, ROOM.h, 4.1, GROW, 0, GROW, GROW);
+        rect(r, Z1, 0, ROOM.h, 4.7, 0, GROW, GROW, GROW);
+        // the piece over the door grows sideways as well: the posts stop at
+        // the lintel, so above it there is nothing to cover a seam
+        rect(l, r, top, ROOM.h, 5.2, GROW, GROW, 0, GROW);
+        rect(l, r, 0, DOOR.sill, 5.9, 0, 0, GROW, 0);
+
+        // the opening's own timber: two posts, a lintel, a sill. Dark, like
+        // the beams, because this is the one place the structure shows.
+        const tim = mat(0x201811, 0.92);
+        const post = (cz) => {
+          const m = new THREE.Mesh(
+            new THREE.BoxGeometry(0.055, top + 0.03, 0.045), tim);
+          m.position.set(X - 0.026, (top + 0.03) / 2, cz);
+          m.castShadow = true; m.receiveShadow = true;
+          walls.add(m);
+        };
+        post(l - 0.022); post(r + 0.022);
+        const lintel = new THREE.Mesh(
+          new THREE.BoxGeometry(0.055, 0.052, DOOR.w + 0.13), tim);
+        lintel.position.set(X - 0.026, top + 0.026, DOOR.z);
+        lintel.castShadow = true; lintel.receiveShadow = true;
+        walls.add(lintel);
+        const sill = new THREE.Mesh(
+          new THREE.BoxGeometry(0.075, DOOR.sill, DOOR.w + 0.13), tim);
+        sill.position.set(X - 0.030, DOOR.sill / 2, DOOR.z);
+        sill.castShadow = true; sill.receiveShadow = true;
+        walls.add(sill);
+
+        // AND THE DOOR ITSELF, SHUT. A cedar panel on the OUTER face, as it
+        // runs in reality, so from in here you see its back set into the
+        // opening. Shut for now: later this room stands somewhere in the
+        // roji with a path to it, and then the panel has somewhere to slide
+        // aside to.
+        const door = new THREE.Group();
+        door.name = "nijiriguchi";
+        const dw = DOOR.w + 0.10, dh = DOOR.sill + DOOR.h + 0.06;
+        const wood = mat(0x4a3826, 0.95);
+        const leaf = new THREE.Mesh(new THREE.BoxGeometry(0.030, dh, dw), wood);
+        leaf.castShadow = true; leaf.receiveShadow = true;
+        door.add(leaf);
+        // two battens across it, and the pull on the edge a hand would take
+        [-dh * 0.24, dh * 0.24].forEach((by) => {
+          const b = new THREE.Mesh(
+            new THREE.BoxGeometry(0.016, 0.045, dw), wood);
+          b.position.set(0.023, by, 0);
+          b.castShadow = true;
+          door.add(b);
+        });
+        const pull = new THREE.Mesh(
+          new THREE.BoxGeometry(0.014, 0.11, 0.055), mat(0x241b12, 0.9));
+        pull.position.set(0.026, 0, -dw * 0.34);
+        door.add(pull);
+        door.position.set(X + 0.045, dh / 2 - 0.02, DOOR.z);
+        shell.add(door);
+      }
       const front = wall(ROOM.w, ROOM.h, 5.5);
       front.rotation.y = Math.PI;
       front.position.set(0, ROOM.h / 2, ROOM.d / 2);
@@ -592,6 +683,92 @@
       // floor is brighter than the lamp reads as a dark box.
       lamp2.rotation.y = Math.atan2(0 - A2.x, 0 - A2.z);
       shell.add(lamp2);
+
+      // ---- le zafu sur son zabuton, au centre ------------------------------
+      // Fauve: a tawny brown, warm and slightly yellow, and the one soft
+      // thing in a room of timber and plaster. It sits in the middle of the
+      // floor, which is the place the room was built around: everything else
+      // stands against a wall.
+      // BIASED TOWARD THE COOL, so that the warm lamps render it fauve. The
+      // tea room learned this on a black raku bowl that came out red-brown:
+      // a matte object takes the colour of its key light, and both lights in
+      // here are amber. At its face value the cushion read as a pumpkin.
+      // ?fauve=a48a56 turns it by looking, which is the only way to settle a
+      // colour someone owns and I do not.
+      const FAUVE = (function () {
+        const h = parseInt(Q.get("fauve") || "a48a56", 16);
+        return isFinite(h) ? h : 0xa48a56;
+      })();
+      const FAUVE_DEEP = new THREE.Color(FAUVE).multiplyScalar(0.72).getHex();
+      // A CUSHION IS A BULGE, not a box. Both of these start as a box or a
+      // cylinder and then have their own middles pushed out and their edges
+      // drawn in, because what says cushion is that no face of it is flat.
+      function pillow(w, h, d, bulge) {
+        const geo = new THREE.BoxGeometry(w, h, d, 10, 3, 10);
+        const p = geo.attributes.position;
+        const hw = w / 2, hh = h / 2, hd = d / 2;
+        for (let i = 0; i < p.count; i++) {
+          const x = p.getX(i), y = p.getY(i), z = p.getZ(i);
+          const fx = 1 - Math.pow(Math.abs(x) / hw, 2);
+          const fz = 1 - Math.pow(Math.abs(z) / hd, 2);
+          const f = Math.max(0, fx) * Math.max(0, fz);
+          p.setY(i, y + Math.sign(y) * bulge * f);
+          // and the sides drawn in a little, so the seam is a seam
+          const edge = (Math.abs(y) > hh * 0.8) ? 0.985 : 1.0;
+          p.setX(i, x * edge);
+          p.setZ(i, z * edge);
+        }
+        geo.computeVertexNormals();
+        return geo;
+      }
+      const zabuton = new THREE.Mesh(
+        pillow(0.575, 0.062, 0.575, 0.022),
+        new THREE.MeshStandardMaterial({ color: FAUVE_DEEP, roughness: 1,
+                                         metalness: 0 }));
+      zabuton.name = "zabuton";
+      zabuton.position.set(0, 0.031, 0);
+      zabuton.castShadow = true;
+      zabuton.receiveShadow = true;
+      shell.add(zabuton);
+
+      // the zafu: pleated round the side, gathered at the top, and a little
+      // barrel through the middle from being sat on
+      function zafuGeo(r, h, pleats) {
+        const geo = new THREE.CylinderGeometry(r, r, h, 64, 6, false);
+        const p = geo.attributes.position;
+        for (let i = 0; i < p.count; i++) {
+          const x = p.getX(i), y = p.getY(i), z = p.getZ(i);
+          const rr = Math.hypot(x, z);
+          if (rr < 1e-5) continue;
+          const th = Math.atan2(z, x);
+          const v = (y + h / 2) / h;             // 0 at the foot, 1 at the top
+          // the barrel, and the gather at both ends
+          let k = 1 + 0.10 * Math.sin(Math.PI * v) - 0.13 * Math.pow(2 * v - 1, 4);
+          // and the pleats, deepest at the waist where the fabric gathers
+          k += 0.030 * Math.cos(pleats * th) * Math.sin(Math.PI * v);
+          const s = (rr >= r - 1e-4) ? k : 1;    // the flat caps stay flat
+          p.setX(i, x * s);
+          p.setZ(i, z * s);
+        }
+        geo.computeVertexNormals();
+        return geo;
+      }
+      const zafu = new THREE.Mesh(
+        zafuGeo(0.175, 0.150, 20),
+        new THREE.MeshStandardMaterial({ color: FAUVE, roughness: 0.96,
+                                         metalness: 0 }));
+      zafu.name = "zafu";
+      zafu.position.set(0, 0.062 + 0.075, 0);
+      zafu.castShadow = true;
+      zafu.receiveShadow = true;
+      shell.add(zafu);
+      // the button the pleats are gathered into, on top
+      const knot = new THREE.Mesh(
+        new THREE.SphereGeometry(0.019, 12, 8),
+        mat(FAUVE_DEEP, 0.9));
+      knot.position.set(0, 0.062 + 0.150 - 0.004, 0);
+      knot.castShadow = true;
+      shell.add(knot);
 
       // ---- the light -------------------------------------------------------
       // A fifth of the tea room's hemisphere, so that nothing is ever pure
