@@ -5846,6 +5846,7 @@
                  Math.round(clay.wide * 2000) + "mm across and " +
                  Math.round(clay.h * 1000) + "mm tall -- the bowl itself"
                : "NO CERAMIC TO READ");
+        const lead = WIPE_SEG.slice(0, WIPE_PASSES).reduce((a, b) => a + b, 0);
         const _cv = new THREE.Vector3();
         const inClay = (o) => {
           if (!clay) return 0;
@@ -5897,7 +5898,12 @@
           purStep(0);
           const lin = wipeW && wipeW.dogu ? seen(wipeW.dogu) : null;
           const clo = seen(chak.mesh);
+          // THE LIP AS IT STANDS AT THIS SAMPLE. Read once after the loop it
+          // is the lip of a bowl that has already gone home, 600mm away, and
+          // every distance taken against it is that error.
+          const live = wipeW ? lipNow(wipeW) : null;
           path.push({ u: k / N, lin: lin, clo: clo,
+                      lip: live ? { c: live.c.clone(), r: live.r } : null,
                       deep: lin && lin.a > 0 ? inClay(wipeW.dogu) : 0 });
         }
         // each path smooth IN ITSELF, while it can be seen
@@ -5937,6 +5943,31 @@
               Math.round(apart * 1000) + "mm apart" +
               (apart > 0.025 ? " -- IT POPS ACROSS" : " -- one place, two skins"));
         }
+        // AND IS IT HELD OVER THE MOUTH OR OVER THE RIM? A bowl tipped 45
+        // degrees has its own axis leaning out across its mouth, so a lift
+        // taken along that axis carries the cloth over the opening instead
+        // of over the ceramic it is about to be set on, and the setting down
+        // then crosses the mouth to get back. Read in plan, against the
+        // lip's own radius.
+        {
+          const flat = (sp, c) => Math.hypot(c.x - sp.lip.c.x, c.z - sp.lip.c.z);
+          let hover = null, seat = null, rad = 0;
+          path.forEach((sp) => {
+            if (!sp.lip) return;
+            if (hover === null && sp.clo.a > 0.02 &&
+                sp.lin && sp.lin.a > 0.02) {
+              hover = flat(sp, sp.clo.c); rad = sp.lip.r;
+            }
+            if (seat === null && sp.u > lead) seat = flat(sp, sp.clo.c);
+          });
+          out.push(hover === null ? "NO HAND-OVER TO READ"
+            : "at the hand-over the cloth stands " + Math.round(hover * 1000) +
+              "mm from the lip's middle in plan and at the first pass " +
+              Math.round(seat * 1000) + ", the lip itself being " +
+              Math.round(rad * 1000) + "mm" +
+              (hover > rad * 0.75
+                 ? " -- held over the rim" : " -- HELD OVER THE MOUTH"));
+        }
         // THROUGH THE CERAMIC OR OVER IT. "Le chakin passe dans le bol quand
         // il est approche pour le secher": the travel is the only part where
         // the packet has no business touching the clay.
@@ -5964,7 +5995,6 @@
                    (PURIFY[want].t * WIPE_SEG[1]).toFixed(1) + " each way");
         }
         // and which way each pass turns
-        const lead = WIPE_SEG.slice(0, WIPE_PASSES).reduce((a, b) => a + b, 0);
         const tot = CHAK_PASSES.reduce((a, b) => a + b, 0);
         let acc = 0;
         CHAK_PASSES.forEach((p2, k) => {
@@ -11168,9 +11198,7 @@
       // LIFTED OFF THE LIP BY ITS SEAT and not by its mesh: the two clipping
       // planes that give the panels their length are struck from this point
       // too, so raising the cloth alone would trim it shorter as it rose.
-      const at = lipC.clone()
-        .addScaledVector(_wf, live.r - CHAK_IN + (away || 0))
-        .addScaledVector(_wa, lift || 0);
+      const at = lipC.clone().addScaledVector(_wf, live.r - CHAK_IN);
       // the cloth's length runs ACROSS the lip and its face looks DOWN: both
       // sides of a U rise toward the sheet's own plus y, so plus y is down
       _wu.copy(_wa).negate();
@@ -11201,6 +11229,32 @@
       CHAK_CUT[1].normal.copy(dI).negate();
       CHAK_CUT[1].constant = -CHAK_CUT[1].normal.dot(
         at.clone().addScaledVector(dI, CHAK_INLEN));
+      // HELD OFF THE LIP, and held AFTER it has been seated on it. Two
+      // reasons, both measured.
+      //
+      // The seating drives the cloth's foot to one radius, so an offset put
+      // into the seat's own point is taken straight back out again: the 45mm
+      // it was meant to stand out from the rim never survived the line above.
+      //
+      // And UP IS UP, not the bowl's own axis. On a bowl tipped 45 degrees
+      // toward the guests that axis leans out across the mouth, so 90mm
+      // along it left the cloth hanging over the opening rather than over
+      // the ceramic it was about to be set on -- 21mm from the lip's middle
+      // against a lip of 56 -- and the setting down then crossed the mouth.
+      if (lift || away) {
+        // AND OUT IS OUT IN PLAN. Taken along the lip's own radius, "out"
+        // at the low side of a tipped rim points down the outside of the
+        // bowl, and 45mm of it put the packet 4mm into the clay.
+        const outH = new THREE.Vector3(f2.x, 0, f2.z);
+        if (outH.lengthSq() > 1e-9) outH.normalize();
+        const off = new THREE.Vector3(0, lift || 0, 0)
+                      .addScaledVector(outH, away || 0);
+        chakHand.position.add(off);
+        chakHand.updateMatrixWorld(true);
+        CHAK_CUT[0].constant -= CHAK_CUT[0].normal.dot(off);
+        CHAK_CUT[1].constant -= CHAK_CUT[1].normal.dot(off);
+        at.add(off);
+      }
       return { at: at, up: _wa.clone(), out: f2.clone() };
     }
     const _ct = new THREE.Vector3(), _ca = new THREE.Vector3();
