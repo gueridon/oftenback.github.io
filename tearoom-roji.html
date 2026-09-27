@@ -5774,23 +5774,24 @@
     }
 
     // ---- does the linen arrive, or land twice -----------------------------
-    // ?chaktest. "Pour le chakin, il vient vers le bol, puis saute d'un coup
-    // vers le bas du bol. Les mouvements circulaires du chakin devraient
-    // partir du haut vers le bas." Two readings, and neither is in a still.
+    // ?chaktest. "Il vient vers le bol, puis saute d'un coup vers le bas du
+    // bol... les mouvements circulaires devraient partir du haut vers le
+    // bas... on saute de position en position et le chakin passe dans le bol
+    // quand il est approche."
     //
-    // A JUMP IS A SPIKE, not a large step. The travelling linen and the
-    // cloth on the lip are two different objects and the hand changes from
-    // one to the other twice in the beat, so a cut shows up as one step far
-    // larger than the steps either side of it -- while the plain fastest
-    // part of a gesture is large in a whole run of samples and is not a
-    // fault. The first reading I took called 39mm of honest speed the worst
-    // jump in the beat.
+    // FOUR QUESTIONS, and not one of them is in a still. The travelling
+    // packet and the bridge on the lip are two objects, so the beat is read
+    // as two paths that overlap while one dissolves into the other: each
+    // must be smooth in itself, they must be in the same place while both
+    // can be seen, and the packet must stay out of the clay on the way. And
+    // a pass round a tipped lip either begins at its high side and works
+    // down or begins at the low one and climbs.
     //
-    // And a pass round a tipped lip either begins at its high side and works
-    // down or begins at the low one and climbs, which is the height of the
-    // cloth at the start of the pass against the height it keeps on average
-    // through it. Read over the wipe only: the carry that brings the cloth
-    // back to the top between passes climbs by design.
+    // A JUMP IS A SPIKE, not a large step: a cut shows up as one step far
+    // larger than the steps either side of it, while the plain fastest part
+    // of a gesture is large for a whole run of samples and is not a fault.
+    // The first reading I took called 39mm of honest speed the worst jump in
+    // the beat.
     if (new URLSearchParams(location.search).has("chaktest")) {
       setTimeout(() => {
         const out = [];
@@ -5802,59 +5803,186 @@
           purStart(k); purT = PURIFY[k].t; purStep(0);
         }
         purStart(want);
+        // THE CERAMIC ITSELF, and the bowl only rather than the hand it is
+        // part of (see ?overin): read in the bowl's own frame as a band of
+        // radii per fiftieth of its height, inner wall to outer. A point
+        // that falls inside that band is IN THE CLAY. The band is the
+        // bowl's own geometry and so it holds however the bowl is turned;
+        // only the frame is asked again each sample.
+        const CLAY_N = 50;
+        const clay = (function () {
+          const one = pickObj("chawan", false);
+          if (!one) return null;
+          one.updateMatrixWorld(true);
+          const inv = new THREE.Matrix4().copy(one.matrixWorld).invert();
+          const pts = [];
+          let lo = 1e9, hi = -1e9;
+          one.traverse((m) => {
+            const pa = m.geometry && m.geometry.attributes &&
+                       m.geometry.attributes.position;
+            if (!pa) return;
+            const st = Math.max(1, Math.floor(pa.count / 2500));
+            for (let q2 = 0; q2 < pa.count; q2 += st) {
+              const v = new THREE.Vector3().fromBufferAttribute(pa, q2)
+                          .applyMatrix4(m.matrixWorld).applyMatrix4(inv);
+              pts.push(v); lo = Math.min(lo, v.y); hi = Math.max(hi, v.y);
+            }
+          });
+          if (hi - lo < 0.005) return null;
+          const inner = new Array(CLAY_N).fill(1e9);
+          const outer = new Array(CLAY_N).fill(-1e9);
+          pts.forEach((v) => {
+            const b = Math.min(CLAY_N - 1,
+              Math.floor((v.y - lo) / (hi - lo) * CLAY_N));
+            const r = Math.hypot(v.x, v.z);
+            inner[b] = Math.min(inner[b], r);
+            outer[b] = Math.max(outer[b], r);
+          });
+          return { o: one, inv: inv, lo: lo, hi: hi, h: hi - lo,
+                   inner: inner, outer: outer,
+                   wide: Math.max.apply(null, outer) };
+        })();
+        out.push(clay ? "the ceramic reads " +
+                 Math.round(clay.wide * 2000) + "mm across and " +
+                 Math.round(clay.h * 1000) + "mm tall -- the bowl itself"
+               : "NO CERAMIC TO READ");
+        const _cv = new THREE.Vector3();
+        const inClay = (o) => {
+          if (!clay) return 0;
+          clay.o.updateMatrixWorld(true);
+          clay.inv.copy(clay.o.matrixWorld).invert();
+          let deep = 0;
+          o.traverse((m) => {
+            const pa = m.geometry && m.geometry.attributes &&
+                       m.geometry.attributes.position;
+            if (!pa) return;
+            const st = Math.max(1, Math.floor(pa.count / 150));
+            for (let q2 = 0; q2 < pa.count; q2 += st) {
+              _cv.fromBufferAttribute(pa, q2)
+                 .applyMatrix4(m.matrixWorld).applyMatrix4(clay.inv);
+              if (_cv.y < clay.lo || _cv.y > clay.hi) continue;
+              const b = Math.min(CLAY_N - 1,
+                Math.floor((_cv.y - clay.lo) / clay.h * CLAY_N));
+              if (clay.outer[b] < -1e8) continue;
+              const r = Math.hypot(_cv.x, _cv.z);
+              if (r > clay.outer[b] || r < clay.inner[b]) continue;
+              deep = Math.max(deep, Math.min(clay.outer[b] - r,
+                                             r - clay.inner[b]));
+            }
+          });
+          return deep;
+        };
+        // BOTH PIECES, EVERY SAMPLE, and how much of each can be seen: the
+        // hand-over is a dissolve, so there is a stretch where the answer to
+        // "where is the linen" is two places at once.
+        const alphaOf = (o) => {
+          let a = 0;
+          o.traverse((c) => {
+            if (!c.material || !c.visible) return;
+            (Array.isArray(c.material) ? c.material : [c.material])
+              .forEach((m) => { a = Math.max(a, m.opacity); });
+          });
+          return o.visible ? a : 0;
+        };
+        const seen = (o) => {
+          o.updateMatrixWorld(true);
+          return { c: new THREE.Box3().setFromObject(o, true)
+                        .getCenter(new THREE.Vector3()), a: alphaOf(o) };
+        };
         const N = 840, path = [];
         for (let k = 0; k <= N; k++) {
           // NEVER EXACTLY AT THE END: purStep hands on to the next beat of
           // its own accord the moment u reaches one (see ?lidtest).
           purT = PURIFY[want].t * (k / N) * 0.999;
           purStep(0);
-          const o = chak.mesh.visible ? chak.mesh
-                  : (wipeW && wipeW.dogu && wipeW.dogu.visible ? wipeW.dogu
-                                                               : null);
-          if (!o) { path.push(null); continue; }
-          o.updateMatrixWorld(true);
-          const bx = new THREE.Box3().setFromObject(o, true);
-          path.push({ u: k / N, c: bx.getCenter(new THREE.Vector3()),
-                      cloth: chak.mesh.visible });
+          const lin = wipeW && wipeW.dogu ? seen(wipeW.dogu) : null;
+          const clo = seen(chak.mesh);
+          path.push({ u: k / N, lin: lin, clo: clo,
+                      deep: lin && lin.a > 0 ? inClay(wipeW.dogu) : 0 });
         }
-        const d = [];
-        for (let k = 0; k < path.length; k++) {
-          d.push(path[k] && path[k - 1]
-                   ? path[k].c.distanceTo(path[k - 1].c) : null);
+        // each path smooth IN ITSELF, while it can be seen
+        ["lin", "clo"].forEach((key) => {
+          const d = [], at = [];
+          for (let k = 1; k < path.length; k++) {
+            const a2 = path[k - 1][key], b2 = path[k][key];
+            if (!a2 || !b2 || a2.a <= 0 || b2.a <= 0) { d.push(null); continue; }
+            d.push(b2.c.distanceTo(a2.c)); at.push(path[k].u);
+          }
+          let spike = 0, where = 0, fast = 0;
+          for (let k = 1; k < d.length - 1; k++) {
+            if (d[k] === null) continue;
+            fast = Math.max(fast, d[k]);
+            if (d[k - 1] === null || d[k + 1] === null) continue;
+            const over = d[k] - (d[k - 1] + d[k + 1]) / 2;
+            if (over > spike) { spike = over; where = path[k + 1].u; }
+          }
+          out.push((key === "lin" ? "the packet" : "the cloth") +
+                   ": fastest step " + (fast * 1000).toFixed(1) +
+                   "mm, sharpest " + (spike * 1000).toFixed(1) +
+                   "mm over its neighbours at " + (where * 100).toFixed(0) +
+                   " per cent" +
+                   (spike > 0.010 ? " -- IT JUMPS THERE" : " -- no cut in it"));
+        });
+        // the dissolve: both seen at once, in one place, for how long
+        {
+          let n2 = 0, apart = 0;
+          path.forEach((sp) => {
+            if (!sp.lin || sp.lin.a <= 0.02 || sp.clo.a <= 0.02) return;
+            n2++; apart = Math.max(apart, sp.lin.c.distanceTo(sp.clo.c));
+          });
+          const secs = n2 / (N + 1) * PURIFY[want].t;
+          out.push(!n2 ? "THE HAND CHANGES OBJECT WITHOUT A DISSOLVE"
+            : "the two are seen together for " + secs.toFixed(1) +
+              "s of the beat's " + PURIFY[want].t.toFixed(0) + ", at most " +
+              Math.round(apart * 1000) + "mm apart" +
+              (apart > 0.025 ? " -- IT POPS ACROSS" : " -- one place, two skins"));
         }
-        let spike = 0, at = 0, fast = 0, swap = -1;
-        for (let k = 1; k < d.length; k++) {
-          if (d[k] === null) continue;
-          fast = Math.max(fast, d[k]);
-          if (path[k].cloth !== path[k - 1].cloth) swap = d[k];
-          const a2 = d[k - 1], b2 = d[k + 1];
-          if (a2 === null || b2 === undefined || b2 === null) continue;
-          const over = d[k] - (a2 + b2) / 2;
-          if (over > spike) { spike = over; at = path[k].u; }
+        // THROUGH THE CERAMIC OR OVER IT. "Le chakin passe dans le bol quand
+        // il est approche pour le secher": the travel is the only part where
+        // the packet has no business touching the clay.
+        {
+          let deep = 0, at = 0;
+          path.forEach((sp) => {
+            if (sp.deep > deep) { deep = sp.deep; at = sp.u; }
+          });
+          out.push(deep < 0.0005
+            ? "carried to the bowl and away from it, the packet never enters " +
+              "the clay -- clear of it"
+            : "carried to the bowl, the packet goes " +
+              Math.round(deep * 1000) + "mm into the clay at " +
+              (at * 100).toFixed(0) + " per cent -- THROUGH THE BOWL");
         }
-        out.push("its fastest step is " + (fast * 1000).toFixed(1) +
-                 "mm and its sharpest stands " + (spike * 1000).toFixed(1) +
-                 "mm over its neighbours, at " + (at * 100).toFixed(0) +
-                 " per cent through" +
-                 (spike > 0.010 ? " -- IT JUMPS THERE" : " -- no cut in it"));
-        out.push(swap < 0 ? "THE HAND NEVER CHANGES OBJECT"
-                 : "changing object moves it " + (swap * 1000).toFixed(1) +
-                   "mm" + (swap > 0.012 ? " -- IT JUMPS" : " -- in place"));
+        // AND HOW LONG THE CARRY BETWEEN PASSES TAKES, in seconds, because
+        // "ralentir la transition entre chaque passe" is a number.
+        {
+          const tot2 = CHAK_PASSES.reduce((a, b) => a + b, 0);
+          const secs = CHAK_PASSES.map((p3, k) => (k === 0 ? 0 :
+            PURIFY[want].t * WIPE_SEG[WIPE_PASSES] * (p3 / tot2) * CHAK_CARRY));
+          out.push("the carry between passes lasts " +
+                   secs.slice(1).map((v) => v.toFixed(1)).join(" and ") +
+                   " seconds, the hand-over " +
+                   (PURIFY[want].t * WIPE_SEG[1]).toFixed(1) + " each way");
+        }
+        // and which way each pass turns
+        const lead = WIPE_SEG.slice(0, WIPE_PASSES).reduce((a, b) => a + b, 0);
         const tot = CHAK_PASSES.reduce((a, b) => a + b, 0);
         let acc = 0;
         CHAK_PASSES.forEach((p2, k) => {
           const lo = acc, share = p2 / tot; acc += share;
           const band = [];
           path.forEach((sp) => {
-            if (!sp || !sp.cloth) return;
+            // THE PASSES' OWN LEG, and not every frame the cloth is opaque
+            // in: the setting down and the taking up are 90mm above the rim
+            // and they widened pass one's circle from 69 to 109mm.
+            if (sp.u < lead || sp.u > lead + WIPE_SEG[WIPE_PASSES]) return;
             const e = ease3(Math.max(0, Math.min(1,
-                        (sp.u - WIPE_SEG[0]) / WIPE_SEG[1])));
+                        (sp.u - lead) / WIPE_SEG[WIPE_PASSES])));
             const g = (e - lo) / share;
             const car = k > 0 ? CHAK_CARRY : 0;
             if (g >= car && g <= 1) {
               // how far round the pass has come, which is what the height is
               // a function of
-              band.push({ turn: p2 * ease3((g - car) / (1 - car)), c: sp.c });
+              band.push({ turn: p2 * ease3((g - car) / (1 - car)), c: sp.clo.c });
             }
           });
           if (band.length < 5) {
@@ -5872,9 +6000,9 @@
           // and a fifth of the way through a pass it has moved seventeen
           // degrees, which is nought millimetres of height either way.
           let qi = 0;
-          band.forEach((sp, j) => {
+          band.forEach((sp, j2) => {
             if (Math.abs(sp.turn - 0.25) < Math.abs(band[qi].turn - 0.25)) {
-              qi = j;
+              qi = j2;
             }
           });
           const q = band[qi].c.y;
@@ -6665,9 +6793,11 @@
               const up4 = d3.dot(live3.up);
               const rad3 = d3.addScaledVector(live3.up, -up4).length() - live3.r;
               // TWO POPULATIONS, and not one: the cloth rides the lip
-              // through each pass and is CARRIED OFF IT between them, back
-              // round to the high side. Read together, the carry's 26mm of
-              // lift made the whole gesture look like a cloth that wanders.
+              // through each pass and is OFF IT the rest of the time --
+              // carried round to the high side between passes, and given
+              // and taken back in the air above the rim. Read together,
+              // that lift made the whole gesture look like a cloth that
+              // wanders.
               if (wipeW.hop > 0.001) {
                 cHop = Math.max(cHop, up4);
               } else {
@@ -7558,10 +7688,10 @@
             "mm off its plane" +
             ((cHi - cLo) < 0.004 && (cyHi - cyLo) < 0.004
                ? " -- the same all the way round" : " -- IT WANDERS") +
-            "; between them it was carried " +
+            "; the rest of the time it was held " +
             (cHop < -8 ? "nowhere -- IT NEVER LEAVES THE LIP"
              : Math.round(cHop * 1000) + "mm off it" +
-               (cHop > 0.008 ? " -- lifted round to the top"
+               (cHop > 0.008 ? " -- carried round and handed over in the air"
                              : " -- IT DRAGS ROUND")));
         // AND THE SECOND PURIFICATION OF THE SCOOP: two passes, not three,
         // and the piece laid across the bowl with its hollow down and its
@@ -10224,7 +10354,7 @@
         line: "And out, standing again in its place." },
       { act: "spill2", t: 26.0, names: ["chawan", "kensui"],
         line: "The water is emptied into the waste water again." },
-      { act: "wipe2", t: 28.0, names: ["chakin", "chawan"],
+      { act: "wipe2", t: 34.0, names: ["chakin", "chawan"],
         line: "And the lip is wiped with the linen, three passes round it, " +
               "the bowl turned so the guests see into it." },
 
@@ -10925,8 +11055,21 @@
     // first fifth of every pass after the first lifts the cloth off the lip
     // and carries it on round to the top: the same direction of turn, a
     // quarter of a turn of it, in the air.
-    const CHAK_CARRY = 0.20;
+    const CHAK_CARRY = 0.34;
     const CHAK_HOP = 0.026;
+    // WHERE THE CLOTH IS GIVEN AND TAKEN BACK: over the lip, and not on it.
+    // The linen that travels and the cloth that sits on the rim are two
+    // shapes 138 degrees apart, a flat packet and a bridge, so the hand
+    // cannot simply change object -- it dissolves from one into the other,
+    // and it does it in the air above the rim, because a travel aimed at the
+    // cloth's own middle ends 12mm inside the clay. "Le chakin passe dans le
+    // bol quand il est approche."
+    // Up off the rim AND out from it, which is where a hand holds a cloth
+    // it is about to place: a packet whose middle is put where the bridge's
+    // middle will be has half its body in the wall, measured at 17mm.
+    const CHAK_LOFT = 0.090;     // above the lip, where the two meet
+    const CHAK_AWAY = 0.045;     // and out from it
+    const CHAK_ARC = 0.130;      // the height the travel arcs over
     // the short way round, so the carry continues the turn instead of
     // unwinding it
     function shortTo(from, to) {
@@ -10935,9 +11078,12 @@
       if (d < -Math.PI) d += Math.PI * 2;
       return d;
     }
-    // the three parts of the beat, read by the animation and by ?chaktest so
-    // that the test knows which pass it is looking at
-    const WIPE_SEG = [0.16, 0.66, 0.18];   // tip, three passes, right again
+    // the five parts of the beat, read by the animation and by ?chaktest so
+    // that the test knows which pass it is looking at: the linen carried
+    // over, the cloth given, three passes round the lip, the cloth taken
+    // back, the linen carried away
+    const WIPE_SEG = [0.15, 0.06, 0.05, 0.47, 0.05, 0.06, 0.16];
+    const WIPE_PASSES = 3;                 // which leg the passes are
     function wipeSetup() {
       const bp = poolOf("chawan", true);
       const dogu = pickObj("chakin", false);
@@ -10999,7 +11145,7 @@
       }
       return { c: c, up: up, r: pts.length ? r / pts.length : w.lip };
     }
-    function chakOn(w, theta, tilt, lift) {
+    function chakOn(w, theta, tilt, lift, away) {
       const live = lipNow(w);
       _wa.copy(live.up);
       const lipC = live.c.clone();
@@ -11022,8 +11168,9 @@
       // LIFTED OFF THE LIP BY ITS SEAT and not by its mesh: the two clipping
       // planes that give the panels their length are struck from this point
       // too, so raising the cloth alone would trim it shorter as it rose.
-      const at = lipC.clone().addScaledVector(_wf, live.r - CHAK_IN)
-                             .addScaledVector(_wa, lift || 0);
+      const at = lipC.clone()
+        .addScaledVector(_wf, live.r - CHAK_IN + (away || 0))
+        .addScaledVector(_wa, lift || 0);
       // the cloth's length runs ACROSS the lip and its face looks DOWN: both
       // sides of a U rise toward the sheet's own plus y, so plus y is down
       _wu.copy(_wa).negate();
@@ -11100,8 +11247,9 @@
     //
     // Asked once per angle per run: the bowl only turns between here and
     // there, and the pose this is measured at is the pose it turns to.
-    function chakSeat(w, theta) {
-      const key = theta.toFixed(4);
+    function chakSeat(w, theta, lift, away) {
+      const key = theta.toFixed(4) + ":" + (lift || 0).toFixed(4) +
+                  ":" + (away || 0).toFixed(4);
       if (!w.seat) w.seat = {};
       if (w.seat[key]) return w.seat[key];
       const bw = w.bw;
@@ -11110,7 +11258,7 @@
         new THREE.Quaternion().setFromAxisAngle(w.axis, TIP45));
       bw.updateMatrixWorld(true);
       chak.set(0, 0, CHAK_U);
-      chakOn(w, theta, TIP45);
+      chakOn(w, theta, TIP45, lift || 0, away || 0);
       chak.mesh.updateMatrixWorld(true);
       const c = stage.worldToLocal(new THREE.Box3()
         .setFromObject(chak.mesh, true).getCenter(new THREE.Vector3()));
@@ -11126,41 +11274,84 @@
       w.seat[key] = c;
       return c;
     }
-    // the two angles the linen has to agree with: where its first pass
-    // begins, and where its last one leaves off
-    const chakFirst = (w) => chakSeat(w, CHAK_TH0);
-    const chakLast = (w) => chakSeat(w,
-      CHAK_TH0 - CHAK_PASSES[CHAK_PASSES.length - 1] * Math.PI * 2);
+    // the angle the last pass leaves off at, and the two places in the air
+    // where the linen and the cloth are the same thing
+    const CHAK_THN = CHAK_TH0 -
+      CHAK_PASSES[CHAK_PASSES.length - 1] * Math.PI * 2;
+    const chakHover = (w, theta) => chakSeat(w, theta, CHAK_LOFT, CHAK_AWAY);
     function wipeAt(w, u) {
       const seg = WIPE_SEG;
       let t = u, i = 0;
       while (i < seg.length - 1 && t > seg[i]) { t -= seg[i]; i++; }
       const e = ease3(Math.max(0, Math.min(1, t / seg[i])));
       const bw = w.bw;
+      // the bowl turns its inside toward the guests and stays there while
+      // the lip is wiped
+      const tipTo = (f) => {
+        bw.quaternion.copy(w.rest.q).premultiply(
+          new THREE.Quaternion().setFromAxisAngle(w.axis, TIP45 * f));
+        bw.updateMatrixWorld(true);
+      };
+      // SEVEN LEGS, because the hand-over is a place of its own. The packet
+      // that travels and the bridge that sits on the rim are two objects
+      // 138 degrees and 100mm of box apart, so one dissolves into the other
+      // rather than replacing it -- and the dissolve happens in the air off
+      // the rim, where a pad can be, after which the cloth alone comes down
+      // onto the ceramic.
+      w.hop = 0;
       if (i === 0) {
         // THEY MEET. The bowl is already up in front of his knees -- the
         // second emptying left it there -- and the linen comes to it off the
-        // kettle's lid, while the bowl turns its inside toward the guests.
-        bw.quaternion.copy(w.rest.q).premultiply(
-          new THREE.Quaternion().setFromAxisAngle(w.axis, TIP45 * e));
-        bw.updateMatrixWorld(true);
+        // kettle's lid, over the bowl rather than into it.
+        tipTo(e);
         chak.mesh.visible = false;
         if (w.dogu && w.doguFrom) {
           w.dogu.visible = true;
-          w.dogu.position.lerpVectors(w.doguFrom.p, chakFirst(w), e);
-          w.dogu.position.y += Math.sin(Math.PI * e) * 0.040;
+          setAlpha(w.dogu, 1);
+          w.dogu.position.copy(arcBetween(w.doguFrom.p,
+            chakHover(w, CHAK_TH0), e, CHAK_ARC));
         }
-      } else if (i === 1) {
-        bw.quaternion.copy(w.rest.q).premultiply(
-          new THREE.Quaternion().setFromAxisAngle(w.axis, TIP45));
-        bw.updateMatrixWorld(true);
+      } else if (i === 1 || i === 5) {
+        // THE CLOTH IS GIVEN, AND GIVEN BACK: both in one place, one fading
+        // as the other comes up, neither of them moving.
+        const th = i === 1 ? CHAK_TH0 : CHAK_THN;
+        const a = i === 1 ? e : 1 - e;
+        tipTo(1);
+        w.hop = CHAK_LOFT;
+        chak.set(0, 0, CHAK_U);
+        chakOn(w, th, TIP45, CHAK_LOFT, CHAK_AWAY);
+        chak.mesh.visible = a > 0;
+        setAlpha(chak.mesh, a);
+        if (w.dogu) {
+          w.dogu.visible = a < 1;
+          w.dogu.position.copy(chakHover(w, th));
+          setAlpha(w.dogu, 1 - a);
+        }
+      } else if (i === 2 || i === 4) {
+        // AND IT IS SET DOWN, and taken up again: the last 55mm onto the
+        // rim, and the 30 in to it, with nothing else in sight.
+        const th = i === 2 ? CHAK_TH0 : CHAK_THN;
+        const f = i === 2 ? 1 - e : e;
+        tipTo(1);
+        w.hop = CHAK_LOFT * f;
         chak.mesh.visible = true;
-        // IN HIS HAND NOW, and waiting where it will leave from: a hidden
+        setAlpha(chak.mesh, 1);
+        chak.set(0, 0, CHAK_U);
+        chakOn(w, th, TIP45, w.hop, CHAK_AWAY * f);
+        if (w.dogu) {
+          w.dogu.visible = false;
+          w.dogu.position.copy(chakHover(w, i === 2 ? CHAK_TH0 : CHAK_THN));
+        }
+      } else if (i === 3) {
+        tipTo(1);
+        chak.mesh.visible = true;
+        setAlpha(chak.mesh, 1);
+        // IN HIS HAND NOW, and waiting where it will be taken back: a hidden
         // piece parked at the place it arrived would have to cross the lip
         // in one frame the moment it is shown again.
         if (w.dogu) {
           w.dogu.visible = false;
-          w.dogu.position.copy(chakLast(w));
+          w.dogu.position.copy(chakHover(w, CHAK_THN));
         }
         chak.set(0, 0, CHAK_U);
         // which pass, and how far into it
@@ -11173,7 +11364,7 @@
           }
           acc += share;
         }
-        const end = (j) => CHAK_TH0 - CHAK_PASSES[j] * Math.PI * 2;
+        const end = (j2) => CHAK_TH0 - CHAK_PASSES[j2] * Math.PI * 2;
         if (k > 0 && g < CHAK_CARRY) {
           const h = ease3(g / CHAK_CARRY);
           const from = end(k - 1);
@@ -11181,7 +11372,6 @@
           chakOn(w, from + shortTo(from, CHAK_TH0) * h, TIP45, w.hop);
         } else {
           const g2 = k > 0 ? (g - CHAK_CARRY) / (1 - CHAK_CARRY) : g;
-          w.hop = 0;
           chakOn(w, CHAK_TH0 - CHAK_PASSES[k] * Math.PI * 2 * ease3(g2),
                  TIP45);
         }
@@ -11189,26 +11379,21 @@
         // AND BOTH GO BACK: the bowl down to its place on the mat, where the
         // tea will be made in it, and the linen to the kettle's lid.
         chak.mesh.visible = false;
-        bw.quaternion.copy(w.rest.q).premultiply(
-          new THREE.Quaternion().setFromAxisAngle(w.axis, TIP45 * (1 - e)));
+        setAlpha(chak.mesh, 1);      // a transparent material sorts oddly
+        tipTo(1 - e);
         bw.position.lerpVectors(w.rest.p, w.bp.home.p, e);
         bw.position.y += Math.sin(Math.PI * e) * 0.030;
         if (w.dogu && w.doguFrom) {
           w.dogu.visible = true;
+          setAlpha(w.dogu, 1);
           // FROM WHERE IT IS, computed the same way it got there. It used
           // to lerp from a point remembered at the end of the first stretch
           // -- and that stretch never runs at exactly its end, so the point
           // was never remembered and the linen jumped 1453mm back to the
           // kettle in one frame.
-          const back = w.doguFrom.p.clone();
-          // AND IT LEAVES FROM WHERE THE LAST PASS ENDED, which is not where
-          // the first one began: three quarters, three quarters and a half
-          // of a turn leave the cloth at the low side of the lip, and
-          // departing from the high one was the same 98mm jump the arrival
-          // used to have, the other way round.
-          w.dogu.position.lerpVectors(chakLast(w), back, e);
-          w.dogu.position.y += Math.sin(Math.PI * e) * 0.040;
-          if (e >= 1) { w.dogu.position.copy(back);
+          w.dogu.position.copy(arcBetween(chakHover(w, CHAK_THN),
+            w.doguFrom.p, e, CHAK_ARC));
+          if (e >= 1) { w.dogu.position.copy(w.doguFrom.p);
                         w.dogu.quaternion.copy(w.doguFrom.q); }
         }
         if (e >= 1) { bw.position.copy(w.bp.home.p);
