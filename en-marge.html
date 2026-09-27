@@ -784,10 +784,18 @@
       // and the cabinet's own shadowed faces measured as voids and took the
       // frame from 0.9 per cent of holes to 2.9.
       const BLACKW = mat(0x211d18, 0.82);
-      const ALU = new THREE.MeshStandardMaterial({ color: 0x9a9894,
-        roughness: 0.36, metalness: 0.72 });
+      // ALL BLACK, AND NO GREY, which is his instruction for the machine:
+      // a black platter with a little sheen left in it, so the lamp finds an
+      // edge on it rather than a matte disc.
+      const ALU = new THREE.MeshStandardMaterial({ color: 0x151310,
+        roughness: 0.42, metalness: 0.35 });
 
-      const CAB = { w: 0.92, h: 0.60, d: 0.42, z: 0.62 };
+      // ITS HEIGHT COMES FROM WHAT IT HOLDS. An LP is 315mm square, so the
+      // cubby is 325 and the carcass is that plus its two boards and its
+      // foot: nothing above the records but the top they stand under.
+      const CAB_FOOT = 0.05, CAB_T = 0.022, CAB_INNER = 0.325;
+      const CAB = { w: 0.92, d: 0.42, z: 0.62,
+                    h: CAB_FOOT + CAB_T + CAB_INNER + CAB_T };
       const CAB_X = ROOM.w / 2 - CAB.d / 2 - 0.02;
       const hifi = new THREE.Group();
       hifi.name = "hifi";
@@ -798,7 +806,7 @@
       {
         const cab = new THREE.Group();
         cab.name = "meuble";
-        const T = 0.022, FOOT = 0.05;
+        const T = CAB_T, FOOT = CAB_FOOT;
         const board = (w, h, d, x, y, z, m) => {
           const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m || WALNUT);
           b.position.set(x, y, z);
@@ -855,34 +863,29 @@
       {
         const tt = new THREE.Group();
         tt.name = "platine";
-        const W = 0.340, D = 0.420, H = 0.1169;   // depth is across the room
-        const plinth = new THREE.Mesh(new THREE.BoxGeometry(W, H * 0.62, D),
-                                      WALNUT);
-        plinth.position.y = H * 0.31;
+        const W = 0.340, D = 0.420;               // depth is across the room
+        // A THIRD OF THE BLOCK IT WAS. The plinth was 72mm of walnut and is
+        // 24 now, which is what makes the rest of the machine read as a few
+        // black parts laid on a board rather than a box with fittings.
+        const PT = 0.024;
+        const plinth = new THREE.Mesh(new THREE.BoxGeometry(W, PT, D), WALNUT);
+        plinth.position.y = PT / 2;
         plinth.castShadow = true; plinth.receiveShadow = true;
         tt.add(plinth);
-        // four feet, just proud of the plinth's corners
-        for (let i = 0; i < 4; i++) {
-          const sx = i < 2 ? -1 : 1, sz = i % 2 === 0 ? -1 : 1;
-          const f = new THREE.Mesh(
-            new THREE.CylinderGeometry(0.014, 0.014, 0.012, 10), BLACKW);
-          f.position.set(sx * (W / 2 - 0.03), -0.006, sz * (D / 2 - 0.03));
-          tt.add(f);
-        }
         // the platter: aluminium, with its mat, and the spindle
         const platter = new THREE.Mesh(
           new THREE.CylinderGeometry(0.150, 0.150, 0.014, 48), ALU);
         platter.name = "plateau";
-        platter.position.set(-0.028, H * 0.62 + 0.007, -0.022);
+        platter.position.set(-0.028, PT + 0.007, -0.022);
         platter.castShadow = true; platter.receiveShadow = true;
         tt.add(platter);
         const felt = new THREE.Mesh(
           new THREE.CylinderGeometry(0.146, 0.146, 0.003, 48), mat(0x14120f, 1));
-        felt.position.set(-0.028, H * 0.62 + 0.0155, -0.022);
+        felt.position.set(-0.028, PT + 0.0155, -0.022);
         tt.add(felt);
         const spindle = new THREE.Mesh(
           new THREE.CylinderGeometry(0.0035, 0.0035, 0.022, 8), ALU);
-        spindle.position.set(-0.028, H * 0.62 + 0.026, -0.022);
+        spindle.position.set(-0.028, PT + 0.026, -0.022);
         tt.add(spindle);
         // the arm: straight, carbon, on a pillar at the back right, with its
         // counterweight behind the pivot
@@ -909,7 +912,7 @@
         head.position.set(0.2236 * Math.cos(0.20) + 0.010, 0.044,
                           0.2236 * Math.sin(0.20));
         arm.add(head);
-        arm.position.set(W / 2 - 0.036, H * 0.62, D / 2 - 0.052);
+        arm.position.set(W / 2 - 0.036, PT, D / 2 - 0.052);
         arm.rotation.y = 0.55;                 // parked over its rest
         tt.add(arm);
         // two controls on the front left, and nothing else: it is a plain
@@ -917,11 +920,13 @@
         [[-0.026, 0.020], [0.022, 0.020]].forEach(([dz, r], i) => {
           const k = new THREE.Mesh(
             new THREE.CylinderGeometry(r, r, 0.010, 14), BLACKW);
-          k.position.set(-W / 2 + 0.040 + i * 0.052, H * 0.62 + 0.005,
+          k.position.set(-W / 2 + 0.040 + i * 0.052, PT + 0.005,
                          D / 2 - 0.040);
           tt.add(k);
         });
-        tt.position.set(CAB_X - 0.01, CAB.h, CAB.z);
+        // FLOATING, with a gap and no feet, which is his ask: the board
+        // stands off the cabinet's top by 30mm and nothing bridges the two.
+        tt.position.set(CAB_X - 0.01, CAB.h + 0.030, CAB.z);
         tt.rotation.y = Math.PI / 2;           // its front toward the room
         hifi.add(tt);
       }
