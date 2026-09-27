@@ -105,26 +105,39 @@
     #nav[hidden],#say[hidden]{display:none !important;}
     #nav{position:fixed;left:clamp(18px,3.2vw,34px);bottom:clamp(18px,3.2vw,34px);
       z-index:20;display:flex;align-items:flex-end;gap:16px;
-      --pale:rgba(228,218,203,0.62);--lit:rgba(244,237,226,0.96);}
+      --ro:#e34234;}
+    /* THE RING AND ITS ARROWS TAKE THE SITE'S OWN VERMILLION, which is the
+       one accent the house allows, and the arrows are solid: an outlined
+       triangle at this size reads as a smudge rather than a direction. */
     #nav .ring{position:relative;width:96px;height:96px;border-radius:50%;
-      border:1px solid rgba(228,218,203,0.26);
+      border:1px solid rgba(227,66,52,0.52);
       background:rgba(18,14,10,0.30);backdrop-filter:blur(3px);}
     #nav .ar{position:absolute;background:none;border:0;padding:0;cursor:pointer;
-      color:var(--pale);font:400 13px/1 system-ui,sans-serif;
-      width:26px;height:26px;transition:color .18s ease,transform .18s ease;}
-    #nav .ar:hover{color:var(--lit);}
-    #nav .ar.on{color:var(--lit);transform:scale(1.18);}
+      color:var(--ro);font:400 13px/1 system-ui,sans-serif;
+      width:26px;height:26px;opacity:.82;
+      transition:opacity .18s ease,transform .18s ease;}
+    #nav .ar:hover{opacity:1;}
+    #nav .ar.on{opacity:1;transform:scale(1.22);}
     #nav .up{top:5px;left:35px;} #nav .dn{bottom:5px;left:35px;}
     #nav .lf{left:5px;top:35px;} #nav .rt{right:5px;top:35px;}
-    #nav .keys{display:flex;flex-direction:column;gap:7px;padding-bottom:6px;}
-    #nav .kb{display:flex;align-items:baseline;gap:7px;background:none;
-      border:0;padding:0;cursor:pointer;color:var(--pale);
-      transition:color .18s ease;}
-    #nav .kb:hover,#nav .kb.on{color:var(--lit);}
-    #nav .kb b{font:600 10px/1 system-ui,sans-serif;letter-spacing:.06em;
-      border:1px solid currentColor;border-radius:2px;padding:3px 5px;}
-    #nav .kb i{font:400 9px/1 system-ui,sans-serif;letter-spacing:.2em;
-      font-style:normal;text-transform:lowercase;}
+    /* AND H AND I ARE THE ROJI'S OWN KEY ROWS, cap and gloss, down to the
+       eight pixels and the .16em. Its comment carries the reason there is no
+       border on them: an outlined cap is a button waiting to be pressed, and
+       these are labels for keys already under the hand. */
+    #nav .keys{display:flex;flex-direction:column;gap:3px;padding-bottom:8px;}
+    #nav .krow{display:flex;align-items:center;gap:9px;line-height:1;
+      background:none;border:0;padding:0;margin:0;cursor:pointer;}
+    #nav kbd{font:600 8px/1 system-ui,sans-serif;letter-spacing:.16em;
+      text-transform:uppercase;color:rgba(255,255,255,.94);
+      border:0;border-radius:3px;background:rgba(18,14,10,.34);
+      padding:4px 0 3px;min-width:50px;text-align:center;text-indent:.16em;
+      flex:0 0 auto;transition:background .2s ease,color .2s ease;}
+    #nav .d{font-size:10.5px;letter-spacing:.10em;
+      color:rgba(255,255,255,.62);transition:color .2s ease;}
+    #nav .krow:hover kbd{color:#fff;background:rgba(227,66,52,.55);}
+    #nav .krow.on kbd{color:#fff;background:var(--ro);
+      box-shadow:0 0 0 3px rgba(227,66,52,.18);}
+    #nav .krow.on .d{color:rgba(227,66,52,.92);}
 
     /* WHAT IS IN FRONT OF YOU, named. One line, bottom centre, the same
        grammar as the tea room's own card: it does not follow the pointer. */
@@ -158,14 +171,14 @@
        readable, because a phone has no arrow keys. -->
   <div id="nav" hidden>
     <div class="ring">
-      <button class="ar up" data-key="ArrowUp" aria-label="avancer">&#9651;</button>
-      <button class="ar dn" data-key="ArrowDown" aria-label="reculer">&#9661;</button>
-      <button class="ar lf" data-key="ArrowLeft" aria-label="tourner a gauche">&#9665;</button>
-      <button class="ar rt" data-key="ArrowRight" aria-label="tourner a droite">&#9655;</button>
+      <button class="ar up" data-key="ArrowUp" aria-label="avancer">&#9650;</button>
+      <button class="ar dn" data-key="ArrowDown" aria-label="reculer">&#9660;</button>
+      <button class="ar lf" data-key="ArrowLeft" aria-label="tourner a gauche">&#9664;</button>
+      <button class="ar rt" data-key="ArrowRight" aria-label="tourner a droite">&#9654;</button>
     </div>
     <div class="keys">
-      <button class="kb" data-act="top"><b>H</b><i>haut</i></button>
-      <button class="kb" data-act="look"><b>I</b><i>interagir</i></button>
+      <button class="krow" data-act="top"><kbd>H</kbd><span class="d">vue de haut</span></button>
+      <button class="krow" data-act="look"><kbd>I</kbd><span class="d">interagir</span></button>
     </div>
   </div>
   <div id="say" hidden><p></p></div>
@@ -1466,7 +1479,7 @@
         b2.addEventListener("pointerleave", up);
         b2.addEventListener("pointercancel", up);
       });
-      navEl.querySelectorAll(".kb").forEach((b2) => {
+      navEl.querySelectorAll(".krow").forEach((b2) => {
         b2.addEventListener("click", () => {
           if (b2.dataset.act === "top") setTop(topWant < 0.5);
           else look();
