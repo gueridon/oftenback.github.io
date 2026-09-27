@@ -954,8 +954,8 @@
             // plate, angled a little down and forward
             const lift = new THREE.Mesh(
               new THREE.BoxGeometry(0.019, 0.0016, 0.0032), dark);
-            lift.position.set(hx + 0.004, hy - 0.001, AZ - 0.011);
-            lift.rotation.y = -0.12;
+            lift.position.set(hx + 0.004, hy - 0.001, AZ + 0.011);
+            lift.rotation.y = 0.12;
             lift.rotation.z = -0.06;
             arm.add(lift);
             // the cartridge, hanging under the plate and tapering forward
