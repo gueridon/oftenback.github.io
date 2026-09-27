@@ -348,7 +348,8 @@
     // THE LOW DESK, and its place, declared with the room rather than where
     // it is built: the four panel Akari stands ON it, so the lamp needs to
     // know the desk's top before either of them exists.
-    const DESK = { w: 1.00, d: 0.42, h: 0.32, top: 0.030 };
+    // a quarter longer and a fifth deeper than it was, at his ask
+    const DESK = { w: 1.25, d: 0.504, h: 0.32, top: 0.030 };
     DESK.x = -ROOM.w / 2 + 0.10 + DESK.w / 2;   // the east wall's south end
     DESK.z = ROOM.d / 2 - DESK.d / 2 - 0.02;
 
@@ -851,13 +852,13 @@
       const A1 = { x: 0.86, z: -1.18 };     // the round red one, by the wall
       // AND THE FOUR PANEL ONE STANDS ON THE DESK, because 508mm tall is a
       // table lamp and not a floor lamp: his own reading of the numbers he
-      // sent. At the desk's north end, so the working surface stays a
-      // working surface, and a little toward the wall.
+      // sent. At its SOUTH end, with the notebook and the thesis north of
+      // it, which is the two of them swapped over at his ask.
       // ITS TURNED FOOTPRINT IS WHAT HAS TO FIT, not its two sides: at 24
       // degrees off the wall a 305 by 262 base measures 363 across the
       // desk's 420, so pushed 40mm toward the wall it came within 3mm of the
       // plaster. Centred in the desk's depth, it keeps 28mm front and back.
-      const A2 = { x: DESK.x + 0.26, z: DESK.z };
+      const A2 = { x: DESK.x - 0.40, z: DESK.z };
       const lamp1 = akari1AR();
       lamp1.position.set(A1.x, 0, A1.z);
       shell.add(lamp1);
@@ -1322,10 +1323,11 @@
       // use it.
       //
       // What is on it is his: the thesis, in his own words "l'essence de
-      // contours continus dans un cadre de reference", and one sheet with a
-      // single continuous contour drawn on it, which is the same idea in one
-      // line. Nothing else, because a desk with things all over it is a desk
-      // nobody works at.
+      // contours continus dans un cadre de reference", an open A5 notebook
+      // with a single continuous contour drawn on its page, which is the same
+      // idea in one line, and the square Akari, which is a table lamp and so
+      // stands here. Nothing else, because a desk with things all over it is
+      // a desk nobody works at.
       {
         const dk = new THREE.Group();
         dk.name = "bureau";
@@ -1363,38 +1365,41 @@
           new THREE.BoxGeometry(0.152, 0.021, 0.220), mat(0xc9bfa8, 0.98));
         leaves.position.set(0.004, 0, 0);
         bk.add(leaves);
-        bk.position.set(-0.38, DESK.h + 0.014, 0.020);
+        bk.position.set(0.44, DESK.h + 0.014, 0.020);
         bk.rotation.y = 0.06;
         dk.add(bk);
 
-        // AND ONE SHEET, with a single continuous contour on it: a pitch
-        // track, which is what the thesis was about. Drawn rather than
-        // written, because at this size a line reads and a paragraph does
-        // not.
-        const sheet = (function () {
-          const W = 420, H = 300;
+        // AND A NOTEBOOK, OPEN, A5: a spread of 296 by 210, cream pages,
+        // the cover showing as a rim around them, and the contour drawn on
+        // the near page. A pitch track, which is what the thesis was about,
+        // drawn rather than written because at this size a line reads and a
+        // paragraph does not. A notebook rather than a loose sheet: it is a
+        // thing that gets opened again tomorrow.
+        const A5 = { w: 0.148, h: 0.210 };
+        const pageTex = (function () {
+          const W = 296, H = 420;
           const c = document.createElement("canvas");
           c.width = W; c.height = H;
           const g = c.getContext("2d");
-          g.fillStyle = "#d9d0bb";
+          g.fillStyle = "#e4dbc4";
           g.fillRect(0, 0, W, H);
-          // the frame of reference: a baseline and a light rule above it
-          g.strokeStyle = "rgba(60,52,44,0.18)";
+          // the frame of reference: a baseline and one upright
+          g.strokeStyle = "rgba(60,52,44,0.16)";
           g.lineWidth = 2;
-          g.beginPath(); g.moveTo(36, H - 62); g.lineTo(W - 36, H - 62);
+          g.beginPath(); g.moveTo(30, H - 78); g.lineTo(W - 26, H - 78);
           g.stroke();
-          g.beginPath(); g.moveTo(36, 62); g.lineTo(36, H - 62); g.stroke();
+          g.beginPath(); g.moveTo(30, 74); g.lineTo(30, H - 78); g.stroke();
           // and the contour itself, one unbroken line, rising and falling
-          g.strokeStyle = "rgba(42,36,30,0.72)";
-          g.lineWidth = 3.4;
+          g.strokeStyle = "rgba(42,36,30,0.70)";
+          g.lineWidth = 3.2;
           g.beginPath();
-          for (let i = 0; i <= 160; i++) {
-            const t = i / 160;
-            const x = 44 + t * (W - 96);
-            const y = H - 96
-                    - 74 * Math.sin(Math.PI * Math.pow(t, 0.78))
-                    - 26 * Math.sin(Math.PI * 3.1 * t) * (1 - t)
-                    + 18 * Math.pow(t, 2.4);
+          for (let i = 0; i <= 170; i++) {
+            const t = i / 170;
+            const x = 36 + t * (W - 74);
+            const y = H - 108
+                    - 98 * Math.sin(Math.PI * Math.pow(t, 0.78))
+                    - 32 * Math.sin(Math.PI * 3.1 * t) * (1 - t)
+                    + 22 * Math.pow(t, 2.4);
             if (i === 0) g.moveTo(x, y); else g.lineTo(x, y);
           }
           g.stroke();
@@ -1402,28 +1407,59 @@
           t2.colorSpace = THREE.SRGBColorSpace;
           return t2;
         })();
-        const leaf = new THREE.Mesh(
-          new THREE.PlaneGeometry(0.28, 0.20),
-          new THREE.MeshStandardMaterial({ map: sheet, roughness: 1,
-                                           metalness: 0 }));
-        leaf.name = "contour";
-        leaf.rotation.x = -Math.PI / 2;
-        leaf.rotation.z = -0.10;
-        // the sheet in the middle of the desk, the book at its south end and
-        // the lamp at its north: three things on a metre of desk, each with
-        // room of its own
-        leaf.position.set(-0.10, DESK.h + 0.0015, -0.01);
-        leaf.receiveShadow = true;
-        dk.add(leaf);
-        // one pen, laid across the sheet's corner
+        const nb = new THREE.Group();
+        nb.name = "cahier";
+        const COVER = mat(0x322c25, 0.95);
+        // the two boards, opened flat, each tipped a hair down at its outer
+        // edge, which is what an open book actually does
+        [-1, 1].forEach((side) => {
+          const brd = new THREE.Mesh(
+            new THREE.BoxGeometry(A5.w + 0.006, 0.0035, A5.h + 0.006), COVER);
+          brd.position.set(side * (A5.w / 2 + 0.003), 0.0018, 0);
+          brd.rotation.z = side * -0.014;
+          brd.castShadow = true; brd.receiveShadow = true;
+          nb.add(brd);
+        });
+        // the block of pages on each board, cream, proud of it by a millimetre.
+        // The contour is on the page to the WEST, which is the one under the
+        // right hand of someone sitting on the zafu and facing the desk.
+        [-1, 1].forEach((side) => {
+          const pg = new THREE.Mesh(
+            new THREE.BoxGeometry(A5.w - 0.004, 0.0030, A5.h - 0.004),
+            side < 0
+              ? new THREE.MeshStandardMaterial({ map: pageTex, roughness: 1,
+                                                 metalness: 0 })
+              : mat(0xe4dbc4, 1));
+          pg.position.set(side * (A5.w / 2 + 0.003), 0.0050, 0);
+          pg.rotation.z = side * -0.014;
+          pg.receiveShadow = true;
+          nb.add(pg);
+        });
+        // the spine, low between the two blocks
+        const spine = new THREE.Mesh(
+          new THREE.BoxGeometry(0.011, 0.0080, A5.h + 0.006), COVER);
+        spine.position.y = 0.0032;
+        spine.castShadow = true;
+        nb.add(spine);
+        // and one pen, laid across the blank page: in the gutter it was dark
+        // on dark and disappeared. Its lie is set by a direction and ONE
+        // turn, not by a turn per axis, which is how the tonearm came to sit
+        // across its own board.
         const pen = new THREE.Mesh(
           new THREE.CylinderGeometry(0.0045, 0.0035, 0.135, 8),
           mat(0x1a1714, 0.6));
-        pen.rotation.z = Math.PI / 2;
-        pen.rotation.y = 0.42;
-        pen.position.set(-0.04, DESK.h + 0.006, -0.12);
+        pen.quaternion.setFromUnitVectors(
+          new THREE.Vector3(0, 1, 0),
+          new THREE.Vector3(0.34, 0, 1).normalize());
+        pen.position.set(0.074, 0.0085, 0.010);
         pen.castShadow = true;
-        dk.add(pen);
+        nb.add(pen);
+        // the notebook in the middle of the desk, the thesis at its north end
+        // and the lamp at its south: three things on a metre and a half of
+        // desk, each with room of its own
+        nb.position.set(0.05, DESK.h, -0.004);
+        nb.rotation.y = -0.035;
+        dk.add(nb);
 
         // AGAINST THE EAST WALL, AT ITS SOUTH END, and with no turn at all:
         // the slab is built with its length along x, which IS the line of
@@ -1550,7 +1586,7 @@
         "enceinte-droite": "Enceinte, a la hauteur du meuble.",
         "bureau": "Le bureau bas, mur est. On s'y assied par terre.",
         "these": "La these: l'essence de contours continus dans un cadre de reference.",
-        "contour": "Un contour, d'un seul trait.",
+        "cahier": "Un cahier ouvert. Un contour, d'un seul trait.",
         "zafu": "Zafu, sur son zabuton. Fauve.",
         "zabuton": "Zabuton, sous le zafu.",
         "nijiriguchi": "Nijiriguchi, mur nord. 700 sur 720, fermee.",
@@ -1865,6 +1901,38 @@
           out.push(bad.length ? "CROSSINGS: " + bad.join("; ")
                               : "no two pieces cross, bar the ones that sit " +
                                 "on each other");
+          // AND WHAT IS ON THE DESK, read along the desk's own length, since
+          // the three of them share one slab and the resizing of it is what
+          // moved them: each must stand on the top, within the ends, and
+          // clear of its neighbours.
+          {
+            const top = DESK.h, ends = [];
+            ["akariuf1o", "cahier", "these"].forEach((k) => {
+              const o = shell.getObjectByName(k);
+              if (!o) { out.push("desk: " + k + " -- MISSING"); return; }
+              o.updateMatrixWorld(true);
+              const b = new THREE.Box3().setFromObject(o, true);
+              ends.push({ k: k, b: b });
+            });
+            ends.sort((a2, b2) => a2.b.min.x - b2.b.min.x);
+            const over = ends.map((e) => Math.max(
+              DESK.x - DESK.w / 2 - e.b.min.x, e.b.max.x - DESK.x - DESK.w / 2,
+              DESK.z - DESK.d / 2 - e.b.min.z, e.b.max.z - DESK.z - DESK.d / 2));
+            const worstOver = Math.max.apply(null, over);
+            out.push("nothing on the desk hangs over its edge by more than " +
+                     Math.round(worstOver * 1000) + "mm" +
+                     (worstOver < 0.004 ? "" : " -- IT OVERHANGS"));
+            const sits = ends.map((e) => e.b.min.y - top);
+            out.push("and each stands within " +
+                     Math.round(Math.max.apply(null,
+                       sits.map(Math.abs)) * 1000) + "mm of the top");
+            for (let i = 1; i < ends.length; i++) {
+              const gap = ends[i].b.min.x - ends[i - 1].b.max.x;
+              out.push(ends[i - 1].k + " to " + ends[i].k + ": " +
+                       Math.round(gap * 1000) + "mm" +
+                       (gap > 0.010 ? "" : " -- TOUCHING"));
+            }
+          }
           document.body.setAttribute("data-fittest", out.join(" | "));
         }, 1200);
       }
