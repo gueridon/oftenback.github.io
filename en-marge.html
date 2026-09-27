@@ -95,6 +95,53 @@
     .plain{margin-top:34px;font-size:12.5px;line-height:1.9;color:var(--soft);
       font-weight:300;}
     @media (max-width:760px){ .room{padding-top:78px;} }
+
+    /* THE DIAL. Hairline and ink, like the rest of the house, but it lives
+       over a dark room so its own ink is pale. It appears only once the room
+       has opened, or it sits on the curtain. */
+    /* HIDDEN MEANS HIDDEN. A display rule of our own beats the attribute's
+       own display:none, so the empty name card showed itself over the room
+       while promising a line it did not have. */
+    #nav[hidden],#say[hidden]{display:none !important;}
+    #nav{position:fixed;left:clamp(18px,3.2vw,34px);bottom:clamp(18px,3.2vw,34px);
+      z-index:20;display:flex;align-items:flex-end;gap:16px;
+      --pale:rgba(228,218,203,0.62);--lit:rgba(244,237,226,0.96);}
+    #nav .ring{position:relative;width:96px;height:96px;border-radius:50%;
+      border:1px solid rgba(228,218,203,0.26);
+      background:rgba(18,14,10,0.30);backdrop-filter:blur(3px);}
+    #nav .ar{position:absolute;background:none;border:0;padding:0;cursor:pointer;
+      color:var(--pale);font:400 13px/1 system-ui,sans-serif;
+      width:26px;height:26px;transition:color .18s ease,transform .18s ease;}
+    #nav .ar:hover{color:var(--lit);}
+    #nav .ar.on{color:var(--lit);transform:scale(1.18);}
+    #nav .up{top:5px;left:35px;} #nav .dn{bottom:5px;left:35px;}
+    #nav .lf{left:5px;top:35px;} #nav .rt{right:5px;top:35px;}
+    #nav .keys{display:flex;flex-direction:column;gap:7px;padding-bottom:6px;}
+    #nav .kb{display:flex;align-items:baseline;gap:7px;background:none;
+      border:0;padding:0;cursor:pointer;color:var(--pale);
+      transition:color .18s ease;}
+    #nav .kb:hover,#nav .kb.on{color:var(--lit);}
+    #nav .kb b{font:600 10px/1 system-ui,sans-serif;letter-spacing:.06em;
+      border:1px solid currentColor;border-radius:2px;padding:3px 5px;}
+    #nav .kb i{font:400 9px/1 system-ui,sans-serif;letter-spacing:.2em;
+      font-style:normal;text-transform:lowercase;}
+
+    /* WHAT IS IN FRONT OF YOU, named. One line, bottom centre, the same
+       grammar as the tea room's own card: it does not follow the pointer. */
+    #say{position:fixed;left:0;right:0;bottom:clamp(18px,3.2vw,34px);
+      z-index:19;display:flex;justify-content:center;pointer-events:none;}
+    #say p{margin:0;max-width:min(560px,74vw);
+      font:300 13px/1.7 system-ui,sans-serif;letter-spacing:.02em;
+      color:rgba(240,232,218,0.88);text-align:center;
+      background:rgba(18,14,10,0.42);backdrop-filter:blur(3px);
+      border:1px solid rgba(228,218,203,0.16);border-radius:3px;
+      padding:10px 18px;}
+    #say p em{font-style:normal;color:rgba(255,248,236,0.96);}
+    @media (max-width:760px){
+      #nav{gap:12px;}
+      #nav .ring{width:84px;height:84px;}
+      #nav .up,#nav .dn{left:29px;} #nav .lf,#nav .rt{top:29px;}
+    }
   </style>
 </head>
 <body>
@@ -106,6 +153,22 @@
     </div>
   </div>
   <canvas id="antre"></canvas>
+  <!-- THE ROOM'S OWN CONTROLS, bottom left: a ring with the four arrows in
+       their four places, and the two keys beside it. Pressable as well as
+       readable, because a phone has no arrow keys. -->
+  <div id="nav" hidden>
+    <div class="ring">
+      <button class="ar up" data-key="ArrowUp" aria-label="avancer">&#9651;</button>
+      <button class="ar dn" data-key="ArrowDown" aria-label="reculer">&#9661;</button>
+      <button class="ar lf" data-key="ArrowLeft" aria-label="tourner a gauche">&#9665;</button>
+      <button class="ar rt" data-key="ArrowRight" aria-label="tourner a droite">&#9655;</button>
+    </div>
+    <div class="keys">
+      <button class="kb" data-act="top"><b>H</b><i>haut</i></button>
+      <button class="kb" data-act="look"><b>I</b><i>interagir</i></button>
+    </div>
+  </div>
+  <div id="say" hidden><p></p></div>
   <main class="room">
     <div class="room-content">
       <div class="cs">
@@ -158,6 +221,10 @@
       setTimeout(() => {
         window.__dismissed = true;
         loadBar.style.width = "100%";
+        const nv = document.getElementById("nav");
+        if (nv && document.documentElement.classList.contains("gl")) {
+          nv.hidden = false;
+        }
         const v = document.getElementById("veil");
         if (v) {
           v.classList.add("gone");
@@ -954,6 +1021,8 @@
             m.rotation.x = -0.035 - hash3(i, side, 3) * 0.015;
             m.position.set(-0.012, FOOT + T + LP / 2 + 0.004,
                            z0 + at + th / 2);
+            m.name = "coffret";
+            m.userData = { who: st[0], what: st[1] };
             m.castShadow = true; m.receiveShadow = true;
             cab.add(m);
             at += th + 0.0012;
@@ -1229,7 +1298,30 @@
       }
       const held = {};
       const KEY = { ArrowUp: 1, ArrowDown: 1, ArrowLeft: 1, ArrowRight: 1 };
+      // WHAT EACH THING IS CALLED, for the I key. Facts only: a name and, at
+      // most, a maker. The passages about what they mean to him are his to
+      // write and will hang off these same handles.
+      const NAMED = {
+        "akari1ar": "Akari 1AR. Isamu Noguchi, washi de murier rouge.",
+        "akariuf1o": "Akari UF1-O. Isamu Noguchi, quatre panneaux de washi.",
+        "platine": "Audio-Technica LPW40WN. Bras droit en carbone, 223,6mm.",
+        "plateau": "Le plateau, aluminium moule.",
+        "bras": "Le bras, et sa tete de lecture.",
+        "meuble": "Le meuble a disques, en bouleau.",
+        "enceinte-gauche": "Enceinte, a la hauteur du meuble.",
+        "enceinte-droite": "Enceinte, a la hauteur du meuble.",
+        "zafu": "Zafu, sur son zabuton. Fauve.",
+        "zabuton": "Zabuton, sous le zafu.",
+        "nijiriguchi": "Nijiriguchi. 700 sur 720, fermee.",
+        "fenetre": "Le shoji, et le jour derriere.",
+        "lampe": "La lampe.",
+        "plancher": "Le plancher.",
+        "murs": "Le mur de terre.",
+        "poutres": "Les poutres.",
+      };
       addEventListener("keydown", (e) => {
+        if (e.code === "KeyH") { setTop(topWant < 0.5); return; }
+        if (e.code === "KeyI") { look(); return; }
         if (!KEY[e.code]) return;
         held[e.code] = true;
         e.preventDefault();          // or the page scrolls under the room
@@ -1295,6 +1387,99 @@
       });
       addEventListener("pointerup", () => { yawBase = wantYaw; });
 
+      // ---- H, THE ROOM FROM ABOVE ------------------------------------------
+      // The ceiling and its beams are in the way of any view from over the
+      // room, so they go while it is lifted: this is the doll's house view
+      // and it is honest about being one. Eased both ways, and ?top snaps
+      // straight to it, because nothing animated is measurable in a still.
+      const TOP_EYE = new THREE.Vector3(0, 3.42, 0.02);
+      let top = Q.has("top") ? 1 : 0, topWant = top;
+      function setTop(on) { topWant = on ? 1 : 0; }
+      function topStep(dt) {
+        const k = dt ? 1 - Math.pow(0.004, dt) : 1;
+        top += (topWant - top) * k;
+        if (top < 0.002) top = 0;
+        if (top > 0.998) top = 1;
+        const lifted = top > 0.02;
+        ceil.visible = !lifted;
+        beams.visible = !lifted;
+        if (!lifted) return false;
+        // the eye rises out of the room and tips to look down at its middle
+        camera.position.lerpVectors(eye, TOP_EYE, top);
+        const aim = new THREE.Vector3().lerpVectors(
+          new THREE.Vector3(eye.x - Math.sin(yaw), eye.y + Math.tan(pitch),
+                            eye.z - Math.cos(yaw)),
+          new THREE.Vector3(0, 0, 0), top);
+        // AND THE UP VECTOR TURNS OVER WITH IT. Looking straight down, up is
+        // parallel to the line of sight and the roll comes out of nowhere:
+        // the room arrived on a slant. So up leans from the world's own to
+        // the room's far wall as the eye rises, which is what the tea room's
+        // overhead camera does.
+        camera.up.set(0, 1 - top, -top).normalize();
+        camera.lookAt(aim);
+        return true;
+      }
+
+      // ---- I, WHAT IS IN FRONT OF YOU --------------------------------------
+      // A ray out of the middle of the screen, and the nearest named thing
+      // it meets. The name walks UP from the hit: a box set is one mesh among
+      // twenty in a cabinet, and the cabinet is what you would find first if
+      // you asked the group instead of the mesh.
+      const rc = new THREE.Raycaster();
+      const sayEl = document.getElementById("say");
+      const sayP = sayEl.querySelector("p");
+      let sayAt = 0;
+      function say(text) {
+        sayP.innerHTML = text;
+        sayEl.hidden = false;
+        sayAt = performance.now();
+      }
+      function look() {
+        rc.setFromCamera(new THREE.Vector2(0, 0), camera);
+        const hits = rc.intersectObjects(shell.children, true);
+        for (let i = 0; i < hits.length; i++) {
+          let o = hits[i].object;
+          while (o && o !== shell) {
+            if (o.userData && o.userData.who) {
+              say("<em>" + o.userData.who + "</em> &nbsp; " +
+                  o.userData.what);
+              return;
+            }
+            if (NAMED[o.name]) { say(NAMED[o.name]); return; }
+            o = o.parent;
+          }
+        }
+        say("Rien devant vous.");
+      }
+
+      // THE DIAL PRESSES THE SAME KEYS, so there is one path through the
+      // movement and not two: a phone has no arrow keys, and a second
+      // implementation of walking would drift from the first.
+      const navEl = document.getElementById("nav");
+      navEl.querySelectorAll(".ar").forEach((b2) => {
+        const code = b2.dataset.key;
+        const down = (ev) => { ev.preventDefault(); held[code] = true;
+                               b2.classList.add("on"); };
+        const up = () => { held[code] = false; b2.classList.remove("on"); };
+        b2.addEventListener("pointerdown", down);
+        b2.addEventListener("pointerup", up);
+        b2.addEventListener("pointerleave", up);
+        b2.addEventListener("pointercancel", up);
+      });
+      navEl.querySelectorAll(".kb").forEach((b2) => {
+        b2.addEventListener("click", () => {
+          if (b2.dataset.act === "top") setTop(topWant < 0.5);
+          else look();
+        });
+      });
+      function paintNav() {
+        navEl.querySelectorAll(".ar").forEach((b2) => {
+          b2.classList.toggle("on", !!held[b2.dataset.key]);
+        });
+        navEl.querySelector('[data-act="top"]')
+             .classList.toggle("on", topWant > 0.5);
+      }
+
       addEventListener("resize", () => {
         camera.aspect = innerWidth / innerHeight;
         camera.updateProjectionMatrix();
@@ -1347,6 +1532,10 @@
         camera.rotation.set(0, 0, 0);
         camera.rotateY(yaw);
         camera.rotateX(pitch);
+        // and the lift, which takes the camera over if it is up at all
+        topStep(frozen ? 0 : dt);
+        paintNav();
+        if (!sayEl.hidden && now - sayAt > 6000) sayEl.hidden = true;
         renderer.render(scene, camera);
         if (!window.__firstFrame) window.__firstFrame = true;
         while (afterFrame.length) afterFrame.shift()();
