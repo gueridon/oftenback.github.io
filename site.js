@@ -153,6 +153,10 @@ document.addEventListener("DOMContentLoaded", () => {
         { href: "chashitsu.html", label: "chashitsu" },
         { href: "temaeza.html", label: "temaeza" },
         { href: "dogu.html", label: "dogu" },
+        // SHORT IN THE RAIL. The room's own name is "ro usucha temae" and
+        // the index gives it in full; three words at 10.5px with .18em of
+        // letter-spacing wrap onto two lines here, and every other stop is
+        // one line.
         { href: "temae.html", label: "temae" },
       ] },
     ] },
