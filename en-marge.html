@@ -345,6 +345,12 @@
       h: 2.12,          // to the ceiling
       seat: { x: 0.35, y: 0.86, z: 1.28 },   // where the eye sits
     };
+    // THE LOW DESK, and its place, declared with the room rather than where
+    // it is built: the four panel Akari stands ON it, so the lamp needs to
+    // know the desk's top before either of them exists.
+    const DESK = { w: 1.00, d: 0.42, h: 0.32, top: 0.030 };
+    DESK.x = -ROOM.w / 2 + 0.10 + DESK.w / 2;   // the east wall's south end
+    DESK.z = ROOM.d / 2 - DESK.d / 2 - 0.02;
 
     function build() {
       const cv = document.getElementById("antre");
@@ -785,6 +791,7 @@
           leg.position.copy(foot).addScaledVector(span, 0.5);
           leg.quaternion.setFromUnitVectors(UPV, span.clone().normalize());
           leg.castShadow = true;
+          leg.userData.foot = true;      // it must not move in the correction
           g.add(leg);
         }
         // the four panels, leaning in toward the top: the shade is wider at
@@ -821,12 +828,19 @@
           tie.position.set(sx * W / 2 * 0.92, BASE_H + 0.014, sz * D / 2 * 0.92);
           g.add(tie);
         }
-        // AND THE WHOLE THING IS MEASURED AND CORRECTED, because the panels
-        // lean and a leaning panel lifts its own corners: built to the
-        // numbers it came out 18mm too tall. Read, then shifted.
+        // AND THE SHADE IS MEASURED AND CORRECTED, because the panels lean
+        // and a leaning panel lifts its own corners: built to the numbers it
+        // came out 18mm too tall. Read, then shifted.
+        //
+        // THE LEGS ARE LEFT WHERE THEY ARE, which the first correction did
+        // not do: it moved the whole group and drove the feet 18mm into
+        // whatever the lamp was standing on, which was invisible on a floor
+        // and plain the moment the lamp went onto a desk.
         g.updateMatrixWorld(true);
         const hi = new THREE.Box3().setFromObject(g, true).max.y;
-        g.children.forEach((c) => { c.position.y -= (hi - OVERALL); });
+        g.children.forEach((c) => {
+          if (!c.userData.foot) c.position.y -= (hi - OVERALL);
+        });
         return g;
       }
 
@@ -835,12 +849,20 @@
       // to it: the second lamp is the answer to that, and it is his own lamp
       // rather than a light I put there to fix a reading.
       const A1 = { x: 0.86, z: -1.18 };     // the round red one, by the wall
-      const A2 = { x: -0.62, z: 1.02 };     // the four panel one, behind
+      // AND THE FOUR PANEL ONE STANDS ON THE DESK, because 508mm tall is a
+      // table lamp and not a floor lamp: his own reading of the numbers he
+      // sent. At the desk's north end, so the working surface stays a
+      // working surface, and a little toward the wall.
+      // ITS TURNED FOOTPRINT IS WHAT HAS TO FIT, not its two sides: at 24
+      // degrees off the wall a 305 by 262 base measures 363 across the
+      // desk's 420, so pushed 40mm toward the wall it came within 3mm of the
+      // plaster. Centred in the desk's depth, it keeps 28mm front and back.
+      const A2 = { x: DESK.x + 0.26, z: DESK.z };
       const lamp1 = akari1AR();
       lamp1.position.set(A1.x, 0, A1.z);
       shell.add(lamp1);
       const lamp2 = akariUF1O();
-      lamp2.position.set(A2.x, 0, A2.z);
+      lamp2.position.set(A2.x, DESK.h, A2.z);
       // ITS PLAIN PANEL TOWARD THE MIDDLE OF THE ROOM, computed from where it
       // stands rather than guessed: at a guess it faced the corner with its
       // two black panels to the room, and a lamp whose pool of light on the
@@ -1304,7 +1326,6 @@
       // single continuous contour drawn on it, which is the same idea in one
       // line. Nothing else, because a desk with things all over it is a desk
       // nobody works at.
-      const DESK = { w: 1.00, d: 0.42, h: 0.32, top: 0.030 };
       {
         const dk = new THREE.Group();
         dk.name = "bureau";
@@ -1342,7 +1363,7 @@
           new THREE.BoxGeometry(0.152, 0.021, 0.220), mat(0xc9bfa8, 0.98));
         leaves.position.set(0.004, 0, 0);
         bk.add(leaves);
-        bk.position.set(-0.20, DESK.h + 0.014, 0.020);
+        bk.position.set(-0.38, DESK.h + 0.014, 0.020);
         bk.rotation.y = 0.06;
         dk.add(bk);
 
@@ -1388,7 +1409,10 @@
         leaf.name = "contour";
         leaf.rotation.x = -Math.PI / 2;
         leaf.rotation.z = -0.10;
-        leaf.position.set(0.16, DESK.h + 0.0015, -0.01);
+        // the sheet in the middle of the desk, the book at its south end and
+        // the lamp at its north: three things on a metre of desk, each with
+        // room of its own
+        leaf.position.set(-0.10, DESK.h + 0.0015, -0.01);
         leaf.receiveShadow = true;
         dk.add(leaf);
         // one pen, laid across the sheet's corner
@@ -1397,7 +1421,7 @@
           mat(0x1a1714, 0.6));
         pen.rotation.z = Math.PI / 2;
         pen.rotation.y = 0.42;
-        pen.position.set(0.20, DESK.h + 0.006, -0.10);
+        pen.position.set(-0.04, DESK.h + 0.006, -0.12);
         pen.castShadow = true;
         dk.add(pen);
 
@@ -1405,8 +1429,7 @@
         // the slab is built with its length along x, which IS the line of
         // that wall, north to south. A quarter turn put the desk across the
         // room instead of along it.
-        dk.position.set(-ROOM.w / 2 + 0.10 + DESK.w / 2, 0,
-                        ROOM.d / 2 - DESK.d / 2 - 0.02);
+        dk.position.set(DESK.x, 0, DESK.z);
         shell.add(dk);
       }
 
@@ -1469,7 +1492,7 @@
       // the second lamp lights the other half of the room, which is the half
       // that had nothing in it at all
       const glow2 = new THREE.PointLight(0xffc089, num("glow2", 1.7), 3.0, 2.0);
-      glow2.position.set(A2.x, 0.222 + 0.292 * 0.45, A2.z);
+      glow2.position.set(A2.x, DESK.h + 0.222 + 0.292 * 0.45, A2.z);
       glow2.castShadow = true;
       glow2.shadow.mapSize.set(1024, 1024);
       glow2.shadow.bias = -0.002;
@@ -1819,8 +1842,12 @@
                    (Math.abs(worstFloor) < 0.02 ? " -- on the floor"
                                                 : " -- NOT ON THE FLOOR"));
           // and no two boxes crossing, save the pairs that are meant to
+          // the pairs that are MEANT to touch, because one stands on the
+          // other: the deck on the cabinet, the zafu on its zabuton, the
+          // speakers against the cabinet's ends, and now the lamp on the desk
           const OK = ["meuble|platine", "zafu|zabuton",
-                      "meuble|enceinte-gauche", "meuble|enceinte-droite"];
+                      "meuble|enceinte-gauche", "meuble|enceinte-droite",
+                      "bureau|akariuf1o"];
           const bad = [];
           const ks = Object.keys(box);
           for (let i = 0; i < ks.length; i++) {
