@@ -323,6 +323,22 @@
     // and a paper lamp on the floor. You sit in it. Nothing is evenly lit and
     // the middle of the floor is empty, which is the only way the objects to
     // come will read as objects rather than as a heap.
+    // ---- THE ROOM'S OWN COMPASS ------------------------------------------
+    // His, so that the two of us can point at a wall and mean the same one:
+    // THE WALL WITH THE DOOR IS NORTH. Everything else follows from it, and
+    // from standing in the room facing that door, where the right hand is
+    // east.
+    //
+    //   NORTH  +x   the nijiriguchi, and the hi-fi at its east end
+    //   SOUTH  -x   the shoji, low and wide
+    //   EAST   +z   the wall the four panel Akari stands against
+    //   WEST   -z   the wall the round red Akari stands against
+    //
+    // And the middle of the floor is the zafu, which belongs to no wall.
+    //
+    // One consequence worth knowing before it surprises anyone: the overhead
+    // view puts north to the RIGHT of the frame, not at the top, because its
+    // up vector leans to the room's far wall rather than to its north.
     const ROOM = {
       w: 3.30,          // across, x
       d: 3.60,          // deep, z
@@ -1388,13 +1404,13 @@
         "platine": "Audio-Technica LPW40WN. Bras droit en carbone, 223,6mm.",
         "plateau": "Le plateau, aluminium moule.",
         "bras": "Le bras, et sa tete de lecture.",
-        "meuble": "Le meuble a disques, en bouleau.",
+        "meuble": "Le meuble a disques, en bouleau, mur nord.",
         "enceinte-gauche": "Enceinte, a la hauteur du meuble.",
         "enceinte-droite": "Enceinte, a la hauteur du meuble.",
         "zafu": "Zafu, sur son zabuton. Fauve.",
         "zabuton": "Zabuton, sous le zafu.",
-        "nijiriguchi": "Nijiriguchi. 700 sur 720, fermee.",
-        "fenetre": "Le shoji, et le jour derriere.",
+        "nijiriguchi": "Nijiriguchi, mur nord. 700 sur 720, fermee.",
+        "fenetre": "Le shoji, mur sud, et le jour derriere.",
         "lampe": "La lampe.",
         "plancher": "Le plancher.",
         "murs": "Le mur de terre.",
