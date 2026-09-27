@@ -112,14 +112,27 @@
     #nav .ring{position:relative;width:96px;height:96px;border-radius:50%;
       border:1px solid rgba(227,66,52,0.52);
       background:rgba(18,14,10,0.30);backdrop-filter:blur(3px);}
+    /* ONE TRIANGLE, TURNED FOUR WAYS. Measured, the font's own glyphs came
+       out 12.9 of ink across for the vertical pair and 10.0 for the
+       horizontal one, a difference of nearly a third on a dial whose whole
+       job is to look even. So the arrow is drawn rather than typed: a single
+       border triangle, --a degrees round, identical by construction. */
     #nav .ar{position:absolute;background:none;border:0;padding:0;cursor:pointer;
-      color:var(--ro);font:400 13px/1 system-ui,sans-serif;
       width:26px;height:26px;opacity:.82;
       transition:opacity .18s ease,transform .18s ease;}
+    #nav .ar::before{content:"";position:absolute;left:50%;top:50%;
+      width:0;height:0;
+      border-left:6px solid transparent;border-right:6px solid transparent;
+      border-bottom:10px solid var(--ro);
+      transform:translate(-50%,-50%) rotate(var(--a));}
     #nav .ar:hover{opacity:1;}
     #nav .ar.on{opacity:1;transform:scale(1.22);}
-    #nav .up{top:5px;left:35px;} #nav .dn{bottom:5px;left:35px;}
-    #nav .lf{left:5px;top:35px;} #nav .rt{right:5px;top:35px;}
+    /* placed on the ring's own axes, by its middle rather than by an offset
+       counted from a corner */
+    #nav .up{--a:0deg;top:0;left:50%;margin:5px 0 0 -13px;}
+    #nav .dn{--a:180deg;bottom:0;left:50%;margin:0 0 5px -13px;}
+    #nav .lf{--a:-90deg;left:0;top:50%;margin:-13px 0 0 5px;}
+    #nav .rt{--a:90deg;right:0;top:50%;margin:-13px 5px 0 0;}
     /* AND H AND I ARE THE ROJI'S OWN KEY ROWS, cap and gloss, down to the
        eight pixels and the .16em. Its comment carries the reason there is no
        border on them: an outlined cap is a button waiting to be pressed, and
@@ -153,7 +166,7 @@
     @media (max-width:760px){
       #nav{gap:12px;}
       #nav .ring{width:84px;height:84px;}
-      #nav .up,#nav .dn{left:29px;} #nav .lf,#nav .rt{top:29px;}
+
     }
   </style>
 </head>
@@ -171,10 +184,10 @@
        readable, because a phone has no arrow keys. -->
   <div id="nav" hidden>
     <div class="ring">
-      <button class="ar up" data-key="ArrowUp" aria-label="avancer">&#9650;</button>
-      <button class="ar dn" data-key="ArrowDown" aria-label="reculer">&#9660;</button>
-      <button class="ar lf" data-key="ArrowLeft" aria-label="tourner a gauche">&#9664;</button>
-      <button class="ar rt" data-key="ArrowRight" aria-label="tourner a droite">&#9654;</button>
+      <button class="ar up" data-key="ArrowUp" aria-label="avancer"></button>
+      <button class="ar dn" data-key="ArrowDown" aria-label="reculer"></button>
+      <button class="ar lf" data-key="ArrowLeft" aria-label="tourner a gauche"></button>
+      <button class="ar rt" data-key="ArrowRight" aria-label="tourner a droite"></button>
     </div>
     <div class="keys">
       <button class="krow" data-act="top"><kbd>H</kbd><span class="d">vue de haut</span></button>
@@ -247,6 +260,61 @@
           }, 900);
         }
       }, wait);
+    }
+
+    // ---- IS THE DIAL EVEN, AND ARE ITS ARROWS ONE SIZE ------------------
+    // ?navtest. Four glyphs placed by hand on a ring is four chances to be
+    // wrong, and the eye sees it before any number does. So: each arrow's
+    // INK measured with a range around its own text node, not its box, plus
+    // where that ink sits against the ring's centre and its radius.
+    if (new URLSearchParams(location.search).has("navtest")) {
+      addEventListener("load", () => setTimeout(() => {
+        const out = [];
+        const ring = document.querySelector("#nav .ring");
+        if (!ring) {
+          document.body.setAttribute("data-navtest", "NO DIAL"); return;
+        }
+        const rb = ring.getBoundingClientRect();
+        const cx = rb.left + rb.width / 2, cy = rb.top + rb.height / 2;
+        const R = rb.width / 2;
+        // THE DRAWN TRIANGLE, read off the pseudo element that draws it: its
+        // two border widths are its base and its height, and the rotation is
+        // what makes it point. A glyph's ink was the old reading and the old
+        // fault.
+        let wLo = 1e9, wHi = 0, hLo = 1e9, hHi = 0, rLo = 1e9, rHi = 0;
+        const turns = [];
+        ["up", "rt", "dn", "lf"].forEach((k) => {
+          const el = ring.querySelector("." + k);
+          const cs = getComputedStyle(el, "::before");
+          const w = parseFloat(cs.borderLeftWidth) * 2;
+          const h = parseFloat(cs.borderBottomWidth);
+          const b = el.getBoundingClientRect();
+          const dx = b.left + b.width / 2 - cx;
+          const dy = b.top + b.height / 2 - cy;
+          const rad = Math.hypot(dx, dy);
+          const off = Math.round((Math.atan2(dy, dx) * 180 / Math.PI + 360) % 360);
+          // the rotation, out of the matrix the transform resolves to
+          const m = new DOMMatrixReadOnly(cs.transform);
+          const deg = Math.round((Math.atan2(m.b, m.a) * 180 / Math.PI + 360) % 360);
+          turns.push(deg);
+          out.push(k + " triangle " + w.toFixed(1) + "x" + h.toFixed(1) +
+                   " turned " + deg + ", at " + rad.toFixed(1) + "px, " +
+                   off + " degrees");
+          wLo = Math.min(wLo, w); wHi = Math.max(wHi, w);
+          hLo = Math.min(hLo, h); hHi = Math.max(hHi, h);
+          rLo = Math.min(rLo, rad); rHi = Math.max(rHi, rad);
+        });
+        out.push("bases " + wLo.toFixed(1) + " to " + wHi.toFixed(1) +
+                 ", heights " + hLo.toFixed(1) + " to " + hHi.toFixed(1) +
+                 (wHi - wLo < 0.6 && hHi - hLo < 0.6
+                    ? " -- one shape, four turns of " + turns.join("/")
+                    : " -- NOT ONE SHAPE"));
+        out.push("radii " + rLo.toFixed(1) + " to " + rHi.toFixed(1) +
+                 " on a ring of " + R.toFixed(1) +
+                 (rHi - rLo < 1.5 ? " -- evenly placed"
+                                  : " -- UNEVENLY PLACED"));
+        document.body.setAttribute("data-navtest", out.join(" | "));
+      }, 600));
     }
 
     // ---- the room ----------------------------------------------------------
