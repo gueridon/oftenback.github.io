@@ -839,8 +839,13 @@
         // work and because the room names a thing rather than illustrating
         // it. Each leans a little on the one before, as a filed row does.
         const LP = 0.315, SLEEVE = 0.0055;
-        const tones = [0x2a2622, 0x3d3630, 0x1d1b19, 0x4a4036, 0x33302c,
-                       0x262320, 0x413a33, 0x2f2b27];
+        // SPINES IN COLOUR, because a shelf of eight hundred records is not
+        // eight browns. Muted rather than bright, so the row belongs to a
+        // room of timber and plaster, and drawn UNSORTED from the hash so it
+        // does not read as a repeating pattern.
+        const tones = [0x8e3b2f, 0xb8873f, 0x2f4f52, 0xd9cdb4, 0x1d1b19,
+                       0x2d3a5c, 0x5d6b3a, 0x7a4a6a, 0xa8552e, 0x3e3a36,
+                       0xc9a25c, 0x486b63, 0x6e4630, 0x9fa08c];
         // EACH CUBBY FULL, because a man with eight hundred of them does not
         // keep thirteen: the count is what the cubby holds, not a number I
         // liked. Thirteen apiece left a small stack in the middle of an
@@ -853,7 +858,8 @@
           for (let i = 0; i < n; i++) {
             const m = new THREE.Mesh(
               new THREE.BoxGeometry(LP, LP, SLEEVE),
-              mat(tones[(i + (side > 0 ? 3 : 0)) % tones.length], 0.98));
+              mat(tones[Math.floor(hash3(i * 1.7, side * 3.1, 9.4)
+                                   * tones.length) % tones.length], 0.98));
             // FILED LIKE BOOKS: the thin edge along the row, the faces
             // across it. Turned a quarter more, each cubby read as one big
             // flat panel instead of a row of records.
@@ -1014,13 +1020,16 @@
         face.rotation.y = -Math.PI / 2;
         face.position.set(-D / 2 - 0.001, H / 2, 0);
         sp.add(face);
+        // THE CONE HAS TO READ AGAINST THE FACE IT SITS IN, and at 0x1b1714
+        // on a 0x272220 baffle both were the same near black: a paper cone
+        // in a dim room is a grey brown disc, not a hole.
         const cone = new THREE.Mesh(
-          new THREE.CylinderGeometry(0.062, 0.050, 0.016, 24), mat(0x1b1714, 1));
+          new THREE.CylinderGeometry(0.062, 0.050, 0.016, 24), mat(0x4e4437, 1));
         cone.rotation.z = Math.PI / 2;
         cone.position.set(-D / 2 - 0.006, H * 0.34, 0);
         sp.add(cone);
         const dome = new THREE.Mesh(
-          new THREE.SphereGeometry(0.019, 14, 10), mat(0x2b2723, 0.55));
+          new THREE.SphereGeometry(0.019, 14, 10), mat(0x6b6154, 0.45));
         dome.position.set(-D / 2 - 0.004, H * 0.71, 0);
         sp.add(dome);
         sp.position.set(ROOM.w / 2 - D / 2 - 0.02, 0,
