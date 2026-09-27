@@ -446,6 +446,25 @@
         side: THREE.DoubleSide,
       });
       const steel = mat(0x141210, 0.55);
+      const UPV = new THREE.Vector3(0, 1, 0);
+      // A LEG LEANS ALONG ITS OWN RADIUS, and the axis to turn it about is
+      // not one of the three: per axis, by hand, the legs of both lamps came
+      // out leaning sideways rather than out, and the square one's feet
+      // gathered UNDER it. So the direction is built and the leg is pointed
+      // at it. `out` positive splays the feet outward, negative gathers them,
+      // and ?lean=0 stands them straight up.
+      const LEAN = num("lean", 0.17);
+      function lean(leg, dx, dz, t) {
+        const d = new THREE.Vector3(dx, 0, dz);
+        if (d.lengthSq() < 1e-9 || !t) return;
+        d.normalize();
+        // the foot goes out, so the shaft points in and up
+        const axis = new THREE.Vector3()
+          .addScaledVector(UPV, Math.cos(t))
+          .addScaledVector(d, -Math.sin(t))
+          .normalize();
+        leg.quaternion.setFromUnitVectors(UPV, axis);
+      }
 
       // 1AR: the round one, in red washi
       function akari1AR() {
@@ -456,9 +475,9 @@
         for (let i = 0; i < 3; i++) {
           const a = i * Math.PI * 2 / 3;
           const leg = new THREE.Mesh(
-            new THREE.CylinderGeometry(0.004, 0.004, BASE_H * 1.04, 6), steel);
+            new THREE.CylinderGeometry(0.004, 0.004, BASE_H * 1.06, 6), steel);
           leg.position.set(Math.cos(a) * 0.075, BASE_H / 2, Math.sin(a) * 0.075);
-          leg.rotation.set(Math.cos(a) * 0.19, 0, -Math.sin(a) * 0.19);
+          lean(leg, Math.cos(a), Math.sin(a), LEAN);
           leg.castShadow = true;
           g.add(leg);
         }
@@ -488,13 +507,28 @@
       function akariUF1O() {
         const g = new THREE.Group();
         g.name = "akariuf1o";
-        const BASE_H = 0.222, SH_H = 0.292, W = 0.267, D = 0.229;
+        // ITS PUBLISHED NUMBERS DO NOT SUM, and that is the useful part:
+        // base 222 high, shade 292 high, overall 508, so the shade sits 6mm
+        // down over the base rather than on top of it. And the 305 of width
+        // is the BASE, not the shade, which is 267: the legs are what make
+        // the lamp wider at the floor than at its head.
+        const OVERALL = 0.508, BASE_W = 0.305;
+        const SH_H = 0.292, W = 0.267, D = 0.229;
+        const BASE_H = OVERALL - SH_H;
+        // A LEG IS ITS TWO ENDS. Given the shade's corner and the base's own
+        // half width, the angle is whatever those two numbers imply, which is
+        // the only way both published measures come out right.
         for (let i = 0; i < 4; i++) {
           const sx = i < 2 ? -1 : 1, sz = i % 2 === 0 ? -1 : 1;
+          const foot = new THREE.Vector3(sx * BASE_W / 2, 0,
+                                         sz * BASE_W / 2 * (D / W));
+          const top = new THREE.Vector3(sx * W / 2 * 0.86, BASE_H,
+                                        sz * D / 2 * 0.86);
+          const span = new THREE.Vector3().subVectors(top, foot);
           const leg = new THREE.Mesh(
-            new THREE.CylinderGeometry(0.005, 0.005, BASE_H * 1.06, 6), steel);
-          leg.position.set(sx * 0.115, BASE_H / 2, sz * 0.095);
-          leg.rotation.set(sz * 0.16, 0, -sx * 0.16);
+            new THREE.CylinderGeometry(0.005, 0.005, span.length(), 6), steel);
+          leg.position.copy(foot).addScaledVector(span, 0.5);
+          leg.quaternion.setFromUnitVectors(UPV, span.clone().normalize());
           leg.castShadow = true;
           g.add(leg);
         }
@@ -532,6 +566,12 @@
           tie.position.set(sx * W / 2 * 0.92, BASE_H + 0.014, sz * D / 2 * 0.92);
           g.add(tie);
         }
+        // AND THE WHOLE THING IS MEASURED AND CORRECTED, because the panels
+        // lean and a leaning panel lifts its own corners: built to the
+        // numbers it came out 18mm too tall. Read, then shifted.
+        g.updateMatrixWorld(true);
+        const hi = new THREE.Box3().setFromObject(g, true).max.y;
+        g.children.forEach((c) => { c.position.y -= (hi - OVERALL); });
         return g;
       }
 
@@ -769,6 +809,68 @@
         requestAnimationFrame(frame);
       }
       requestAnimationFrame(frame);
+
+      // ---- ARE THEY HIS LAMPS, AT HIS LAMPS' SIZES ------------------------
+      // ?lamptest reads the two Akari off the scene: the published overall
+      // heights and widths, and which way the legs lean. That last one is
+      // why the test exists: a leg tilted about one of the three axes leans
+      // sideways instead of out, and both lamps had it, the square one with
+      // its feet gathered under it.
+      if (Q.has("lamptest")) {
+        setTimeout(() => {
+          const out = [];
+          const want = { akari1ar: [254, 432], akariuf1o: [305, 508] };
+          Object.keys(want).forEach((key) => {
+            const o = shell.getObjectByName(key);
+            if (!o) { out.push(key + " -- NOT IN THE ROOM"); return; }
+            // IN ITS OWN FRAME. A world-axis box around a lamp turned 148
+            // degrees measures its diagonal: the square one read 355mm wide
+            // against a published 305, and the lamp was right.
+            o.updateMatrixWorld(true);
+            const inv = new THREE.Matrix4().copy(o.matrixWorld).invert();
+            const bx = new THREE.Box3();
+            const v = new THREE.Vector3();
+            o.traverse((m) => {
+              const pa = m.geometry && m.geometry.attributes &&
+                         m.geometry.attributes.position;
+              if (!pa) return;
+              for (let i = 0; i < pa.count; i++) {
+                v.fromBufferAttribute(pa, i)
+                 .applyMatrix4(m.matrixWorld).applyMatrix4(inv);
+                bx.expandByPoint(v);
+              }
+            });
+            const sz = bx.getSize(new THREE.Vector3());
+            const w = Math.max(sz.x, sz.z) * 1000, h = sz.y * 1000;
+            out.push(key + " stands " + Math.round(w) + " by " +
+                     Math.round(h) + "mm against a published " +
+                     want[key][0] + " by " + want[key][1] +
+                     (Math.abs(w - want[key][0]) < 26 &&
+                      Math.abs(h - want[key][1]) < 26
+                        ? " -- his lamp's size" : " -- NOT ITS SIZE"));
+            // the legs: a foot further out than its own top is a splay
+            let feetOut = 0, feetIn = 0;
+            o.traverse((m) => {
+              if (!m.geometry || m.geometry.type !== "CylinderGeometry") return;
+              const p = m.geometry.parameters;
+              const lo = new THREE.Vector3(0, -p.height / 2, 0)
+                           .applyMatrix4(m.matrixWorld);
+              const hi = new THREE.Vector3(0, p.height / 2, 0)
+                           .applyMatrix4(m.matrixWorld);
+              const c = o.getWorldPosition(new THREE.Vector3());
+              const rLo = Math.hypot(lo.x - c.x, lo.z - c.z);
+              const rHi = Math.hypot(hi.x - c.x, hi.z - c.z);
+              if (rLo > rHi + 0.004) feetOut++;
+              else if (rHi > rLo + 0.004) feetIn++;
+            });
+            out.push(key + ": " + feetOut + " legs splay out, " + feetIn +
+                     " lean in" +
+                     (feetIn === 0 ? " -- the feet are the wide end"
+                                   : " -- ITS FEET GATHER UNDER IT"));
+          });
+          document.body.setAttribute("data-lamptest", out.join(" | "));
+        }, 1200);
+      }
 
       // ---- DOES THE WALKING WALK, AND DOES IT STOP ------------------------
       // ?walktest presses the real keys through the real handlers and reads
