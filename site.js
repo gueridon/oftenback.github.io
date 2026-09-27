@@ -153,6 +153,7 @@ document.addEventListener("DOMContentLoaded", () => {
         { href: "chashitsu.html", label: "chashitsu" },
         { href: "temaeza.html", label: "temaeza" },
         { href: "dogu.html", label: "dogu" },
+        { href: "temae.html", label: "temae" },
       ] },
     ] },
   ];

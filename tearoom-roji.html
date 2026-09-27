@@ -10314,6 +10314,7 @@
       { close: true, a: [2.30, 0], b: [2.30, 0], t: 1.0 },
     ];
     const PURIFY = [
+      // ---- THE SILK, THE CADDY AND THE SCOOP ------------------------------
       { act: "appear", t: 2.2, names: ["fukusa"],
         line: "The silk comes out. It is worn at the waist rather than set " +
               "out with the utensils, and is used to wipe what holds the tea." },
@@ -10425,6 +10426,7 @@
         line: "And the lip is wiped with the linen, three passes round it, " +
               "the bowl turned so the guests see into it." },
 
+      // ---- AND THE TEA IS PUT INTO THE BOWL -------------------------------
       // "l'hote se saisit du chashaku et ensuite du natsume, et approche le
       // natsume cote gauche du bol du point de vue de l'hote... on ouvre le
       // couvercle du natsume et on le met de l'autre cote du bol a sa
@@ -14562,6 +14564,43 @@
       // hand and nothing would have said if one of them was missed.
       ...PURIFY.map((q, i) => ({ pure: i })),
     ];
+    // ---- the procedure, said out in order ---------------------------------
+    // ?steps writes the whole script out as text, one line per step, so that
+    // what runs can be laid beside a book. Taken from the same four lists the
+    // ceremony is played from -- the hands, the moves, the beats -- rather
+    // than written a second time, because a copy of a procedure is a thing
+    // that can quietly stop being true.
+    if (new URLSearchParams(location.search).has("steps")) {
+      setTimeout(() => {
+        const rows = [];
+        const nm = (ks) => (ks || []).map((k) => {
+          const n = NAME_OF(k);
+          return n.jp + " " + n.rom;
+        }).join(", ");
+        SCRIPT.forEach((q) => {
+          if (q.say !== undefined) {
+            rows.push(["word", "", "", "", q.say].join("\t"));
+          } else if (q.hand !== undefined) {
+            const a2 = ARRIVALS[q.hand];
+            rows.push(["hand", "arrive" + q.hand, ARR_DUR.toFixed(1),
+                       nm(a2.names), a2.line].join("\t"));
+          } else if (q.move !== undefined) {
+            const m = TEMAE[q.move];
+            rows.push(["move", m.key, MOVE_DUR.toFixed(1),
+                       nm(m.names), m.line].join("\t"));
+          } else if (q.pure !== undefined) {
+            const b2 = PURIFY[q.pure];
+            rows.push(["beat", b2.act, (b2.t || 0).toFixed(1),
+                       nm(b2.names), b2.line || ""].join("\t"));
+          }
+        });
+        const pre = document.createElement("pre");
+        pre.id = "steps";
+        pre.textContent = "STEPS\n" + rows.join("\n") + "\nEND";
+        pre.style.display = "none";
+        document.body.appendChild(pre);
+      }, 900);
+    }
     let stepIdx = 0;
     const narrEl = document.getElementById("narrate");
     const namesEl = narrEl.querySelector(".names");
