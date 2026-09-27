@@ -931,8 +931,10 @@
           weight.rotation.z = Math.PI / 2;
           weight.position.set(AX + 0.038, PT + 0.050, AZ);
           arm.add(weight);
+          // a real headshell is about twenty millimetres across, and it was
+          // thirty: smaller all round and narrower than it is long
           const head = new THREE.Mesh(
-            new THREE.BoxGeometry(0.022, 0.016, 0.030), mat(0x22201c, 0.8));
+            new THREE.BoxGeometry(0.019, 0.013, 0.021), mat(0x22201c, 0.8));
           head.position.set(AX - L + 0.004, PT + 0.044, AZ);
           arm.add(head);
           tt.add(arm);
