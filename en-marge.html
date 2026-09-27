@@ -834,41 +834,130 @@
           board(0.05, FOOT, 0.05, sx * (CAB.d / 2 - 0.05), FOOT / 2,
                 sz * (CAB.w / 2 - 0.05), BLACKW);
         }
-        // AND THE RECORDS, which are what the cabinet is for. Plain sleeves:
-        // no artwork is drawn, because a record's cover is someone else's
-        // work and because the room names a thing rather than illustrating
-        // it. Each leans a little on the one before, as a filed row does.
-        const LP = 0.315, SLEEVE = 0.0055;
-        // SPINES IN COLOUR, because a shelf of eight hundred records is not
-        // eight browns. Muted rather than bright, so the row belongs to a
-        // room of timber and plaster, and drawn UNSORTED from the hash so it
-        // does not read as a repeating pattern.
-        const tones = [0x8e3b2f, 0xb8873f, 0x2f4f52, 0xd9cdb4, 0x1d1b19,
-                       0x2d3a5c, 0x5d6b3a, 0x7a4a6a, 0xa8552e, 0x3e3a36,
-                       0xc9a25c, 0x486b63, 0x6e4630, 0x9fa08c];
-        // EACH CUBBY FULL, because a man with eight hundred of them does not
-        // keep thirteen: the count is what the cubby holds, not a number I
-        // liked. Thirteen apiece left a small stack in the middle of an
-        // empty shelf.
+        // AND WHAT IT HOLDS ARE BOX SETS: classical and opera, not single
+        // sleeves. A box is 25 to 55mm thick where an LP is 5, so a cubby
+        // holds a dozen and a half of them rather than sixty, and each one
+        // is wide enough to carry its own writing.
+        //
+        // Black spines, a hairline border just off that black to mark where
+        // one box ends and the next begins, and the composer and the work in
+        // grey along the spine. No artwork: a cover is someone else's work,
+        // and a name is what a shelf actually shows you at this distance.
+        const LP = 0.315;
+        // A SPINE IS DRAWN, in a canvas, at the box's own thickness: the
+        // texture is as many pixels wide as the box is thick, so the type
+        // and the border keep one size across a shelf of different boxes.
+        function spineTex(who, what, thick) {
+          const H = 440, PPM = 1500;
+          const W = Math.max(20, Math.round(thick * PPM));
+          const c = document.createElement("canvas");
+          c.width = W; c.height = H;
+          const g = c.getContext("2d");
+          g.fillStyle = "#0c0b0a";
+          g.fillRect(0, 0, W, H);
+          g.strokeStyle = "#2e2a24";
+          g.lineWidth = 2;
+          g.strokeRect(1, 1, W - 2, H - 2);
+          g.save();
+          g.translate(W / 2, H / 2);
+          g.rotate(-Math.PI / 2);
+          g.textAlign = "center";
+          g.textBaseline = "middle";
+          g.fillStyle = "#918a7e";
+          const two = W > 44;                  // room for the work as well
+          const size = Math.min(17, Math.max(10, W * 0.30));
+          g.font = "600 " + size + "px system-ui, sans-serif";
+          g.letterSpacing = "1.5px";
+          g.fillText(who, 0, two ? -size * 0.75 : 0);
+          if (two) {
+            g.fillStyle = "#6f6a61";
+            g.font = "400 " + (size * 0.82) + "px system-ui, sans-serif";
+            g.fillText(what, 0, size * 0.75);
+          }
+          g.restore();
+          const t = new THREE.CanvasTexture(c);
+          t.colorSpace = THREE.SRGBColorSpace;
+          return t;
+        }
+        // THE TITLES ARE MINE, not his catalogue: plausible boxes for a shelf
+        // of classical and opera, to be replaced by what he actually owns.
+        const SETS = [
+          ["WAGNER", "DER RING DES NIBELUNGEN", 0.055],
+          ["BEETHOVEN", "DIE 9 SYMPHONIEN", 0.044],
+          ["MOZART", "DIE ZAUBERFLOTE", 0.030],
+          ["BACH", "DAS WOHLTEMPERIERTE KLAVIER", 0.038],
+          ["VERDI", "OTELLO", 0.028],
+          ["PUCCINI", "TOSCA", 0.026],
+          ["GLASS", "EINSTEIN ON THE BEACH", 0.034],
+          ["MAHLER", "SYMPHONIE NR 2", 0.032],
+          ["DEBUSSY", "PELLEAS ET MELISANDE", 0.030],
+          ["SCHUBERT", "WINTERREISE", 0.022],
+          ["R STRAUSS", "DER ROSENKAVALIER", 0.042],
+          ["MONTEVERDI", "L ORFEO", 0.026],
+          ["BRAHMS", "SYMPHONIEN", 0.036],
+          ["SAINT-SAENS", "SAMSON ET DALILA", 0.028],
+          ["BARTOK", "QUARTETS", 0.024],
+          ["RAVEL", "L ENFANT ET LES SORTILEGES", 0.025],
+          ["HANDEL", "MESSIAH", 0.032],
+          ["BIZET", "CARMEN", 0.030],
+          ["ROSSINI", "IL BARBIERE DI SIVIGLIA", 0.029],
+          ["BERLIOZ", "LES TROYENS", 0.048],
+          ["SIBELIUS", "SYMPHONIEN", 0.034],
+          ["SHOSTAKOVICH", "QUARTETS", 0.040],
+          ["BRITTEN", "PETER GRIMES", 0.027],
+          ["GLUCK", "ORFEO ED EURIDICE", 0.024],
+          ["JANACEK", "JENUFA", 0.026],
+          ["STRAVINSKY", "LE SACRE DU PRINTEMPS", 0.022],
+          ["REICH", "MUSIC FOR 18 MUSICIANS", 0.021],
+          ["PURCELL", "DIDO AND AENEAS", 0.020],
+          ["MASSENET", "WERTHER", 0.028],
+          ["HAYDN", "DIE SCHOPFUNG", 0.031],
+        ];
+        // NO BOX TWICE ON THE SHELF. Drawn with replacement, the first
+        // filling had Beethoven and Glass and Bach each standing twice in
+        // one cubby. So the list is put in a fixed shuffled order and walked
+        // once across both cubbies: enough distinct sets to fill them, and
+        // the same order on every load.
+        const ORDER = SETS.map((st, i) => ({ st: st, k: hash3(i * 3.7, 2.1, 8.3) }))
+                          .sort((a2, b2) => a2.k - b2.k)
+                          .map((q) => q.st);
+        let next = 0;
+        const blackFace = mat(0x0c0b0a, 0.96);
         [-1, 1].forEach((side) => {
           const inner = (CAB.w - 3 * T) / 2;
-          const pitch = SLEEVE + 0.0016;
-          const n = Math.floor((inner - 0.03) / pitch);
           const z0 = side * (T / 2 + inner / 2);
-          for (let i = 0; i < n; i++) {
+          // EACH CUBBY FILLED BY WHAT FITS, measured as it goes rather than
+          // by a count: the boxes are of different thicknesses, so a number
+          // of them would leave a gap or run past the divider.
+          const room = inner - 0.024;
+          const pick = [];
+          let used = 0;
+          while (next < ORDER.length) {
+            const st = ORDER[next];
+            if (used + st[2] > room) break;
+            pick.push(st);
+            used += st[2] + 0.0012;
+            next++;
+          }
+          let at = -used / 2;
+          pick.forEach((st, i) => {
+            const th = st[2];
+            const face = new THREE.MeshStandardMaterial({
+              map: spineTex(st[0], st[1], th), roughness: 0.96, metalness: 0,
+            });
             const m = new THREE.Mesh(
-              new THREE.BoxGeometry(LP, LP, SLEEVE),
-              mat(tones[Math.floor(hash3(i * 1.7, side * 3.1, 9.4)
-                                   * tones.length) % tones.length], 0.98));
-            // FILED LIKE BOOKS: the thin edge along the row, the faces
-            // across it. Turned a quarter more, each cubby read as one big
-            // flat panel instead of a row of records.
-            m.rotation.x = -0.045 - hash3(i, side, 3) * 0.02;
+              new THREE.BoxGeometry(LP, LP, th),
+              [blackFace, face, blackFace, blackFace, blackFace, blackFace]);
+            // FILED LIKE BOOKS, the spine out: the material list is ordered
+            // +x, -x, +y, -y, +z, -z, and -x is the face that looks into the
+            // room out of this cabinet.
+            m.rotation.x = -0.035 - hash3(i, side, 3) * 0.015;
             m.position.set(-0.012, FOOT + T + LP / 2 + 0.004,
-                           z0 - (n / 2 - i) * pitch);
+                           z0 + at + th / 2);
             m.castShadow = true; m.receiveShadow = true;
             cab.add(m);
-          }
+            at += th + 0.0012;
+          });
         });
         cab.position.set(CAB_X, 0, CAB.z);
         hifi.add(cab);
