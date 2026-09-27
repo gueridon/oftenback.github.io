@@ -881,14 +881,27 @@
       {
         const tt = new THREE.Group();
         tt.name = "platine";
-        const DEEP = 0.360, WIDE = 0.520, PT = 0.024;
+        // THE ARM'S GEOMETRY DECIDES THE BOARD, not the other way about. A
+        // tonearm reaches because its pivot stands at the effective length
+        // LESS the overhang from the spindle: 223.6 less 18 is 205.6, and
+        // that is what lets the stylus swing from the platter's rim to past
+        // its centre. Ours stood 313 from the spindle, so the head could not
+        // reach the record at all, and the board had been made wide to hold
+        // an arm that was in the wrong place.
+        //
+        // So the pivot is inset in its corner and the SPINDLE is put at the
+        // distance the arm asks for. Everything below is a consequence.
+        const DEEP = 0.340, WIDE = 0.380, PT = 0.024;
+        const L = 0.2236, OVERHANG = 0.018, REACH = L - OVERHANG;
+        const AZ = WIDE / 2 - 0.045, AX = DEEP / 2 - 0.040;
         const plinth = new THREE.Mesh(
           new THREE.BoxGeometry(DEEP, PT, WIDE), WALNUT);
         plinth.position.y = PT / 2;
         plinth.castShadow = true; plinth.receiveShadow = true;
         tt.add(plinth);
-        // the platter, left of centre and clear of every edge
-        const PX = -0.005, PZ = -0.075;
+        // the platter, placed at the distance the arm requires
+        const PX = AX - 0.130;
+        const PZ = AZ - Math.sqrt(REACH * REACH - (AX - PX) * (AX - PX));
         const platter = new THREE.Mesh(
           new THREE.CylinderGeometry(0.150, 0.150, 0.014, 48), ALU);
         platter.name = "plateau";
@@ -907,13 +920,11 @@
         {
           const arm = new THREE.Group();
           arm.name = "bras";
-          const AZ = WIDE / 2 - 0.055, AX = DEEP / 2 - 0.045;
           const pillar = new THREE.Mesh(
             new THREE.CylinderGeometry(0.017, 0.019, 0.055, 14), BLACKW);
           pillar.position.set(AX, PT + 0.0275, AZ);
           pillar.castShadow = true;
           arm.add(pillar);
-          const L = 0.2236;
           // ONE ROTATION, NOT TWO. A cylinder stands along its own y, so a
           // quarter turn about z lays it along x and that is the whole of
           // it: the second turn about y took the result and swung it to z,
@@ -1245,6 +1256,57 @@
         requestAnimationFrame(frame);
       }
       requestAnimationFrame(frame);
+
+      // ---- CAN THE HEAD REACH THE RECORD ----------------------------------
+      // ?armtest. His ask, and it is geometry rather than taste: "pendant la
+      // lecture, sa tete doit pouvoir aller du bord de la platine a son
+      // centre." A tonearm can do that only if its pivot stands at the
+      // effective length less the overhang from the spindle. Read off the
+      // scene: the pivot, the spindle, the distance between them, and the
+      // two radii the stylus can actually touch.
+      if (Q.has("armtest")) {
+        setTimeout(() => {
+          const out = [];
+          const tt = shell.getObjectByName("platine");
+          const arm = tt && tt.getObjectByName("bras");
+          const pl = tt && tt.getObjectByName("plateau");
+          if (!tt || !arm || !pl) {
+            document.body.setAttribute("data-armtest", "NO DECK TO READ");
+            return;
+          }
+          tt.updateMatrixWorld(true);
+          // the pivot is the pillar, the spindle is the platter's own centre
+          const piv = arm.children[0].getWorldPosition(new THREE.Vector3());
+          const spi = pl.getWorldPosition(new THREE.Vector3());
+          const d = Math.hypot(piv.x - spi.x, piv.z - spi.z);
+          const L = 0.2236, WANT = L - 0.018;
+          out.push("pivot to spindle " + Math.round(d * 1000) +
+                   "mm against the " + Math.round(WANT * 1000) +
+                   " its 223.6 arm asks for" +
+                   (Math.abs(d - WANT) < 0.006
+                      ? " -- it is the arm's own geometry"
+                      : " -- THE ARM CANNOT TRACK"));
+          // what the stylus can touch: the nearest and furthest points of
+          // its arc from the spindle
+          const near = Math.abs(L - d), far = L + d;
+          const R = 0.150;
+          out.push("the stylus sweeps from " + Math.round(near * 1000) +
+                   "mm of the spindle out to " + Math.round(far * 1000) +
+                   ", and the platter is " + Math.round(R * 1000) +
+                   " in radius" +
+                   (near < 0.022 && far > R
+                      ? " -- rim to centre, both reached"
+                      : " -- IT CANNOT COVER THE RECORD"));
+          // and it must park CLEAR of the platter
+          const head = arm.children[arm.children.length - 1]
+                          .getWorldPosition(new THREE.Vector3());
+          const park = Math.hypot(head.x - spi.x, head.z - spi.z);
+          out.push("parked, the head sits " + Math.round(park * 1000) +
+                   "mm from the spindle" +
+                   (park > R ? " -- off the record" : " -- PARKED ON THE RECORD"));
+          document.body.setAttribute("data-armtest", out.join(" | "));
+        }, 1200);
+      }
 
       // ---- ARE THEY HIS LAMPS, AT HIS LAMPS' SIZES ------------------------
       // ?lamptest reads the two Akari off the scene: the published overall
