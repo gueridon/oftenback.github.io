@@ -914,17 +914,21 @@
           pillar.castShadow = true;
           arm.add(pillar);
           const L = 0.2236;
+          // ONE ROTATION, NOT TWO. A cylinder stands along its own y, so a
+          // quarter turn about z lays it along x and that is the whole of
+          // it: the second turn about y took the result and swung it to z,
+          // which is the arm and its counterweight lying across the board
+          // instead of along its right edge. Third time in this room that
+          // stacking per axis turns has done it.
           const tube = new THREE.Mesh(
             new THREE.CylinderGeometry(0.0045, 0.0045, L, 10), BLACKW);
-          tube.rotation.z = Math.PI / 2;
-          tube.rotation.y = Math.PI / 2;          // along x, the right edge
+          tube.rotation.z = Math.PI / 2;          // along x, the right edge
           tube.position.set(AX - L / 2 + 0.012, PT + 0.050, AZ);
           tube.castShadow = true;
           arm.add(tube);
           const weight = new THREE.Mesh(
             new THREE.CylinderGeometry(0.019, 0.019, 0.030, 14), BLACKW);
           weight.rotation.z = Math.PI / 2;
-          weight.rotation.y = Math.PI / 2;
           weight.position.set(AX + 0.038, PT + 0.050, AZ);
           arm.add(weight);
           const head = new THREE.Mesh(
