@@ -1,0 +1,689 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>en marge &middot; oftenback</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="site.css">
+  <!--
+    EN MARGE: UN LIEU, PAS UNE PAGE.
+
+    The host's own presentation, and it is not a CV: a room you sit in, whose
+    objects are his interests. His brief, in his words: "definitevement 'un
+    lieu'. Ma piece ideal et les objets representent mes interet. Comme
+    l'atelier du peintre dans Killing Commendatore de Murakami. Une athmosphere
+    japonaise brute, in praise of shadow, donc dimmed lights. Un antre cosy."
+
+    THREE DEPARTURES FROM THE HOUSE, and each one is deliberate.
+
+    The ground is DARK, where every other room here is cream. It is not a
+    change of brand: the site's two intensities rest, in his own account, on
+    "le meme vide" -- one inhabits that emptiness as a field for colour, the
+    other as silence. This room is the second. The dark IS the ma.
+
+    The text is FRENCH, where the rest of the site is English, because these
+    are his own sentences and translating them would be paraphrasing them.
+
+    And ONE object will carry a fluorescent accent against the site's single
+    vermillion. One, and a test will hold it to one.
+
+    This is the room and its light only. No objects yet, on purpose: a place
+    either is one before anything is put in it, or no amount of furniture will
+    make it one.
+
+    WHAT WAS LOOKED AT AND REFUSED: the tea room's bmLight, a fill standing
+    where a window would have been and lighting the alcove straight through a
+    solid wall. Its own comment there calls it "the only lie in the room". Here
+    the darkness is the subject, so a light that ignores walls would undo the
+    page.
+
+    ?yaw= and ?pitch= freeze the head, ?ex= sets the exposure by looking, and
+    ?litetest measures the dark instead of arguing about it. ?nogl serves the
+    page a visitor without WebGL gets.
+  -->
+  <style>
+    /* THE SCROLLING PAGE IS THE DEFAULT and the room takes the lock away.
+       site.css holds html and body at overflow:hidden for the parallax's
+       sake, which is right for a scene and wrong for the text a visitor
+       without WebGL is given: that text must scroll, and a body-only rule
+       cannot scroll under an html that is locked. So the escape is the
+       default here and the GL path adds the lock, keyed on the root element
+       rather than on the body. */
+    html,body{overflow-y:auto;height:auto;min-height:100%;}
+    html.gl,html.gl body{height:100%;overflow:hidden;margin:0;}
+
+    /* THE CURTAIN IS CREAM IN site.css, hardcoded, because every other room
+       ends in daylight. A cream veil lifting off a dark room is a flash, and
+       it comes back down on the way out, which is the crossing nobody ever
+       screenshots. */
+    #veil{background:#0e0b09;}
+    /* ?open TAKES THE CURTAIN AWAY AT ONCE, for the harness. The veil fades
+       on a CSS transition and transitions do not advance in headless Chrome,
+       so a still is caught at whatever opacity that frame happened to hold:
+       one reading of this room looked half a stop darker than the last and
+       the cause was a curtain, not a light. */
+    html.open #veil{display:none;}
+    #loading{text-align:center;}
+    #loading .jp{font:400 26px/1 serif;letter-spacing:.3em;color:#cbbba4;
+      text-indent:.3em;}
+    #loading .rom{font-size:9px;letter-spacing:.34em;text-transform:lowercase;
+      color:#8a7a68;margin-top:9px;font-weight:600;}
+    #loading .bar{width:132px;height:1px;background:rgba(203,187,164,.22);
+      margin:22px auto 0;}
+    #loading .bar i{display:block;height:100%;width:0;background:#cbbba4;
+      transition:width .35s ease;}
+
+    #antre{display:none;position:fixed;top:0;left:0;}
+    html.gl #antre{display:block;}
+    html.gl main.room{display:none;}
+
+    /* the page a visitor without WebGL is given, and the page this one will
+       grow its passages into */
+    .cs{width:100%;max-width:640px;margin:0 auto;text-align:left;}
+    .head{display:flex;align-items:baseline;gap:16px;margin-bottom:4px;}
+    .head .jp{font:400 28px/1 serif;letter-spacing:.14em;color:var(--ink);}
+    .head .rom{font-size:10px;letter-spacing:.34em;color:var(--dim);
+      font-weight:600;text-transform:lowercase;}
+    .lede{font-size:14.5px;line-height:1.95;font-weight:300;color:var(--dim);
+      margin:16px 0 0;}
+    .lede em{font-style:italic;color:var(--ink);}
+    .plain{margin-top:34px;font-size:12.5px;line-height:1.9;color:var(--soft);
+      font-weight:300;}
+    @media (max-width:760px){ .room{padding-top:78px;} }
+  </style>
+</head>
+<body>
+  <div id="veil" data-hold="true">
+    <div id="loading">
+      <div class="jp">en marge</div>
+      <div class="rom">oftenback</div>
+      <div class="bar"><i></i></div>
+    </div>
+  </div>
+  <canvas id="antre"></canvas>
+  <main class="room">
+    <div class="room-content">
+      <div class="cs">
+        <div class="head"><span class="jp">en marge</span>
+          <span class="rom">nicholas bacuez</span></div>
+        <p class="lede">Une piece, et les objets dedans sont ses interets.
+        <em>Une vision continue, des gestes repetes, une facon de faire, quel
+        que soit l'objet.</em></p>
+        <p class="plain">La piece se dessine dans le navigateur et demande
+        WebGL, que celui-ci n'a pas su ouvrir. Ce qu'elle dit sera ici en
+        texte.</p>
+      </div>
+    </div>
+  </main>
+
+  <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+  <script>
+    // THE MARK IS RAISED BEFORE site.js READS IT. blob.js draws the corner
+    // mark at a tenth of an alpha, which is invisible on a dark ground;
+    // index-sakura.html does the same thing for the same reason.
+    window.MARK_ALPHA = 0.34;
+
+    const Q = new URLSearchParams(location.search);
+    const num = (k, d) => {
+      const v = parseFloat(Q.get(k));
+      return isFinite(v) ? v : d;
+    };
+
+    // ---- the veil, held until the first frame -----------------------------
+    // Copied from the tea room: the room is built in one synchronous pass and
+    // nothing paints while that runs, so the curtain stays down until a frame
+    // has actually been drawn. The veil ELEMENT stays in the DOM once faded,
+    // because site.js fades that same element back in when a menu link is
+    // clicked; removing it left the exit with nothing to fade.
+    if (Q.has("open")) document.documentElement.classList.add("open");
+    const LOAD_MIN_MS = Q.has("open") ? 0 : 1400;
+    const loadStart = performance.now();
+    const loadBar = document.querySelector("#loading .bar i");
+    (function creep() {
+      const k = Math.min(1, (performance.now() - loadStart) / LOAD_MIN_MS);
+      loadBar.style.width =
+        (window.__firstFrame ? 100 : Math.min(94, k * 94)) + "%";
+      if (!window.__dismissed) requestAnimationFrame(creep);
+    })();
+    function dismissLoader(force) {
+      if (!force && !window.__firstFrame) {
+        requestAnimationFrame(() => dismissLoader(false)); return;
+      }
+      const wait = Math.max(0, LOAD_MIN_MS - (performance.now() - loadStart));
+      setTimeout(() => {
+        window.__dismissed = true;
+        loadBar.style.width = "100%";
+        const v = document.getElementById("veil");
+        if (v) {
+          v.classList.add("gone");
+          setTimeout(() => {
+            const card = document.getElementById("loading");
+            if (card) card.remove();
+          }, 900);
+        }
+      }, wait);
+    }
+
+    // ---- the room ----------------------------------------------------------
+    // WHAT IT IS: one low room, about three metres by three and a half, a
+    // ceiling at two ten with its beams showing, a paper window on one side
+    // and a paper lamp on the floor. You sit in it. Nothing is evenly lit and
+    // the middle of the floor is empty, which is the only way the objects to
+    // come will read as objects rather than as a heap.
+    const ROOM = {
+      w: 3.30,          // across, x
+      d: 3.60,          // deep, z
+      h: 2.12,          // to the ceiling
+      seat: { x: 0.35, y: 0.86, z: 1.28 },   // where the eye sits
+    };
+
+    function build() {
+      const cv = document.getElementById("antre");
+      const renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: true });
+      if (!renderer.getContext()) throw new Error("no context");
+      renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+      renderer.setSize(innerWidth, innerHeight);
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      // DIM IS A NUMBER YOU TURN WHILE LOOKING, so it is on the address bar
+      // rather than argued about in a comment.
+      renderer.toneMappingExposure = num("ex", 0.92);
+      document.documentElement.classList.add("gl");
+
+      const scene = new THREE.Scene();
+      window.__scene = scene;
+      const DARK = 0x0d0b09;
+      scene.background = new THREE.Color(DARK);
+      // Fog in exactly the background colour, so the far corners lose their
+      // edges instead of drawing a line. Short, because the room is small.
+      scene.fog = new THREE.Fog(DARK, 2.6, 8.2);
+
+      const camera = new THREE.PerspectiveCamera(58, innerWidth / innerHeight,
+                                                 0.05, 40);
+      camera.position.set(ROOM.seat.x, ROOM.seat.y, ROOM.seat.z);
+
+      // ---- materials: matte, flat, no shine and no photographs ------------
+      const mat = (hex, rough) => new THREE.MeshStandardMaterial({
+        color: hex, roughness: rough === undefined ? 1 : rough, metalness: 0,
+      });
+      // a deterministic hash on the vertex's own position, so the walls are
+      // the same walls on every load
+      const hash3 = (x, y, z) => {
+        const s = Math.sin(x * 12.9898 + y * 78.233 + z * 37.719) * 43758.5453;
+        return s - Math.floor(s);
+      };
+      // NOT RULER STRAIGHT. An interior built of perfect planes reads as a
+      // rendering of a room; a few millimetres of wander reads as earth and
+      // wood. The jitter is keyed on position, never on Math.random, so it
+      // does not crawl between frames.
+      function rugged(w, h, segW, segH, edge, bump, seed) {
+        const geo = new THREE.PlaneGeometry(w, h, segW, segH);
+        const p = geo.attributes.position;
+        for (let i = 0; i < p.count; i++) {
+          const x = p.getX(i), y = p.getY(i);
+          p.setX(i, x + (hash3(x + seed, y, 11.1) - 0.5) * edge);
+          p.setY(i, y + (hash3(y, x + seed, 22.2) - 0.5) * edge);
+          p.setZ(i, p.getZ(i) + (hash3(x + seed, y + seed, 33.3) - 0.5) * bump);
+        }
+        geo.computeVertexNormals();
+        return geo;
+      }
+      // earth plaster, drawn once into a canvas: warm and cool blooms, then
+      // grit. A flat colour under one lamp looks like painted card.
+      function plaster() {
+        const n = 320;
+        const c = document.createElement("canvas");
+        c.width = c.height = n;
+        const g = c.getContext("2d");
+        g.fillStyle = "#6f6253";
+        g.fillRect(0, 0, n, n);
+        for (let i = 0; i < 26; i++) {
+          const x = hash3(i, 1, 2) * n, y = hash3(i, 2, 3) * n;
+          const r = 30 + hash3(i, 3, 4) * 70;
+          const rad = g.createRadialGradient(x, y, 0, x, y, r);
+          const warm = hash3(i, 4, 5) < 0.5;
+          rad.addColorStop(0, warm ? "rgba(150,104,66,0.10)"
+                                   : "rgba(40,32,26,0.12)");
+          rad.addColorStop(1, "rgba(0,0,0,0)");
+          g.fillStyle = rad;
+          g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill();
+        }
+        for (let i = 0; i < 2200; i++) {
+          const x = hash3(i, 7, 8) * n, y = hash3(i, 8, 9) * n;
+          g.fillStyle = hash3(i, 9, 10) < 0.5
+            ? "rgba(30,24,19,0.05)" : "rgba(190,168,138,0.045)";
+          g.fillRect(x, y, 1.5, 1.5);
+        }
+        const t = new THREE.CanvasTexture(c);
+        t.wrapS = t.wrapT = THREE.RepeatWrapping;
+        t.colorSpace = THREE.SRGBColorSpace;
+        t.repeat.set(2, 1.4);
+        return t;
+      }
+      const wallMat = new THREE.MeshStandardMaterial({
+        map: plaster(), roughness: 1, metalness: 0,
+      });
+
+      // ---- the shell -------------------------------------------------------
+      const shell = new THREE.Group();
+      shell.name = "antre";
+      scene.add(shell);
+
+      // the floor: dark boards, each one its own plank so the light finds the
+      // seams
+      const boards = new THREE.Group();
+      boards.name = "plancher";
+      const BW = 0.185;
+      for (let i = 0, x = -ROOM.w / 2; x < ROOM.w / 2 - 0.01; i++, x += BW) {
+        const w = Math.min(BW - 0.004, ROOM.w / 2 - x);
+        const tone = 0.86 + hash3(i, 5, 6) * 0.28;
+        const b = new THREE.Mesh(
+          new THREE.BoxGeometry(w, 0.022, ROOM.d),
+          mat(new THREE.Color(0x3a2b20).multiplyScalar(tone).getHex(), 0.92));
+        b.position.set(x + w / 2, -0.011, 0);
+        b.receiveShadow = true;
+        boards.add(b);
+      }
+      shell.add(boards);
+
+      // three walls and the ceiling. The fourth wall is behind the eye: a
+      // room you sit in needs a back, and a back you never see is geometry
+      // that only costs shadow passes, so it is there but bare.
+      const walls = new THREE.Group();
+      walls.name = "murs";
+      const wall = (w, h, seed) => {
+        const m = new THREE.Mesh(rugged(w + 0.10, h + 0.14, 10, 8,
+                                        0.012, 0.008, seed), wallMat);
+        m.receiveShadow = true;
+        return m;
+      };
+      const back = wall(ROOM.w, ROOM.h, 1.3);
+      back.position.set(0, ROOM.h / 2, -ROOM.d / 2);
+      walls.add(back);
+      const left = wall(ROOM.d, ROOM.h, 2.7);
+      left.rotation.y = Math.PI / 2;
+      left.position.set(-ROOM.w / 2, ROOM.h / 2, 0);
+      walls.add(left);
+      const right = wall(ROOM.d, ROOM.h, 4.1);
+      right.rotation.y = -Math.PI / 2;
+      right.position.set(ROOM.w / 2, ROOM.h / 2, 0);
+      walls.add(right);
+      const front = wall(ROOM.w, ROOM.h, 5.5);
+      front.rotation.y = Math.PI;
+      front.position.set(0, ROOM.h / 2, ROOM.d / 2);
+      walls.add(front);
+      shell.add(walls);
+
+      // BIGGER THAN THE ROOM, and the walls are taller than the room for the
+      // same reason: the planes are jittered by a centimetre to keep them
+      // off ruler-straight, and a centimetre of wander at a junction opens a
+      // seam you can see the void through. Two per cent of the frame was
+      // that seam, and it read as pure black because it WAS nothing.
+      const ceil = new THREE.Mesh(
+        rugged(ROOM.w + 0.10, ROOM.d + 0.10, 8, 8, 0.01, 0.006, 6.9),
+        // lighter than the beams, because it is the surface the lamp reaches
+        // last and the only one with nothing to catch: at 0x2a2217 the sliver
+        // of it at the top of the frame measured as a void
+        mat(0x40352a, 1));
+      ceil.rotation.x = Math.PI / 2;
+      ceil.position.y = ROOM.h;
+      shell.add(ceil);
+
+      // the beams, which are most of what "brute" means here: rough timber
+      // showing under the ceiling rather than a flat lid
+      const beams = new THREE.Group();
+      beams.name = "poutres";
+      for (let i = 0; i < 3; i++) {
+        const z = -ROOM.d / 2 + ROOM.d * (i + 1) / 4;
+        const b = new THREE.Mesh(
+          new THREE.BoxGeometry(ROOM.w, 0.085, 0.10),
+          mat(0x241c14, 0.95));
+        b.position.set(0, ROOM.h - 0.055, z);
+        b.castShadow = true; b.receiveShadow = true;
+        beams.add(b);
+      }
+      // and one heavier beam along the room, the one a hand would touch
+      const spine = new THREE.Mesh(
+        new THREE.BoxGeometry(0.12, 0.13, ROOM.d),
+        mat(0x1f1810, 0.95));
+      spine.position.set(-0.30, ROOM.h - 0.075, 0);
+      spine.castShadow = true; spine.receiveShadow = true;
+      beams.add(spine);
+      shell.add(beams);
+
+      // ---- the paper window, on the left wall ------------------------------
+      // Low and wide, sitting near the floor as a shoji does, so the light
+      // comes in along the boards instead of down from overhead.
+      const SH = { w: 1.55, h: 1.02, y: 0.30, z: -0.35 };
+      const shoji = new THREE.Group();
+      shoji.name = "fenetre";
+      shoji.position.set(-ROOM.w / 2 + 0.012, SH.y + SH.h / 2, SH.z);
+      shoji.rotation.y = Math.PI / 2;
+      // the paper itself: it stands in for the sky outside, so it is lit
+      // rather than shaded, and it is the brightest thing in the room
+      // THE PAPER IS THE SKY, so it is the one surface that keeps its own
+      // value: tone mapped with the rest of the room it came out a dull grey
+      // rectangle in a void, which is a window drawn rather than a window.
+      const paper = new THREE.Mesh(
+        new THREE.PlaneGeometry(SH.w, SH.h),
+        new THREE.MeshBasicMaterial({ color: 0x9fb0c6, toneMapped: false }));
+      shoji.add(paper);
+      // the lattice: two verticals, four horizontals, in front of the paper
+      const latMat = mat(0x18120c, 0.9);
+      const bar = (w, h, x, y) => {
+        const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, 0.016), latMat);
+        m.position.set(x, y, 0.014);
+        m.castShadow = true;
+        return m;
+      };
+      shoji.add(bar(SH.w + 0.06, 0.05, 0, SH.h / 2));
+      shoji.add(bar(SH.w + 0.06, 0.05, 0, -SH.h / 2));
+      shoji.add(bar(0.05, SH.h, -SH.w / 2, 0));
+      shoji.add(bar(0.05, SH.h, SH.w / 2, 0));
+      for (let i = 1; i <= 3; i++) {
+        shoji.add(bar(SH.w, 0.016, 0, -SH.h / 2 + SH.h * i / 4));
+      }
+      for (let i = 1; i <= 2; i++) {
+        shoji.add(bar(0.016, SH.h, -SH.w / 2 + SH.w * i / 3, 0));
+      }
+      shell.add(shoji);
+
+      // ---- the lamp, and the only warm light in the room -------------------
+      const ANDON = { x: 0.78, z: -1.12 };
+      const lamp = new THREE.Group();
+      lamp.name = "lampe";
+      lamp.position.set(ANDON.x, 0, ANDON.z);
+      // it stands ON its foot: the shade was floating 135mm over it, which
+      // reads as a lantern hanging from nothing
+      const shade = new THREE.Mesh(
+        new THREE.BoxGeometry(0.21, 0.375, 0.21),
+        new THREE.MeshBasicMaterial({ color: 0xd9a86a, toneMapped: false }));
+      shade.position.y = 0.028 + 0.375 / 2;
+      lamp.add(shade);
+      const foot = new THREE.Mesh(
+        new THREE.BoxGeometry(0.25, 0.028, 0.25), mat(0x1b150e, 0.9));
+      foot.position.y = 0.014;
+      foot.castShadow = true;
+      lamp.add(foot);
+      // OPEN AT THE TOP, which is how an andon is made and also the only
+      // thing in the room that gives the ceiling and the beams anything to
+      // catch. A solid lid measured two per cent of the frame at under a
+      // four thousandth: a pool of light on the wood above a lamp is the
+      // most Tanizaki thing available and it was being blocked by a plank.
+      const rimMat = mat(0x1b150e, 0.9);
+      for (let i = 0; i < 4; i++) {
+        const along = i % 2 === 0;
+        const r = new THREE.Mesh(new THREE.BoxGeometry(
+          along ? 0.25 : 0.03, 0.022, along ? 0.03 : 0.25), rimMat);
+        r.position.set(along ? 0 : (i === 1 ? -0.11 : 0.11),
+                       0.028 + 0.375 + 0.011,
+                       along ? (i === 0 ? -0.11 : 0.11) : 0);
+        r.castShadow = true;
+        lamp.add(r);
+      }
+      shell.add(lamp);
+
+      // ---- the light -------------------------------------------------------
+      // A fifth of the tea room's hemisphere, so that nothing is ever pure
+      // black and nothing at all is legible from the ambient alone.
+      // The GROUND colour matters more than the sky one in a room: every
+      // downward-facing surface takes it, and the ceiling and the undersides
+      // of the beams are the largest such surfaces here. At 0x120e0a they
+      // measured pure black, which is a hole and not a shadow.
+      // A hemisphere cannot be shadowed, so it is the only thing that lifts
+      // the surfaces that ARE in shadow: the ceiling and the undersides of
+      // the beams, which the lamp below them shadows almost entirely. Dark
+      // ground colour times dark timber is nothing at all, and that measured
+      // as a black hole over a sixth of the upper frame.
+      const hemi = new THREE.HemisphereLight(0xd8ccb6, 0x4a3b2c, 0.24);
+      scene.add(hemi);
+
+      // the window: cool, weak, and the only shadow-caster wide enough to
+      // draw the lattice across the boards
+      const sky = new THREE.DirectionalLight(0xbcc7dd, num("sky", 0.62));
+      sky.position.set(-ROOM.w / 2 - 1.6, SH.y + SH.h * 0.8, SH.z + 0.5);
+      sky.target.position.set(0.6, 0.12, SH.z - 0.2);
+      sky.castShadow = true;
+      sky.shadow.mapSize.set(2048, 2048);
+      {
+        const c = sky.shadow.camera;
+        c.left = -2.4; c.right = 2.4; c.top = 2.0; c.bottom = -2.0;
+        c.near = 0.4; c.far = 8;
+      }
+      sky.shadow.bias = -0.0007;
+      sky.shadow.normalBias = 0.004;
+      scene.add(sky);
+      scene.add(sky.target);
+
+      // AND THE PAPER LIGHTS ITS OWN WALL. Turned toward the window the room
+      // was a grey rectangle floating in black, because a directional light
+      // aimed into a room leaves the wall it came through unlit and there is
+      // no bounce in this renderer. This is a lamp standing INSIDE the room
+      // at the paper's face, which is where the light physically comes from,
+      // so it is not the tea room's lie: it casts no shadow only because a
+      // sheet of paper is a source and not an occluder.
+      const bounce = new THREE.PointLight(0xa9bcd6, num("bounce", 0.9), 2.2, 2);
+      bounce.position.set(-ROOM.w / 2 + 0.22, SH.y + SH.h * 0.55, SH.z);
+      scene.add(bounce);
+
+      // the lamp's own light: warm, close, and it falls off fast, which is
+      // what makes the far corners corners
+      const glow = new THREE.PointLight(0xffb066, num("glow", 2.6), 3.4, 2.0);
+      glow.position.set(ANDON.x, 0.028 + 0.375 / 2, ANDON.z);
+      glow.castShadow = true;
+      glow.shadow.mapSize.set(1024, 1024);
+      glow.shadow.bias = -0.002;
+      scene.add(glow);
+
+      // ---- the head that turns ---------------------------------------------
+      // You pivot where you sit. The pointer turns the head as it does in the
+      // tea room, measured from where it was last re-centred rather than from
+      // the middle of the window, and a drag turns it further: the room is
+      // 360 degrees and a hover cannot reach behind you.
+      const YAW0 = -0.62;               // opens looking at the window wall
+      let yaw = num("yaw", YAW0), pitch = num("pitch", -0.05);
+      let wantYaw = yaw, wantPitch = pitch;
+      const HOVER = 0.42, TILT = 0.16;
+      const origin = { x: null, y: null };
+      let dragging = false, dragFrom = 0, dragYaw = 0;
+      // declared before the handlers that close over it: a let read above its
+      // own declaration in the same scope is a dead zone, and this file's
+      // neighbour has paid for that once already
+      let yawBase = yaw;
+      const frozen = Q.has("yaw") || Q.has("pitch");
+
+      cv.addEventListener("pointerdown", (e) => {
+        dragging = true; dragFrom = e.clientX; dragYaw = wantYaw;
+        origin.x = null;
+        cv.setPointerCapture(e.pointerId);
+      });
+      cv.addEventListener("pointerup", (e) => {
+        dragging = false;
+        origin.x = e.clientX; origin.y = e.clientY;
+      });
+      addEventListener("pointermove", (e) => {
+        if (frozen) return;
+        if (dragging) {
+          wantYaw = dragYaw + (e.clientX - dragFrom) / innerWidth * 2.8;
+          return;
+        }
+        if (origin.x === null) { origin.x = e.clientX; origin.y = e.clientY; }
+        const nx = Math.max(-1, Math.min(1,
+          (e.clientX - origin.x) / (innerWidth * 0.5)));
+        const ny = Math.max(-1, Math.min(1,
+          (e.clientY - origin.y) / (innerHeight * 0.5)));
+        wantYaw = yawBase - nx * HOVER;
+        wantPitch = -ny * TILT;
+      });
+      addEventListener("pointerup", () => { yawBase = wantYaw; });
+
+      addEventListener("resize", () => {
+        camera.aspect = innerWidth / innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(innerWidth, innerHeight);
+      });
+
+      // ---- the menu, over a dark room --------------------------------------
+      // The rail takes its tone from what is behind it, and what is behind it
+      // here is always dark. Read from the framebuffer rather than from a
+      // second canvas, because the framebuffer is what the visitor sees.
+      const gl = renderer.getContext();
+      const px = new Uint8Array(4 * 16 * 48);
+      let toneAt = 0, lastLum = -1;
+      function tone(now) {
+        if (now - toneAt < 700 || !window.setMenuTone) return;
+        toneAt = now;
+        const w = gl.drawingBufferWidth, h = gl.drawingBufferHeight;
+        gl.readPixels(Math.max(0, w - 90), Math.floor(h * 0.42), 16, 48,
+                      gl.RGBA, gl.UNSIGNED_BYTE, px);
+        let s = 0;
+        for (let i = 0; i < px.length; i += 4) {
+          s += (0.2126 * px[i] + 0.7152 * px[i + 1] + 0.0722 * px[i + 2]) / 255;
+        }
+        const lum = s / (px.length / 4);
+        if (Math.abs(lum - lastLum) < 0.02) return;
+        lastLum = lum;
+        window.setMenuTone(lum);
+      }
+      window.__lumNow = () => lastLum;
+
+      // ANYTHING THAT READS PIXELS RUNS INSIDE THE FRAME. Without
+      // preserveDrawingBuffer the drawing buffer is gone by the time a timer
+      // fires, and readPixels answers zeroes: the first reading of this room
+      // said the middle of it was pure black while the rail, measured in the
+      // frame loop two lines above, read 0.059 of the same picture.
+      const afterFrame = [];
+      window.__afterFrame = (fn) => afterFrame.push(fn);
+
+      // ---- and it runs ------------------------------------------------------
+      let last = performance.now();
+      function frame(now) {
+        const dt = Math.min(0.05, (now - last) / 1000);
+        last = now;
+        // eased, so the head never snaps; the frozen views want it exact
+        const k = frozen ? 1 : 1 - Math.pow(0.0016, dt);
+        yaw += (wantYaw - yaw) * k;
+        pitch += (wantPitch - pitch) * k;
+        camera.rotation.set(0, 0, 0);
+        camera.rotateY(yaw);
+        camera.rotateX(pitch);
+        renderer.render(scene, camera);
+        if (!window.__firstFrame) window.__firstFrame = true;
+        while (afterFrame.length) afterFrame.shift()();
+        tone(now);
+        requestAnimationFrame(frame);
+      }
+      requestAnimationFrame(frame);
+
+      // ---- IS IT DARK, AND IS IT DARK THE RIGHT WAY -------------------------
+      // ?litetest reads the framebuffer at named places instead of arguing
+      // about a screenshot. Four claims, and the third is the one Tanizaki
+      // would insist on: a shadow has detail in it, a black hole does not.
+      if (Q.has("litetest")) {
+        setTimeout(() => window.__afterFrame(() => {
+          const out = [];
+          const w = gl.drawingBufferWidth, h = gl.drawingBufferHeight;
+          const one = new Uint8Array(4 * 8 * 8);
+          const at = (fx, fy) => {
+            gl.readPixels(Math.round(fx * w) - 4, Math.round((1 - fy) * h) - 4,
+                          8, 8, gl.RGBA, gl.UNSIGNED_BYTE, one);
+            let s = 0;
+            for (let i = 0; i < one.length; i += 4) {
+              s += (0.2126 * one[i] + 0.7152 * one[i + 1] +
+                    0.0722 * one[i + 2]) / 255;
+            }
+            return s / (one.length / 4);
+          };
+          // THE WHOLE FRAME, not a patch of it. The first reading took 64
+          // by 36 pixels out of the middle and reported a range of two to
+          // one, which is the range of one evenly lit wall and says nothing
+          // about a room whose subject is its shadows.
+          const big = new Uint8Array(4 * w * h);
+          gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, big);
+          const all = [];
+          for (let i = 0; i < big.length; i += 4 * 7) {
+            all.push((0.2126 * big[i] + 0.7152 * big[i + 1] +
+                      0.0722 * big[i + 2]) / 255);
+          }
+          all.sort((a, b) => a - b);
+          const med = all[Math.floor(all.length / 2)];
+          const lo = all[0], hi = all[all.length - 1];
+          const p05 = all[Math.floor(all.length * 0.05)];
+          const p95 = all[Math.floor(all.length * 0.95)];
+          out.push("over " + all.length + " samples of the whole frame the " +
+                   "median is " + med.toFixed(3) +
+                   (med > 0.02 && med < 0.30
+                      ? " -- dim, and not blind" : " -- OUT OF THE DIM BAND"));
+          out.push("the fifth and the ninety fifth stand at " +
+                   p05.toFixed(3) + " and " + p95.toFixed(3) + ", so the " +
+                   "room reads " + (p95 / Math.max(p05, 1e-4)).toFixed(1) +
+                   " to one" +
+                   (p95 / Math.max(p05, 1e-4) > 4
+                      ? " -- there is shadow in it" : " -- IT IS FLAT"));
+          // A CLAIM NEEDS A MAGNITUDE. "Something is pure black" was true of
+          // a handful of pixels on a geometry seam, which is not the fault
+          // the test was written to catch: the fault is a SURFACE with no
+          // detail in it, so the reading is how much of the frame is a hole.
+          const holes = all.filter((v) => v < 0.004).length;
+          out.push("darkest " + lo.toFixed(4) + ", brightest " + hi.toFixed(3) +
+                   ", and " + (holes / all.length * 100).toFixed(2) +
+                   " per cent of the frame is under a four thousandth" +
+                   (holes / all.length < 0.01 ? " -- no holes in it"
+                                              : " -- IT HAS HOLES IN IT"));
+          out.push("clipped: " + all.filter((v) => v > 0.995).length +
+                   " of " + all.length);
+          // WHERE THE DARK IS, in twelve cells, because two guesses at which
+          // surface it was cost two edits and neither was right. A number
+          // that does not say where is a number you argue with.
+          {
+            const cell = [];
+            for (let r = 0; r < 3; r++) {
+              const row = [];
+              for (let c = 0; c < 4; c++) {
+                let n = 0, dark = 0;
+                const x0 = Math.floor(w * c / 4), x1 = Math.floor(w * (c + 1) / 4);
+                const y0 = Math.floor(h * (2 - r) / 3), y1 = Math.floor(h * (3 - r) / 3);
+                for (let y = y0; y < y1; y += 3) {
+                  for (let x = x0; x < x1; x += 3) {
+                    const i = (y * w + x) * 4;
+                    const v = (0.2126 * big[i] + 0.7152 * big[i + 1] +
+                               0.0722 * big[i + 2]) / 255;
+                    n++; if (v < 0.004) dark++;
+                  }
+                }
+                row.push(Math.round(dark / Math.max(n, 1) * 100));
+              }
+              cell.push(row.join(","));
+            }
+            out.push("dark per cent by cell, top row first: " +
+                     cell.join(" / "));
+          }
+          out.push("the rail reads " +
+                   (window.__lumNow() < 0 ? "NOTHING YET"
+                    : window.__lumNow().toFixed(3) + " behind it"));
+          document.body.setAttribute("data-litetest", out.join(" | "));
+        }), 1500);
+      }
+    }
+
+    // THE CURTAIN COMES UP EITHER WAY. A visitor without WebGL must not be
+    // left under a dark veil forever, so the dismissal is in the finally and
+    // not at the end of a successful build.
+    try {
+      if (Q.has("nogl") || typeof THREE === "undefined") {
+        throw new Error("no webgl wanted");
+      }
+      build();
+      requestAnimationFrame(() => dismissLoader(false));
+    } catch (err) {
+      console.warn("en marge: the room did not open", err);
+      document.documentElement.classList.remove("gl");
+      requestAnimationFrame(() => dismissLoader(true));
+    }
+  </script>
+  <script src="blob.js"></script>
+  <script src="site.js"></script>
+</body>
+</html>
