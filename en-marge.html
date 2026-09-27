@@ -767,6 +767,194 @@
       zafu.receiveShadow = true;
       shell.add(zafu);
 
+      // ---- le meuble, la platine, les deux enceintes -----------------------
+      // To the right of the door, along the same wall, which is the wall the
+      // room had nothing on. His own turntable, an Audio-Technica LPW40WN, at
+      // its published size: 420 wide, 340 deep, 117 high, an MDF plinth in
+      // walnut veneer, a die-cast aluminium platter and a straight carbon
+      // tonearm of 223.6mm. NO DUST COVER, which he asked for and which the
+      // maker's own sheet quotes a weight for.
+      //
+      // The cabinet is sized by what it holds: an LP is 315mm square, so the
+      // cubbies are 340 and the carcass is 420 deep, the same as the machine
+      // standing on it. Furniture that fits a record rather than a drawing.
+      const WALNUT = mat(0x4b3323, 0.88);
+      const WALNUT_D = mat(0x3a2718, 0.9);
+      // NOT QUITE BLACK, any of them. At 0x151310 and below, the speakers
+      // and the cabinet's own shadowed faces measured as voids and took the
+      // frame from 0.9 per cent of holes to 2.9.
+      const BLACKW = mat(0x211d18, 0.82);
+      const ALU = new THREE.MeshStandardMaterial({ color: 0x9a9894,
+        roughness: 0.36, metalness: 0.72 });
+
+      const CAB = { w: 0.92, h: 0.60, d: 0.42, z: 0.62 };
+      const CAB_X = ROOM.w / 2 - CAB.d / 2 - 0.02;
+      const hifi = new THREE.Group();
+      hifi.name = "hifi";
+      shell.add(hifi);
+
+      // the carcass: a box you can see into, so it is six boards and not a
+      // solid, plus one divider and four short feet
+      {
+        const cab = new THREE.Group();
+        cab.name = "meuble";
+        const T = 0.022, FOOT = 0.05;
+        const board = (w, h, d, x, y, z, m) => {
+          const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m || WALNUT);
+          b.position.set(x, y, z);
+          b.castShadow = true; b.receiveShadow = true;
+          cab.add(b);
+        };
+        const inner = CAB.h - FOOT - 2 * T;
+        board(CAB.d, T, CAB.w, 0, FOOT + T / 2, 0);                 // floor
+        board(CAB.d, T, CAB.w, 0, CAB.h - T / 2, 0);                // top
+        board(CAB.d, CAB.h - FOOT, T, 0, FOOT + (CAB.h - FOOT) / 2, -CAB.w / 2 + T / 2);
+        board(CAB.d, CAB.h - FOOT, T, 0, FOOT + (CAB.h - FOOT) / 2, CAB.w / 2 - T / 2);
+        board(T, CAB.h - FOOT, CAB.w, CAB.d / 2 - T / 2, FOOT + (CAB.h - FOOT) / 2, 0, WALNUT_D);
+        board(CAB.d - T, inner, T, -T / 2, FOOT + T + inner / 2, 0, WALNUT_D);
+        for (let i = 0; i < 4; i++) {
+          const sx = i < 2 ? -1 : 1, sz = i % 2 === 0 ? -1 : 1;
+          board(0.05, FOOT, 0.05, sx * (CAB.d / 2 - 0.05), FOOT / 2,
+                sz * (CAB.w / 2 - 0.05), BLACKW);
+        }
+        // AND THE RECORDS, which are what the cabinet is for. Plain sleeves:
+        // no artwork is drawn, because a record's cover is someone else's
+        // work and because the room names a thing rather than illustrating
+        // it. Each leans a little on the one before, as a filed row does.
+        const LP = 0.315, SLEEVE = 0.0055;
+        const tones = [0x2a2622, 0x3d3630, 0x1d1b19, 0x4a4036, 0x33302c,
+                       0x262320, 0x413a33, 0x2f2b27];
+        // EACH CUBBY FULL, because a man with eight hundred of them does not
+        // keep thirteen: the count is what the cubby holds, not a number I
+        // liked. Thirteen apiece left a small stack in the middle of an
+        // empty shelf.
+        [-1, 1].forEach((side) => {
+          const inner = (CAB.w - 3 * T) / 2;
+          const pitch = SLEEVE + 0.0016;
+          const n = Math.floor((inner - 0.03) / pitch);
+          const z0 = side * (T / 2 + inner / 2);
+          for (let i = 0; i < n; i++) {
+            const m = new THREE.Mesh(
+              new THREE.BoxGeometry(LP, LP, SLEEVE),
+              mat(tones[(i + (side > 0 ? 3 : 0)) % tones.length], 0.98));
+            // FILED LIKE BOOKS: the thin edge along the row, the faces
+            // across it. Turned a quarter more, each cubby read as one big
+            // flat panel instead of a row of records.
+            m.rotation.x = -0.045 - hash3(i, side, 3) * 0.02;
+            m.position.set(-0.012, FOOT + T + LP / 2 + 0.004,
+                           z0 - (n / 2 - i) * pitch);
+            m.castShadow = true; m.receiveShadow = true;
+            cab.add(m);
+          }
+        });
+        cab.position.set(CAB_X, 0, CAB.z);
+        hifi.add(cab);
+      }
+
+      // the turntable, on top of it
+      {
+        const tt = new THREE.Group();
+        tt.name = "platine";
+        const W = 0.340, D = 0.420, H = 0.1169;   // depth is across the room
+        const plinth = new THREE.Mesh(new THREE.BoxGeometry(W, H * 0.62, D),
+                                      WALNUT);
+        plinth.position.y = H * 0.31;
+        plinth.castShadow = true; plinth.receiveShadow = true;
+        tt.add(plinth);
+        // four feet, just proud of the plinth's corners
+        for (let i = 0; i < 4; i++) {
+          const sx = i < 2 ? -1 : 1, sz = i % 2 === 0 ? -1 : 1;
+          const f = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.014, 0.014, 0.012, 10), BLACKW);
+          f.position.set(sx * (W / 2 - 0.03), -0.006, sz * (D / 2 - 0.03));
+          tt.add(f);
+        }
+        // the platter: aluminium, with its mat, and the spindle
+        const platter = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.150, 0.150, 0.014, 48), ALU);
+        platter.name = "plateau";
+        platter.position.set(-0.028, H * 0.62 + 0.007, -0.022);
+        platter.castShadow = true; platter.receiveShadow = true;
+        tt.add(platter);
+        const felt = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.146, 0.146, 0.003, 48), mat(0x14120f, 1));
+        felt.position.set(-0.028, H * 0.62 + 0.0155, -0.022);
+        tt.add(felt);
+        const spindle = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.0035, 0.0035, 0.022, 8), ALU);
+        spindle.position.set(-0.028, H * 0.62 + 0.026, -0.022);
+        tt.add(spindle);
+        // the arm: straight, carbon, on a pillar at the back right, with its
+        // counterweight behind the pivot
+        const arm = new THREE.Group();
+        arm.name = "bras";
+        const pillar = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.017, 0.019, 0.055, 14), BLACKW);
+        pillar.position.y = 0.0275;
+        arm.add(pillar);
+        const tube = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.0045, 0.0045, 0.2236, 10), BLACKW);
+        tube.rotation.z = Math.PI / 2;
+        tube.rotation.y = -0.20;
+        tube.position.set(0.2236 / 2 * Math.cos(0.20), 0.050,
+                          0.2236 / 2 * Math.sin(0.20));
+        arm.add(tube);
+        const weight = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.019, 0.019, 0.030, 14), BLACKW);
+        weight.rotation.z = Math.PI / 2;
+        weight.position.set(-0.042, 0.050, -0.009);
+        arm.add(weight);
+        const head = new THREE.Mesh(
+          new THREE.BoxGeometry(0.030, 0.016, 0.022), mat(0x22201c, 0.8));
+        head.position.set(0.2236 * Math.cos(0.20) + 0.010, 0.044,
+                          0.2236 * Math.sin(0.20));
+        arm.add(head);
+        arm.position.set(W / 2 - 0.036, H * 0.62, D / 2 - 0.052);
+        arm.rotation.y = 0.55;                 // parked over its rest
+        tt.add(arm);
+        // two controls on the front left, and nothing else: it is a plain
+        // machine and that is why he has it
+        [[-0.026, 0.020], [0.022, 0.020]].forEach(([dz, r], i) => {
+          const k = new THREE.Mesh(
+            new THREE.CylinderGeometry(r, r, 0.010, 14), BLACKW);
+          k.position.set(-W / 2 + 0.040 + i * 0.052, H * 0.62 + 0.005,
+                         D / 2 - 0.040);
+          tt.add(k);
+        });
+        tt.position.set(CAB_X - 0.01, CAB.h, CAB.z);
+        tt.rotation.y = Math.PI / 2;           // its front toward the room
+        hifi.add(tt);
+      }
+
+      // and one speaker each side, the cabinet's own height
+      [-1, 1].forEach((side) => {
+        const sp = new THREE.Group();
+        sp.name = side < 0 ? "enceinte-gauche" : "enceinte-droite";
+        const W = 0.215, H = CAB.h, D = 0.255;
+        const box = new THREE.Mesh(new THREE.BoxGeometry(D, H, W), WALNUT_D);
+        box.position.y = H / 2;
+        box.castShadow = true; box.receiveShadow = true;
+        sp.add(box);
+        // the face, and two drivers: a woofer and a small dome above it
+        const face = new THREE.Mesh(
+          new THREE.PlaneGeometry(W - 0.012, H - 0.014), mat(0x272220, 0.95));
+        face.rotation.y = -Math.PI / 2;
+        face.position.set(-D / 2 - 0.001, H / 2, 0);
+        sp.add(face);
+        const cone = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.062, 0.050, 0.016, 24), mat(0x1b1714, 1));
+        cone.rotation.z = Math.PI / 2;
+        cone.position.set(-D / 2 - 0.006, H * 0.34, 0);
+        sp.add(cone);
+        const dome = new THREE.Mesh(
+          new THREE.SphereGeometry(0.019, 14, 10), mat(0x2b2723, 0.55));
+        dome.position.set(-D / 2 - 0.004, H * 0.71, 0);
+        sp.add(dome);
+        sp.position.set(ROOM.w / 2 - D / 2 - 0.02, 0,
+                        CAB.z + side * (CAB.w / 2 + W / 2 + 0.055));
+        hifi.add(sp);
+      });
+
       // ---- the light -------------------------------------------------------
       // A fifth of the tea room's hemisphere, so that nothing is ever pure
       // black and nothing at all is legible from the ambient alone.
@@ -779,7 +967,11 @@
       // the beams, which the lamp below them shadows almost entirely. Dark
       // ground colour times dark timber is nothing at all, and that measured
       // as a black hole over a sixth of the upper frame.
-      const hemi = new THREE.HemisphereLight(0xd8ccb6, 0x4a3b2c, 0.24);
+      // RAISED AGAIN when the furniture came in: a cabinet and two speakers
+      // throw real shadows, and four per cent of the frame went under a four
+      // thousandth. A hemisphere cannot be shadowed, so it is the only lever
+      // that lifts what is IN shadow without touching what is lit.
+      const hemi = new THREE.HemisphereLight(0xd8ccb6, 0x4a3b2c, 0.34);
       scene.add(hemi);
 
       // the window: cool, weak, and the only shadow-caster wide enough to
@@ -838,6 +1030,14 @@
       const unreal = new THREE.PointLight(0xe8cfae, num("fill", 0.55), 4.2, 1.4);
       unreal.position.set(0, 1.58, 0.15);
       scene.add(unreal);
+
+      // A SECOND ONE, and for a plainer reason: the hi-fi stands on the wall
+      // furthest from both lamps, so his own turntable was a silhouette and
+      // the record spines were not there at all. This light stands in front
+      // of the cabinet, carries no shadow, and reaches a metre.
+      const overHifi = new THREE.PointLight(0xffd6a4, num("hifi", 1.25), 1.5, 1.7);
+      overHifi.position.set(CAB_X - 0.42, 0.92, CAB.z + 0.05);
+      scene.add(overHifi);
 
       // ---- the head that turns ---------------------------------------------
       // You pivot where you sit. The pointer turns the head as it does in the
