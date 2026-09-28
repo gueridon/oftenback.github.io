@@ -343,7 +343,15 @@
       w: 3.30,          // across, x
       d: 3.60,          // deep, z
       h: 2.12,          // to the ceiling
-      seat: { x: 0.35, y: 0.86, z: 1.28 },   // where the eye sits
+      // WHERE THE EYE SITS, and it sits ON THE ZAFU: the middle of the floor,
+      // at 550. The zafu is 182 to its crown and a crossed-legged eye is a
+      // little over three hundred above that, which is the tea room's own
+      // kneeling eye (450) raised by the cushion. Everything in the room was
+      // placed for this height: the desk at 320 is below it, the floating
+      // deck's 30mm of air is on the line of sight rather than above it, and
+      // the ceiling at 2120 is high. The one thing this view cannot show is
+      // the cushion you are on, which is true of any cushion.
+      seat: { x: 0, y: 0.55, z: 0 },
     };
     // THE LOW DESK, and its place, declared with the room rather than where
     // it is built: the four panel Akari stands ON it, so the lamp needs to
@@ -1627,7 +1635,10 @@
         if (moved) { origin.x = null; yawBase = wantYaw; }
       }
 
-      const YAW0 = -0.62;               // opens looking at the window wall
+      // OPENS ON THE ROUND AKARI, with the paper window off to its right:
+      // from the zafu the lamp stands at eye height, which is what makes
+      // it the first thing seen rather than a glow above the floor.
+      const YAW0 = -0.62;
       let yaw = num("yaw", YAW0), pitch = num("pitch", -0.05);
       let wantYaw = yaw, wantPitch = pitch;
       const HOVER = 0.42, TILT = 0.16;
