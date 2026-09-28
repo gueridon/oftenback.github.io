@@ -384,7 +384,14 @@
       if (!renderer.getContext()) throw new Error("no context");
       renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
       renderer.setSize(innerWidth, innerHeight);
-      renderer.shadowMap.enabled = true;
+      // ?noshadow TURNS THE SHADOW MAPS OFF, and it is an instrument rather
+      // than a setting: the cushions came out with broad straight-edged
+      // bands across them and I was about to go looking for the fault in
+      // their geometry. One still without the maps showed the bands were the
+      // shoji's lattice falling across the floor, which is the room working.
+      // A shading fault and a shadow look alike, and this tells them apart.
+      renderer.shadowMap.enabled =
+        !new URLSearchParams(location.search).has("noshadow");
       renderer.shadowMap.type = THREE.PCFSoftShadowMap;
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
       // DIM IS A NUMBER YOU TURN WHILE LOOKING, so it is on the address bar
@@ -912,67 +919,174 @@
         return isFinite(h) ? h : 0xa48a56;
       })();
       const FAUVE_DEEP = new THREE.Color(FAUVE).multiplyScalar(0.72).getHex();
-      // A CUSHION IS A BULGE, not a box. Both of these start as a box or a
-      // cylinder and then have their own middles pushed out and their edges
-      // drawn in, because what says cushion is that no face of it is flat.
-      function pillow(w, h, d, bulge) {
-        const geo = new THREE.BoxGeometry(w, h, d, 10, 3, 10);
+      // WHAT WAS WRONG WITH THE FIRST PAIR, since the fix is the diagnosis:
+      // they were boxes with their middles pushed out. A box's corner and
+      // edge vertices are DUPLICATED, one set per face, so no amount of
+      // bulging in the middle could soften the seam: the crease was in the
+      // topology, not in the shading. And the sides were drawn in by a step
+      // at four fifths of the height, which is a knife line by construction.
+      // They read as moulded plastic because that is what they were.
+      //
+      // So both are now superellipsoids grown off a SPHERE, where every
+      // vertex is continuous with its neighbours in both directions and
+      // there is no face meeting another face anywhere on them. Two
+      // exponents do the shaping: one for the plan, one for the profile.
+      function sgnPow(t, e) {
+        return Math.sign(t) * Math.pow(Math.abs(t), e);
+      }
+      // THE FLUFF. Three sines of unrelated frequency, which is enough to
+      // make a swell that never repeats within the object and is smooth
+      // everywhere, unlike a hash: a cushion's surface is soft, and soft
+      // means there is no correct radius anywhere on it.
+      function swell(lon, lat) {
+        return (Math.sin(7.3 * lon + 1.7) * Math.cos(9.1 * lat + 0.6)
+                + 0.55 * Math.sin(12.7 * lon + 4.2) * Math.cos(15.3 * lat + 2.1)
+                + 0.32 * Math.sin(19.3 * lon + 0.9) * Math.cos(23.1 * lat))
+               / 1.87;
+      }
+      function cushionGeo(w, h, d, o) {
+        o = o || {};
+        const square = o.square === undefined ? 0.46 : o.square;
+        const flat = o.flat === undefined ? 0.58 : o.flat;
+        const seam = o.seam === undefined ? 0.026 : o.seam;
+        const fluff = o.fluff === undefined ? 0.030 : o.fluff;
+        const corner = o.corner || 0;
+        const pleats = o.pleats || 0;
+        const pleat = o.pleat === undefined ? 0.034 : o.pleat;
+        const geo = new THREE.SphereGeometry(1, 144, 84);
         const p = geo.attributes.position;
-        const hw = w / 2, hh = h / 2, hd = d / 2;
-        for (let i = 0; i < p.count; i++) {
-          const x = p.getX(i), y = p.getY(i), z = p.getZ(i);
-          const fx = 1 - Math.pow(Math.abs(x) / hw, 2);
-          const fz = 1 - Math.pow(Math.abs(z) / hd, 2);
-          const f = Math.max(0, fx) * Math.max(0, fz);
-          p.setY(i, y + Math.sign(y) * bulge * f);
-          // and the sides drawn in a little, so the seam is a seam
-          const edge = (Math.abs(y) > hh * 0.8) ? 0.985 : 1.0;
-          p.setX(i, x * edge);
-          p.setZ(i, z * edge);
+        const a = w / 2, b = h / 2, c = d / 2;
+        for (let k = 0; k < p.count; k++) {
+          const x = p.getX(k), y = p.getY(k), z = p.getZ(k);
+          const lat = Math.asin(Math.max(-1, Math.min(1, y)));
+          const lon = Math.atan2(z, x);
+          const cu = sgnPow(Math.cos(lat), flat);
+          const su = sgnPow(Math.sin(lat), flat);
+          // THE SEAM IS A WAIST, not a groove. The first reading of this
+          // put a deep narrow dip at the equator, and the cushion came out
+          // as two pads stacked: the widest point ended up above and below
+          // the seam instead of at it. Wide and shallow is a seam.
+          let r = 1 - seam * Math.exp(-Math.pow(lat / 0.40, 2));
+          // the corners gather, where the fabric has the furthest to go.
+          // |sin 2 lon| peaks on the diagonals, which is where they are.
+          if (corner) r -= corner * Math.pow(Math.abs(Math.sin(2 * lon)), 3);
+          // THE PLEATS LIVE ON THE SIDE WALL AND NOWHERE ELSE. Faded by
+          // HEIGHT and not by latitude: with a flat profile most of the
+          // visible top still sits at a moderate latitude, so a fade in
+          // cos(lat) let them run over the crown and meet in a star there,
+          // which is a brioche and not a zafu. The top is a smooth disc.
+          if (pleats) {
+            const t = Math.abs(su);
+            const fade = Math.pow(Math.max(0, 1 - Math.pow(t, 2.2)), 1.6);
+            r *= 1 + pleat * Math.cos(pleats * lon) * fade;
+          }
+          // THE FLUFF, AND NOT AT THE POLE. A sphere's pole is a fan of one
+          // hundred and forty four triangles meeting at a single point, so
+          // anything that varies with longitude there is drawn as spokes:
+          // the crown of the zafu had a star on it, and the star was the fan
+          // and not the cloth. Faded out over the last few degrees.
+          const cap = 1 - Math.pow(Math.abs(Math.sin(lat)), 10);
+          r *= 1 + fluff * swell(lon, lat) * cap;
+          p.setX(k, a * r * cu * sgnPow(Math.cos(lon), square));
+          p.setY(k, b * r * su);
+          p.setZ(k, c * r * cu * sgnPow(Math.sin(lon), square));
         }
         geo.computeVertexNormals();
         return geo;
       }
+
+      // THE WEAVE, as a bump and nothing else: a plain weave of warp over
+      // weft, low in contrast, with a grain over it. Woven cotton at arm's
+      // length is not a pattern one reads, it is the reason the light never
+      // sits still on the cloth.
+      const WEAVE = (function () {
+        const N = 256;
+        const c = document.createElement("canvas");
+        c.width = c.height = N;
+        const g = c.getContext("2d");
+        g.fillStyle = "#808080";
+        g.fillRect(0, 0, N, N);
+        const S = 8;                       // one thread, in pixels
+        for (let i = 0; i < N; i += S) {
+          for (let j2 = 0; j2 < N; j2 += S) {
+            // over and under, alternating both ways: that is the weave
+            const over = ((i / S) + (j2 / S)) % 2 === 0;
+            const gr = g.createLinearGradient(
+              i, j2, over ? i + S : i, over ? j2 : j2 + S);
+            gr.addColorStop(0, "#5c5c5c");
+            gr.addColorStop(0.5, "#a4a4a4");
+            gr.addColorStop(1, "#5c5c5c");
+            g.fillStyle = gr;
+            g.fillRect(i, j2, S, S);
+          }
+        }
+        // and the grain, a fibre at a time
+        const im = g.getImageData(0, 0, N, N);
+        for (let k = 0; k < im.data.length; k += 4) {
+          const n = (Math.random() - 0.5) * 34;
+          im.data[k] += n; im.data[k + 1] += n; im.data[k + 2] += n;
+        }
+        g.putImageData(im, 0, 0);
+        const t = new THREE.CanvasTexture(c);
+        t.wrapS = t.wrapT = THREE.RepeatWrapping;
+        return t;                  // the repeat belongs to each cushion
+      })();
+
+      // CLOTH, and the reason it is not the room's matte material: even at
+      // roughness 1 a standard surface answers a warm point light with a
+      // small hard plastic highlight. The SHEEN term is the cloth one, a
+      // wide weak pale scatter at the grazing angles, which is what makes
+      // kapok and cotton read as fibre rather than as a moulding; and the
+      // specular goes almost to nothing, a cushion having no polish at all.
+      // THE REPEAT IS PER CUSHION, because the tile is a fixed 75mm of
+      // cloth whatever the cushion measures: one shared texture at one
+      // repeat made the weave 64mm to a square on the zabuton, which is not
+      // a weave, it is a trellis. And the sheen is weak. At 0.9 with a cream
+      // sheen colour the broad flat top caught so much of it that the deeper
+      // fauve came out PALER than the bright one above it, and the pair read
+      // as marzipan.
+      function cloth(hex, repU, repV) {
+        const tex = WEAVE.clone();
+        tex.needsUpdate = true;
+        tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+        tex.repeat.set(repU, repV);
+        return new THREE.MeshPhysicalMaterial({
+          color: hex,
+          roughness: 1,
+          metalness: 0,
+          sheen: 0.40,
+          sheenRoughness: 0.95,
+          sheenColor: new THREE.Color(0xd8c39a),
+          specularIntensity: 0.05,
+          bumpMap: tex,
+          bumpScale: 0.85,
+        });
+      }
+
       // ONE NUMBER PER HEIGHT, each needed twice: by the shape, and by where
       // the shape sits. Written out twice, a cushion floats or sinks into the
       // floor the moment one of the two is changed.
       const ZABU_H = 0.062, ZAFU_H = 0.120;
+      // the zabuton: a flat square that has been sat on, its corners
+      // gathered and its plan a rounded square rather than a square
       const zabuton = new THREE.Mesh(
-        pillow(0.575, ZABU_H, 0.575, 0.022),
-        new THREE.MeshStandardMaterial({ color: FAUVE_DEEP, roughness: 1,
-                                         metalness: 0 }));
+        cushionGeo(0.575, ZABU_H, 0.575,
+                   { square: 0.30, flat: 0.44, seam: 0.010,
+                     fluff: 0.024, corner: 0.006 }),
+        cloth(FAUVE_DEEP, 26, 9));
       zabuton.name = "zabuton";
       zabuton.position.set(0, ZABU_H / 2, 0);
       zabuton.castShadow = true;
       zabuton.receiveShadow = true;
       shell.add(zabuton);
 
-      // the zafu: pleated round the side, gathered at the top, and a little
-      // barrel through the middle from being sat on
-      function zafuGeo(r, h, pleats) {
-        const geo = new THREE.CylinderGeometry(r, r, h, 64, 6, false);
-        const p = geo.attributes.position;
-        for (let i = 0; i < p.count; i++) {
-          const x = p.getX(i), y = p.getY(i), z = p.getZ(i);
-          const rr = Math.hypot(x, z);
-          if (rr < 1e-5) continue;
-          const th = Math.atan2(z, x);
-          const v = (y + h / 2) / h;             // 0 at the foot, 1 at the top
-          // the barrel, and the gather at both ends
-          let k = 1 + 0.10 * Math.sin(Math.PI * v) - 0.13 * Math.pow(2 * v - 1, 4);
-          // and the pleats, deepest at the waist where the fabric gathers
-          k += 0.030 * Math.cos(pleats * th) * Math.sin(Math.PI * v);
-          const s = (rr >= r - 1e-4) ? k : 1;    // the flat caps stay flat
-          p.setX(i, x * s);
-          p.setZ(i, z * s);
-        }
-        geo.computeVertexNormals();
-        return geo;
-      }
+      // the zafu: round in plan, pleated round the side, the pleats
+      // converging at the crown and flattening under the weight
       const zafu = new THREE.Mesh(
-        zafuGeo(0.175, ZAFU_H, 20),
-        new THREE.MeshStandardMaterial({ color: FAUVE, roughness: 0.96,
-                                         metalness: 0 }));
+        cushionGeo(0.350, ZAFU_H, 0.350,
+                   { square: 1, flat: 0.62, seam: 0.008,
+                     fluff: 0.019, pleats: 26, pleat: 0.020 }),
+        cloth(FAUVE, 16, 6));
       zafu.name = "zafu";
       zafu.position.set(0, ZABU_H + ZAFU_H / 2, 0);
       zafu.castShadow = true;
@@ -1494,9 +1608,10 @@
         // deeper fauve rather than the zafu's: the zafu keeps its place as the
         // one bright soft thing, and this is the working seat.
         const seat = new THREE.Mesh(
-          pillow(0.50, SEAT.h, 0.44, 0.012),
-          new THREE.MeshStandardMaterial({ color: FAUVE_DEEP, roughness: 1,
-                                           metalness: 0 }));
+          cushionGeo(0.50, SEAT.h, 0.44,
+                     { square: 0.30, flat: 0.40, seam: 0.012,
+                       fluff: 0.028, corner: 0.006 }),
+          cloth(FAUVE_DEEP, 22, 7));
         seat.name = "coussin";
         seat.position.set(SEAT.x, SEAT.h / 2, SEAT.z);
         seat.rotation.y = -0.04;
