@@ -1725,7 +1725,12 @@
       let yaw = num("yaw", YAW0),
           pitch = num("pitch", Q.has("sit") ? SEAT.pitch : -0.05);
       let wantYaw = yaw, wantPitch = pitch;
-      const HOVER = 0.42, TILT = 0.16;
+      // HOW FAR THE HEAD TURNS ON THE POINTER, and it looks DOWN further
+      // than up: this is a room one sits on the floor of, so the floor and
+      // everything at knee height is the half of it worth reaching. At 0.16
+      // both ways the cushion in front of the desk needed 0.35 to come under
+      // the crosshair and so could never be chosen at all.
+      const HOVER = 0.42, TILT_DOWN = 0.52, TILT_UP = 0.22;
       const origin = { x: null, y: null };
       let dragging = false, dragFrom = 0, dragYaw = 0;
       // declared before the handlers that close over it: a let read above its
@@ -1734,14 +1739,29 @@
       let yawBase = yaw;
       const frozen = Q.has("yaw") || Q.has("pitch");
 
+      // WHERE A PRESS BEGAN, so that a press which does not travel can be
+      // told from a drag and read as a choice.
+      let downAt = null, hoverAt = 0;
       cv.addEventListener("pointerdown", (e) => {
         dragging = true; dragFrom = e.clientX; dragYaw = wantYaw;
+        downAt = { x: e.clientX, y: e.clientY };
         origin.x = null;
-        cv.setPointerCapture(e.pointerId);
+        // a synthetic pointer has no capture to take, and the throw would
+        // stop the handler before it ever recorded where the press began
+        try { cv.setPointerCapture(e.pointerId); } catch (err) {}
       });
       cv.addEventListener("pointerup", (e) => {
         dragging = false;
         origin.x = e.clientX; origin.y = e.clientY;
+        // A CLICK CHOOSES WHAT IS UNDER THE POINTER, and this is the way in:
+        // the I key fires at the middle of the window, and a visitor has no
+        // crosshair to aim with and no idea that the middle is where it
+        // fires from. What one does with a cushion on a screen is click it.
+        if (downAt && Math.abs(e.clientX - downAt.x) < 7 &&
+                      Math.abs(e.clientY - downAt.y) < 7) {
+          pick(e.clientX, e.clientY);
+        }
+        downAt = null;
       });
       addEventListener("pointermove", (e) => {
         if (frozen) return;
@@ -1755,7 +1775,15 @@
         const ny = Math.max(-1, Math.min(1,
           (e.clientY - origin.y) / (innerHeight * 0.5)));
         wantYaw = yawBase - nx * HOVER;
-        wantPitch = -ny * TILT;
+        wantPitch = -ny * (ny > 0 ? TILT_DOWN : TILT_UP);
+        // and the cursor says what can be chosen, since nothing else does.
+        // THROTTLED: this is a raycast through every mesh in the room, and
+        // a pointer sends hundreds of moves a second.
+        const t = performance.now();
+        if (t - hoverAt > 90) {
+          hoverAt = t;
+          cv.style.cursor = pick(e.clientX, e.clientY, true) ? "pointer" : "";
+        }
       });
       addEventListener("pointerup", () => { yawBase = wantYaw; });
 
@@ -1807,28 +1835,51 @@
         sayEl.hidden = false;
         sayAt = performance.now();
       }
-      function look() {
-        rc.setFromCamera(new THREE.Vector2(0, 0), camera);
+      // THE ROOM'S OWN FABRIC answers when asked but does not advertise
+      // itself: if the cursor turned into a hand over the floor and the
+      // walls it would do so nearly everywhere, and a signal that is always
+      // on is not a signal.
+      const FABRIC = { plancher: 1, murs: 1, poutres: 1, fenetre: 1 };
+
+      // WHAT IS UNDER A POINT OF THE WINDOW. One raycast and three callers:
+      // the I key at the middle of it, a click where the click landed, and
+      // the cursor asking quietly whether there is anything there at all.
+      function found(px, py) {
+        const r = cv.getBoundingClientRect();
+        rc.setFromCamera(new THREE.Vector2(
+          (px - r.left) / r.width * 2 - 1,
+          -((py - r.top) / r.height * 2 - 1)), camera);
         const hits = rc.intersectObjects(shell.children, true);
         for (let i = 0; i < hits.length; i++) {
           let o = hits[i].object;
           while (o && o !== shell) {
-            if (o.userData && o.userData.sitHere) {
-              sitAt(o.userData.sitHere);
-              say("Assis au bureau. La these, et le carnet.");
-              return;
-            }
-            if (o.userData && o.userData.who) {
-              say("<em>" + o.userData.who + "</em> &nbsp; " +
-                  o.userData.what);
-              return;
-            }
-            if (NAMED[o.name]) { say(NAMED[o.name]); return; }
+            if (o.userData && (o.userData.sitHere || o.userData.who)) return o;
+            if (NAMED[o.name]) return o;
             o = o.parent;
           }
         }
-        say("Rien devant vous.");
+        return null;
       }
+      function pick(px, py, quiet) {
+        const o = found(px, py);
+        if (quiet) return (o && !FABRIC[o.name]) ? o : null;
+        if (!o) { say("Rien la."); return null; }
+        if (o.userData.sitHere) {
+          sitAt(o.userData.sitHere);
+          say("Assis au bureau. La these, et le carnet.");
+        } else if (o.userData.who) {
+          say("<em>" + o.userData.who + "</em> &nbsp; " + o.userData.what);
+        } else {
+          say(NAMED[o.name]);
+        }
+        return o;
+      }
+      function look() {
+        const r = cv.getBoundingClientRect();
+        return pick(r.left + r.width / 2, r.top + r.height / 2);
+      }
+      window.__pick = pick;
+      window.__found = found;
 
       // THE DIAL PRESSES THE SAME KEYS, so there is one path through the
       // movement and not two: a phone has no arrow keys, and a second
@@ -1921,6 +1972,22 @@
         requestAnimationFrame(frame);
       }
       requestAnimationFrame(frame);
+
+      // ---- ONE LINE ON ARRIVAL ---------------------------------------------
+      // Nothing in the room says that its objects answer. The dial offers I,
+      // a visitor has no crosshair to aim it with and no reason to think the
+      // middle of the window is where it fires from, and the cushion in
+      // front of the desk went unfound for exactly that reason. The standing
+      // signal is a hand over anything one can choose; this is the sentence
+      // that makes a visitor try it once. Held back on the frozen views,
+      // which are the measured ones.
+      if (!frozen) {
+        (function hint() {
+          if (!window.__dismissed) { setTimeout(hint, 200); return; }
+          say("Cliquez un objet: il se nomme. " +
+              "Le coussin du bureau vous y assied.");
+        })();
+      }
 
       // ---- IS EVERYTHING IN THE ROOM, AND CLEAR OF EVERYTHING ELSE --------
       // ?fittest. The room has furniture in it now, and the tea room's own
@@ -2103,6 +2170,57 @@
                      Math.round(far * 1000) + "mm -- " +
                      (who === "cahier" ? "the notebook is what one looks at"
                                        : "NOT THE NOTEBOOK"));
+            camera.position.copy(keep); camera.rotation.copy(kr);
+            camera.updateMatrixWorld(true);
+          }
+          // CAN THE CUSHION BE CHOSEN AT ALL. This is the reading that was
+          // missing: the seat worked, the glide arrived, and the cushion was
+          // still unreachable because the head does not pitch down far
+          // enough to put it under the crosshair. So the angle the eye needs
+          // is measured against the angle the eye has, and then the pick is
+          // fired at the pointer's own coordinates the way a click fires it.
+          {
+            const cu = shell.getObjectByName("coussin");
+            cu.updateMatrixWorld(true);
+            const c = new THREE.Box3().setFromObject(cu, true)
+                        .getCenter(new THREE.Vector3());
+            const from = new THREE.Vector3(0, ROOM.seat.y, 0);   // the zafu
+            const flat = Math.hypot(c.x - from.x, c.z - from.z);
+            const need = Math.atan2(c.y - from.y, flat);
+            out.push("from the zafu the cushion lies " +
+                     (need * 1000).toFixed(0) +
+                     " milliradians below the level, and the head pitches to " +
+                     (-TILT_DOWN * 1000).toFixed(0) + " -- " +
+                     (need > -TILT_DOWN ? "the crosshair reaches it"
+                                        : "THE CROSSHAIR CANNOT REACH IT"));
+            // and the click path, at the pointer's own coordinates
+            const keep = camera.position.clone(), kr = camera.rotation.clone();
+            camera.position.copy(from);
+            camera.rotation.set(0, 0, 0);
+            camera.rotateY(Math.atan2(-(c.x - from.x), -(c.z - from.z)));
+            camera.rotateX(Math.max(-TILT_DOWN, need));
+            camera.updateMatrixWorld(true);
+            const v = c.clone().project(camera);
+            const r = cv.getBoundingClientRect();
+            const px = r.left + (v.x + 1) / 2 * r.width;
+            const py = r.top + (1 - v.y) / 2 * r.height;
+            const got = window.__found(px, py);
+            out.push("clicked where it draws, at " + Math.round(px) + "," +
+                     Math.round(py) + ", the pick returns " +
+                     (got ? got.name : "nothing") + " -- " +
+                     (got && got.name === "coussin" ? "it can be clicked"
+                                                    : "IT CANNOT BE CLICKED"));
+            // AND THE WIRING, not just the function: a real press and
+            // release on the canvas, at those same coordinates. The pick
+            // could be perfect and the click still dead.
+            glide = null;
+            const ev = (kind) => cv.dispatchEvent(new PointerEvent(kind, {
+              clientX: px, clientY: py, bubbles: true, pointerId: 1,
+            }));
+            ev("pointerdown"); ev("pointerup");
+            out.push(glide ? "and a press and release on the canvas seats you"
+                           : "BUT A PRESS AND RELEASE DOES NOTHING");
+            glide = null;
             camera.position.copy(keep); camera.rotation.copy(kr);
             camera.updateMatrixWorld(true);
           }
