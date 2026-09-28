@@ -360,6 +360,23 @@
     const DESK = { w: 1.25, d: 0.504, h: 0.32, top: 0.030 };
     DESK.x = -ROOM.w / 2 + 0.10 + DESK.w / 2;   // the east wall's south end
     DESK.z = ROOM.d / 2 - DESK.d / 2 - 0.02;
+    // AND THE PLACE ONE SITS AT IT: on the floor, west of the desk, facing
+    // east, which is yaw PI since forward is (-sin yaw, -cos yaw). Lined up
+    // on the NOTEBOOK and not on the middle of the slab, because the thing
+    // you sit down to is the thing you read.
+    //
+    // The eye keeps the room's one height, 550. A cushion is a place and a
+    // facing, not a new eye: 38mm of kapok would physically drop the eye to
+    // about 410, and from there the desk top at 320 is 90mm below the line of
+    // sight and the notebook reads edge on, which is the opposite of the
+    // reason for sitting down. Proximity and pitch are what make it legible.
+    const SEAT = {
+      h: 0.038,                                 // a thin cushion
+      x: DESK.x + 0.05,
+      z: DESK.z - DESK.d / 2 - 0.31,
+      yaw: Math.PI,
+      pitch: -0.36,
+    };
 
     function build() {
       const cv = document.getElementById("antre");
@@ -1354,10 +1371,13 @@
           end.castShadow = true; end.receiveShadow = true;
           dk.add(end);
         });
-        // a rail between them, low, which is what keeps a slab from bowing
+        // a rail between them, low, which is what keeps a slab from bowing.
+        // AT THE WALL SIDE, not the near one: on the near side it is exactly
+        // where a knee goes, and there is then no sitting at this desk.
         const rail = new THREE.Mesh(
           new THREE.BoxGeometry(DESK.w - 0.20, 0.040, 0.018), WALNUT_D);
-        rail.position.set(0, 0.085, -DESK.d * 0.30);
+        rail.position.set(0, 0.085,
+                          DESK.d * 0.88 / 2 - 0.018 / 2 - 0.004);
         rail.castShadow = true;
         dk.add(rail);
 
@@ -1469,6 +1489,22 @@
         nb.rotation.y = -0.035;
         dk.add(nb);
 
+        // AND THE CUSHION ONE SITS ON, on the floor in front of the desk,
+        // clear of its edge by ninety millimetres. Thin, and in the zabuton's
+        // deeper fauve rather than the zafu's: the zafu keeps its place as the
+        // one bright soft thing, and this is the working seat.
+        const seat = new THREE.Mesh(
+          pillow(0.50, SEAT.h, 0.44, 0.012),
+          new THREE.MeshStandardMaterial({ color: FAUVE_DEEP, roughness: 1,
+                                           metalness: 0 }));
+        seat.name = "coussin";
+        seat.position.set(SEAT.x, SEAT.h / 2, SEAT.z);
+        seat.rotation.y = -0.04;
+        seat.castShadow = true; seat.receiveShadow = true;
+        // WHAT MAKES IT A SEAT AND NOT A PROP: choosing it sits you down.
+        seat.userData.sitHere = SEAT;
+        shell.add(seat);
+
         // AGAINST THE EAST WALL, AT ITS SOUTH END, and with no turn at all:
         // the slab is built with its length along x, which IS the line of
         // that wall, north to south. A quarter turn put the desk across the
@@ -1576,6 +1612,12 @@
         const at = (Q.get("at") || "").split(",").map(Number);
         if (at.length === 2 && at.every(isFinite)) {
           eye.set(at[0], ROOM.seat.y, at[1]);
+        } else if (Q.has("sit")) {
+          // ?sit ARRIVES SEATED AT THE DESK, since a glide is a thing the
+          // harness cannot run: nothing animated advances in there, and a
+          // view that has to be reached by a motion is a view that cannot be
+          // measured.
+          eye.set(SEAT.x, ROOM.seat.y, SEAT.z);
         }
       }
       const held = {};
@@ -1595,6 +1637,7 @@
         "bureau": "Le bureau bas, mur est. On s'y assied par terre.",
         "these": "La these: l'essence de contours continus dans un cadre de reference.",
         "cahier": "Un cahier ouvert. Un contour, d'un seul trait.",
+        "coussin": "Le coussin du bureau. Choisissez-le pour vous y asseoir.",
         "zafu": "Zafu, sur son zabuton. Fauve.",
         "zabuton": "Zabuton, sous le zafu.",
         "nijiriguchi": "Nijiriguchi, mur nord. 700 sur 720, fermee.",
@@ -1617,6 +1660,10 @@
       // KEPT OFF THE WALLS by half a metre, which is where a knee stops
       // rather than where a nose does.
       const INSET = 0.50;
+      // declared above walk, which clears it: a let read before its own
+      // declaration in the same scope is a dead zone, and this file has a
+      // comment about that a hundred lines down because it cost one already
+      let glide = null;
       function walk(dt) {
         let moved = false;
         if (held.ArrowLeft) { wantYaw += SPIN * dt; moved = true; }
@@ -1632,14 +1679,51 @@
         // the pointer's own look is measured from where it last re-centred,
         // and walking re-centres it: a cursor left where it was is a cursor
         // doing nothing
-        if (moved) { origin.x = null; yawBase = wantYaw; }
+        if (moved) { origin.x = null; yawBase = wantYaw; glide = null; }
+      }
+
+      // ---- SITTING DOWN ----------------------------------------------------
+      // Choosing the cushion carries you to it over a second and a bit. The
+      // head is not turned here: wantYaw and wantPitch are walked along the
+      // same curve and the frame's own easing follows them, so there is one
+      // piece of code that turns the head and not two.
+      //
+      // AND IT TURNS THE SHORT WAY. wantYaw accumulates without bound, since
+      // the arrows add to it turn after turn, so a bare target can mean three
+      // revolutions: the difference is folded into a half turn either side
+      // before it is used.
+      function sitAt(s) {
+        const TWO = Math.PI * 2;
+        let d = (s.yaw - wantYaw + Math.PI) % TWO;
+        if (d < 0) d += TWO;
+        d -= Math.PI;
+        glide = { x0: eye.x, z0: eye.z, x1: s.x, z1: s.z,
+                  y0: wantYaw, y1: wantYaw + d,
+                  p0: wantPitch, p1: s.pitch, t: 0, T: 1.25 };
+      }
+      function glideStep(dt) {
+        if (!glide) return;
+        const g = glide;
+        g.t = Math.min(1, g.t + dt / g.T);
+        // smooth at both ends, so nobody is thrown into the desk
+        const e = g.t * g.t * (3 - 2 * g.t);
+        eye.x = g.x0 + (g.x1 - g.x0) * e;
+        eye.z = g.z0 + (g.z1 - g.z0) * e;
+        wantYaw = g.y0 + (g.y1 - g.y0) * e;
+        wantPitch = g.p0 + (g.p1 - g.p0) * e;
+        if (g.t >= 1) {
+          glide = null;
+          yawBase = wantYaw;     // or the hover pulls the head straight back
+          origin.x = null;
+        }
       }
 
       // OPENS ON THE ROUND AKARI, with the paper window off to its right:
       // from the zafu the lamp stands at eye height, which is what makes
       // it the first thing seen rather than a glow above the floor.
-      const YAW0 = -0.62;
-      let yaw = num("yaw", YAW0), pitch = num("pitch", -0.05);
+      const YAW0 = Q.has("sit") ? SEAT.yaw : -0.62;
+      let yaw = num("yaw", YAW0),
+          pitch = num("pitch", Q.has("sit") ? SEAT.pitch : -0.05);
       let wantYaw = yaw, wantPitch = pitch;
       const HOVER = 0.42, TILT = 0.16;
       const origin = { x: null, y: null };
@@ -1729,6 +1813,11 @@
         for (let i = 0; i < hits.length; i++) {
           let o = hits[i].object;
           while (o && o !== shell) {
+            if (o.userData && o.userData.sitHere) {
+              sitAt(o.userData.sitHere);
+              say("Assis au bureau. La these, et le carnet.");
+              return;
+            }
             if (o.userData && o.userData.who) {
               say("<em>" + o.userData.who + "</em> &nbsp; " +
                   o.userData.what);
@@ -1813,7 +1902,7 @@
         const dt = Math.min(0.05, (now - last) / 1000);
         last = now;
         // eased, so the head never snaps; the frozen views want it exact
-        if (!frozen) walk(dt);
+        if (!frozen) { walk(dt); glideStep(dt); }
         const k = frozen ? 1 : 1 - Math.pow(0.0016, dt);
         yaw += (wantYaw - yaw) * k;
         pitch += (wantPitch - pitch) * k;
@@ -1845,7 +1934,7 @@
           const out = [];
           const KEYS = ["akari1ar", "akariuf1o", "meuble", "platine",
                         "enceinte-gauche", "enceinte-droite", "bureau",
-                        "zafu", "zabuton", "nijiriguchi"];
+                        "zafu", "zabuton", "nijiriguchi", "coussin"];
           const box = {};
           KEYS.forEach((k) => {
             const o = shell.getObjectByName(k);
@@ -1945,6 +2034,99 @@
             }
           }
           document.body.setAttribute("data-fittest", out.join(" | "));
+        }, 1200);
+      }
+
+      // ---- CAN ONE ACTUALLY SIT AT THE DESK -------------------------------
+      // ?sittest. Three separate claims, and the first is the one that sent
+      // me back: the rail was where a knee goes, so the desk could be looked
+      // at and not used. So the near side is measured as clear space, the
+      // cushion is measured against the desk's edge, and the crosshair is
+      // fired from the seated pose to see what it actually finds. Then the
+      // glide is driven to its end, because a seat you cannot arrive at is
+      // not a seat.
+      if (Q.has("sittest")) {
+        setTimeout(() => {
+          const out = [];
+          const dk2 = shell.getObjectByName("bureau");
+          dk2.updateMatrixWorld(true);
+          // KNEE ROOM: how far in from the desk's near edge one can go below
+          // the top before meeting anything. The slab itself does not count,
+          // it is what the head goes under.
+          {
+            const near = DESK.z - DESK.d / 2;
+            let block = DESK.z + DESK.d / 2;      // the wall side, if nothing
+            dk2.traverse((o) => {
+              if (!o.isMesh) return;
+              const b = new THREE.Box3().setFromObject(o, true);
+              if (b.max.y > DESK.h - DESK.top - 0.001) return;   // above the knee
+              if (b.min.z < block) block = b.min.z;
+            });
+            const room = block - near;
+            out.push("under the top the near side is clear for " +
+                     Math.round(room * 1000) + "mm of the " +
+                     Math.round(DESK.d * 1000) + " -- " +
+                     (room > 0.30 ? "a knee fits" : "NO ROOM FOR A KNEE"));
+          }
+          // THE CUSHION, and its gap to the desk
+          {
+            const cu = shell.getObjectByName("coussin");
+            cu.updateMatrixWorld(true);
+            const b = new THREE.Box3().setFromObject(cu, true);
+            const gap = (DESK.z - DESK.d / 2) - b.max.z;
+            out.push("the cushion is " + Math.round(gap * 1000) +
+                     "mm short of the desk's edge and " +
+                     Math.round(b.max.y * 1000) + "mm thick");
+          }
+          // WHAT THE CROSSHAIR FINDS FROM THE SEAT. The camera is borrowed
+          // and put back: a test that leaves the view moved is a test that
+          // has changed the thing it measured.
+          {
+            const keep = camera.position.clone(), kr = camera.rotation.clone();
+            camera.position.set(SEAT.x, ROOM.seat.y, SEAT.z);
+            camera.rotation.set(0, 0, 0);
+            camera.rotateY(SEAT.yaw);
+            camera.rotateX(SEAT.pitch);
+            camera.updateMatrixWorld(true);
+            const rc2 = new THREE.Raycaster();
+            rc2.setFromCamera(new THREE.Vector2(0, 0), camera);
+            const hits = rc2.intersectObjects(shell.children, true);
+            let who = "nothing", far = 0;
+            for (let i = 0; i < hits.length && who === "nothing"; i++) {
+              let o = hits[i].object;
+              while (o && o !== shell) {
+                if (NAMED[o.name]) { who = o.name; far = hits[i].distance; break; }
+                o = o.parent;
+              }
+            }
+            out.push("seated, the crosshair finds " + who + " at " +
+                     Math.round(far * 1000) + "mm -- " +
+                     (who === "cahier" ? "the notebook is what one looks at"
+                                       : "NOT THE NOTEBOOK"));
+            camera.position.copy(keep); camera.rotation.copy(kr);
+            camera.updateMatrixWorld(true);
+          }
+          // AND THE GLIDE ARRIVES. Driven by hand, since nothing animated
+          // advances in the harness.
+          {
+            const keepE = eye.clone(), keepY = wantYaw, keepP = wantPitch;
+            eye.set(0, ROOM.seat.y, 0);
+            wantYaw = -0.62; wantPitch = -0.05;
+            sitAt(SEAT);
+            for (let i = 0; i < 200; i++) glideStep(1 / 60);
+            const dp = Math.hypot(eye.x - SEAT.x, eye.z - SEAT.z);
+            const TWO = Math.PI * 2;
+            let dy = Math.abs(((wantYaw - SEAT.yaw) % TWO + TWO) % TWO);
+            if (dy > Math.PI) dy = TWO - dy;
+            out.push("from the zafu the glide lands " +
+                     Math.round(dp * 1000) + "mm and " +
+                     (dy * 1000).toFixed(0) + " milliradians off the seat -- " +
+                     (dp < 0.002 && dy < 0.01 ? "it arrives"
+                                              : "IT DOES NOT ARRIVE"));
+            eye.copy(keepE); wantYaw = keepY; wantPitch = keepP;
+            glide = null;
+          }
+          document.body.setAttribute("data-sittest", out.join(" | "));
         }, 1200);
       }
 
