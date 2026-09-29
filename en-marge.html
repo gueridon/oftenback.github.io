@@ -1628,6 +1628,226 @@
         shell.add(dk);
       }
 
+      // ---- l'etagere, et le the ---------------------------------------------
+      // A LEDGE ALONG THE SOUTH WALL, at the height of the window's sill and
+      // NOT ABOVE IT, which is his constraint and is taken from the window
+      // itself rather than written as a number: the shoji's bottom rail is
+      // CENTRED on SH.y and is 50 tall, so its top is SH.y + 25 and that is
+      // the plank's top, the two lines continuing each other. The first
+      // reading of this took the rail as running from SH.y upward and put
+      // the shelf 25 too high, where it covered 25mm of the paper. Below the
+      // rail's top the paper is already hidden by the rail; above it a shelf
+      // is a thing crossing a window.
+      //
+      // It runs from the window's WEST corner to the level of the desk's
+      // cushion, so the far half of it is under the paper and the near half
+      // is plain wall beside where one sits. The tea stands on the near half,
+      // within reach of the cushion.
+      //
+      // AND IT COMES OUT AT THE DESK'S OWN HEIGHT. The sill was set for the
+      // light, the desk at 320 for kneeling, and they land 5mm apart, so the
+      // two low surfaces read as one line round the corner of the room. That
+      // is luck, not design, and it is worth not breaking.
+      const LEDGE = {
+        top: SH.y + 0.025,                 // the sill rail's own top
+        th: 0.026,
+        d: 0.240,
+        z0: SH.z - SH.w / 2 - 0.025,       // the window's west corner
+        z1: SEAT.z,                        // level with the desk's cushion
+      };
+      LEDGE.x = -ROOM.w / 2 + LEDGE.d / 2 + 0.008;
+      LEDGE.len = LEDGE.z1 - LEDGE.z0;
+      {
+        const lg = new THREE.Group();
+        lg.name = "etagere";
+        const plank = new THREE.Mesh(
+          new THREE.BoxGeometry(LEDGE.d, LEDGE.th, LEDGE.len), WALNUT);
+        plank.position.y = LEDGE.top - LEDGE.th / 2;
+        plank.castShadow = true; plank.receiveShadow = true;
+        lg.add(plank);
+        // a batten against the wall, which is what a ledge this long is
+        // actually carried on, and three slender posts at the front edge
+        const batten = new THREE.Mesh(
+          new THREE.BoxGeometry(0.022, 0.048, LEDGE.len), WALNUT_D);
+        batten.position.set(-LEDGE.d / 2 + 0.011,
+                            LEDGE.top - LEDGE.th - 0.024, 0);
+        batten.receiveShadow = true;
+        lg.add(batten);
+        for (let i = 0; i < 3; i++) {
+          const post = new THREE.Mesh(
+            new THREE.BoxGeometry(0.030, LEDGE.top - LEDGE.th, 0.030),
+            WALNUT_D);
+          post.position.set(LEDGE.d / 2 - 0.030,
+                            (LEDGE.top - LEDGE.th) / 2,
+                            -LEDGE.len / 2 + 0.05 + i * (LEDGE.len - 0.10) / 2);
+          post.castShadow = true; post.receiveShadow = true;
+          lg.add(post);
+        }
+        lg.position.set(LEDGE.x, 0, (LEDGE.z0 + LEDGE.z1) / 2);
+        shell.add(lg);
+
+        // THE TEA, AND IT IS SENCHA. Not chanoyu: one person alone with a
+        // teapot, which is where the room's quiet and its solitude come
+        // from. So a side-handled kyusu, two cups, a caddy and a tray, and
+        // none of the chanoyu utensils, which live in the other room and
+        // mean something else entirely.
+        const CLAY = mat(0x6d4632, 0.94);        // tokoname, unglazed
+        const CLAY_D = mat(0x4e3124, 0.95);
+        const GLAZE = mat(0xa89b84, 0.66);       // the cups, a pale ash glaze
+        const TIN = mat(0x2f2b26, 0.70);
+        // A TURNED SHAPE IS A PROFILE SPUN, and a profile is a list of
+        // points: the body of a pot and the wall of a cup are the same
+        // operation on different lists, so there is one function and not two.
+        function spin(pts, segs) {
+          const v = pts.map((q) => new THREE.Vector2(q[0], q[1]));
+          const geo = new THREE.LatheGeometry(v, segs || 48);
+          geo.computeVertexNormals();
+          return geo;
+        }
+        const tea = new THREE.Group();
+        tea.name = "sencha";
+
+        // the tray, with a rim low enough to be a rim and not a box
+        const OB = { w: 0.300, d: 0.205, h: 0.014 };
+        const obon = new THREE.Group();
+        obon.name = "obon";
+        const floor2 = new THREE.Mesh(
+          new THREE.BoxGeometry(OB.d, 0.008, OB.w), mat(0x241a12, 0.8));
+        floor2.name = "obon-fond";       // the surface things stand on, which
+        floor2.position.y = 0.004;       // is not the tray's own top: its rim
+        floor2.receiveShadow = true;     // stands 6mm proud of it
+        obon.add(floor2);
+        [[OB.d / 2 - 0.005, 0, 0.010, OB.w],
+         [-OB.d / 2 + 0.005, 0, 0.010, OB.w],
+         [0, OB.w / 2 - 0.005, OB.d, 0.010]].forEach((r) => {
+          const m = new THREE.Mesh(
+            new THREE.BoxGeometry(r[2] || 0.010, OB.h, r[3] || 0.010),
+            mat(0x2c2017, 0.8));
+          m.position.set(r[0], OB.h / 2, r[1]);
+          m.castShadow = true;
+          obon.add(m);
+        });
+        // the fourth side is open, toward the one who reaches for it
+        const m4 = new THREE.Mesh(
+          new THREE.BoxGeometry(OB.d, 0.006, 0.010), mat(0x2c2017, 0.8));
+        m4.position.set(0, 0.003, -OB.w / 2 + 0.005);
+        obon.add(m4);
+        obon.position.set(0, LEDGE.top, 0);
+        tea.add(obon);
+
+        // THE KYUSU, and its handle is at the SIDE. A yokode kyusu is held
+        // one-handed with the thumb on the lid, which is why the handle
+        // stands out at a right angle to the spout and not opposite it: the
+        // pot is poured by turning the wrist, not by lifting.
+        const kyusu = new THREE.Group();
+        kyusu.name = "kyusu";
+        const body = new THREE.Mesh(spin([
+          [0.000, 0.000], [0.024, 0.000], [0.030, 0.003], [0.042, 0.014],
+          [0.047, 0.030], [0.046, 0.044], [0.040, 0.058], [0.034, 0.066],
+          [0.033, 0.068],
+        ]), CLAY);
+        body.castShadow = true; body.receiveShadow = true;
+        kyusu.add(body);
+        // THE LID AND ITS KNOB IN ONE PROFILE, since both are turned on the
+        // same axis: two meshes would be two chances for the knob to sit
+        // beside the lid rather than on it.
+        const lid = new THREE.Mesh(spin([
+          [0.000, 0.0190], [0.0050, 0.0185], [0.0065, 0.0155],
+          [0.0060, 0.0130], [0.0120, 0.0115], [0.0200, 0.0090],
+          [0.0290, 0.0040], [0.0345, 0.0000], [0.0355, -0.0030],
+          [0.0300, -0.0060], [0.0160, -0.0070], [0.0000, -0.0070],
+        ]), CLAY_D);
+        lid.position.y = 0.068;
+        lid.castShadow = true;
+        kyusu.add(lid);
+        // the spout, a short cone laid along its own direction and turned by
+        // ONE rotation from a built vector: a turn per axis rotates the
+        // previous turn, which is how the tonearm came to lie across its
+        // board in this same file
+        const spout = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.0080, 0.0125, 0.042, 16), CLAY);
+        {
+          const dir = new THREE.Vector3(0.88, 0.47, 0).normalize();
+          spout.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir);
+          spout.position.set(0.042 + dir.x * 0.015, 0.042 + dir.y * 0.015, 0);
+        }
+        spout.castShadow = true;
+        kyusu.add(spout);
+        // THE HANDLE IS BUILT ON THE OTHER SIDE, along -z, and the reason is
+        // arithmetic rather than taste. With the spout along +x and the
+        // handle along +z they sit a quarter turn apart in the sense that
+        // lets one turn put the spout at the cups OR the handle within
+        // reach, never both. Along -z the quarter turn runs the other way
+        // and a single turn of -PI/2 does both at once, which is the whole
+        // point of a yokode kyusu: it is poured by turning the wrist.
+        const grip = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.0105, 0.0088, 0.060, 16), CLAY);
+        {
+          const dir = new THREE.Vector3(0, 0.09, -1).normalize();
+          grip.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir);
+          grip.position.set(0, 0.038 + dir.y * 0.032, -0.042 + dir.z * 0.016);
+        }
+        grip.castShadow = true;
+        kyusu.add(grip);
+        // TURNED SO THAT NEITHER IS AIMED AT THE EYE. The spout and the
+        // handle stand a quarter turn apart, so from any one viewpoint
+        // there is no angle at which both are broadside: put one across the
+        // view and the other points at you and collapses into a stub. The
+        // bisector is the answer. From the cushion the line to the tea runs
+        // at 0.32 radians, so the pot is turned to put the spout 45 degrees
+        // off that line and the handle 45 the other side, and both are read
+        // at seven tenths of their length instead of one at full and one at
+        // nothing.
+        kyusu.position.set(-0.012, LEDGE.top + 0.008, -0.062);
+        kyusu.rotation.y = -1.107;
+        tea.add(kyusu);
+
+        // TWO YUNOMI, tall for their width and without a handle, which is
+        // what a sencha cup is: it is held in the palm, so the wall carries
+        // the heat and the shape says how hot the tea should be.
+        const cupGeo = spin([
+          [0.000, 0.000], [0.022, 0.000], [0.026, 0.004], [0.0285, 0.030],
+          [0.0315, 0.064], [0.0325, 0.070], [0.0295, 0.070], [0.0265, 0.062],
+          [0.0245, 0.030], [0.0225, 0.006], [0.000, 0.006],
+        ]);
+        // at the desk end of the tray, where the spout points and a hand
+        // reaches first
+        [[0.022, 0.058, 0.4], [-0.048, 0.036, -0.7]].forEach((q) => {
+          const cup = new THREE.Mesh(cupGeo, GLAZE);
+          cup.name = "yunomi";
+          cup.position.set(q[0], LEDGE.top + 0.008, q[1]);
+          cup.rotation.y = q[2];
+          cup.castShadow = true; cup.receiveShadow = true;
+          tea.add(cup);
+        });
+
+        // THE CADDY, a tin, and its lid is a line near the top
+        const chazutsu = new THREE.Group();
+        chazutsu.name = "chazutsu";
+        const can = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.0315, 0.0315, 0.078, 40), TIN);
+        can.position.y = 0.039;
+        can.castShadow = true; can.receiveShadow = true;
+        chazutsu.add(can);
+        const cap = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.0325, 0.0325, 0.022, 40),
+          mat(0x3a352e, 0.66));
+        cap.position.y = 0.078 + 0.011 - 0.004;
+        cap.castShadow = true;
+        chazutsu.add(cap);
+        // ON THE PLANK AND BESIDE THE TRAY, not on it: at 82 along the tray
+        // it stood inside its footprint and through its floor. A caddy is
+        // not part of the service anyway, it is the tin one reaches past.
+        chazutsu.position.set(0.030, LEDGE.top, -0.216);
+        tea.add(chazutsu);
+
+        // AT THE NEAR END OF THE LEDGE, which is the end by the desk: the
+        // half under the paper stays empty, because a window is a thing to
+        // leave clear.
+        tea.position.set(LEDGE.x, 0, LEDGE.z1 - 0.215);
+        shell.add(tea);
+      }
+
       // ---- the light -------------------------------------------------------
       // A fifth of the tea room's hemisphere, so that nothing is ever pure
       // black and nothing at all is legible from the ambient alone.
@@ -1753,6 +1973,11 @@
         "these": "La these: l'essence de contours continus dans un cadre de reference.",
         "cahier": "Un cahier ouvert. Un contour, d'un seul trait.",
         "coussin": "Le coussin du bureau. Choisissez-le pour vous y asseoir.",
+        "etagere": "L'etagere, au niveau du rebord de la fenetre.",
+        "kyusu": "Kyusu. Theiere a anse laterale, pour le sencha.",
+        "yunomi": "Yunomi. La tasse se tient dans la paume.",
+        "chazutsu": "Chazutsu. La boite a the.",
+        "obon": "Le plateau.",
         "zafu": "Zafu, sur son zabuton. Fauve.",
         "zabuton": "Zabuton, sous le zafu.",
         "nijiriguchi": "Nijiriguchi, mur nord. 700 sur 720, fermee.",
@@ -2116,7 +2341,8 @@
           const out = [];
           const KEYS = ["akari1ar", "akariuf1o", "meuble", "platine",
                         "enceinte-gauche", "enceinte-droite", "bureau",
-                        "zafu", "zabuton", "nijiriguchi", "coussin"];
+                        "zafu", "zabuton", "nijiriguchi", "coussin",
+                        "etagere"];
           const box = {};
           KEYS.forEach((k) => {
             const o = shell.getObjectByName(k);
@@ -2216,6 +2442,93 @@
             }
           }
           document.body.setAttribute("data-fittest", out.join(" | "));
+        }, 1200);
+      }
+
+      // ---- IS THE LEDGE UNDER THE SILL, AND IS THE TEA ON IT --------------
+      // ?teatest. His constraint was "aussi haute que le rebord de la
+      // fenetre, pas plus haute", and the first build of it read the sill
+      // rail as running upward from SH.y instead of being centred on it, so
+      // the plank stood 25 too high and covered 25mm of the paper. That is
+      // exactly the kind of fault a number in a comment does not catch, so
+      // the rail is MEASURED here, from its own geometry, and the plank is
+      // measured against it.
+      if (Q.has("teatest")) {
+        setTimeout(() => {
+          const out = [];
+          const lg = shell.getObjectByName("etagere");
+          const sh = shell.getObjectByName("fenetre");
+          lg.updateMatrixWorld(true); sh.updateMatrixWorld(true);
+          const lb = new THREE.Box3().setFromObject(lg, true);
+          // THE SILL, found as the lowest bar of the window rather than
+          // computed a second time from SH
+          let sill = -9;
+          sh.traverse((o) => {
+            if (!o.isMesh || !o.geometry.boundingBox) o.geometry &&
+              o.geometry.computeBoundingBox();
+            if (!o.isMesh) return;
+            const b = new THREE.Box3().setFromObject(o, true);
+            if (b.min.y < SH.y + 0.001 && b.max.y < SH.y + 0.20
+                && b.max.y > sill) sill = b.max.y;
+          });
+          const over = lb.max.y - sill;
+          out.push("the ledge's top stands " + Math.round(over * 1000) +
+                   "mm against the sill's " + Math.round(sill * 1000) +
+                   " -- " + (over <= 0.001 ? "level with it, or under"
+                                           : "ABOVE THE SILL"));
+          out.push("and it runs " + Math.round((lb.max.z - lb.min.z) * 1000) +
+                   "mm, from the window's west corner at " +
+                   Math.round(lb.min.z * 1000) + " to " +
+                   Math.round(lb.max.z * 1000) + ", the cushion being at " +
+                   Math.round(SEAT.z * 1000));
+          // EVERY PIECE OF TEA STANDS ON THE LEDGE, inside its edges. A cup
+          // half over the front edge is a cup on the floor.
+          // WHAT STANDS ON WHAT, because they are not all on the plank:
+          // the tray and the caddy are, and the pot and the cups stand on
+          // the TRAY. The first reading of this measured all four against
+          // the plank and called the kyusu 8mm adrift, which was the
+          // thickness of the tray it was correctly standing on. A test that
+          // does not know the stack reports the stack as a fault.
+          const tea = shell.getObjectByName("sencha");
+          tea.updateMatrixWorld(true);
+          // THE TRAY'S FLOOR, not the tray: its rim stands 6mm above the
+          // surface anything actually rests on, and measured against the
+          // rim the kyusu read as 6mm sunk into a tray it was sitting on
+          // correctly. The reference for standing on a thing is the face
+          // one stands on.
+          const ob = new THREE.Box3().setFromObject(
+            tea.getObjectByName("obon-fond"), true);
+          const ON = { obon: lb.max.y, chazutsu: lb.max.y,
+                       kyusu: ob.max.y, yunomi: ob.max.y };
+          let worstSit = 0, sitWho = "", worstIn = 9, inWho = "";
+          tea.traverse((o) => {
+            if (ON[o.name] === undefined) return;
+            const b = new THREE.Box3().setFromObject(o, true);
+            const off = b.min.y - ON[o.name];
+            if (Math.abs(off) > Math.abs(worstSit)) {
+              worstSit = off; sitWho = o.name;
+            }
+            const m = Math.min(lb.max.x - b.max.x, b.min.x - lb.min.x,
+                               lb.max.z - b.max.z, b.min.z - lb.min.z);
+            if (m < worstIn) { worstIn = m; inWho = o.name; }
+          });
+          out.push("every piece sits within " + Math.round(worstSit * 1000) +
+                   "mm of what it stands on, " + sitWho + " furthest -- " +
+                   (Math.abs(worstSit) < 0.004 ? "each on its own surface"
+                                               : "SOMETHING IS ADRIFT"));
+          out.push("and the closest any piece comes to an edge is " +
+                   Math.round(worstIn * 1000) + "mm, " + inWho + " -- " +
+                   (worstIn > 0 ? "all of it on the plank"
+                                : "IT OVERHANGS"));
+          // AND IT IS AT THE DESK END, which is the whole point of where it
+          // stands: within reach of someone on the cushion.
+          const tb = new THREE.Box3().setFromObject(tea, true);
+          const reach = Math.hypot(SEAT.x - tb.getCenter(
+            new THREE.Vector3()).x, SEAT.z - tb.max.z);
+          out.push("from the cushion the nearest tea is " +
+                   Math.round(reach * 1000) + "mm away -- " +
+                   (reach < 0.75 ? "within reach" : "OUT OF REACH"));
+          document.body.setAttribute("data-teatest", out.join(" | "));
         }, 1200);
       }
 
