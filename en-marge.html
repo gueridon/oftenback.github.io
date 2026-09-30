@@ -376,6 +376,7 @@
       z: DESK.z - DESK.d / 2 - 0.31,
       yaw: Math.PI,
       pitch: -0.36,
+      say: "Assis au bureau. La these, et le carnet.",
     };
 
     function build() {
@@ -1617,7 +1618,7 @@
         seat.rotation.y = -0.04;
         seat.castShadow = true; seat.receiveShadow = true;
         // WHAT MAKES IT A SEAT AND NOT A PROP: choosing it sits you down.
-        seat.userData.sitHere = SEAT;
+        seat.userData.goHere = SEAT;
         shell.add(seat);
 
         // AGAINST THE EAST WALL, AT ITS SOUTH END, and with no turn at all:
@@ -1627,6 +1628,15 @@
         dk.position.set(DESK.x, 0, DESK.z);
         shell.add(dk);
       }
+
+      // ANYTHING THAT MOVES EACH FRAME PUTS ITSELF HERE. One list, called
+      // once, so a moving thing does not have to reach into the frame loop
+      // and the loop does not have to know what exists.
+      const ticking = [];
+      // ?steam=<seconds> pins the phase of anything that rises, so a still
+      // of it is the same still twice.
+      const STEAM_T0 = isFinite(parseFloat(Q.get("steam")))
+        ? parseFloat(Q.get("steam")) - performance.now() / 1000 : 0;
 
       // ---- l'etagere, et le the ---------------------------------------------
       // A LEDGE ALONG THE SOUTH WALL, at the height of the window's sill and
@@ -1802,23 +1812,145 @@
         kyusu.rotation.y = -1.107;
         tea.add(kyusu);
 
-        // TWO YUNOMI, tall for their width and without a handle, which is
-        // what a sencha cup is: it is held in the palm, so the wall carries
-        // the heat and the shape says how hot the tea should be.
-        const cupGeo = spin([
-          [0.000, 0.000], [0.022, 0.000], [0.026, 0.004], [0.0285, 0.030],
-          [0.0315, 0.064], [0.0325, 0.070], [0.0295, 0.070], [0.0265, 0.062],
-          [0.0245, 0.030], [0.0225, 0.006], [0.000, 0.006],
-        ]);
-        // at the desk end of the tray, where the spout points and a hand
-        // reaches first
-        [[0.022, 0.058, 0.4], [-0.048, 0.036, -0.7]].forEach((q) => {
-          const cup = new THREE.Mesh(cupGeo, GLAZE);
-          cup.name = "yunomi";
-          cup.position.set(q[0], LEDGE.top + 0.008, q[1]);
-          cup.rotation.y = q[2];
-          cup.castShadow = true; cup.receiveShadow = true;
-          tea.add(cup);
+        // ONE YUNOMI, tall for its width and without a handle, which is what
+        // a sencha cup is: it is held in the palm, so the wall carries the
+        // heat and the shape says how hot the tea should be. One and not
+        // two, at his ask, and the room is the better for it: two cups is a
+        // visit, one cup is someone alone with a teapot, which is the whole
+        // reason the tea here is sencha.
+        // THE CUP'S TWO WALLS, WRITTEN ONCE. The outer profile climbs and
+        // the inner one comes back down, and the lathe is the two of them
+        // joined. The inner list is kept apart because the tea's radius is
+        // read FROM it: computed instead as a straight run from the floor to
+        // the rim, the tea came out 1.3mm outside the glaze, the inner wall
+        // having a point at 62 that draws it in. One source for the wall,
+        // and the tea cannot drift out of the cup again.
+        const CUP = { h: 0.070, floor: 0.006 };
+        const CUP_OUT = [
+          [0.0000, 0.000], [0.0220, 0.000], [0.0260, 0.004],
+          [0.0285, 0.030], [0.0315, 0.064], [0.0325, CUP.h],
+        ];
+        const CUP_IN = [
+          [0.0295, CUP.h], [0.0265, 0.062], [0.0245, 0.030],
+          [0.0225, CUP.floor], [0.0000, CUP.floor],
+        ];
+        // the inner radius AT A HEIGHT, walked off that same list
+        function innerR(y) {
+          for (let i = 1; i < CUP_IN.length; i++) {
+            const p0 = CUP_IN[i - 1], p1 = CUP_IN[i];
+            if (y <= p0[1] && y >= p1[1] && p0[1] !== p1[1]) {
+              const t = (y - p1[1]) / (p0[1] - p1[1]);
+              return p1[0] + (p0[0] - p1[0]) * t;
+            }
+          }
+          return 0;
+        }
+        const cup = new THREE.Mesh(spin(CUP_OUT.concat(CUP_IN)), GLAZE);
+        cup.name = "yunomi";
+        cup.position.set(0.040, LEDGE.top + 0.008, 0.062);
+        cup.rotation.y = 0.4;
+        cup.castShadow = true; cup.receiveShadow = true;
+        tea.add(cup);
+
+        // AND THERE IS TEA IN IT. A disc, 13 below the rim, at the radius
+        // the cup's own inner wall has AT THAT HEIGHT, less eight tenths of
+        // a millimetre so the glaze is always the outer edge. Sencha is a
+        // pale yellow green and it is now the only green in the room.
+        // GLOSSY, where everything else here is matte: a liquid is read
+        // from the highlight it carries, not from its colour, and at
+        // roughness 1 this was a green disc.
+        const BREW_DROP = 0.013;
+        const brewY = CUP.h - BREW_DROP;
+        const brewR = innerR(brewY) - 0.0008;
+        const brew = new THREE.Mesh(
+          new THREE.CircleGeometry(brewR, 48),
+          new THREE.MeshStandardMaterial({ color: 0x9fae52, roughness: 0.18,
+                                           metalness: 0 }));
+        brew.name = "the";
+        brew.rotation.x = -Math.PI / 2;
+        brew.position.set(0, brewY, 0);
+        cup.add(brew);
+
+        // THE STEAM. Three billboards and not one: one plane is a decal and
+        // reads as a sticker. Each carries its own wisp, rises on its own
+        // phase, fades in at the foot and out at the top, and wanders
+        // sideways MORE THE HIGHER IT GETS, which is the whole difference
+        // between steam and smoke drawn as a cone.
+        //
+        // They are turned in YAW ONLY. Copying the camera's whole
+        // orientation lies them back when one looks down at the cup, and
+        // this is a cup one looks down at.
+        const wisp = (seed) => {
+          const N = 64;
+          const c = document.createElement("canvas");
+          c.width = N; c.height = 2 * N;
+          const g = c.getContext("2d");
+          g.clearRect(0, 0, N, 2 * N);
+          for (let i = 0; i < 26; i++) {
+            const t = i / 25;
+            const x = N / 2 + Math.sin(t * 5.4 + seed * 2.1) * N * 0.17 * t
+                      + (hash3(i, seed, 3.3) - 0.5) * N * 0.06;
+            const y = 2 * N - 6 - t * (2 * N - 16);
+            const r = N * (0.10 + 0.19 * t);
+            const a = 0.30 * (1 - t) * Math.min(1, t * 5);
+            const gr = g.createRadialGradient(x, y, 0, x, y, r);
+            gr.addColorStop(0, "rgba(255,248,236," + a.toFixed(3) + ")");
+            gr.addColorStop(1, "rgba(255,248,236,0)");
+            g.fillStyle = gr;
+            g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill();
+          }
+          const t2 = new THREE.CanvasTexture(c);
+          t2.colorSpace = THREE.SRGBColorSpace;
+          return t2;
+        };
+        const PUFF = { w: 0.046, h: 0.090, rise: 2.9, climb: 0.100 };
+        // IN ITS OWN GROUP AND NOT INSIDE THE CUP. Hung off the cup, the
+        // steam became part of it: a box round the cup then reached 190
+        // above the tea instead of 13, and the test that asked how far the
+        // tea sat below the rim was answered with the top of the plume. A
+        // thing that is not part of an object does not belong in it.
+        const plume = new THREE.Group();
+        plume.position.copy(cup.position);
+        tea.add(plume);
+        const puffs = [];
+        for (let i = 0; i < 3; i++) {
+          const m = new THREE.Mesh(
+            new THREE.PlaneGeometry(PUFF.w, PUFF.h),
+            new THREE.MeshBasicMaterial({
+              map: wisp(i + 1), transparent: true, depthWrite: false,
+              blending: THREE.AdditiveBlending, opacity: 0,
+              toneMapped: false,
+            }));
+          m.renderOrder = 4;
+          // AND IT CANNOT BE CLICKED. An invisible plane in front of a cup
+          // is a plane that answers for the cup: the pick walks the first
+          // thing the ray meets, and steam is not a thing one chooses.
+          m.raycast = () => {};
+          plume.add(m);
+          puffs.push(m);
+        }
+        ticking.push((t) => {
+          for (let i = 0; i < puffs.length; i++) {
+            const m = puffs[i];
+            const u = ((t / PUFF.rise) + i / puffs.length) % 1;
+            const sc = 0.50 + u * 0.70;
+            // ANCHORED BY ITS FOOT AND NOT ITS CENTRE. The wisp is drawn
+            // from the bottom of its own canvas, so the plane's lower edge
+            // is where the steam leaves the tea: placed by the centre it
+            // sank into the cup as it grew.
+            m.position.set(
+              Math.sin(u * 3.1 + i * 2.2) * 0.016 * u,
+              brewY + u * PUFF.climb + PUFF.h / 2 * sc,
+              Math.cos(u * 2.4 + i * 1.7) * 0.014 * u);
+            m.scale.setScalar(sc);
+            // in over the first tenth, out over the last half
+            m.material.opacity = 0.38 * Math.min(1, u * 9)
+                                      * Math.min(1, (1 - u) * 2.2);
+            // yaw only: copying the camera's whole orientation lies the
+            // plane back when one looks down at the cup, and this is a cup
+            // one looks down at
+            m.rotation.set(0, yaw, 0);
+          }
         });
 
         // THE CADDY, a tin, and its lid is a line near the top
@@ -1845,6 +1977,32 @@
         // half under the paper stays empty, because a window is a thing to
         // leave clear.
         tea.position.set(LEDGE.x, 0, LEDGE.z1 - 0.215);
+
+        // AND ONE CAN LEAN IN OVER IT. Measured: from the cushion the line
+        // to the tea drops 160 over 650, so the surface of the tea is seen
+        // at thirteen degrees and is a sliver. A cup with tea in it that
+        // cannot be looked into is a cup with nothing in it, and the walls
+        // hold a standing visitor 500 off, which is further than a cup is
+        // read from. So choosing the tea carries the eye to 300 from it,
+        // where the drop is twenty eight degrees and the tea is a disc.
+        // The same one piece of code that seats you at the desk.
+        {
+          const c = new THREE.Vector3(LEDGE.x + 0.040, 0,
+                                      LEDGE.z1 - 0.215 + 0.062);
+          const brewH = LEDGE.top + 0.008 + brewY;
+          const d = 0.297;
+          const pose = {
+            x: c.x + d * 0.707, z: c.z + d * 0.707,
+            yaw: Math.PI / 4,
+            pitch: Math.atan2(brewH - ROOM.seat.y, d),
+            say: "Du sencha, encore chaud.",
+          };
+          tea.traverse((o) => {
+            if (o.name === "yunomi" || o.name === "the" || o.name === "obon") {
+              o.userData.goHere = pose;
+            }
+          });
+        }
         shell.add(tea);
       }
 
@@ -1976,6 +2134,7 @@
         "etagere": "L'etagere, au niveau du rebord de la fenetre.",
         "kyusu": "Kyusu. Theiere a anse laterale, pour le sencha.",
         "yunomi": "Yunomi. La tasse se tient dans la paume.",
+        "the": "Du sencha, encore chaud.",
         "chazutsu": "Chazutsu. La boite a the.",
         "obon": "Le plateau.",
         "zafu": "Zafu, sur son zabuton. Fauve.",
@@ -2032,7 +2191,7 @@
       // the arrows add to it turn after turn, so a bare target can mean three
       // revolutions: the difference is folded into a half turn either side
       // before it is used.
-      function sitAt(s) {
+      function goTo(s) {
         const TWO = Math.PI * 2;
         let d = (s.yaw - wantYaw + Math.PI) % TWO;
         if (d < 0) d += TWO;
@@ -2193,7 +2352,7 @@
         for (let i = 0; i < hits.length; i++) {
           let o = hits[i].object;
           while (o && o !== shell) {
-            if (o.userData && (o.userData.sitHere || o.userData.who)) return o;
+            if (o.userData && (o.userData.goHere || o.userData.who)) return o;
             if (NAMED[o.name]) return o;
             o = o.parent;
           }
@@ -2204,9 +2363,9 @@
         const o = found(px, py);
         if (quiet) return (o && !FABRIC[o.name]) ? o : null;
         if (!o) { say("Rien la."); return null; }
-        if (o.userData.sitHere) {
-          sitAt(o.userData.sitHere);
-          say("Assis au bureau. La these, et le carnet.");
+        if (o.userData.goHere) {
+          goTo(o.userData.goHere);
+          say(o.userData.goHere.say);
         } else if (o.userData.who) {
           say("<em>" + o.userData.who + "</em> &nbsp; " + o.userData.what);
         } else {
@@ -2303,6 +2462,11 @@
         camera.rotateX(pitch);
         // and the lift, which takes the camera over if it is up at all
         topStep(frozen ? 0 : dt);
+        // the steam, and whatever else moves. FED THE CLOCK AND NOT dt,
+        // because a rising wisp has to be reproducible at a given instant:
+        // ?steam= freezes it, and a still of a thing driven by accumulated
+        // dt is a different still every time it is taken.
+        for (let i = 0; i < ticking.length; i++) ticking[i](STEAM_T0 + now / 1000);
         paintNav();
         if (!sayEl.hidden && now - sayAt > 6000) sayEl.hidden = true;
         renderer.render(scene, camera);
@@ -2520,6 +2684,85 @@
                    Math.round(worstIn * 1000) + "mm, " + inWho + " -- " +
                    (worstIn > 0 ? "all of it on the plank"
                                 : "IT OVERHANGS"));
+          // THE TEA IS IN THE CUP, and NEITHER HALF of this is measured with
+          // a box. A box on the world axes round a cup turned 0.4 returns
+          // its diagonal and turned a 5mm clearance into 15; un-turning the
+          // box instead inflated the tea's own square the same way and
+          // returned -4. Both readings were the pincers and not the object.
+          //
+          // So: the drop is taken in the frame the cup was BUILT in, where
+          // nothing is turned at all, and the clearance is taken by CASTING
+          // RAYS outward from the tea's own edge. If every one of them meets
+          // the glaze going out, the tea is inside the cup, and the nearest
+          // hit is how much room it has. Nothing there is a bounding volume
+          // and nothing assumes the radius I used to place it.
+          {
+            const cu = tea.getObjectByName("yunomi");
+            const br = tea.getObjectByName("the");
+            cu.updateMatrixWorld(true); br.updateMatrixWorld(true);
+            cu.geometry.computeBoundingBox();
+            br.geometry.computeBoundingBox();
+            const rim = cu.geometry.boundingBox;
+            const rBrew = br.geometry.boundingBox.max.x;   // a circle
+            const below = rim.max.y - br.position.y;
+            // CAST FROM THE AXIS, NOT FROM THE TEA'S EDGE, and against a
+            // DOUBLE-SIDED copy of the cup. Started on the edge itself the
+            // rays had four tenths of a millimetre to travel and returned
+            // nothing, and a ray that grazes its own origin is not evidence
+            // about the cup. And the inner wall of a lathe turns its back to
+            // anything inside it, so the real cup, drawn front-side, is
+            // invisible to a ray from within: the probe shares the cup's
+            // geometry and its matrix and differs only in answering from
+            // both sides.
+            const probe = new THREE.Mesh(cu.geometry,
+              new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+            probe.matrix.copy(cu.matrixWorld);
+            probe.matrixAutoUpdate = false;
+            probe.matrixWorld.copy(cu.matrixWorld);
+            const rc3 = new THREE.Raycaster();
+            let worst = 9, blind = 0;
+            for (let k = 0; k < 12; k++) {
+              const a2 = k / 12 * Math.PI * 2;
+              const o = new THREE.Vector3(0, br.position.y, 0)
+                          .applyMatrix4(cu.matrixWorld);
+              const d = new THREE.Vector3(Math.cos(a2), 0, Math.sin(a2))
+                          .transformDirection(cu.matrixWorld);
+              rc3.set(o, d);
+              // PAST THE AXIS ITSELF. A lathe whose profile begins and ends
+              // at radius zero leaves degenerate triangles standing on the
+              // axis, and a ray launched from the axis meets one of them at
+              // distance nothing: the first reading of this called a 0.4mm
+              // clearance a tea poured through the side of the cup, and the
+              // message could not tell a miss from a negative gap, so it
+              // said the same thing for both.
+              const h = rc3.intersectObject(probe, false)
+                           .filter((x) => x.distance > 0.004);
+              if (!h.length) { blind++; continue; }
+              const gap = h[0].distance - rBrew;
+              if (gap < worst) worst = gap;
+            }
+            out.push("the tea lies " + Math.round(below * 1000) +
+                     "mm under the rim, and the glaze stands " +
+                     (worst * 1000).toFixed(1) +
+                     "mm beyond its edge on the tightest of twelve bearings"
+                     + (blind ? ", " + blind + " OF THEM FINDING NO WALL"
+                              : "") + " -- " +
+                     (worst > 0 && !blind ? "in the cup"
+                                          : "IT IS THROUGH THE CUP"));
+            // AND IT CAN BE LOOKED INTO. The reading that sent me back: from
+            // the cushion the surface is seen at fourteen degrees and is a
+            // sliver, so the cup carries a pose of its own.
+            const c2 = br.getWorldPosition(new THREE.Vector3());
+            const ang = (ex, ez) => Math.round(
+              Math.atan2(ROOM.seat.y - c2.y,
+                         Math.hypot(ex - c2.x, ez - c2.z)) * 180 / Math.PI);
+            const pose = cu.userData.goHere;
+            const near = ang(pose.x, pose.z);
+            out.push("the surface is seen at " + ang(SEAT.x, SEAT.z) +
+                     " degrees from the cushion and " + near +
+                     " from the cup's own pose -- " +
+                     (near > 22 ? "a disc, leaning in" : "STILL A SLIVER"));
+          }
           // AND IT IS AT THE DESK END, which is the whole point of where it
           // stands: within reach of someone on the cushion.
           const tb = new THREE.Box3().setFromObject(tea, true);
@@ -2658,7 +2901,7 @@
             const keepE = eye.clone(), keepY = wantYaw, keepP = wantPitch;
             eye.set(0, ROOM.seat.y, 0);
             wantYaw = -0.62; wantPitch = -0.05;
-            sitAt(SEAT);
+            goTo(SEAT);
             for (let i = 0; i < 200; i++) glideStep(1 / 60);
             const dp = Math.hypot(eye.x - SEAT.x, eye.z - SEAT.z);
             const TWO = Math.PI * 2;
