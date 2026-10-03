@@ -2561,7 +2561,10 @@
               g.fill();
             });
           }
-          features(hr, hy, o);
+          // THE BEARD GOES ON FIRST AND THE FACE OVER IT, so the mouth the
+          // novel insists on is an opening IN the beard. Drawn the other way
+          // round, the beard closed over it and a man run through the chest
+          // had no cry in him.
           if (o.beard) {
             field([[-hr * 0.60, hy + hr * 0.30], [hr * 0.60, hy + hr * 0.30],
                    [hr * 0.50, hy + hr * 1.80], [0, hy + hr * 2.30],
@@ -2580,6 +2583,160 @@
             const m = g.getTransform();
             hand = [m.a * (ex + 0.014 * h) + m.c * ey + m.e,
                     m.b * (ex + 0.014 * h) + m.d * ey + m.f];
+          }
+          g.restore();
+          return hand;
+        }
+
+        // A FIGURE IN THE MANNER OF THE MOMOYAMA PORTRAITS, which is what he
+        // sent me: the Hideyoshi. What makes that style is not the face, it
+        // is that THE GARMENT IS THE WHOLE PICTURE and it is built of FLAT
+        // PLANES SEPARATED BY FINE FOLD LINES, with no modelling anywhere.
+        // Four things carry it and nothing else does:
+        //
+        //   1. the robe is enormous against the body, a broad silhouette
+        //      with the sleeves standing out as shelves at the shoulder;
+        //   2. the form is described by LINE and not by tone: long crisp
+        //      creases fanning from the shoulders, a few breaks across;
+        //   3. the head is SMALL, about a fifth of the robe's height, and
+        //      the face is pale with fine features;
+        //   4. one flash of red at the lining of the sleeves, and nowhere
+        //      else.
+        //
+        // The rest of the painting keeps figure(). This is the Commendatore,
+        // who is the one he asked to start with, and the comparison between
+        // the two is the point of leaving both.
+        function daimyo(o) {
+          const h = o.h;
+          g.save();
+          g.translate(o.x, o.y);
+          g.rotate(o.tilt || 0);
+          const SH = -0.700 * h;             // the shoulder line
+          const FOLD = "rgba(96,80,62,0.72)";
+          const fine = Math.max(1.0, 0.0042 * h);
+          const CRISP = 0.006;               // barely rounded: see below
+          // THE CORNERS STAY CRISP HERE, where the rest of the painting
+          // rounds them. A Momoyama robe is built of planes with ANGLES
+          // between them, and at the softness the rest of this picture uses
+          // the whole garment came out a bag.
+          const crease = (pts) => {
+            g.strokeStyle = FOLD;
+            g.lineWidth = fine;
+            g.lineCap = "round";
+            g.beginPath();
+            g.moveTo(pts[0][0] * h, pts[0][1] * h);
+            for (let i = 1; i < pts.length - 1; i += 2) {
+              g.quadraticCurveTo(pts[i][0] * h, pts[i][1] * h,
+                                 pts[i + 1][0] * h, pts[i + 1][1] * h);
+            }
+            g.stroke();
+          };
+
+          // THE SKIRT, a trapezoid from the hem to the shoulders. One plane.
+          woven([[-0.330 * h, 0], [-0.250 * h, SH + 0.300 * h],
+                 [-0.215 * h, SH + 0.030 * h], [0.215 * h, SH + 0.030 * h],
+                 [0.250 * h, SH + 0.300 * h], [0.330 * h, 0]],
+                o.robe, { seed: o.seed, folds: 0, line: fine * 0.9,
+                          soft: CRISP });
+          // its creases: long, few, fanning to the hem, and nothing across
+          crease([[-0.130, SH / h + 0.09], [-0.170, SH / h + 0.52], [-0.215, -0.01]]);
+          crease([[-0.040, SH / h + 0.12], [-0.055, SH / h + 0.55], [-0.075, -0.01]]);
+          crease([[0.070, SH / h + 0.10], [0.095, SH / h + 0.54], [0.130, -0.01]]);
+          crease([[0.175, SH / h + 0.07], [0.205, SH / h + 0.50], [0.250, -0.01]]);
+          // ONE break across, where the robe is tied and the cloth gathers
+          crease([[-0.262, SH / h + 0.345], [0, SH / h + 0.400],
+                  [0.262, SH / h + 0.340]]);
+
+          // THE TWO SLEEVES, EACH ITS OWN MASS, which is the thing the first
+          // build of this missed: hung off the same silhouette as the body,
+          // the garment had no construction in it and the shelves at the
+          // shoulder could not be seen at all. A kariginu sleeve goes OUT
+          // from the shoulder and then DOWN, and its lower edge is the
+          // widest line in the picture.
+          [-1, 1].forEach((sd) => {
+            // the red lining, under the sleeve's own hem: one flash of it
+            field([[sd * 0.300 * h, SH + 0.305 * h],
+                   [sd * 0.470 * h, SH + 0.282 * h],
+                   [sd * 0.462 * h, SH + 0.366 * h],
+                   [sd * 0.296 * h, SH + 0.378 * h]],
+                  "#a8322a", false, CRISP);
+            // SLOPING. Level, the two of them read as a crossbar; a wide
+            // sleeve falls away from the shoulder as it goes out.
+            woven([[sd * 0.205 * h, SH - 0.012 * h],
+                   [sd * 0.455 * h, SH + 0.098 * h],
+                   [sd * 0.468 * h, SH + 0.300 * h],
+                   [sd * 0.296 * h, SH + 0.332 * h],
+                   [sd * 0.228 * h, SH + 0.235 * h]],
+                  o.robe, { seed: o.seed + sd * 4, folds: 0,
+                            line: fine * 0.9, soft: CRISP });
+            // two creases along it, running the way the sleeve hangs
+            crease([[sd * 0.268, SH / h + 0.028], [sd * 0.300, SH / h + 0.17],
+                    [sd * 0.292, SH / h + 0.318]]);
+            crease([[sd * 0.368, SH / h + 0.062], [sd * 0.392, SH / h + 0.19],
+                    [sd * 0.388, SH / h + 0.312]]);
+          });
+
+          // THE SHOULDER LINE ITSELF, the one straight stroke that tells the
+          // body from the sleeves
+          crease([[-0.215, SH / h + 0.028], [0, SH / h + 0.014],
+                  [0.215, SH / h + 0.028]]);
+
+          // THE COLLAR, panels overlapping at the throat, each one a plane
+          [[0.112, 0.042], [0.068, 0.014]].forEach((c) => {
+            field([[-c[0] * h, SH - 0.052 * h], [0, SH + 0.098 * h],
+                   [c[0] * h, SH - 0.052 * h],
+                   [c[0] * h - c[1] * h, SH - 0.056 * h],
+                   [0, SH + 0.062 * h],
+                   [-c[0] * h + c[1] * h, SH - 0.056 * h]],
+                  o.robe, fine * 0.9, CRISP);
+          });
+
+          // THE NECK AND THE SMALL HEAD. A fifth of the robe's height, which
+          // is the proportion that makes the cloth read as a mass: at the
+          // head size figure() uses, the robe is a coat and not a mountain.
+          // THE NECK SHOWS. Set at 0.050 the chin sat inside the collar and
+          // the head read as sunk into the cloth, which also hid the beard
+          // the novel makes a point of.
+          const hr = 0.074 * h, hy = SH - 0.105 * h - hr * 1.02;
+          field([[-0.040 * h, SH + 0.010 * h], [0.040 * h, SH + 0.010 * h],
+                 [0.034 * h, SH - 0.130 * h], [-0.034 * h, SH - 0.130 * h]],
+                FLESH, fine * 0.9, 0.10);
+          field([[-hr * 0.74, hy - hr * 0.90], [hr * 0.74, hy - hr * 0.90],
+                 [hr * 0.82, hy + hr * 0.44], [0, hy + hr * 1.06],
+                 [-hr * 0.82, hy + hr * 0.44]], FLESH, fine * 0.9, 0.16);
+          g.fillStyle = "#231d17";
+          g.beginPath();
+          g.moveTo(-hr * 0.90, hy - hr * 0.06);
+          g.bezierCurveTo(-hr * 1.10, hy - hr * 1.00,
+                          -hr * 0.56, hy - hr * 1.38, 0, hy - hr * 1.32);
+          g.bezierCurveTo(hr * 0.56, hy - hr * 1.38,
+                          hr * 1.10, hy - hr * 1.00, hr * 0.90, hy - hr * 0.06);
+          g.bezierCurveTo(hr * 0.72, hy - hr * 0.50,
+                          hr * 0.30, hy - hr * 0.60, 0, hy - hr * 0.56);
+          g.bezierCurveTo(-hr * 0.30, hy - hr * 0.60,
+                          -hr * 0.72, hy - hr * 0.50, -hr * 0.90, hy - hr * 0.06);
+          g.closePath();
+          g.fill();
+          features(hr, hy, o);
+          if (o.beard) {
+            // SILVER AND NOT WHITE. A white beard in front of a white robe
+            // is not a beard, it is more robe: the whole lower half of his
+            // head read as one pale mass with the collar. The novel wants it
+            // lush, which is length and not value.
+            field([[-hr * 0.58, hy + hr * 0.36], [hr * 0.58, hy + hr * 0.36],
+                   [hr * 0.44, hy + hr * 1.70], [0, hy + hr * 2.15],
+                   [-hr * 0.44, hy + hr * 1.70]], "#cdc5b2", fine * 0.9, 0.22);
+          }
+          features(hr, hy, o);
+
+          // AND ONE HAND, small and barely out of the sleeve, which is what
+          // these portraits do with hands
+          let hand = null;
+          if (o.reach) {
+            const ex = o.reach.dx * h, ey = SH + o.reach.dy * h;
+            fist(ex, ey, 0.062 * h, false);
+            const m = g.getTransform();
+            hand = [m.a * ex + m.c * ey + m.e, m.b * ex + m.d * ey + m.f];
           }
           g.restore();
           return hand;
@@ -2642,14 +2799,13 @@
           // Dressed in white, a lush white beard, his mouth twisted. He is
           // TILTED: a man run through the chest does not stand to attention,
           // and the tilt is what makes the pair a duel rather than a row.
-          const oldHand = figure({
+          const oldHand = daimyo({
             // TILTED AWAY, and the sign of it matters: a canvas rotation of
             // +a turns clockwise, so -0.21 tipped him INTO the sword, which
-            // read as two men standing abreast. And his forward arm falls
-            // rather than reaches: he has just let go of his own sword.
-            x: W * 0.612, y: GROUND_Y, h: H * 0.420, tilt: 0.300,
-            robe: WHITE, sash: "#d8d0bd", beard: true, agony: true, seed: 37,
-            armsOut: true, reach: { dx: 0.285, dy: 0.360 },
+            // read as two men standing abreast.
+            x: W * 0.600, y: GROUND_Y, h: H * 0.430, tilt: 0.150,
+            robe: WHITE, beard: true, agony: true, seed: 37,
+            reach: { dx: 0.345, dy: 0.330 },
           });
 
           // ---- DON GIOVANNI, lunging, in light green ----------------------
@@ -2671,7 +2827,9 @@
           // PAST the chest, a sword driven deep having most of its length
           // behind it and a little in front.
           const chest = [W * 0.576, GROUND_Y - H * 0.420 * 0.615];
-          const thru = [chest[0] + 0.052 * W, chest[1] + 0.010 * H];
+          // JUST PAST THE WOUND. At 0.052W the tip came out the far side of
+          // a robe that is now three times wider, and read as a skewer.
+          const thru = [chest[0] + 0.034 * W, chest[1] + 0.006 * H];
           chokuto(youngHand[0], youngHand[1], thru[0], thru[1], H * 0.185);
           // AND THE HAND GOES BACK ON TOP OF THE GRIP. The sword is drawn
           // after the figures, so the bound hilt covered the fist that holds
@@ -2691,9 +2849,15 @@
           // ---- THE BLOOD, spewing, and it has soaked the white ------------
           // "The tip of the sword must have pierced his aorta." Spurts and
           // not a shape: a fan of red read as a flag.
+          // THE SPRAY GOES TOWARD THE KILLER, and shorter. Fanned from -1.95
+          // to +0.45 with lengths to 0.16H it reached 0.16 above the chest,
+          // which on a figure built at this scale is ABOVE HIS OWN CHIN: the
+          // spurts crossed his face and his beard. Biased left it leaves his
+          // head alone and runs at the man who put it there, which is where
+          // it would go.
           for (let i = 0; i < 9; i++) {
-            const a2 = -1.95 + i * 0.30 + (hash3(i, 1.1, 2.2) - 0.5) * 0.16;
-            const L = (0.055 + hash3(i, 4.4, 5.5) * 0.105) * H;
+            const a2 = -2.35 + i * 0.25 + (hash3(i, 1.1, 2.2) - 0.5) * 0.14;
+            const L = (0.048 + hash3(i, 4.4, 5.5) * 0.068) * H;
             const mx = chest[0] + Math.cos(a2) * L * 0.55;
             const my = chest[1] + Math.sin(a2) * L * 0.55 - 0.018 * H;
             g.strokeStyle = BLOOD;
@@ -2727,8 +2891,8 @@
           g.fill();
           // then the runs, and SHORTER: at full height they reached past the
           // hem and read as four hanging threads rather than cloth taking it
-          [[0.000, 0.72, 0.0090], [-0.019, 0.50, 0.0056],
-           [0.016, 0.33, 0.0042]].forEach((r) => {
+          [[0.000, 0.62, 0.0062], [-0.017, 0.44, 0.0044],
+           [0.015, 0.29, 0.0034]].forEach((r) => {
             const x0 = chest[0] + r[0] * W;
             const yEnd = chest[1] + (GROUND_Y - chest[1]) * r[1];
             g.beginPath();
