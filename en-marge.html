@@ -339,19 +339,34 @@
     // And the overhead view is a PLAN: its up vector leans to the north wall
     // as the eye rises, so north is at the top of the frame where a plan
     // keeps it.
+    // THE CUSHION'S PLACE, in the south west corner and off both walls, at
+    // his ask. Declared before the room because the EYE sits on it: the room
+    // opens seated on the zafu, so where the cushion goes the opening view
+    // goes with it, and a cushion moved without the eye would leave the room
+    // opening from the middle of an empty floor.
+    //
+    // THE PADDING IS FROM THE LEDGE, NOT FROM THE WALL, and that is the one
+    // real constraint here. The shelf and its front posts now stand 248 off
+    // the south wall, so a cushion padded only from the plaster would have
+    // its corner through a post. 77 of floor between the zabuton and the
+    // posts, 240 to the west wall, and the south wall is 325 away with the
+    // shelf overhanging most of it.
+    const ZAFU = { x: -1.03, z: -1.265 };
     const ROOM = {
       w: 3.30,          // across, x
       d: 3.60,          // deep, z
       h: 2.12,          // to the ceiling
-      // WHERE THE EYE SITS, and it sits ON THE ZAFU: the middle of the floor,
+      // WHERE THE EYE SITS, and it sits ON THE ZAFU, wherever the zafu is:
       // at 550. The zafu is 182 to its crown and a crossed-legged eye is a
       // little over three hundred above that, which is the tea room's own
       // kneeling eye (450) raised by the cushion. Everything in the room was
       // placed for this height: the desk at 320 is below it, the floating
       // deck's 30mm of air is on the line of sight rather than above it, and
       // the ceiling at 2120 is high. The one thing this view cannot show is
-      // the cushion you are on, which is true of any cushion.
-      seat: { x: 0, y: 0.55, z: 0 },
+      // the cushion you are on, which is true of any cushion. And it moved
+      // to the south west corner with it: a seated room whose eye does not
+      // follow its cushion is a room opening from nowhere.
+      seat: { x: ZAFU.x, y: 0.55, z: ZAFU.z },
     };
     // THE LOW DESK, and its place, declared with the room rather than where
     // it is built: the four panel Akari stands ON it, so the lamp needs to
@@ -637,7 +652,12 @@
         const z = -ROOM.d / 2 + ROOM.d * (i + 1) / 4;
         const b = new THREE.Mesh(
           new THREE.BoxGeometry(ROOM.w, 0.085, 0.10),
-          mat(0x241c14, 0.95));
+          // LIGHTER THAN ROUGH TIMBER WANTS TO BE, and for the same reason
+          // the ceiling is: a beam's underside faces down, so it is lit by
+          // the hemisphere's GROUND colour and nothing else, and a dark
+          // ground times dark timber is nothing at all. Mapped from a still,
+          // the black at the top of the frame was the two beams crossing.
+          mat(0x332819, 0.95));
         b.position.set(0, ROOM.h - 0.055, z);
         b.castShadow = true; b.receiveShadow = true;
         beams.add(b);
@@ -645,7 +665,7 @@
       // and one heavier beam along the room, the one a hand would touch
       const spine = new THREE.Mesh(
         new THREE.BoxGeometry(0.12, 0.13, ROOM.d),
-        mat(0x1f1810, 0.95));
+        mat(0x2b2217, 0.95));
       spine.position.set(-0.30, ROOM.h - 0.075, 0);
       spine.castShadow = true; spine.receiveShadow = true;
       beams.add(spine);
@@ -904,11 +924,11 @@
       lamp2.rotation.y = Math.atan2(0 - A2.x, 0 - A2.z);
       shell.add(lamp2);
 
-      // ---- le zafu sur son zabuton, au centre ------------------------------
+      // ---- le zafu sur son zabuton, au coin sud-ouest ----------------------
       // Fauve: a tawny brown, warm and slightly yellow, and the one soft
-      // thing in a room of timber and plaster. It sits in the middle of the
-      // floor, which is the place the room was built around: everything else
-      // stands against a wall.
+      // thing in a room of timber and plaster. It sits in the SOUTH WEST
+      // CORNER and off both walls, at his ask: a cushion against plaster is
+      // furniture, and a cushion with floor round it is a place.
       // BIASED TOWARD THE COOL, so that the warm lamps render it fauve. The
       // tea room learned this on a black raku bowl that came out red-brown:
       // a matte object takes the colour of its key light, and both lights in
@@ -1076,7 +1096,7 @@
                      fluff: 0.024, corner: 0.006 }),
         cloth(FAUVE_DEEP, 26, 9));
       zabuton.name = "zabuton";
-      zabuton.position.set(0, ZABU_H / 2, 0);
+      zabuton.position.set(ZAFU.x, ZABU_H / 2, ZAFU.z);
       zabuton.castShadow = true;
       zabuton.receiveShadow = true;
       shell.add(zabuton);
@@ -1089,7 +1109,7 @@
                      fluff: 0.019, pleats: 26, pleat: 0.020 }),
         cloth(FAUVE, 16, 6));
       zafu.name = "zafu";
-      zafu.position.set(0, ZABU_H + ZAFU_H / 2, 0);
+      zafu.position.set(ZAFU.x, ZABU_H + ZAFU_H / 2, ZAFU.z);
       zafu.castShadow = true;
       zafu.receiveShadow = true;
       shell.add(zafu);
@@ -2022,7 +2042,13 @@
       // throw real shadows, and four per cent of the frame went under a four
       // thousandth. A hemisphere cannot be shadowed, so it is the only lever
       // that lifts what is IN shadow without touching what is lit.
-      const hemi = new THREE.HemisphereLight(0xd8ccb6, 0x4a3b2c, 0.34);
+      // ?hemi= sweeps it, because this is the one lever that lifts what is
+      // IN shadow and it has had to be raised at every change of what the
+      // room opens on.
+      const hemi = new THREE.HemisphereLight(
+        0xd8ccb6,
+        parseInt(Q.get("ground") || "4a3b2c", 16) || 0x4a3b2c,
+        num("hemi", 0.34));
       scene.add(hemi);
 
       // the window: cool, weak, and the only shadow-caster wide enough to
@@ -2217,12 +2243,25 @@
         }
       }
 
-      // OPENS ON THE ROUND AKARI, with the paper window off to its right:
-      // from the zafu the lamp stands at eye height, which is what makes
-      // it the first thing seen rather than a glow above the floor.
-      const YAW0 = Q.has("sit") ? SEAT.yaw : -0.62;
+      // OPENS ALONG THE ROOM'S DIAGONAL, which is what a corner is for: from
+      // the south west the longest line of sight runs to the north east, and
+      // it carries the door, the cabinet with the turntable, the desk, the
+      // beams overhead and the round Akari at the edge of the frame. The
+      // window stays out of it, so the dark reads as dark: the paper is the
+      // one surface here that keeps its own value, and facing it the room
+      // is a bright rectangle with a room behind.
+      //
+      // The old opening, from the middle of the floor at -0.62, put the
+      // round Akari at eye height a metre away. That was the better picture
+      // and it is no longer available: the eye moved with the cushion.
+      const YAW0 = Q.has("sit") ? SEAT.yaw : -2.356;
       let yaw = num("yaw", YAW0),
-          pitch = num("pitch", Q.has("sit") ? SEAT.pitch : -0.05);
+          // A LITTLE MORE DOWN THAN BEFORE. From a corner at 550 the ceiling
+          // is close overhead and the diagonal view filled the top of the
+          // frame with it, which is the one surface here with nothing to
+          // catch. Seated and looking across a room, one looks slightly
+          // down anyway.
+          pitch = num("pitch", Q.has("sit") ? SEAT.pitch : -0.13);
       let wantYaw = yaw, wantPitch = pitch;
       // HOW FAR THE HEAD TURNS ON THE POINTER, and it looks DOWN further
       // than up: this is a room one sits on the floor of, so the floor and
@@ -2855,7 +2894,7 @@
             cu.updateMatrixWorld(true);
             const c = new THREE.Box3().setFromObject(cu, true)
                         .getCenter(new THREE.Vector3());
-            const from = new THREE.Vector3(0, ROOM.seat.y, 0);   // the zafu
+            const from = new THREE.Vector3(ZAFU.x, ROOM.seat.y, ZAFU.z);
             const flat = Math.hypot(c.x - from.x, c.z - from.z);
             const need = Math.atan2(c.y - from.y, flat);
             out.push("from the zafu the cushion lies " +
@@ -2899,7 +2938,7 @@
           // advances in the harness.
           {
             const keepE = eye.clone(), keepY = wantYaw, keepP = wantPitch;
-            eye.set(0, ROOM.seat.y, 0);
+            eye.set(ZAFU.x, ROOM.seat.y, ZAFU.z);
             wantYaw = -0.62; wantPitch = -0.05;
             goTo(SEAT);
             for (let i = 0; i < 200; i++) glideStep(1 / 60);
@@ -3052,7 +3091,13 @@
             }
             key(code, false);
           };
-          const p0 = eye.clone();
+          // FROM THE MIDDLE OF THE FLOOR, not from wherever the eye happens
+          // to be. The cushion moved to the south west corner and this read
+          // 307mm for half a second of walking instead of 525: the walk had
+          // not slowed, the clamp had eaten the half of it that ran at the
+          // west wall. A test of walking has to start where walking is free.
+          const p0 = new THREE.Vector3(0, ROOM.seat.y, 0);
+          eye.copy(p0);
           drive("ArrowUp", 0.5);
           out.push("half a second of forward is " +
                    Math.round(p0.distanceTo(eye) * 1000) + "mm" +
@@ -3065,7 +3110,7 @@
                    (turned > Math.PI * 2 ? " -- a full turn and more"
                                          : " -- IT CANNOT COME ROUND"));
           // and now into the wall, from the middle, twice as long as it takes
-          eye.set(0, ROOM.seat.y, 0);
+          eye.set(ZAFU.x, ROOM.seat.y, ZAFU.z);
           wantYaw = 0; yaw = 0;                 // facing -z, the far wall
           drive("ArrowUp", 6);
           const gap = Math.abs(-ROOM.d / 2 - eye.z);
@@ -3074,7 +3119,7 @@
                    (gap > 0.4 ? " -- it stops short" : " -- IT GOES THROUGH"));
           let worst = 1e9;
           [[0, 1], [0, -1], [1, 0], [-1, 0]].forEach(([dx, dz]) => {
-            eye.set(0, ROOM.seat.y, 0);
+            eye.set(ZAFU.x, ROOM.seat.y, ZAFU.z);
             wantYaw = Math.atan2(-dx, -dz); yaw = wantYaw;
             drive("ArrowUp", 6);
             worst = Math.min(worst,
