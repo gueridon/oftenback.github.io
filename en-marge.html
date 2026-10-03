@@ -2026,6 +2026,496 @@
         shell.add(tea);
       }
 
+      // ---- le tableau: Le meurtre du commandeur -----------------------------
+      // The painting at the centre of Murakami's novel, and the reason this
+      // room exists: his own brief for it was "l'atelier du peintre dans
+      // Killing Commendatore". In the book the narrator finds it wrapped in
+      // brown paper in the attic, HANGS IT IN THE STUDIO, and spends days
+      // sitting in front of it. So it hangs here.
+      //
+      // WHAT THE NOVEL SAYS, and nothing here is invented past it:
+      //   "The painting titled Killing Commendatore was full of blood.
+      //    Realistic blood flowing all over. Two men were fighting with
+      //    heavy, ancient swords, in what seemed to be a duel. One of the
+      //    men fighting was young, the other old. The young man had plunged
+      //    his sword deep into the old man's chest. The young man had a thin
+      //    black mustache and wore tight-fitting light-greenish clothes. The
+      //    old man was dressed in white and had a lush white beard... He had
+      //    dropped his sword, which had not yet struck the ground. Blood was
+      //    spewing from his chest. The tip of the sword must have pierced
+      //    his aorta. The blood had soaked his white clothes, and his mouth
+      //    was twisted in agony."
+      // Painted in the NIHONGA manner and set in the ASUKA period, it is the
+      // opening of Mozart's Don Giovanni moved to ancient Japan: the young
+      // man is Don Giovanni, the old man the Commendatore, and the two who
+      // look on in horror are Donna Anna and the servant Leporello. And in
+      // the LOWER LEFT CORNER, which is in the opera not at all, a fifth
+      // head comes out of a hole in the ground holding its SQUARE COVER HALF
+      // OPEN: a face abnormally long, like an aubergine. The narrator calls
+      // him Long Face and it is him, not the killing, that he cannot leave.
+      //
+      // WHAT THE NOVEL DOES NOT SAY, and is therefore mine: the size and the
+      // format. The text gives none, only "a large painting". It is built
+      // horizontal at 1300 by 950 because the composition asks for it, the
+      // duel at the centre, the witnesses to the right, and the corner left
+      // free for the hole.
+      //
+      // Drawn FLAT, outlined, with no modelling anywhere, because that is
+      // what nihonga is and not a style choice: mineral pigment laid in
+      // fields with a sumi contour. It is also the only manner a drawing
+      // made of paths can carry honestly.
+      const ART = { w: 1.300, h: 0.950, x: 0.22, y: 0.95 };
+      {
+        const W = 1560, H = 1140;              // the canvas, at 1.2mm a pixel
+        const cv2 = document.createElement("canvas");
+        cv2.width = W; cv2.height = H;
+        const g = cv2.getContext("2d");
+        // THE PALETTE, mineral: a gofun ground, sumi for the line, and one
+        // true red. The red is the blood and it is now the strongest colour
+        // in the room.
+        const SUMI = "#2a241c";
+        const BLOOD = "#a8231c";
+        const GREEN = "#a3b885";               // "light-greenish", his clothes
+        const WHITE = "#ece6d8";               // the Commendatore's
+        const INDIGO = "#47577a";              // Donna Anna
+        const BROWN = "#7a6246";               // Leporello
+        const FLESH = "#d6c7a9";
+        const GROUND_Y = H * 0.790;        // the duel stands here
+        const FAR_Y = H * 0.690;           // and the witnesses here, set back
+
+        // a brush line, and a filled field with a sumi contour. Nothing here
+        // has a gradient in it: a mineral pigment is laid, not shaded.
+        function stroke(pts, wide, col) {
+          g.strokeStyle = col || SUMI;
+          g.lineWidth = wide;
+          g.lineJoin = "round"; g.lineCap = "round";
+          g.beginPath();
+          g.moveTo(pts[0][0], pts[0][1]);
+          for (let i = 1; i < pts.length; i++) g.lineTo(pts[i][0], pts[i][1]);
+          g.stroke();
+        }
+        function field(pts, col, line) {
+          g.fillStyle = col;
+          g.beginPath();
+          g.moveTo(pts[0][0], pts[0][1]);
+          for (let i = 1; i < pts.length; i++) g.lineTo(pts[i][0], pts[i][1]);
+          g.closePath();
+          g.fill();
+          if (line !== false) {
+            g.strokeStyle = SUMI; g.lineWidth = line || 3.0;
+            g.lineJoin = "round";
+            g.stroke();
+          }
+        }
+
+        // A FIGURE, DRAWN IN ITS OWN FRAME. Feet at the origin, up is -y,
+        // and every length is a fraction of its own height, so one body
+        // serves all five and a tilt is a canvas rotation rather than five
+        // polygons recomputed by hand. The first pass at this placed each
+        // head by absolute canvas coordinates, mixing a radius in W with a
+        // height in H, and every head floated a different distance above its
+        // own shoulders.
+        //
+        // The shoulders SLOPE and the sleeves HANG, which is most of what
+        // tells an Asuka robe from a trapezoid, and the hair is looped at
+        // the ears: mizura, the one piece of period dress a shape this small
+        // can carry.
+        function figure(o) {
+          const h = o.h;
+          g.save();
+          g.translate(o.x, o.y);
+          g.rotate(o.tilt || 0);
+          const SH = -0.700 * h;            // the shoulder line
+          const sw = 0.200 * h;             // half the shoulder
+          const hw = 0.290 * h;             // half the hem
+          // the robe, hem to shoulder, with a sway down one side
+          field([[-hw, 0], [-sw * 1.06, SH * 0.52], [-sw, SH],
+                 [sw, SH], [sw * 1.10, SH * 0.48], [hw * 1.02, 0]],
+                o.robe);
+          // the under-robe showing at the hem, which layered dress does
+          if (o.under) {
+            field([[-hw * 0.94, 0], [hw * 0.96, 0],
+                   [hw * 0.92, -0.070 * h], [-hw * 0.90, -0.070 * h]],
+                  o.under, 2.4);
+          }
+          // the sash
+          field([[-sw * 1.02, SH * 0.60], [sw * 1.06, SH * 0.58],
+                 [sw * 1.04, SH * 0.50], [-sw * 1.00, SH * 0.52]],
+                o.sash || o.robe, 2.4);
+          // two sleeves, hanging, the far one behind
+          // the sleeves HANG. At 0.16h of horizontal reach they stood out
+          // from the shoulder like planks; a wide sleeve falls.
+          const sl = (sd, len) => field(
+            [[sd * sw * 0.94, SH + 0.020 * h],
+             [sd * (sw + 0.098 * h), SH + 0.075 * h],
+             [sd * (sw + 0.082 * h), SH + 0.075 * h + len],
+             [sd * sw * 0.70, SH + 0.030 * h + len * 0.86]], o.robe);
+          sl(-1, 0.255 * h);
+          if (!o.armsOut) sl(1, 0.285 * h);
+          // the neck, and the head on it
+          field([[-0.052 * h, SH + 0.014 * h], [0.052 * h, SH + 0.014 * h],
+                 [0.046 * h, SH - 0.052 * h], [-0.046 * h, SH - 0.052 * h]],
+                FLESH, 2.2);
+          const hr = 0.098 * h, hy = SH - 0.052 * h - hr * 0.96;
+          field([[-hr * 0.76, hy - hr * 0.88], [hr * 0.76, hy - hr * 0.88],
+                 [hr * 0.84, hy + hr * 0.46], [0, hy + hr * 1.04],
+                 [-hr * 0.84, hy + hr * 0.46]], FLESH, 2.6);
+          // hair: a cap, and the loops at the ears for the men
+          g.fillStyle = "#231d17";
+          g.beginPath();
+          g.ellipse(0, hy - hr * 0.56, hr * 0.90, hr * 0.62, 0, 0, Math.PI * 2);
+          g.fill();
+          if (o.mizura) {
+            [-1, 1].forEach((sd) => {
+              g.beginPath();
+              g.ellipse(sd * hr * 0.92, hy + hr * 0.10,
+                        hr * 0.26, hr * 0.34, 0, 0, Math.PI * 2);
+              g.fill();
+            });
+          }
+          // the eyes, two marks
+          g.fillStyle = SUMI;
+          [-1, 1].forEach((sd) => {
+            g.beginPath();
+            g.ellipse(sd * hr * 0.34, hy, hr * 0.15, hr * 0.085,
+                      0, 0, Math.PI * 2);
+            g.fill();
+          });
+          if (o.beard) {
+            field([[-hr * 0.60, hy + hr * 0.30], [hr * 0.60, hy + hr * 0.30],
+                   [hr * 0.50, hy + hr * 1.80], [0, hy + hr * 2.30],
+                   [-hr * 0.50, hy + hr * 1.80]], "#e8e3d7", 2.4);
+          }
+          if (o.moustache) {
+            stroke([[-hr * 0.34, hy + hr * 0.40], [hr * 0.30, hy + hr * 0.38]],
+                   0.075 * hr * 2, "#231d17");
+          }
+          if (o.agony) {
+            // the mouth twisted, which the novel insists on: one stroke
+            stroke([[-hr * 0.26, hy + hr * 0.52], [0, hy + hr * 0.40],
+                    [hr * 0.28, hy + hr * 0.58]], 0.10 * hr * 2, SUMI);
+          }
+          // ONE ARM, FORWARD, for the two in the duel: returned in canvas
+          // coordinates so the sword can be hung off the hand that holds it
+          let hand = null;
+          if (o.reach) {
+            const r = o.reach;                    // {dx, dy} in own heights
+            const ex = r.dx * h, ey = SH + r.dy * h;
+            field([[sw * 0.80, SH + 0.040 * h], [ex, ey - 0.052 * h],
+                   [ex, ey + 0.046 * h], [sw * 0.72, SH + 0.140 * h]],
+                  o.robe);
+            field([[ex - 0.022 * h, ey - 0.046 * h],
+                   [ex + 0.052 * h, ey - 0.040 * h],
+                   [ex + 0.050 * h, ey + 0.044 * h],
+                   [ex - 0.022 * h, ey + 0.040 * h]], FLESH, 2.4);
+            const m = g.getTransform();
+            hand = [m.a * (ex + 0.030 * h) + m.c * ey + m.e,
+                    m.b * (ex + 0.030 * h) + m.d * ey + m.f];
+          }
+          g.restore();
+          return hand;
+        }
+
+        // ---- and it is drawn, every time the lid moves --------------------
+        function drawArt(lidT) {
+          // THE GROUND: a gofun field, mottled the way a mineral pigment
+          // lies, and never flat even where nothing is painted on it
+          g.fillStyle = "#c9b68a";
+          g.fillRect(0, 0, W, H);
+          // GRAIN AND NOT BOKEH. At radii up to 34 pixels the mottle read
+          // as blurred circles; a ground laid in mineral pigment is grain.
+          for (let i = 0; i < 9000; i++) {
+            const x = hash3(i, 2.3, 7.1) * W, y = hash3(i, 5.9, 1.7) * H;
+            const r = 1.2 + hash3(i, 3.3, 9.9) * 5.5;
+            g.fillStyle = hash3(i, 8.1, 4.4) < 0.5
+              ? "rgba(216,200,160,0.14)" : "rgba(152,134,99,0.12)";
+            g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill();
+          }
+          // TWO BANDS OF EARTH, not one. The pair in the duel stand on the
+          // near one and the two who watch on the far one: in this manner
+          // distance is drawn by standing a figure HIGHER and SMALLER, there
+          // being no perspective to put it in. On one baseline the five of
+          // them were a chorus line.
+          g.fillStyle = "#bba982";
+          g.fillRect(0, FAR_Y, W, H - FAR_Y);
+          stroke([[0, FAR_Y], [W * 0.34, FAR_Y - 5],
+                  [W * 0.72, FAR_Y + 4], [W, FAR_Y - 3]], 2.8,
+                 "rgba(42,36,28,0.35)");
+          g.fillStyle = "#b09a70";
+          g.fillRect(0, GROUND_Y, W, H - GROUND_Y);
+          stroke([[0, GROUND_Y], [W * 0.3, GROUND_Y - 7],
+                  [W * 0.7, GROUND_Y + 5], [W, GROUND_Y - 2]], 3.4,
+                 "rgba(42,36,28,0.55)");
+
+          // ---- THE TWO WHO WATCH, set back: higher, and smaller -----------
+          // Donna Anna in indigo over white, her hands at her mouth, and
+          // Leporello half a step behind her.
+          figure({ x: W * 0.800, y: FAR_Y, h: H * 0.330, robe: INDIGO,
+                   under: "#ded5c2", sash: "#36425c" });
+          // her hands, brought up to the mouth
+          {
+            const hx = W * 0.800, hy = FAR_Y - H * 0.330 * 0.905;
+            field([[hx - 0.022 * W, hy + 0.012 * H],
+                   [hx + 0.020 * W, hy + 0.010 * H],
+                   [hx + 0.016 * W, hy - 0.012 * H],
+                   [hx - 0.018 * W, hy - 0.010 * H]], FLESH, 2.4);
+          }
+          figure({ x: W * 0.906, y: FAR_Y - H * 0.012, h: H * 0.296,
+                   robe: BROWN, sash: "#5f4b36", mizura: true });
+
+          // ---- THE COMMENDATORE, falling back, in white -------------------
+          // Dressed in white, a lush white beard, his mouth twisted. He is
+          // TILTED: a man run through the chest does not stand to attention,
+          // and the tilt is what makes the pair a duel rather than a row.
+          const oldHand = figure({
+            // TILTED AWAY, and the sign of it matters: a canvas rotation of
+            // +a turns clockwise, so -0.21 tipped him INTO the sword, which
+            // read as two men standing abreast. And his forward arm falls
+            // rather than reaches: he has just let go of his own sword.
+            x: W * 0.612, y: GROUND_Y, h: H * 0.420, tilt: 0.300,
+            robe: WHITE, sash: "#d8d0bd", beard: true, agony: true,
+            armsOut: true, reach: { dx: 0.285, dy: 0.360 },
+          });
+
+          // ---- DON GIOVANNI, lunging, in light green ----------------------
+          const youngHand = figure({
+            x: W * 0.408, y: GROUND_Y, h: H * 0.430, tilt: 0.085,
+            robe: GREEN, sash: "#8aa06a", mizura: true, moustache: true,
+            // HIS HAND STOPS WELL SHORT OF THE CHEST. At 0.46 of his own
+            // height the hand arrived AT the wound and the blade measured 23
+            // pixels: the thrust the whole painting is of was invisible, and
+            // no amount of darkening it would have helped.
+            armsOut: true, reach: { dx: 0.255, dy: 0.040 },
+          });
+
+          // ---- THE SWORD, hilt in his hand, tip in the old man's chest ----
+          // THE BLADE IS DRAWN DARK AND CONTOURED, because it crosses a
+          // WHITE robe: at a mid grey on white it disappeared, and the thrust
+          // that the whole painting is of could not be seen at all. It runs
+          // PAST the chest, a sword driven deep having most of its length
+          // behind it and a little in front.
+          const chest = [W * 0.576, GROUND_Y - H * 0.420 * 0.615];
+          const thru = [chest[0] + 0.052 * W, chest[1] + 0.010 * H];
+          stroke([youngHand, thru], 9.0, SUMI);
+          stroke([youngHand, thru], 4.6, "#9a968c");
+          // the hilt, across the hand
+          stroke([[youngHand[0] - 0.004 * W, youngHand[1] - 0.030 * H],
+                  [youngHand[0] + 0.004 * W, youngHand[1] + 0.030 * H]],
+                 7.0, SUMI);
+
+          // ---- THE BLOOD, spewing, and it has soaked the white ------------
+          // "The tip of the sword must have pierced his aorta." Spurts and
+          // not a shape: a fan of red read as a flag.
+          for (let i = 0; i < 9; i++) {
+            const a2 = -1.95 + i * 0.30 + (hash3(i, 1.1, 2.2) - 0.5) * 0.16;
+            const L = (0.055 + hash3(i, 4.4, 5.5) * 0.105) * H;
+            const mx = chest[0] + Math.cos(a2) * L * 0.55;
+            const my = chest[1] + Math.sin(a2) * L * 0.55 - 0.018 * H;
+            g.strokeStyle = BLOOD;
+            g.lineCap = "round";
+            g.lineWidth = 3.0 + hash3(i, 7.7, 3.3) * 7.0;
+            g.beginPath();
+            g.moveTo(chest[0], chest[1]);
+            g.quadraticCurveTo(mx, my,
+                               chest[0] + Math.cos(a2) * L,
+                               chest[1] + Math.sin(a2) * L);
+            g.stroke();
+          }
+          // and down the white robe, and onto the earth
+          // THE SOAK, and it is a stain and not a bar: a band of even width
+          // down the robe read as a painted stripe. Three runs of unequal
+          // length, the way cloth takes it.
+          g.fillStyle = BLOOD;
+          [[0.000, 1.00, 0.0085], [-0.017, 0.74, 0.0052],
+           [0.014, 0.50, 0.0040]].forEach((r) => {
+            const x0 = chest[0] + r[0] * W;
+            const yEnd = chest[1] + (GROUND_Y - chest[1]) * r[1];
+            g.beginPath();
+            g.moveTo(x0 - r[2] * W * 0.8, chest[1] - 0.004 * H);
+            g.bezierCurveTo(x0 + r[2] * W * 0.9, chest[1] + 0.070 * H,
+                            x0 - r[2] * W * 0.7, chest[1] + 0.140 * H,
+                            x0 + r[2] * W * 0.25, yEnd);
+            g.lineTo(x0 - r[2] * W * 1.05, yEnd - 0.010 * H);
+            g.bezierCurveTo(x0 - r[2] * W * 1.6, chest[1] + 0.130 * H,
+                            x0 - r[2] * W * 1.3, chest[1] + 0.060 * H,
+                            x0 - r[2] * W * 1.1, chest[1] - 0.004 * H);
+            g.closePath(); g.fill();
+          });
+          // a pool, where it has reached the ground
+          g.beginPath();
+          g.ellipse(chest[0] - 0.006 * W, GROUND_Y + 0.014 * H,
+                    0.034 * W, 0.009 * H, 0.04, 0, Math.PI * 2);
+          g.fill();
+
+          // ---- HIS OWN SWORD, dropped, and NOT YET STRUCK THE GROUND ------
+          // Which is the detail that fixes the instant: the painting is one
+          // moment and not a scene. Drawn clear of his robe and above the
+          // earth, with its shadow under it so the air shows.
+          {
+            const sx = W * 0.700, sy = GROUND_Y - 0.052 * H;
+            stroke([[sx, sy], [sx + 0.092 * W, sy + 0.054 * H]], 6.0,
+                   "#767269");
+            stroke([[sx - 0.012 * W, sy - 0.008 * H],
+                    [sx + 0.004 * W, sy + 0.012 * H]], 7.0, SUMI);
+            g.fillStyle = "rgba(60,48,32,0.22)";
+            g.beginPath();
+            g.ellipse(sx + 0.048 * W, GROUND_Y + 0.020 * H,
+                      0.044 * W, 0.008 * H, 0.03, 0, Math.PI * 2);
+            g.fill();
+          }
+
+          // ---- AND LONG FACE, in the lower left corner --------------------
+          // The one figure that is in no opera. A square cover, held half
+          // open, and a face "abnormally long, like an aubergine" out of the
+          // hole under it. Drawn SMALL: in the novel he is a detail one has
+          // to go up to the canvas to find, and the narrator finds him and
+          // cannot let him go.
+          const hx = W * 0.150, hy = H * 0.908, HS = W * 0.088;
+          // THE MOUTH OF THE HOLE, a square seen from above and so a
+          // parallelogram: the far edge is shorter because it is further.
+          field([[hx - HS, hy + HS * 0.40], [hx + HS, hy + HS * 0.40],
+                 [hx + HS * 0.80, hy - HS * 0.30],
+                 [hx - HS * 0.80, hy - HS * 0.30]], "#15120d", 2.8);
+          // THE COVER, HINGED AT THE FAR EDGE so that it leans back and the
+          // hole stays open to the eye. Hinged at the near edge it stood up
+          // in front of the hole and hid the one thing it is there to
+          // reveal, and Long Face read as a man behind a box. The novel has
+          // it HALF OPEN, which is where lidT starts.
+          const lift = HS * 1.5 * lidT;
+          field([[hx - HS * 0.80, hy - HS * 0.30],
+                 [hx + HS * 0.80, hy - HS * 0.30],
+                 [hx + HS * 0.74, hy - HS * 0.30 - lift],
+                 [hx - HS * 0.74, hy - HS * 0.30 - lift]], "#8a7352", 2.8);
+          stroke([[hx - HS * 0.76, hy - HS * 0.30 - lift * 0.5],
+                  [hx + HS * 0.76, hy - HS * 0.30 - lift * 0.5]], 2.4,
+                 "rgba(42,36,28,0.40)");
+          // THE LONG FACE, out of the near half of the hole. "Abnormally
+          // long, like an aubergine", which is the one thing the narrator
+          // cannot let go of, so it is drawn to be found and not to be seen
+          // at once.
+          const fx = hx + HS * 0.10, fb = hy + HS * 0.16;
+          // LONGER AND NARROWER than a head: "abnormally long, like an
+          // aubergine", which is fat at the jaw and tapers upward. With its
+          // widths nearly equal it was a rectangle, and with a full cap of
+          // hair over that it was a candle: the cap sat across the eyes like
+          // a lid and the only mark left on the face was the mouth. So the
+          // taper is real and the hair is a fringe.
+          field([[fx - HS * 0.16, fb], [fx + HS * 0.16, fb],
+                 [fx + HS * 0.23, fb - HS * 0.34],
+                 [fx + HS * 0.19, fb - HS * 0.96],
+                 [fx + HS * 0.11, fb - HS * 1.44],
+                 [fx - HS * 0.02, fb - HS * 1.58],
+                 [fx - HS * 0.13, fb - HS * 1.38],
+                 [fx - HS * 0.19, fb - HS * 0.90],
+                 [fx - HS * 0.22, fb - HS * 0.32]], "#cdbfa1", 2.8);
+          g.fillStyle = "#231d17";
+          g.beginPath();
+          g.moveTo(fx - HS * 0.125, fb - HS * 1.32);
+          g.lineTo(fx - HS * 0.020, fb - HS * 1.58);
+          g.lineTo(fx + HS * 0.110, fb - HS * 1.42);
+          g.lineTo(fx + HS * 0.085, fb - HS * 1.20);
+          g.lineTo(fx - HS * 0.105, fb - HS * 1.18);
+          g.closePath();
+          g.fill();
+          g.fillStyle = SUMI;
+          [-0.075, 0.075].forEach((u) => {
+            g.beginPath();
+            g.ellipse(fx + HS * u, fb - HS * 1.03, HS * 0.044, HS * 0.028,
+                      0, 0, Math.PI * 2);
+            g.fill();
+          });
+          stroke([[fx - HS * 0.06, fb - HS * 0.52],
+                  [fx + HS * 0.06, fb - HS * 0.54]], 3.0, SUMI);
+          // AND THE HAND THAT HOLDS THE COVER, which is what the text says
+          // he is doing: holding its square cover half open.
+          field([[fx + HS * 0.30, fb - HS * 0.74],
+                 [fx + HS * 0.62, fb - HS * 0.52],
+                 [fx + HS * 0.56, fb - HS * 0.30],
+                 [fx + HS * 0.26, fb - HS * 0.50]], "#cdbfa1", 2.4);
+        }
+
+        // THE LID IS THE ONE THING IN THIS ROOM THAT CHANGES WHEN NOBODY IS
+        // LOOKING, and that is the whole of the Murakami in it: nothing
+        // announces itself, nothing happens while you watch, and you cannot
+        // be sure it has happened at all. It advances only on a return, and
+        // only once per return. ?lid= fixes it for a still.
+        let lidT = isFinite(parseFloat(Q.get("lid")))
+          ? Math.max(0, Math.min(1, parseFloat(Q.get("lid")))) : 0.35;
+        drawArt(lidT);
+        const artTex = new THREE.CanvasTexture(cv2);
+        artTex.colorSpace = THREE.SRGBColorSpace;
+        artTex.anisotropy = 4;
+
+        const art = new THREE.Group();
+        art.name = "tableau";
+        const panel = new THREE.Mesh(
+          new THREE.PlaneGeometry(ART.w, ART.h),
+          new THREE.MeshStandardMaterial({ map: artTex, roughness: 0.94,
+                                           metalness: 0 }));
+        panel.position.z = 0.013;
+        art.add(panel);
+        // a plain dark mount, nihonga being hung as a panel and not framed
+        // like an oil
+        const MT = 0.022;
+        const mount = mat(0x1d1812, 0.85);
+        [[ART.w + MT * 2, MT, 0, ART.h / 2 + MT / 2],
+         [ART.w + MT * 2, MT, 0, -ART.h / 2 - MT / 2],
+         [MT, ART.h, -ART.w / 2 - MT / 2, 0],
+         [MT, ART.h, ART.w / 2 + MT / 2, 0]].forEach((r) => {
+          const m = new THREE.Mesh(
+            new THREE.BoxGeometry(r[0], r[1], 0.026), mount);
+          m.position.set(r[2], r[3], 0);
+          m.castShadow = true;
+          art.add(m);
+        });
+        const back = new THREE.Mesh(
+          new THREE.BoxGeometry(ART.w, ART.h, 0.022), mat(0x2a2319, 0.9));
+        back.position.z = -0.001;
+        back.castShadow = true;
+        art.add(back);
+        // THE EAST WALL, NORTH OF THE DESK, and hung LOW: this is a room one
+        // is seated in, so the painting is set for an eye at 550 and not for
+        // someone standing. From the zafu it is 3.3m off and fills the
+        // quadrant of the opening view that had nothing in it.
+        art.position.set(ART.x, ART.y, ROOM.d / 2 - 0.028);
+        art.rotation.y = Math.PI;
+        shell.add(art);
+
+        // one can go and stand in front of it
+        const seeArt = {
+          x: ART.x, z: ROOM.d / 2 - 1.05,
+          yaw: Math.PI,
+          pitch: Math.atan2(ART.y - ROOM.seat.y, 1.05),
+          say: "Le meurtre du commandeur. Tomohiko Amada, a la maniere nihonga.",
+        };
+        art.traverse((o) => { o.userData.goHere = seeArt; });
+
+        // and the lid, which moves only unobserved
+        const frust = new THREE.Frustum();
+        const mvp = new THREE.Matrix4();
+        const centre = new THREE.Vector3();
+        let wasSeen = true, away = false;
+        ticking.push(() => {
+          if (lidT >= 1 || Q.has("lid")) return;
+          art.getWorldPosition(centre);
+          mvp.multiplyMatrices(camera.projectionMatrix,
+                               camera.matrixWorldInverse);
+          frust.setFromProjectionMatrix(mvp);
+          const seen = frust.containsPoint(centre);
+          if (!seen) { away = true; }
+          else if (away && !wasSeen) {
+            // it came back into the frame after having left it
+            lidT = Math.min(1, lidT + 0.07);
+            drawArt(lidT);
+            artTex.needsUpdate = true;
+            away = false;
+          }
+          wasSeen = seen;
+        });
+        window.__lid = () => lidT;
+        window.__artSeen = () => wasSeen;
+      }
+
       // ---- the light -------------------------------------------------------
       // A fifth of the tea room's hemisphere, so that nothing is ever pure
       // black and nothing at all is legible from the ambient alone.
@@ -2161,6 +2651,7 @@
         "kyusu": "Kyusu. Theiere a anse laterale, pour le sencha.",
         "yunomi": "Yunomi. La tasse se tient dans la paume.",
         "the": "Du sencha, encore chaud.",
+        "tableau": "Le meurtre du commandeur. Tomohiko Amada, nihonga.",
         "chazutsu": "Chazutsu. La boite a the.",
         "obon": "Le plateau.",
         "zafu": "Zafu, sur son zabuton. Fauve.",
@@ -2545,7 +3036,7 @@
           const KEYS = ["akari1ar", "akariuf1o", "meuble", "platine",
                         "enceinte-gauche", "enceinte-droite", "bureau",
                         "zafu", "zabuton", "nijiriguchi", "coussin",
-                        "etagere"];
+                        "etagere", "tableau"];
           const box = {};
           KEYS.forEach((k) => {
             const o = shell.getObjectByName(k);
@@ -2645,6 +3136,93 @@
             }
           }
           document.body.setAttribute("data-fittest", out.join(" | "));
+        }, 1200);
+      }
+
+      // ---- THE PAINTING, AND THE ONE THING THAT MOVES UNWATCHED -----------
+      // ?arttest. Two claims. The first is ordinary: the panel hangs on the
+      // east wall, clear of the desk, and is seen WHOLE from the cushion,
+      // all four corners inside the frame, since a painting one cannot see
+      // the corner of is a painting hung wrong.
+      //
+      // The second is the feature itself and the only thing in this room
+      // that is not the same twice: Long Face's cover opens a little further
+      // every time the painting has LEFT the frame and come back, and never
+      // while it is watched. That is a claim about a thing not happening,
+      // which is the kind that rots silently, so it is driven here by hand:
+      // look at it, tick, look away, tick, look back, tick.
+      if (Q.has("arttest") && !Q.has("lid")) {
+        setTimeout(() => {
+          const out = [];
+          const art = shell.getObjectByName("tableau");
+          art.updateMatrixWorld(true);
+          const b = new THREE.Box3().setFromObject(art, true);
+          out.push("the panel stands " +
+                   Math.round((ROOM.d / 2 - b.max.z) * 1000) +
+                   "mm off the east wall, its foot at " +
+                   Math.round(b.min.y * 1000) + " and the desk top at " +
+                   Math.round(DESK.h * 1000) + " -- " +
+                   (b.max.z < ROOM.d / 2 && b.min.y > DESK.h
+                      ? "on the wall and above the desk"
+                      : "THROUGH THE WALL OR INTO THE DESK"));
+          // AND SEEN WHOLE. The camera is borrowed and put back.
+          const keepP = camera.position.clone(), keepR = camera.rotation.clone();
+          const look = (x, z, yaw2, pitch2) => {
+            camera.position.set(x, ROOM.seat.y, z);
+            camera.rotation.set(0, 0, 0);
+            camera.rotateY(yaw2); camera.rotateX(pitch2);
+            camera.updateMatrixWorld(true);
+            camera.matrixWorldInverse.copy(camera.matrixWorld).invert();
+          };
+          look(ZAFU.x, ZAFU.z, -2.356, -0.13);
+          {
+            const fr = new THREE.Frustum().setFromProjectionMatrix(
+              new THREE.Matrix4().multiplyMatrices(
+                camera.projectionMatrix, camera.matrixWorldInverse));
+            let inside = 0;
+            [[-1, -1], [-1, 1], [1, -1], [1, 1]].forEach((c) => {
+              const v = new THREE.Vector3(ART.x + c[0] * ART.w / 2,
+                                          ART.y + c[1] * ART.h / 2,
+                                          ROOM.d / 2 - 0.03);
+              if (fr.containsPoint(v)) inside++;
+            });
+            out.push("from the cushion, on the opening view, " + inside +
+                     " of its four corners are in the frame -- " +
+                     (inside === 4 ? "seen whole" : "IT IS CUT"));
+          }
+          // THE COVER. Each step is one tick with the painting in frame
+          // after having been out of it.
+          const t0 = window.__lid();
+          const tick = () => { for (let i = 0; i < ticking.length; i++)
+                                 ticking[i](0); };
+          look(ART.x, ROOM.d / 2 - 1.05, Math.PI, 0);   // facing it
+          tick(); tick(); tick();
+          const t1 = window.__lid();
+          out.push("three ticks with it in the frame moved the cover by " +
+                   ((t1 - t0) * 100).toFixed(0) + " -- " +
+                   (t1 === t0 ? "it does not move while watched"
+                              : "IT MOVED WHILE WATCHED"));
+          look(ART.x, ROOM.d / 2 - 1.05, 0, 0);         // turned away
+          tick(); tick();
+          const t2 = window.__lid();
+          out.push("two ticks with it out of the frame moved it by " +
+                   ((t2 - t1) * 100).toFixed(0) + " -- " +
+                   (t2 === t1 ? "nothing happens behind your back either"
+                              : "IT MOVED WHILE AWAY"));
+          look(ART.x, ROOM.d / 2 - 1.05, Math.PI, 0);   // and back
+          tick();
+          const t3 = window.__lid();
+          tick(); tick();
+          const t4 = window.__lid();
+          out.push("on the return it opened by " +
+                   ((t3 - t2) * 100).toFixed(0) + " and then by " +
+                   ((t4 - t3) * 100).toFixed(0) + " -- " +
+                   (t3 > t2 && t4 === t3
+                      ? "once per return, on the return"
+                      : "THE RETURN DOES NOT CARRY IT"));
+          camera.position.copy(keepP); camera.rotation.copy(keepR);
+          camera.updateMatrixWorld(true);
+          document.body.setAttribute("data-arttest", out.join(" | "));
         }, 1200);
       }
 
