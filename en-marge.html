@@ -2067,9 +2067,23 @@
       const ART = { w: 1.300, h: 0.950, x: 0.22, y: 0.95 };
       {
         const W = 1560, H = 1140;              // the canvas, at 1.2mm a pixel
+        // TWO CANVASES, AND THE REASON IS THE WHOLE OF THIS. What was
+        // missing for 1940 was never the painting, it was the SUPPORT and
+        // the TIME: paper has a fibre, pigment has no hard edge, and eighty
+        // years in an attic leave a record. So the paint is laid on one
+        // canvas and the painting is assembled on another, the paint going
+        // through a blur on the way and the paper and the damage laid over
+        // it afterwards, which is the order it happened in.
+        //
+        // ?age=0 to 1 scales every mark of time at once, 1 being as found.
         const cv2 = document.createElement("canvas");
         cv2.width = W; cv2.height = H;
-        const g = cv2.getContext("2d");
+        const gf = cv2.getContext("2d");
+        const off = document.createElement("canvas");
+        off.width = W; off.height = H;
+        const g = off.getContext("2d");
+        const AGE = isFinite(parseFloat(Q.get("age")))
+          ? Math.max(0, Math.min(1, parseFloat(Q.get("age")))) : 1;
         // THE PALETTE, mineral: a gofun ground, sumi for the line, and one
         // true red. The red is the blood and it is now the strongest colour
         // in the room.
@@ -2838,6 +2852,163 @@
             g.rotate(-0.95);
             fist(0, 0, HS * 0.30, true);
             g.restore();
+          }
+
+          // ---- AND NOW IT IS EIGHTY YEARS OLD ----------------------------
+
+          // THE PAINT GOES THROUGH A BLUR. At 1560 pixels for 1300mm this is
+          // under two millimetres of softness, and it is the single thing
+          // that stops the image reading as a diagram: a brush leaves no
+          // razor edge and a mineral pigment sinks into the sheet it is laid
+          // on.
+          gf.setTransform(1, 0, 0, 1, 0, 0);
+          gf.globalAlpha = 1;
+          gf.filter = "blur(" + (0.9 + 0.9 * AGE).toFixed(2) + "px)";
+          gf.clearRect(0, 0, W, H);
+          gf.drawImage(off, 0, 0);
+          gf.filter = "none";
+
+          // THE PAPER ITSELF, over the paint and not under it, because that
+          // is where it is: mulberry fibre runs long and lies in no
+          // direction in particular, and the laid lines of the mould show
+          // faintly across it.
+          for (let i = 0; i < 1500; i++) {
+            const x = hash3(i, 1.7, 4.3) * W, y = hash3(i, 9.1, 2.9) * H;
+            const a2 = (hash3(i, 3.7, 8.1) - 0.5) * 1.4;
+            // SHORT. At a hundred and fifty pixels a fibre reads as a hair
+            // lying on the picture rather than as the sheet it is in.
+            const L = 10 + hash3(i, 5.3, 6.7) * 62;
+            gf.strokeStyle = hash3(i, 2.2, 7.9) < 0.5
+              ? "rgba(255,250,236,0.055)" : "rgba(104,88,62,0.050)";
+            gf.lineWidth = 0.7 + hash3(i, 8.3, 1.9) * 1.5;
+            gf.lineCap = "round";
+            gf.beginPath();
+            gf.moveTo(x, y);
+            gf.quadraticCurveTo(x + Math.cos(a2) * L * 0.5,
+                                y + Math.sin(a2) * L * 0.5 + 6,
+                                x + Math.cos(a2) * L, y + Math.sin(a2) * L);
+            gf.stroke();
+          }
+          gf.strokeStyle = "rgba(118,100,70,0.030)";
+          gf.lineWidth = 1.0;
+          for (let y = 7; y < H; y += 9) {
+            gf.beginPath();
+            gf.moveTo(0, y + Math.sin(y * 0.05) * 1.2);
+            gf.lineTo(W, y + Math.sin(y * 0.05 + 1.1) * 1.2);
+            gf.stroke();
+          }
+
+          // THE YELLOWING, and it is NOT even: a sheet darkens most where it
+          // met the air and the mount, so the edges go and the middle keeps
+          // something of its colour.
+          {
+            const vg = gf.createRadialGradient(W * 0.46, H * 0.44, H * 0.16,
+                                               W * 0.46, H * 0.44, H * 0.92);
+            vg.addColorStop(0, "rgba(150,116,58,0)");
+            vg.addColorStop(0.62, "rgba(150,116,58," + (0.07 * AGE) + ")");
+            vg.addColorStop(1, "rgba(118,84,40," + (0.26 * AGE) + ")");
+            gf.fillStyle = vg;
+            gf.fillRect(0, 0, W, H);
+            // and the four edges, darker still where the mount lay
+            [["x", 0, 1], ["x", W, -1], ["y", 0, 1], ["y", H, -1]]
+              .forEach((e) => {
+                const d = (e[0] === "x" ? W : H) * 0.085;
+                const lg = e[0] === "x"
+                  ? gf.createLinearGradient(e[1], 0, e[1] + e[2] * d, 0)
+                  : gf.createLinearGradient(0, e[1], 0, e[1] + e[2] * d);
+                lg.addColorStop(0, "rgba(96,68,34," + (0.30 * AGE) + ")");
+                lg.addColorStop(1, "rgba(96,68,34,0)");
+                gf.fillStyle = lg;
+                gf.fillRect(0, 0, W, H);
+              });
+          }
+
+          // FOXING, which is the single mark that says old Japanese paper:
+          // small rust blooms, soft at the edge, and MORE OF THEM NEAR THE
+          // EDGES, because that is where the damp gets in.
+          for (let i = 0; i < 150; i++) {
+            const ex = hash3(i, 4.1, 1.3), ey = hash3(i, 2.7, 8.9);
+            // pushed outward, so the middle stays comparatively clean
+            const bias = (u) => 0.5 + (u - 0.5) * (0.55 + 0.45 *
+                                  Math.pow(hash3(i, 6.1, 3.3), 0.6)) * 2 * 0.5;
+            const x = Math.max(0, Math.min(1, bias(ex))) * W;
+            const y = Math.max(0, Math.min(1, bias(ey))) * H;
+            const r = (3 + hash3(i, 7.7, 5.1) * 17) * (0.6 + 0.4 * AGE);
+            const al = (0.05 + hash3(i, 1.1, 9.7) * 0.16) * AGE;
+            const rg = gf.createRadialGradient(x, y, 0, x, y, r);
+            rg.addColorStop(0, "rgba(126,78,36," + al.toFixed(3) + ")");
+            rg.addColorStop(0.55, "rgba(140,92,44," +
+                                  (al * 0.6).toFixed(3) + ")");
+            rg.addColorStop(1, "rgba(140,92,44,0)");
+            gf.fillStyle = rg;
+            gf.beginPath();
+            // not a disc: a bloom has a ragged edge
+            for (let k = 0; k <= 10; k++) {
+              const a2 = k / 10 * Math.PI * 2;
+              const rr = r * (0.7 + hash3(i * 11 + k, 2.9, 4.7) * 0.5);
+              const px = x + Math.cos(a2) * rr, py = y + Math.sin(a2) * rr;
+              if (k) gf.lineTo(px, py); else gf.moveTo(px, py);
+            }
+            gf.closePath();
+            gf.fill();
+          }
+
+          // ONE TIDE LINE, where the damp stopped. Drawn as a continuous
+          // stroke it was a brown line across the picture, which is a line
+          // and not a stain: a tide mark is BROKEN, it fades at both ends,
+          // and it is darker on the wet side only.
+          for (let i = 0; i < 26; i++) {
+            const u = i / 26;
+            const x = -20 + u * (W + 40);
+            const y = H * (0.80 + hash3(i, 3.1, 1.7) * 0.10);
+            const seg = (W / 26) * (0.5 + hash3(i, 8.2, 4.4) * 0.9);
+            // fades at both ends, strongest in the middle third
+            const str = Math.min(1, Math.sin(u * Math.PI) * 1.4);
+            gf.strokeStyle = "rgba(118,76,34," +
+                             (0.085 * AGE * str).toFixed(3) + ")";
+            gf.lineWidth = 4 + hash3(i, 1.9, 6.1) * 7;
+            gf.lineCap = "round";
+            gf.beginPath();
+            gf.moveTo(x, y);
+            gf.quadraticCurveTo(x + seg * 0.5,
+                                y + (hash3(i, 5.1, 2.3) - 0.5) * 14,
+                                x + seg, y + (hash3(i, 7.3, 9.1) - 0.5) * 20);
+            gf.stroke();
+          }
+
+          // CRAQUELURE, sparse, and only where the pigment lies thick
+          // CRACKS, and the first pass of these was wrong in every
+          // dimension: two hundred and sixty of them, four segments each and
+          // up to sixteen pixels a segment, at a sixth opacity, over the
+          // whole sheet including the empty ground. They read as hairs lying
+          // ON the painting. A craquelure is SHORT, it is faint to the point
+          // of doubt, and it sits where the pigment lies thick.
+          gf.strokeStyle = "rgba(62,46,30," + (0.075 * AGE).toFixed(3) + ")";
+          gf.lineWidth = 0.7;
+          for (let i = 0; i < 90; i++) {
+            let x = hash3(i, 8.8, 2.2) * W, y = hash3(i, 1.4, 7.3) * H;
+            // kept off the open ground: the upper third of this picture is
+            // bare gofun and a crack there has nothing to crack
+            if (y < H * 0.42) continue;
+            let a2 = hash3(i, 5.5, 9.1) * Math.PI * 2;
+            gf.beginPath();
+            gf.moveTo(x, y);
+            for (let k = 0; k < 3; k++) {
+              a2 += (hash3(i * 7 + k, 3.3, 6.6) - 0.5) * 2.2;
+              x += Math.cos(a2) * (2.5 + hash3(i + k, 2.1, 8.4) * 6);
+              y += Math.sin(a2) * (2.5 + hash3(i + k, 4.4, 1.6) * 6);
+              gf.lineTo(x, y);
+            }
+            gf.stroke();
+          }
+
+          // AND A LAST GRAIN over everything, so the blur leaves nothing
+          // mathematically smooth
+          for (let i = 0; i < 14000; i++) {
+            const x = hash3(i, 6.3, 3.1) * W, y = hash3(i, 2.1, 9.3) * H;
+            gf.fillStyle = hash3(i, 7.1, 1.3) < 0.5
+              ? "rgba(255,248,230,0.045)" : "rgba(72,58,38,0.045)";
+            gf.fillRect(x, y, 1.6, 1.6);
           }
         }
 
