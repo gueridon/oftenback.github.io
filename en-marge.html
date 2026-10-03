@@ -2074,10 +2074,16 @@
         // true red. The red is the blood and it is now the strongest colour
         // in the room.
         const SUMI = "#2a241c";
-        // THE CONTOUR IS INK AND NOT A VECTOR OUTLINE, which is most of what
-        // softens a line without moving it: a sumi stroke is a touch
-        // transparent and the ground shows through it.
-        const INK = "rgba(34,28,21,0.86)";
+        // THERE IS NO BLACK CONTOUR ANYWHERE, at his ask, and nihonga has a
+        // name for the manner: mokkotsu, boneless painting, where the form
+        // is carried by the meeting of two pigments and not by a line round
+        // it. So every field is edged in ITS OWN colour taken darker, at
+        // half strength: enough to tell a white sleeve from a white robe,
+        // and no drawn line at all.
+        //
+        // SUMI stays for the things that ARE black: hair, the sword, a
+        // moustache. A black object is not a black outline.
+        const EDGE_K = 0.70, EDGE_A = 0.55;
         const BLOOD = "#a8231c";
         const GREEN = "#a3b885";               // "light-greenish", his clothes
         const WHITE = "#ece6d8";               // the Commendatore's
@@ -2112,6 +2118,15 @@
           }
           g.stroke();
         }
+        // A TONE OF A COLOUR, declared first because the EDGE of every field
+        // is made of it.
+        function pigment(css, k) {
+          const n = parseInt(css.slice(1), 16);
+          const c = [(n >> 16) & 255, (n >> 8) & 255, n & 255]
+            .map((v) => Math.max(0, Math.min(255, Math.round(v * k))));
+          return "rgb(" + c[0] + "," + c[1] + "," + c[2] + ")";
+        }
+
         // EVERY CORNER IS ROUNDED, in the PATH and not in the join. A
         // lineJoin of round softens the ink where two strokes meet and does
         // nothing at all to the silhouette a fill leaves, so the figures
@@ -2147,27 +2162,22 @@
           roundPath(pts, soft === undefined ? 0.055 : soft);
           g.fill();
           if (line !== false) {
-            g.strokeStyle = INK; g.lineWidth = line || 3.0;
+            g.save();
+            g.globalAlpha = EDGE_A;
+            g.strokeStyle = pigment(col, EDGE_K);
+            g.lineWidth = line || 2.6;
             g.lineJoin = "round"; g.lineCap = "round";
             g.stroke();
+            g.restore();
           }
         }
 
-        // A TONE OF A COLOUR, since the grain in a cloth is the same pigment
-        // laid thicker and thinner and not a second colour.
-        //
-        // AND IT IS CALLED pigment AND NOT tone. This file is not in strict
+        // IT IS CALLED pigment AND NOT tone. This file is not in strict
         // mode, so a FUNCTION DECLARATION INSIDE A BLOCK leaks out of the
         // block into the enclosing function: named tone, it silently
         // replaced the room's own tone(now), the exposure watcher the frame
         // loop calls, which was then handed a number and threw on
         // css.slice. The whole room went white and the fault was a name.
-        function pigment(css, k) {
-          const n = parseInt(css.slice(1), 16);
-          const c = [(n >> 16) & 255, (n >> 8) & 255, n & 255]
-            .map((v) => Math.max(0, Math.min(255, Math.round(v * k))));
-          return "rgb(" + c[0] + "," + c[1] + "," + c[2] + ")";
-        }
 
         // CLOTH, AND NOT A FLAT FIELD. Mineral pigment on a robe is granular
         // and a robe has folds in it, and both are drawn INSIDE the shape by
@@ -2244,11 +2254,100 @@
             g.globalAlpha = 1;
           }
           g.restore();
-          g.strokeStyle = INK;
-          g.lineWidth = o.line || 3.0;
+          g.save();
+          g.globalAlpha = EDGE_A;
+          g.strokeStyle = pigment(col, EDGE_K);
+          g.lineWidth = o.line || 2.6;
           g.lineJoin = "round"; g.lineCap = "round";
           roundPath(pts, o.soft === undefined ? 0.055 : o.soft);
           g.stroke();
+          g.restore();
+        }
+
+        // A HAND, AND NOT A RECTANGLE. Not a realistic hand either: within
+        // this manner a hand is a MASS with three things readable on it, the
+        // knuckles, the thumb and the heel, and nothing else. Drawn in a
+        // local frame with the forearm entering from -x and the knuckles
+        // out at +x, so the same shape serves a fist on a hilt and a hand
+        // brought up to a mouth.
+        function fist(x, y, s, grip) {
+          g.save();
+          g.translate(x, y);
+          // the mass: back of the hand, three knuckles, the little finger
+          // side, the heel, the wrist
+          field([[-0.50 * s, -0.40 * s], [0.26 * s, -0.46 * s],
+                 [0.52 * s, -0.24 * s], [0.56 * s, 0.08 * s],
+                 [0.38 * s, 0.34 * s], [0.02 * s, 0.46 * s],
+                 [-0.44 * s, 0.38 * s]], FLESH, 2.2, 0.16);
+          // the thumb, crossing the back of it, which is what says fist
+          field([[-0.12 * s, -0.36 * s], [0.28 * s, -0.52 * s],
+                 [0.48 * s, -0.30 * s], [0.14 * s, -0.18 * s]],
+                FLESH, 2.0, 0.22);
+          // and two creases where the fingers fold, no more than that
+          g.strokeStyle = "rgba(120,92,66,0.55)";
+          g.lineWidth = Math.max(1.1, 0.030 * s);
+          g.lineCap = "round";
+          [[-0.06, 0.26], [0.10, 0.10]].forEach((c) => {
+            g.beginPath();
+            g.moveTo(c[0] * s, (c[1] - 0.26) * s);
+            g.quadraticCurveTo(0.34 * s, (c[1] - 0.22) * s,
+                               0.44 * s, (c[1] + 0.02) * s);
+            g.stroke();
+          });
+          // where the hilt passes through, if it is holding one
+          if (grip) {
+            g.strokeStyle = "rgba(96,72,52,0.45)";
+            g.lineWidth = Math.max(1.2, 0.040 * s);
+            g.beginPath();
+            g.moveTo(-0.34 * s, -0.10 * s);
+            g.lineTo(0.42 * s, -0.16 * s);
+            g.stroke();
+          }
+          g.restore();
+        }
+
+        // A STRAIGHT SWORD, chokuto, which is what the Asuka period had and
+        // what "heavy, ancient swords" asks for. A stroke of even width was
+        // a stick: a blade TAPERS, and a sword is four things, a bound grip,
+        // a pommel, a guard and the blade, and all four are readable at this
+        // size.
+        function chokuto(ax, ay, bx, by, s) {
+          const len = Math.hypot(bx - ax, by - ay);
+          g.save();
+          g.translate(ax, ay);
+          g.rotate(Math.atan2(by - ay, bx - ax));
+          const w = 0.052 * s;                 // half the blade at the guard
+          // the blade, tapering to a point
+          field([[0, -w], [len * 0.84, -w * 0.62], [len, 0],
+                 [len * 0.84, w * 0.62], [0, w]], "#9d9890", 1.8, 0.02);
+          // the ridge along it, which is what makes a blade read as steel
+          g.strokeStyle = "rgba(240,238,232,0.45)";
+          g.lineWidth = Math.max(1.0, w * 0.34);
+          g.lineCap = "round";
+          g.beginPath();
+          g.moveTo(len * 0.05, -w * 0.22);
+          g.lineTo(len * 0.80, -w * 0.14);
+          g.stroke();
+          // the guard, a lozenge across the blade
+          field([[0, -w * 2.5], [w * 0.9, 0], [0, w * 2.5], [-w * 0.9, 0]],
+                "#4d4842", 1.6, 0.12);
+          // the grip, bound, and a pommel at its end
+          const gl = len * 0.30;
+          field([[-w * 0.5, -w * 1.15], [-gl, -w * 1.00],
+                 [-gl, w * 1.00], [-w * 0.5, w * 1.15]], "#2e2822", 1.6, 0.30);
+          g.strokeStyle = "rgba(188,170,140,0.50)";
+          g.lineWidth = Math.max(0.9, w * 0.26);
+          for (let i = 1; i <= 3; i++) {
+            const u = -w * 0.5 - (gl - w * 0.5) * i / 4;
+            g.beginPath();
+            g.moveTo(u, -w * 1.04);
+            g.lineTo(u, w * 1.04);
+            g.stroke();
+          }
+          field([[-gl, -w * 1.25], [-gl - w * 0.8, -w * 0.9],
+                 [-gl - w * 0.8, w * 0.9], [-gl, w * 1.25]],
+                "#403a33", 1.6, 0.30);
+          g.restore();
         }
 
         // A FIGURE, DRAWN IN ITS OWN FRAME. Feet at the origin, up is -y,
@@ -2298,47 +2397,138 @@
           sl(-1, 0.255 * h);
           if (!o.armsOut) sl(1, 0.285 * h);
           // the neck, and the head on it
+          // THE NECK RUNS UP BEHIND THE HEAD. Stopped at the chin it left a
+          // notch between the two, the head being drawn after it and a
+          // little narrower.
           field([[-0.052 * h, SH + 0.014 * h], [0.052 * h, SH + 0.014 * h],
-                 [0.046 * h, SH - 0.052 * h], [-0.046 * h, SH - 0.052 * h]],
+                 [0.046 * h, SH - 0.088 * h], [-0.046 * h, SH - 0.088 * h]],
                 FLESH, 2.2);
           const hr = 0.098 * h, hy = SH - 0.052 * h - hr * 0.96;
           field([[-hr * 0.76, hy - hr * 0.88], [hr * 0.76, hy - hr * 0.88],
                  [hr * 0.84, hy + hr * 0.46], [0, hy + hr * 1.04],
                  [-hr * 0.84, hy + hr * 0.46]], FLESH, 2.6);
-          // hair: a cap, and the loops at the ears for the men
+          // hair: a cap, and the loops at the ears for the men. Black
+          // because hair IS black, which is not the same as a black line
+          // round a shape.
+          // ABOVE THE BROWS. Centred at 0.58 with a radius of 0.60 the cap
+          // reached down to the eye line and buried every feature drawn
+          // under it, which is why a face with a brow, a lid and a nose in
+          // it still read as a black blob with a mouth.
+          //
+          // AND IT IS A HAIRLINE, not an ellipse laid on top: the hair comes
+          // down lower at the temples than at the middle of the forehead,
+          // and an ellipse sat on the skull like a beret.
+          // A HEAD OF HAIR, and the shape is walked the whole way round: up
+          // one temple, over the crown, down the other, and the hairline
+          // back across the forehead. Closed with a single arc instead, it
+          // came out a thin band laid across the brow, the arc's own peak
+          // reaching only a quarter of a radius above the hairline.
           g.fillStyle = "#231d17";
           g.beginPath();
-          g.ellipse(0, hy - hr * 0.56, hr * 0.90, hr * 0.62, 0, 0, Math.PI * 2);
+          g.moveTo(-hr * 0.90, hy - hr * 0.06);
+          g.bezierCurveTo(-hr * 1.10, hy - hr * 1.00,
+                          -hr * 0.56, hy - hr * 1.36,
+                          0, hy - hr * 1.30);
+          g.bezierCurveTo(hr * 0.56, hy - hr * 1.36,
+                          hr * 1.10, hy - hr * 1.00,
+                          hr * 0.90, hy - hr * 0.06);
+          g.bezierCurveTo(hr * 0.72, hy - hr * 0.50,
+                          hr * 0.30, hy - hr * 0.60,
+                          0, hy - hr * 0.56);
+          g.bezierCurveTo(-hr * 0.30, hy - hr * 0.60,
+                          -hr * 0.72, hy - hr * 0.50,
+                          -hr * 0.90, hy - hr * 0.06);
+          g.closePath();
           g.fill();
           if (o.mizura) {
             [-1, 1].forEach((sd) => {
               g.beginPath();
-              g.ellipse(sd * hr * 0.92, hy + hr * 0.10,
-                        hr * 0.26, hr * 0.34, 0, 0, Math.PI * 2);
+              g.ellipse(sd * hr * 0.86, hy - hr * 0.14,
+                        hr * 0.17, hr * 0.23, 0, 0, Math.PI * 2);
               g.fill();
             });
           }
-          // the eyes, two marks
-          g.fillStyle = SUMI;
-          [-1, 1].forEach((sd) => {
+          // A FACE, AND NOT TWO DOTS. At his ask. The heads are eighty
+          // pixels on this canvas, which is room enough for features that
+          // are drawn rather than marked: a brow, an eyelid with an eye
+          // under it, the bridge and the hook of a nose, and a mouth. The
+          // line is a warm dark brown and never black, so the face belongs
+          // to the same painting as the rest of it.
+          const LINE = "rgba(74,54,38,0.80)";
+          const brush = (pts, wide) => {
+            g.strokeStyle = LINE;
+            g.lineWidth = wide;
+            g.lineCap = "round"; g.lineJoin = "round";
             g.beginPath();
-            g.ellipse(sd * hr * 0.34, hy, hr * 0.15, hr * 0.085,
-                      0, 0, Math.PI * 2);
+            g.moveTo(pts[0][0], pts[0][1]);
+            if (pts.length === 3) {
+              g.quadraticCurveTo(pts[1][0], pts[1][1], pts[2][0], pts[2][1]);
+            } else {
+              g.bezierCurveTo(pts[1][0], pts[1][1], pts[2][0], pts[2][1],
+                              pts[3][0], pts[3][1]);
+            }
+            g.stroke();
+          };
+          [-1, 1].forEach((sd) => {
+            // the brow, high and tapering, which is where a face's
+            // expression actually sits
+            brush([[sd * hr * 0.58, hy - hr * 0.24],
+                   [sd * hr * 0.38, hy - hr * 0.40],
+                   [sd * hr * 0.10, hy - hr * 0.34]], hr * 0.048);
+            // the upper lid, a shallow arc, and the eye under it
+            brush([[sd * hr * 0.56, hy - hr * 0.02],
+                   [sd * hr * 0.33, hy - hr * 0.17],
+                   [sd * hr * 0.11, hy - hr * 0.02]], hr * 0.046);
+            g.fillStyle = "#3a2d22";
+            g.beginPath();
+            g.ellipse(sd * hr * 0.33, hy + hr * 0.010,
+                      hr * 0.072, hr * 0.058, 0, 0, Math.PI * 2);
             g.fill();
+            // the lower lid, barely there
+            brush([[sd * hr * 0.50, hy + hr * 0.07],
+                   [sd * hr * 0.33, hy + hr * 0.11],
+                   [sd * hr * 0.16, hy + hr * 0.07]], hr * 0.030);
           });
+          // THE NOSE: a bridge down one side and a hook at the foot of it,
+          // which is how a face is drawn in this tradition and also simply
+          // how a nose casts
+          brush([[-hr * 0.07, hy - hr * 0.22],
+                 [-hr * 0.13, hy + hr * 0.10],
+                 [-hr * 0.02, hy + hr * 0.26],
+                 [hr * 0.12, hy + hr * 0.20]], hr * 0.042);
+          // and the mouth, unless the face has its own
+          if (!o.agony) {
+            brush([[-hr * 0.24, hy + hr * 0.60],
+                   [0, hy + hr * 0.68],
+                   [hr * 0.24, hy + hr * 0.60]], hr * 0.052);
+          }
           if (o.beard) {
             field([[-hr * 0.60, hy + hr * 0.30], [hr * 0.60, hy + hr * 0.30],
                    [hr * 0.50, hy + hr * 1.80], [0, hy + hr * 2.30],
                    [-hr * 0.50, hy + hr * 1.80]], "#e8e3d7", 2.4);
           }
           if (o.moustache) {
-            stroke([[-hr * 0.34, hy + hr * 0.40], [hr * 0.30, hy + hr * 0.38]],
-                   0.075 * hr * 2, "#231d17");
+            // THIN, which the novel is explicit about: "a thin black
+            // mustache". At a seventh of the head's radius it was a bar
+            // across the whole face and it swallowed the mouth under it.
+            g.strokeStyle = "#231d17";
+            g.lineWidth = hr * 0.055;
+            g.lineCap = "round";
+            g.beginPath();
+            g.moveTo(-hr * 0.30, hy + hr * 0.38);
+            g.quadraticCurveTo(0, hy + hr * 0.30, hr * 0.28, hy + hr * 0.38);
+            g.stroke();
           }
           if (o.agony) {
-            // the mouth twisted, which the novel insists on: one stroke
-            stroke([[-hr * 0.26, hy + hr * 0.52], [0, hy + hr * 0.40],
-                    [hr * 0.28, hy + hr * 0.58]], 0.10 * hr * 2, SUMI);
+            // the mouth twisted, which the novel insists on, and open
+            g.fillStyle = "#4a2a22";
+            g.beginPath();
+            g.ellipse(hr * 0.02, hy + hr * 0.52, hr * 0.22, hr * 0.15,
+                      0.22, 0, Math.PI * 2);
+            g.fill();
+            brush([[-hr * 0.26, hy + hr * 0.44],
+                   [0, hy + hr * 0.34],
+                   [hr * 0.30, hy + hr * 0.52]], hr * 0.052);
           }
           // ONE ARM, FORWARD, for the two in the duel: returned in canvas
           // coordinates so the sword can be hung off the hand that holds it
@@ -2349,13 +2539,10 @@
             woven([[sw * 0.80, SH + 0.040 * h], [ex, ey - 0.052 * h],
                    [ex, ey + 0.046 * h], [sw * 0.72, SH + 0.140 * h]],
                   o.robe, { seed: o.seed + 3, folds: 1 });
-            field([[ex - 0.022 * h, ey - 0.046 * h],
-                   [ex + 0.052 * h, ey - 0.040 * h],
-                   [ex + 0.050 * h, ey + 0.044 * h],
-                   [ex - 0.022 * h, ey + 0.040 * h]], FLESH, 2.4);
+            fist(ex + 0.014 * h, ey, 0.082 * h, o.grips);
             const m = g.getTransform();
-            hand = [m.a * (ex + 0.030 * h) + m.c * ey + m.e,
-                    m.b * (ex + 0.030 * h) + m.d * ey + m.f];
+            hand = [m.a * (ex + 0.014 * h) + m.c * ey + m.e,
+                    m.b * (ex + 0.014 * h) + m.d * ey + m.f];
           }
           g.restore();
           return hand;
@@ -2400,11 +2587,16 @@
                    motif: H * 0.034 });
           // her hands, brought up to the mouth
           {
-            const hx = W * 0.800, hy = FAR_Y - H * 0.330 * 0.905;
-            field([[hx - 0.022 * W, hy + 0.012 * H],
-                   [hx + 0.020 * W, hy + 0.010 * H],
-                   [hx + 0.016 * W, hy - 0.012 * H],
-                   [hx - 0.018 * W, hy - 0.010 * H]], FLESH, 2.4);
+            // BOTH HANDS, one over the other at the mouth, and each one the
+            // same mass the duellists hold their swords with, mirrored so
+            // the thumbs meet.
+            const hx = W * 0.800, hy = FAR_Y - H * 0.330 * 0.900;
+            const s2 = H * 0.330 * 0.072;
+            g.save(); g.translate(hx, hy);
+            g.save(); g.scale(-1, 1); fist(0.26 * s2, 0.10 * s2, s2, false);
+            g.restore();
+            fist(0.30 * s2, -0.06 * s2, s2, false);
+            g.restore();
           }
           figure({ x: W * 0.906, y: FAR_Y - H * 0.012, h: H * 0.296,
                    robe: BROWN, sash: "#5f4b36", mizura: true, seed: 23 });
@@ -2426,7 +2618,8 @@
           // ---- DON GIOVANNI, lunging, in light green ----------------------
           const youngHand = figure({
             x: W * 0.408, y: GROUND_Y, h: H * 0.430, tilt: 0.085,
-            robe: GREEN, sash: "#8aa06a", mizura: true, moustache: true, seed: 53,
+            robe: GREEN, sash: "#8aa06a", mizura: true, moustache: true,
+            seed: 53, grips: true,
             // HIS HAND STOPS WELL SHORT OF THE CHEST. At 0.46 of his own
             // height the hand arrived AT the wound and the blade measured 23
             // pixels: the thrust the whole painting is of was invisible, and
@@ -2442,12 +2635,21 @@
           // behind it and a little in front.
           const chest = [W * 0.576, GROUND_Y - H * 0.420 * 0.615];
           const thru = [chest[0] + 0.052 * W, chest[1] + 0.010 * H];
-          stroke([youngHand, thru], 9.0, SUMI);
-          stroke([youngHand, thru], 4.6, "#9a968c");
-          // the hilt, across the hand
-          stroke([[youngHand[0] - 0.004 * W, youngHand[1] - 0.030 * H],
-                  [youngHand[0] + 0.004 * W, youngHand[1] + 0.030 * H]],
-                 7.0, SUMI);
+          chokuto(youngHand[0], youngHand[1], thru[0], thru[1], H * 0.185);
+          // AND THE HAND GOES BACK ON TOP OF THE GRIP. The sword is drawn
+          // after the figures, so the bound hilt covered the fist that holds
+          // it and he appeared to be pointing at the blade rather than
+          // holding it. Laid along the blade's own angle, so the fist's
+          // wrist is where the arm actually is.
+          {
+            const ang = Math.atan2(thru[1] - youngHand[1],
+                                   thru[0] - youngHand[0]);
+            g.save();
+            g.translate(youngHand[0], youngHand[1]);
+            g.rotate(ang);
+            fist(0, 0, H * 0.0355, true);
+            g.restore();
+          }
 
           // ---- THE BLOOD, spewing, and it has soaked the white ------------
           // "The tip of the sword must have pierced his aorta." Spurts and
@@ -2472,8 +2674,24 @@
           // down the robe read as a painted stripe. Three runs of unequal
           // length, the way cloth takes it.
           g.fillStyle = BLOOD;
-          [[0.000, 1.00, 0.0085], [-0.017, 0.74, 0.0052],
-           [0.014, 0.50, 0.0040]].forEach((r) => {
+          // A STAIN AT THE WOUND, so the runs come out of something. An
+          // ELLIPSE of this and a solid fill made a cannonball: a stain in
+          // cloth has no radius, so the edge is walked round with its own
+          // jitter and it is half the size it was.
+          g.beginPath();
+          for (let k = 0; k <= 16; k++) {
+            const a2 = k / 16 * Math.PI * 2;
+            const rr = (0.0105 + hash3(k, 3.3, 1.7) * 0.0075) * W;
+            const px = chest[0] - 0.002 * W + Math.cos(a2) * rr;
+            const py = chest[1] + 0.012 * H + Math.sin(a2) * rr * 1.15;
+            if (k) g.lineTo(px, py); else g.moveTo(px, py);
+          }
+          g.closePath();
+          g.fill();
+          // then the runs, and SHORTER: at full height they reached past the
+          // hem and read as four hanging threads rather than cloth taking it
+          [[0.000, 0.72, 0.0090], [-0.019, 0.50, 0.0056],
+           [0.016, 0.33, 0.0042]].forEach((r) => {
             const x0 = chest[0] + r[0] * W;
             const yEnd = chest[1] + (GROUND_Y - chest[1]) * r[1];
             g.beginPath();
@@ -2488,22 +2706,22 @@
                             x0 - r[2] * W * 1.1, chest[1] - 0.004 * H);
             g.closePath(); g.fill();
           });
-          // a pool, where it has reached the ground
-          g.beginPath();
-          g.ellipse(chest[0] - 0.006 * W, GROUND_Y + 0.014 * H,
-                    0.034 * W, 0.009 * H, 0.04, 0, Math.PI * 2);
-          g.fill();
+          // a few drops below, where it has begun to leave the cloth
+          [[0.010, 0.90, 0.0026], [-0.016, 0.82, 0.0020]].forEach((d) => {
+            g.beginPath();
+            g.ellipse(chest[0] + d[0] * W,
+                      chest[1] + (GROUND_Y - chest[1]) * d[1],
+                      d[2] * W, d[2] * W * 1.9, 0, 0, Math.PI * 2);
+            g.fill();
+          });
 
           // ---- HIS OWN SWORD, dropped, and NOT YET STRUCK THE GROUND ------
           // Which is the detail that fixes the instant: the painting is one
           // moment and not a scene. Drawn clear of his robe and above the
           // earth, with its shadow under it so the air shows.
           {
-            const sx = W * 0.700, sy = GROUND_Y - 0.052 * H;
-            stroke([[sx, sy], [sx + 0.092 * W, sy + 0.054 * H]], 6.0,
-                   "#767269");
-            stroke([[sx - 0.012 * W, sy - 0.008 * H],
-                    [sx + 0.004 * W, sy + 0.012 * H]], 7.0, SUMI);
+            const sx = W * 0.694, sy = GROUND_Y - 0.064 * H;
+            chokuto(sx, sy, sx + 0.098 * W, sy + 0.060 * H, H * 0.175);
             g.fillStyle = "rgba(60,48,32,0.22)";
             g.beginPath();
             g.ellipse(sx + 0.048 * W, GROUND_Y + 0.020 * H,
