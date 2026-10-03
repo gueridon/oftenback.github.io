@@ -2608,27 +2608,18 @@
           figure({ x: W * 0.800, y: FAR_Y, h: H * 0.330, robe: INDIGO,
                    under: "#ded5c2", sash: "#36425c", seed: 11,
                    motif: H * 0.034, mouth: "open" });
-          // her hands, brought up to the mouth
-          {
-            // BOTH HANDS, brought up to the mouth, and each one the same
-            // mass the duellists hold their swords with, mirrored so the
-            // thumbs meet.
-            //
-            // AT THE CHIN, AND THE HEIGHT IS DERIVED. A figure's mouth sits
-            // at 0.787 of its own height, being the shoulder line at 0.700
-            // plus the neck and the head above it; written as 0.900 by hand,
-            // the hands came out on her forehead and read as a hat. They
-            // stop just under the mouth, so the cry still shows above them.
-            const hh = H * 0.330;
-            const MOUTH = 0.787;
-            const hx = W * 0.800, hy = FAR_Y - hh * (MOUTH - 0.042);
-            const s2 = hh * 0.070;
-            g.save(); g.translate(hx, hy);
-            g.save(); g.scale(-1, 1); fist(0.30 * s2, 0.12 * s2, s2, false);
-            g.restore();
-            fist(0.34 * s2, -0.10 * s2, s2, false);
-            g.restore();
-          }
+          // AND NO HANDS, at his ask and because they do not fit. Measured:
+          // her mouth sits at 0.787 of her own height and her chin at 0.744,
+          // which is SIXTEEN PIXELS of face at her size, and a pair of fists
+          // is twenty six. The first attempt put them at 0.900 and they read
+          // as a hat; the second derived 0.745 and they read as hands on her
+          // throat. There was no third place. Her horror is carried by the
+          // open mouth and the brows, which is enough and is what a nihonga
+          // figure would use anyway.
+          //
+          // If a gesture is wanted here it has to be ONE hand, raised to the
+          // side of the mouth so the cry still shows: two cannot be drawn
+          // there without covering the face they are reacting with.
           figure({ x: W * 0.906, y: FAR_Y - H * 0.012, h: H * 0.296,
                    robe: BROWN, sash: "#5f4b36", mizura: true, seed: 23,
                    mouth: "down" });
