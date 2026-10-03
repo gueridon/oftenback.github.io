@@ -2264,6 +2264,105 @@
           g.restore();
         }
 
+        // A FACE, AND NOT TWO DOTS. The heads are eighty pixels on this
+        // canvas, which is room enough for features that are drawn rather
+        // than marked: a brow, an eyelid with an eye under it, the bridge
+        // and the hook of a nose, and a mouth. The line is a warm dark
+        // brown and never black, so the face belongs to the same painting
+        // as the rest of it.
+        //
+        // IT IS ITS OWN FUNCTION, and that is the point of this edit rather
+        // than a tidying. Written inside figure(), the features reached the
+        // four people who are figures and MISSED LONG FACE ENTIRELY, he
+        // being drawn by his own path: he kept two dot eyes and a dash for a
+        // mouth through every pass, and that was an oversight and not a
+        // decision about him.
+        //
+        // STRETCH spreads the cluster for a face longer than it is wide.
+        const LINE = "rgba(74,54,38,0.80)";
+        function brush(pts, wide) {
+          g.strokeStyle = LINE;
+          g.lineWidth = wide;
+          g.lineCap = "round"; g.lineJoin = "round";
+          g.beginPath();
+          g.moveTo(pts[0][0], pts[0][1]);
+          if (pts.length === 3) {
+            g.quadraticCurveTo(pts[1][0], pts[1][1], pts[2][0], pts[2][1]);
+          } else {
+            g.bezierCurveTo(pts[1][0], pts[1][1], pts[2][0], pts[2][1],
+                            pts[3][0], pts[3][1]);
+          }
+          g.stroke();
+        }
+        function features(hr, hy, o) {
+          o = o || {};
+          const k = o.stretch || 1;
+          const Y = (u) => hy + hr * u * k;
+          [-1, 1].forEach((sd) => {
+            // the brow, high and tapering, which is where a face's
+            // expression actually sits
+            brush([[sd * hr * 0.58, Y(-0.24)],
+                   [sd * hr * 0.38, Y(-0.40)],
+                   [sd * hr * 0.10, Y(-0.34)]], hr * 0.048);
+            // the upper lid, a shallow arc, and the eye under it
+            brush([[sd * hr * 0.56, Y(-0.02)],
+                   [sd * hr * 0.33, Y(-0.17)],
+                   [sd * hr * 0.11, Y(-0.02)]], hr * 0.046);
+            g.fillStyle = "#3a2d22";
+            g.beginPath();
+            const ew = o.eyes || 1;
+            g.ellipse(sd * hr * 0.33, Y(0.010),
+                      hr * 0.072 * ew, hr * 0.058 * ew, 0, 0, Math.PI * 2);
+            g.fill();
+            // the lower lid, barely there
+            brush([[sd * hr * 0.50, Y(0.07)],
+                   [sd * hr * 0.33, Y(0.11)],
+                   [sd * hr * 0.16, Y(0.07)]], hr * 0.030);
+          });
+          // THE NOSE: a bridge down one side and a hook at the foot of it,
+          // which is how a face is drawn in this tradition and also simply
+          // how a nose casts
+          brush([[-hr * 0.07, Y(-0.22)],
+                 [-hr * 0.13, Y(0.10)],
+                 [-hr * 0.02, Y(0.26)],
+                 [hr * 0.12, Y(0.20)]], hr * 0.042);
+          if (o.moustache) {
+            // THIN, which the novel is explicit about
+            g.strokeStyle = "#231d17";
+            g.lineWidth = hr * 0.055;
+            g.lineCap = "round";
+            g.beginPath();
+            g.moveTo(-hr * 0.30, Y(0.38));
+            g.quadraticCurveTo(0, Y(0.30), hr * 0.28, Y(0.38));
+            g.stroke();
+          }
+          if (o.agony) {
+            // the mouth twisted, which the novel insists on, and open
+            g.fillStyle = "#4a2a22";
+            g.beginPath();
+            g.ellipse(hr * 0.02, Y(0.52), hr * 0.22, hr * 0.15,
+                      0.22, 0, Math.PI * 2);
+            g.fill();
+            brush([[-hr * 0.26, Y(0.44)], [0, Y(0.34)],
+                   [hr * 0.30, Y(0.52)]], hr * 0.052);
+          } else if (o.mouth === "open") {
+            // a cry, caught: she has her hands at it in any case
+            g.fillStyle = "#4a2a22";
+            g.beginPath();
+            g.ellipse(0, Y(0.60), hr * 0.13, hr * 0.17, 0, 0, Math.PI * 2);
+            g.fill();
+          } else {
+            // THE CORNER OF THE MOUTH. Canvas y runs DOWNWARD, so a middle
+            // control point BELOW the ends is a smile, and every face in
+            // this painting was faintly smiling at a killing. Long Face was
+            // grinning. "down" drops the corners, "flat" is a straight
+            // line, and nothing here smiles.
+            const d = o.mouth === "down" ? -0.09 : 0;
+            brush([[-hr * 0.24, Y(0.60 - d)], [0, Y(0.60 + d * 0.4)],
+                   [hr * 0.24, Y(0.60 - d)]], hr * 0.052);
+          }
+        }
+
         // A HAND, AND NOT A RECTANGLE. Not a realistic hand either: within
         // this manner a hand is a MASS with three things readable on it, the
         // knuckles, the thumb and the heel, and nothing else. Drawn in a
@@ -2448,87 +2547,11 @@
               g.fill();
             });
           }
-          // A FACE, AND NOT TWO DOTS. At his ask. The heads are eighty
-          // pixels on this canvas, which is room enough for features that
-          // are drawn rather than marked: a brow, an eyelid with an eye
-          // under it, the bridge and the hook of a nose, and a mouth. The
-          // line is a warm dark brown and never black, so the face belongs
-          // to the same painting as the rest of it.
-          const LINE = "rgba(74,54,38,0.80)";
-          const brush = (pts, wide) => {
-            g.strokeStyle = LINE;
-            g.lineWidth = wide;
-            g.lineCap = "round"; g.lineJoin = "round";
-            g.beginPath();
-            g.moveTo(pts[0][0], pts[0][1]);
-            if (pts.length === 3) {
-              g.quadraticCurveTo(pts[1][0], pts[1][1], pts[2][0], pts[2][1]);
-            } else {
-              g.bezierCurveTo(pts[1][0], pts[1][1], pts[2][0], pts[2][1],
-                              pts[3][0], pts[3][1]);
-            }
-            g.stroke();
-          };
-          [-1, 1].forEach((sd) => {
-            // the brow, high and tapering, which is where a face's
-            // expression actually sits
-            brush([[sd * hr * 0.58, hy - hr * 0.24],
-                   [sd * hr * 0.38, hy - hr * 0.40],
-                   [sd * hr * 0.10, hy - hr * 0.34]], hr * 0.048);
-            // the upper lid, a shallow arc, and the eye under it
-            brush([[sd * hr * 0.56, hy - hr * 0.02],
-                   [sd * hr * 0.33, hy - hr * 0.17],
-                   [sd * hr * 0.11, hy - hr * 0.02]], hr * 0.046);
-            g.fillStyle = "#3a2d22";
-            g.beginPath();
-            g.ellipse(sd * hr * 0.33, hy + hr * 0.010,
-                      hr * 0.072, hr * 0.058, 0, 0, Math.PI * 2);
-            g.fill();
-            // the lower lid, barely there
-            brush([[sd * hr * 0.50, hy + hr * 0.07],
-                   [sd * hr * 0.33, hy + hr * 0.11],
-                   [sd * hr * 0.16, hy + hr * 0.07]], hr * 0.030);
-          });
-          // THE NOSE: a bridge down one side and a hook at the foot of it,
-          // which is how a face is drawn in this tradition and also simply
-          // how a nose casts
-          brush([[-hr * 0.07, hy - hr * 0.22],
-                 [-hr * 0.13, hy + hr * 0.10],
-                 [-hr * 0.02, hy + hr * 0.26],
-                 [hr * 0.12, hy + hr * 0.20]], hr * 0.042);
-          // and the mouth, unless the face has its own
-          if (!o.agony) {
-            brush([[-hr * 0.24, hy + hr * 0.60],
-                   [0, hy + hr * 0.68],
-                   [hr * 0.24, hy + hr * 0.60]], hr * 0.052);
-          }
+          features(hr, hy, o);
           if (o.beard) {
             field([[-hr * 0.60, hy + hr * 0.30], [hr * 0.60, hy + hr * 0.30],
                    [hr * 0.50, hy + hr * 1.80], [0, hy + hr * 2.30],
                    [-hr * 0.50, hy + hr * 1.80]], "#e8e3d7", 2.4);
-          }
-          if (o.moustache) {
-            // THIN, which the novel is explicit about: "a thin black
-            // mustache". At a seventh of the head's radius it was a bar
-            // across the whole face and it swallowed the mouth under it.
-            g.strokeStyle = "#231d17";
-            g.lineWidth = hr * 0.055;
-            g.lineCap = "round";
-            g.beginPath();
-            g.moveTo(-hr * 0.30, hy + hr * 0.38);
-            g.quadraticCurveTo(0, hy + hr * 0.30, hr * 0.28, hy + hr * 0.38);
-            g.stroke();
-          }
-          if (o.agony) {
-            // the mouth twisted, which the novel insists on, and open
-            g.fillStyle = "#4a2a22";
-            g.beginPath();
-            g.ellipse(hr * 0.02, hy + hr * 0.52, hr * 0.22, hr * 0.15,
-                      0.22, 0, Math.PI * 2);
-            g.fill();
-            brush([[-hr * 0.26, hy + hr * 0.44],
-                   [0, hy + hr * 0.34],
-                   [hr * 0.30, hy + hr * 0.52]], hr * 0.052);
           }
           // ONE ARM, FORWARD, for the two in the duel: returned in canvas
           // coordinates so the sword can be hung off the hand that holds it
@@ -2584,22 +2607,31 @@
           // Leporello half a step behind her.
           figure({ x: W * 0.800, y: FAR_Y, h: H * 0.330, robe: INDIGO,
                    under: "#ded5c2", sash: "#36425c", seed: 11,
-                   motif: H * 0.034 });
+                   motif: H * 0.034, mouth: "open" });
           // her hands, brought up to the mouth
           {
-            // BOTH HANDS, one over the other at the mouth, and each one the
-            // same mass the duellists hold their swords with, mirrored so
-            // the thumbs meet.
-            const hx = W * 0.800, hy = FAR_Y - H * 0.330 * 0.900;
-            const s2 = H * 0.330 * 0.072;
+            // BOTH HANDS, brought up to the mouth, and each one the same
+            // mass the duellists hold their swords with, mirrored so the
+            // thumbs meet.
+            //
+            // AT THE CHIN, AND THE HEIGHT IS DERIVED. A figure's mouth sits
+            // at 0.787 of its own height, being the shoulder line at 0.700
+            // plus the neck and the head above it; written as 0.900 by hand,
+            // the hands came out on her forehead and read as a hat. They
+            // stop just under the mouth, so the cry still shows above them.
+            const hh = H * 0.330;
+            const MOUTH = 0.787;
+            const hx = W * 0.800, hy = FAR_Y - hh * (MOUTH - 0.042);
+            const s2 = hh * 0.070;
             g.save(); g.translate(hx, hy);
-            g.save(); g.scale(-1, 1); fist(0.26 * s2, 0.10 * s2, s2, false);
+            g.save(); g.scale(-1, 1); fist(0.30 * s2, 0.12 * s2, s2, false);
             g.restore();
-            fist(0.30 * s2, -0.06 * s2, s2, false);
+            fist(0.34 * s2, -0.10 * s2, s2, false);
             g.restore();
           }
           figure({ x: W * 0.906, y: FAR_Y - H * 0.012, h: H * 0.296,
-                   robe: BROWN, sash: "#5f4b36", mizura: true, seed: 23 });
+                   robe: BROWN, sash: "#5f4b36", mizura: true, seed: 23,
+                   mouth: "down" });
 
           // ---- THE COMMENDATORE, falling back, in white -------------------
           // Dressed in white, a lush white beard, his mouth twisted. He is
@@ -2773,30 +2805,49 @@
                  [fx - HS * 0.13, fb - HS * 1.38],
                  [fx - HS * 0.19, fb - HS * 0.90],
                  [fx - HS * 0.22, fb - HS * 0.32]], "#cdbfa1", 2.8);
+          // HIS HAIR, walked round the crown like everyone else's, which on
+          // a face this narrow is a short dark cap with the temples showing
           g.fillStyle = "#231d17";
           g.beginPath();
-          g.moveTo(fx - HS * 0.125, fb - HS * 1.32);
-          g.lineTo(fx - HS * 0.020, fb - HS * 1.58);
-          g.lineTo(fx + HS * 0.110, fb - HS * 1.42);
-          g.lineTo(fx + HS * 0.085, fb - HS * 1.20);
-          g.lineTo(fx - HS * 0.105, fb - HS * 1.18);
+          g.moveTo(fx - HS * 0.145, fb - HS * 1.24);
+          g.bezierCurveTo(fx - HS * 0.190, fb - HS * 1.52,
+                          fx - HS * 0.060, fb - HS * 1.70,
+                          fx + HS * 0.020, fb - HS * 1.64);
+          g.bezierCurveTo(fx + HS * 0.120, fb - HS * 1.58,
+                          fx + HS * 0.150, fb - HS * 1.44,
+                          fx + HS * 0.130, fb - HS * 1.26);
+          g.bezierCurveTo(fx + HS * 0.080, fb - HS * 1.36,
+                          fx - HS * 0.060, fb - HS * 1.38,
+                          fx - HS * 0.145, fb - HS * 1.24);
           g.closePath();
           g.fill();
-          g.fillStyle = SUMI;
-          [-0.075, 0.075].forEach((u) => {
-            g.beginPath();
-            g.ellipse(fx + HS * u, fb - HS * 1.03, HS * 0.044, HS * 0.028,
-                      0, 0, Math.PI * 2);
-            g.fill();
-          });
-          stroke([[fx - HS * 0.06, fb - HS * 0.52],
-                  [fx + HS * 0.06, fb - HS * 0.54]], 3.0, SUMI);
+          // AND THE SAME FACE AS EVERYONE ELSE, which is the whole of this
+          // edit: a brow, a lid with an eye under it, a nose and a mouth.
+          // The cluster sits HIGH on the long plane and is stretched a
+          // little, because what makes a face long is not features spread
+          // apart but a great deal of jaw under them.
+          g.save();
+          g.translate(fx, fb - HS * 1.02);
+          // IMPASSIVE, and this one IS a decision. He is the figure who is
+          // in no opera and belongs to no scene: the other four are in the
+          // middle of something and he is only watching it, so he gets the
+          // same hand and the same features and no expression at all. A
+          // flat mouth, and the eyes a touch wider than anyone else's.
+          features(HS * 0.215, 0, { stretch: 1.35, mouth: "flat",
+                                    eyes: 1.25 });
+          g.restore();
           // AND THE HAND THAT HOLDS THE COVER, which is what the text says
-          // he is doing: holding its square cover half open.
-          field([[fx + HS * 0.30, fb - HS * 0.74],
-                 [fx + HS * 0.62, fb - HS * 0.52],
-                 [fx + HS * 0.56, fb - HS * 0.30],
-                 [fx + HS * 0.26, fb - HS * 0.50]], "#cdbfa1", 2.4);
+          // he is doing: holding its square cover half open. The same mass
+          // the duellists grip their swords with, turned up to the lid's
+          // edge: it was a bare parallelogram until now, for the same reason
+          // his face was two dots.
+          {
+            g.save();
+            g.translate(fx + HS * 0.46, fb - HS * 0.56);
+            g.rotate(-0.95);
+            fist(0, 0, HS * 0.30, true);
+            g.restore();
+          }
         }
 
         // THE LID IS THE ONE THING IN THIS ROOM THAT CHANGES WHEN NOBODY IS
