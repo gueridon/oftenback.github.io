@@ -2074,6 +2074,10 @@
         // true red. The red is the blood and it is now the strongest colour
         // in the room.
         const SUMI = "#2a241c";
+        // THE CONTOUR IS INK AND NOT A VECTOR OUTLINE, which is most of what
+        // softens a line without moving it: a sumi stroke is a touch
+        // transparent and the ground shows through it.
+        const INK = "rgba(34,28,21,0.86)";
         const BLOOD = "#a8231c";
         const GREEN = "#a3b885";               // "light-greenish", his clothes
         const WHITE = "#ece6d8";               // the Commendatore's
@@ -2085,27 +2089,166 @@
 
         // a brush line, and a filled field with a sumi contour. Nothing here
         // has a gradient in it: a mineral pigment is laid, not shaded.
+        // A POLYLINE OF THREE POINTS OR MORE IS DRAWN AS A CURVE, through
+        // the midpoints of its own segments: the earth lines and the twisted
+        // mouth were made of straight runs meeting at an angle, and an angle
+        // is the one thing a brush does not do.
         function stroke(pts, wide, col) {
           g.strokeStyle = col || SUMI;
           g.lineWidth = wide;
           g.lineJoin = "round"; g.lineCap = "round";
           g.beginPath();
           g.moveTo(pts[0][0], pts[0][1]);
-          for (let i = 1; i < pts.length; i++) g.lineTo(pts[i][0], pts[i][1]);
+          if (pts.length < 3) {
+            for (let i = 1; i < pts.length; i++) g.lineTo(pts[i][0], pts[i][1]);
+          } else {
+            for (let i = 1; i < pts.length - 1; i++) {
+              g.quadraticCurveTo(pts[i][0], pts[i][1],
+                                 (pts[i][0] + pts[i + 1][0]) / 2,
+                                 (pts[i][1] + pts[i + 1][1]) / 2);
+            }
+            g.quadraticCurveTo(pts[pts.length - 2][0], pts[pts.length - 2][1],
+                               pts[pts.length - 1][0], pts[pts.length - 1][1]);
+          }
           g.stroke();
         }
-        function field(pts, col, line) {
-          g.fillStyle = col;
+        // EVERY CORNER IS ROUNDED, in the PATH and not in the join. A
+        // lineJoin of round softens the ink where two strokes meet and does
+        // nothing at all to the silhouette a fill leaves, so the figures
+        // were cut-paper with sharp points however round the contour was
+        // drawn. The radius is a fraction of the shape's own size, clamped
+        // to half its shortest edge, so one rule serves a robe of 450 pixels
+        // and a hand of 20.
+        function roundPath(pts, soft) {
+          const n = pts.length;
+          let lo = 1e9, w = 0, h = 0;
+          let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
+          for (let i = 0; i < n; i++) {
+            const a = pts[i], b = pts[(i + 1) % n];
+            lo = Math.min(lo, Math.hypot(b[0] - a[0], b[1] - a[1]));
+            x0 = Math.min(x0, a[0]); x1 = Math.max(x1, a[0]);
+            y0 = Math.min(y0, a[1]); y1 = Math.max(y1, a[1]);
+          }
+          w = x1 - x0; h = y1 - y0;
+          const r = Math.max(1.5, Math.min(soft * Math.max(w, h), lo * 0.45));
+          const mid = (a, b) => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+          const st = mid(pts[n - 1], pts[0]);
           g.beginPath();
-          g.moveTo(pts[0][0], pts[0][1]);
-          for (let i = 1; i < pts.length; i++) g.lineTo(pts[i][0], pts[i][1]);
+          g.moveTo(st[0], st[1]);
+          for (let i = 0; i < n; i++) {
+            const cur = pts[i], m = mid(cur, pts[(i + 1) % n]);
+            g.arcTo(cur[0], cur[1], m[0], m[1], r);
+            g.lineTo(m[0], m[1]);
+          }
           g.closePath();
+        }
+        function field(pts, col, line, soft) {
+          g.fillStyle = col;
+          roundPath(pts, soft === undefined ? 0.055 : soft);
           g.fill();
           if (line !== false) {
-            g.strokeStyle = SUMI; g.lineWidth = line || 3.0;
-            g.lineJoin = "round";
+            g.strokeStyle = INK; g.lineWidth = line || 3.0;
+            g.lineJoin = "round"; g.lineCap = "round";
             g.stroke();
           }
+        }
+
+        // A TONE OF A COLOUR, since the grain in a cloth is the same pigment
+        // laid thicker and thinner and not a second colour.
+        //
+        // AND IT IS CALLED pigment AND NOT tone. This file is not in strict
+        // mode, so a FUNCTION DECLARATION INSIDE A BLOCK leaks out of the
+        // block into the enclosing function: named tone, it silently
+        // replaced the room's own tone(now), the exposure watcher the frame
+        // loop calls, which was then handed a number and threw on
+        // css.slice. The whole room went white and the fault was a name.
+        function pigment(css, k) {
+          const n = parseInt(css.slice(1), 16);
+          const c = [(n >> 16) & 255, (n >> 8) & 255, n & 255]
+            .map((v) => Math.max(0, Math.min(255, Math.round(v * k))));
+          return "rgb(" + c[0] + "," + c[1] + "," + c[2] + ")";
+        }
+
+        // CLOTH, AND NOT A FLAT FIELD. Mineral pigment on a robe is granular
+        // and a robe has folds in it, and both are drawn INSIDE the shape by
+        // clipping to it: grain scattered at two tones of the same pigment,
+        // then a few fold lines falling from the shoulder, then the contour
+        // last so the grain never crosses it.
+        function woven(pts, col, o) {
+          o = o || {};
+          field(pts, col, false, o.soft);
+          g.save();
+          roundPath(pts, o.soft === undefined ? 0.055 : o.soft);
+          g.clip();
+          let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
+          pts.forEach((q) => {
+            x0 = Math.min(x0, q[0]); x1 = Math.max(x1, q[0]);
+            y0 = Math.min(y0, q[1]); y1 = Math.max(y1, q[1]);
+          });
+          const w = x1 - x0, h = y1 - y0;
+          const up = pigment(col, 1.09), dn = pigment(col, 0.90);
+          const N = Math.max(40, Math.round(w * h / 90));
+          for (let i = 0; i < N; i++) {
+            const x = x0 + hash3(i + o.seed * 7, 3.1, 1.3) * w;
+            const y = y0 + hash3(i + o.seed * 7, 1.9, 6.7) * h;
+            const r = 0.9 + hash3(i, 4.2, 8.8) * 2.6;
+            g.fillStyle = hash3(i, 7.3, 2.6) < 0.5 ? up : dn;
+            g.globalAlpha = 0.28;
+            g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill();
+          }
+          g.globalAlpha = 1;
+          // THE FOLDS. The first pass drew them of equal length, dead
+          // vertical and evenly spaced, and the robe read as corduroy. A
+          // fold STARTS where the cloth is held, ENDS where it has opened
+          // out, and no two end at the same height. Each one also leans
+          // outward with the flare, because that is where the hem is going.
+          const folds = o.folds === undefined ? 3 : o.folds;
+          for (let i = 0; i < folds; i++) {
+            const u = (i + 0.55 + hash3(i + o.seed, 2.2, 9.1) * 0.9)
+                      / (folds + 0.1);
+            const xa = x0 + w * (0.22 + u * 0.56);
+            const top = y0 + h * (0.06 + hash3(i + o.seed, 6.1, 2.7) * 0.22);
+            const bot = y0 + h * (0.55 + hash3(i + o.seed, 1.3, 8.2) * 0.40);
+            const flare = (xa - (x0 + w / 2)) * 0.30;
+            const sway = (hash3(i + o.seed, 5.5, 3.3) - 0.5) * w * 0.07;
+            g.strokeStyle = dn;
+            g.globalAlpha = 0.20 + hash3(i + o.seed, 4.1, 7.3) * 0.16;
+            g.lineWidth = 1.4 + hash3(i + o.seed, 8.8, 1.1) * 2.2;
+            g.beginPath();
+            g.moveTo(xa, top);
+            g.bezierCurveTo(xa + sway, top + (bot - top) * 0.40,
+                            xa + sway + flare * 0.5,
+                            top + (bot - top) * 0.75,
+                            xa + flare, bot);
+            g.stroke();
+          }
+          g.globalAlpha = 1;
+          // a faint motif, where the dress carries one
+          if (o.motif) {
+            g.strokeStyle = pigment(col, 1.28);
+            g.globalAlpha = 0.30;
+            g.lineWidth = 1.5;
+            const st = o.motif;
+            for (let yy = y0 + st * 0.5; yy < y1; yy += st) {
+              for (let xx = x0 + ((Math.round(yy / st) % 2) ? st * 0.5 : 0);
+                   xx < x1; xx += st) {
+                g.beginPath();
+                g.moveTo(xx, yy - st * 0.22);
+                g.lineTo(xx + st * 0.22, yy);
+                g.lineTo(xx, yy + st * 0.22);
+                g.lineTo(xx - st * 0.22, yy);
+                g.closePath();
+                g.stroke();
+              }
+            }
+            g.globalAlpha = 1;
+          }
+          g.restore();
+          g.strokeStyle = INK;
+          g.lineWidth = o.line || 3.0;
+          g.lineJoin = "round"; g.lineCap = "round";
+          roundPath(pts, o.soft === undefined ? 0.055 : o.soft);
+          g.stroke();
         }
 
         // A FIGURE, DRAWN IN ITS OWN FRAME. Feet at the origin, up is -y,
@@ -2129,27 +2272,29 @@
           const sw = 0.200 * h;             // half the shoulder
           const hw = 0.290 * h;             // half the hem
           // the robe, hem to shoulder, with a sway down one side
-          field([[-hw, 0], [-sw * 1.06, SH * 0.52], [-sw, SH],
+          woven([[-hw, 0], [-sw * 1.06, SH * 0.52], [-sw, SH],
                  [sw, SH], [sw * 1.10, SH * 0.48], [hw * 1.02, 0]],
-                o.robe);
+                o.robe, { seed: o.seed, folds: 5, motif: o.motif });
           // the under-robe showing at the hem, which layered dress does
           if (o.under) {
-            field([[-hw * 0.94, 0], [hw * 0.96, 0],
+            woven([[-hw * 0.94, 0], [hw * 0.96, 0],
                    [hw * 0.92, -0.070 * h], [-hw * 0.90, -0.070 * h]],
-                  o.under, 2.4);
+                  o.under, { seed: o.seed + 5, folds: 0, line: 2.4 });
           }
           // the sash
-          field([[-sw * 1.02, SH * 0.60], [sw * 1.06, SH * 0.58],
+          woven([[-sw * 1.02, SH * 0.60], [sw * 1.06, SH * 0.58],
                  [sw * 1.04, SH * 0.50], [-sw * 1.00, SH * 0.52]],
-                o.sash || o.robe, 2.4);
+                o.sash || o.robe,
+                { seed: o.seed + 9, folds: 0, line: 2.4, soft: 0.030 });
           // two sleeves, hanging, the far one behind
           // the sleeves HANG. At 0.16h of horizontal reach they stood out
           // from the shoulder like planks; a wide sleeve falls.
-          const sl = (sd, len) => field(
+          const sl = (sd, len) => woven(
             [[sd * sw * 0.94, SH + 0.020 * h],
              [sd * (sw + 0.098 * h), SH + 0.075 * h],
              [sd * (sw + 0.082 * h), SH + 0.075 * h + len],
-             [sd * sw * 0.70, SH + 0.030 * h + len * 0.86]], o.robe);
+             [sd * sw * 0.70, SH + 0.030 * h + len * 0.86]], o.robe,
+            { seed: o.seed + sd, folds: 2, motif: o.motif });
           sl(-1, 0.255 * h);
           if (!o.armsOut) sl(1, 0.285 * h);
           // the neck, and the head on it
@@ -2201,9 +2346,9 @@
           if (o.reach) {
             const r = o.reach;                    // {dx, dy} in own heights
             const ex = r.dx * h, ey = SH + r.dy * h;
-            field([[sw * 0.80, SH + 0.040 * h], [ex, ey - 0.052 * h],
+            woven([[sw * 0.80, SH + 0.040 * h], [ex, ey - 0.052 * h],
                    [ex, ey + 0.046 * h], [sw * 0.72, SH + 0.140 * h]],
-                  o.robe);
+                  o.robe, { seed: o.seed + 3, folds: 1 });
             field([[ex - 0.022 * h, ey - 0.046 * h],
                    [ex + 0.052 * h, ey - 0.040 * h],
                    [ex + 0.050 * h, ey + 0.044 * h],
@@ -2226,7 +2371,7 @@
           // as blurred circles; a ground laid in mineral pigment is grain.
           for (let i = 0; i < 9000; i++) {
             const x = hash3(i, 2.3, 7.1) * W, y = hash3(i, 5.9, 1.7) * H;
-            const r = 1.2 + hash3(i, 3.3, 9.9) * 5.5;
+            const r = 0.9 + hash3(i, 3.3, 9.9) * 3.4;
             g.fillStyle = hash3(i, 8.1, 4.4) < 0.5
               ? "rgba(216,200,160,0.14)" : "rgba(152,134,99,0.12)";
             g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill();
@@ -2251,7 +2396,8 @@
           // Donna Anna in indigo over white, her hands at her mouth, and
           // Leporello half a step behind her.
           figure({ x: W * 0.800, y: FAR_Y, h: H * 0.330, robe: INDIGO,
-                   under: "#ded5c2", sash: "#36425c" });
+                   under: "#ded5c2", sash: "#36425c", seed: 11,
+                   motif: H * 0.034 });
           // her hands, brought up to the mouth
           {
             const hx = W * 0.800, hy = FAR_Y - H * 0.330 * 0.905;
@@ -2261,7 +2407,7 @@
                    [hx - 0.018 * W, hy - 0.010 * H]], FLESH, 2.4);
           }
           figure({ x: W * 0.906, y: FAR_Y - H * 0.012, h: H * 0.296,
-                   robe: BROWN, sash: "#5f4b36", mizura: true });
+                   robe: BROWN, sash: "#5f4b36", mizura: true, seed: 23 });
 
           // ---- THE COMMENDATORE, falling back, in white -------------------
           // Dressed in white, a lush white beard, his mouth twisted. He is
@@ -2273,14 +2419,14 @@
             // read as two men standing abreast. And his forward arm falls
             // rather than reaches: he has just let go of his own sword.
             x: W * 0.612, y: GROUND_Y, h: H * 0.420, tilt: 0.300,
-            robe: WHITE, sash: "#d8d0bd", beard: true, agony: true,
+            robe: WHITE, sash: "#d8d0bd", beard: true, agony: true, seed: 37,
             armsOut: true, reach: { dx: 0.285, dy: 0.360 },
           });
 
           // ---- DON GIOVANNI, lunging, in light green ----------------------
           const youngHand = figure({
             x: W * 0.408, y: GROUND_Y, h: H * 0.430, tilt: 0.085,
-            robe: GREEN, sash: "#8aa06a", mizura: true, moustache: true,
+            robe: GREEN, sash: "#8aa06a", mizura: true, moustache: true, seed: 53,
             // HIS HAND STOPS WELL SHORT OF THE CHEST. At 0.46 of his own
             // height the hand arrived AT the wound and the blade measured 23
             // pixels: the thrust the whole painting is of was invisible, and
@@ -2335,7 +2481,8 @@
             g.bezierCurveTo(x0 + r[2] * W * 0.9, chest[1] + 0.070 * H,
                             x0 - r[2] * W * 0.7, chest[1] + 0.140 * H,
                             x0 + r[2] * W * 0.25, yEnd);
-            g.lineTo(x0 - r[2] * W * 1.05, yEnd - 0.010 * H);
+            g.quadraticCurveTo(x0 - r[2] * W * 0.5, yEnd + 0.006 * H,
+                               x0 - r[2] * W * 1.05, yEnd - 0.010 * H);
             g.bezierCurveTo(x0 - r[2] * W * 1.6, chest[1] + 0.130 * H,
                             x0 - r[2] * W * 1.3, chest[1] + 0.060 * H,
                             x0 - r[2] * W * 1.1, chest[1] - 0.004 * H);
