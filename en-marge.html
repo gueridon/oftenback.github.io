@@ -2089,6 +2089,60 @@
         const GROUND_Y = H * 0.790;        // where the near ground begins
         const FAR_Y = H * 0.690;           // and the horizon
 
+        // A TAPERING STROKE, and it is a SHAPE and not a line. A stroke of
+        // even width is the signature of vector art; a brush is wide where
+        // it is pressed and narrow where it lifts, so the path is sampled,
+        // offset either side by half a width that runs from w0 to w1, and
+        // filled.
+        function inkTaper(a, c1, c2, b, w0, w1, col) {
+          const N = 14, L = [], R = [];
+          for (let k = 0; k <= N; k++) {
+            const t = k / N, u = 1 - t;
+            const x = u * u * u * a[0] + 3 * u * u * t * c1[0]
+                      + 3 * u * t * t * c2[0] + t * t * t * b[0];
+            const y = u * u * u * a[1] + 3 * u * u * t * c1[1]
+                      + 3 * u * t * t * c2[1] + t * t * t * b[1];
+            const dx = 3 * (u * u * (c1[0] - a[0])
+                       + 2 * u * t * (c2[0] - c1[0]) + t * t * (b[0] - c2[0]));
+            const dy = 3 * (u * u * (c1[1] - a[1])
+                       + 2 * u * t * (c2[1] - c1[1]) + t * t * (b[1] - c2[1]));
+            const m = Math.hypot(dx, dy) || 1;
+            const w = (w0 + (w1 - w0) * t) * 0.5;
+            L.push([x - dy / m * w, y + dx / m * w]);
+            R.push([x + dy / m * w, y - dx / m * w]);
+          }
+          g.fillStyle = col;
+          g.beginPath();
+          g.moveTo(L[0][0], L[0][1]);
+          for (let i = 1; i < L.length; i++) g.lineTo(L[i][0], L[i][1]);
+          for (let i = R.length - 1; i >= 0; i--) g.lineTo(R[i][0], R[i][1]);
+          g.closePath();
+          g.fill();
+        }
+        // A DAB, which is a brush set down once: an irregular edge, and the
+        // faint halo the paper draws out of it before it dries.
+        function dab(x, y, rx, ry, rot, col, al, seed) {
+          const ring = (sc, alpha) => {
+            g.globalAlpha = alpha;
+            g.fillStyle = col;
+            g.beginPath();
+            for (let k = 0; k <= 9; k++) {
+              const a2 = k / 9 * Math.PI * 2;
+              const r = 0.72 + hash3(seed * 13 + k, 2.9, 5.7) * 0.52;
+              const px = Math.cos(a2) * rx * r * sc;
+              const py = Math.sin(a2) * ry * r * sc;
+              const qx = x + px * Math.cos(rot) - py * Math.sin(rot);
+              const qy = y + px * Math.sin(rot) + py * Math.cos(rot);
+              if (k) g.lineTo(qx, qy); else g.moveTo(qx, qy);
+            }
+            g.closePath();
+            g.fill();
+          };
+          ring(1.42, al * 0.26);     // what the paper drew out of it
+          ring(1.00, al);
+          g.globalAlpha = 1;
+        }
+
         // A POLYLINE OF THREE POINTS OR MORE IS DRAWN AS A CURVE, through
         // the midpoints of its own segments, because an angle is the one
         // thing a brush does not make.
@@ -2153,22 +2207,58 @@
           // CLUSTERED AND UNEQUAL. Evenly spaced and all one size they were
           // a row of lollipops: a far treeline gathers in threes and twos
           // with gaps between, and no two of them are the same height.
-          for (let i = 0; i < 11; i++) {
+          //
+          // AND MADE OF INK. A straight trunk of even width with four flat
+          // ellipses on top of it is a diagram of a tree. What a brush does
+          // at this size: a TAPERING trunk that leans and bends, a crown of
+          // irregular DABS each with the halo the paper pulls out of it, and
+          // VALUE THAT PALES WITH DISTANCE, which is the only perspective a
+          // treeline has. The smallest are a smudge with no trunk at all,
+          // because at that size a trunk is below what ink can hold.
+          const MAX_T = H * 0.060;
+          for (let i = 0; i < 14; i++) {
             const grp = Math.floor(i / 3);
-            const tx = W * (0.028 + grp * 0.135 + (i % 3) * 0.030
-                            + hash3(i, 3.1, 7.7) * 0.020);
-            const ty = FAR_Y - H * (0.003 + hash3(i, 5.3, 2.1) * 0.007);
-            const th = H * (0.016 + Math.pow(hash3(i, 8.1, 4.4), 1.6) * 0.044);
-            stroke([[tx, ty], [tx + (hash3(i, 1.3, 9.1) - 0.5) * 6,
-                    ty - th]], 2.0, "rgba(72,62,44,0.45)");
-            g.fillStyle = "rgba(96,104,70,0.34)";
-            for (let k = 0; k < 4; k++) {
-              g.beginPath();
-              g.ellipse(tx + (hash3(i * 5 + k, 2.2, 6.6) - 0.5) * th * 0.7,
-                        ty - th * (0.55 + hash3(i * 5 + k, 7.3, 1.9) * 0.5),
-                        th * 0.26, th * 0.15, 0, 0, Math.PI * 2);
-              g.fill();
+            const tx = W * (0.024 + grp * 0.112 + (i % 3) * 0.028
+                            + hash3(i, 3.1, 7.7) * 0.018);
+            const ty = FAR_Y - H * (0.002 + hash3(i, 5.3, 2.1) * 0.008);
+            const th = H * (0.013 + Math.pow(hash3(i, 8.1, 4.4), 1.7) * 0.047);
+            // the smaller it is, the further it reads, and the paler
+            const near = Math.min(1, th / MAX_T);
+            const al = 0.16 + near * 0.34;
+            const lean = (hash3(i, 1.3, 9.1) - 0.5) * th * 0.34;
+            if (th > H * 0.022) {
+              inkTaper([tx, ty],
+                       [tx + lean * 0.3, ty - th * 0.40],
+                       [tx + lean * 0.9, ty - th * 0.62],
+                       [tx + lean, ty - th * 0.80],
+                       th * 0.085, th * 0.022,
+                       "rgba(66,56,40," + (al * 1.05).toFixed(3) + ")");
+              // and one limb off it, which is what tells a tree from a post
+              if (hash3(i, 6.1, 2.2) > 0.45) {
+                inkTaper([tx + lean * 0.6, ty - th * 0.52],
+                         [tx + lean * 0.6 + th * 0.10, ty - th * 0.58],
+                         [tx + lean * 0.6 + th * 0.20, ty - th * 0.60],
+                         [tx + lean * 0.6 + th * 0.30, ty - th * 0.66],
+                         th * 0.040, th * 0.014,
+                         "rgba(66,56,40," + (al * 0.9).toFixed(3) + ")");
+              }
             }
+            // the crown: three to six dabs, two inks, and a second touch on
+            // one of them where the brush was set down twice
+            const nd = 3 + Math.floor(hash3(i, 4.4, 1.1) * 4);
+            for (let k = 0; k < nd; k++) {
+              const u = hash3(i * 31 + k, 2.2, 6.6) - 0.5;
+              const v = hash3(i * 31 + k, 7.3, 1.9);
+              dab(tx + lean * 0.8 + u * th * 0.72,
+                  ty - th * (0.68 + v * 0.46),
+                  th * (0.20 + v * 0.14), th * (0.10 + v * 0.07),
+                  u * 0.8,
+                  hash3(i + k, 9.1, 3.3) < 0.5
+                    ? "rgb(88,98,66)" : "rgb(104,108,74)",
+                  al * (0.75 + v * 0.5), i * 31 + k);
+            }
+            dab(tx + lean * 0.8, ty - th * 0.80, th * 0.13, th * 0.075,
+                0.2, "rgb(70,82,54)", al * 0.95, i * 7 + 3);
           }
 
           // AND A PINE AT THE TOP RIGHT, which is what the gold is for: a
@@ -2223,30 +2313,36 @@
               g.moveTo(W * c[2], H * c[3]);
               g.lineTo(cx, cy);
               g.stroke();
-              g.fillStyle = PINE[i % 2];
-              g.strokeStyle = PINE[i % 2];
-              // the needles first, so the mass closes over their roots
-              g.lineWidth = 1.3;
-              for (let k = 0; k < 22; k++) {
-                const a2 = k / 22 * Math.PI * 2 + hash3(i, 1.7, 3.3) * 3;
-                const L = r * (0.66 + hash3(i * 23 + k, 2.9, 5.1) * 0.42);
+              // THE SAME TOUCH AS THE FAR TREES, which is what made the
+              // difference there: a mass with the halo the paper pulls out
+              // of it, not a rosette of spikes. Beside trees made of ink the
+              // old clusters read as plainly vectorial, and the needles were
+              // the reason: twenty two even strokes radiating from a centre.
+              // A few of them, faint, say pine; twenty two say sea urchin.
+              const col = PINE[i % 2];
+              for (let k = 0; k < 4; k++) {
+                const u = hash3(i * 29 + k, 2.2, 6.6) - 0.5;
+                const v = hash3(i * 29 + k, 7.3, 1.9);
+                dab(cx + u * r * 0.86, cy + (v - 0.5) * r * 0.66,
+                    r * (0.40 + v * 0.34), r * (0.22 + v * 0.20),
+                    u * 1.1, col, 0.46 + v * 0.26, i * 29 + k);
+              }
+              g.strokeStyle = col;
+              g.globalAlpha = 0.34;
+              g.lineWidth = 1.0;
+              g.lineCap = "round";
+              for (let k = 0; k < 8; k++) {
+                const a2 = k / 8 * Math.PI * 2 + hash3(i, 1.7, 3.3) * 3;
+                // SHORT. At more than a radius they stood off the mass as
+                // antennae rather than reading as needles in it.
+                const L = r * (0.66 + hash3(i * 23 + k, 2.9, 5.1) * 0.24);
                 g.beginPath();
-                g.moveTo(cx + Math.cos(a2) * r * 0.25,
-                         cy + Math.sin(a2) * r * 0.25);
+                g.moveTo(cx + Math.cos(a2) * r * 0.40,
+                         cy + Math.sin(a2) * r * 0.40);
                 g.lineTo(cx + Math.cos(a2) * L, cy + Math.sin(a2) * L);
                 g.stroke();
               }
-              // and the mass, an irregular round blob
-              g.beginPath();
-              for (let k = 0; k <= 12; k++) {
-                const a2 = k / 12 * Math.PI * 2;
-                const rr = r * (0.52 + hash3(i * 17 + k, 6.1, 2.3) * 0.34);
-                const px2 = cx + Math.cos(a2) * rr;
-                const py2 = cy + Math.sin(a2) * rr * 0.80;
-                if (k) g.lineTo(px2, py2); else g.moveTo(px2, py2);
-              }
-              g.closePath();
-              g.fill();
+              g.globalAlpha = 1;
             });
           }
 
