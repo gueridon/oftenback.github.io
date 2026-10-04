@@ -2528,17 +2528,45 @@
           const wg = sw + (0.030 + 0.190 * C);   // how far a sleeve reaches
           const sd0 = 0.300 + 0.032 * C;         // how far it hangs
 
+          // LEGS AND FEET, and this is the other thing his reference has that
+          // a robe reaching the ground cannot: a figure that STANDS, and
+          // therefore one that can be shown moving. The hem rises by
+          // o.legs and the legs run from it down to where each foot lands,
+          // which is given per figure, so a lunge and a fall are the same
+          // drawing with different landing points.
+          const hem = -(o.legs || 0);
+          if (o.legs) {
+            (o.feet || [[-0.07, 0], [0.07, 0]]).forEach((f, i) => {
+              const fx = f[0] * h, fy = f[1] * h;
+              const top = (hem + 0.02) * h;
+              const tx = fx * 0.42;          // the thigh stays under the hem
+              field([[tx - 0.052 * h, top], [tx + 0.052 * h, top],
+                     [fx + 0.036 * h, fy - 0.012 * h],
+                     [fx - 0.036 * h, fy - 0.012 * h]],
+                    o.trouser || o.robe, fine * 0.9, 0.12);
+              // the shoe: small, dark, and flat on the ground
+              // SMALL. At a tenth of the figure's height the shoes were two
+              // black bars laid on the ground.
+              field([[fx - 0.030 * h, fy - 0.020 * h],
+                     [fx + 0.036 * h, fy - 0.015 * h],
+                     [fx + 0.040 * h, fy], [fx - 0.032 * h, fy]],
+                    o.shoe || "#2e2822", fine * 0.9, 0.30);
+            });
+          }
+
           // THE SKIRT, a trapezoid from the hem to the shoulders. One plane.
-          woven([[-hw * h, 0], [-(hw * 0.76 + sw * 0.24) * h, SH + 0.300 * h],
+          woven([[-hw * h, hem * h],
+                 [-(hw * 0.76 + sw * 0.24) * h, SH + 0.300 * h],
                  [-sw * 0.86 * h, SH + 0.030 * h], [sw * 0.86 * h, SH + 0.030 * h],
-                 [(hw * 0.76 + sw * 0.24) * h, SH + 0.300 * h], [hw * h, 0]],
+                 [(hw * 0.76 + sw * 0.24) * h, SH + 0.300 * h], [hw * h, hem * h]],
                 o.robe, { seed: o.seed, folds: 0, line: fine * 0.9,
                           soft: CRISP, motif: o.motif });
           // AND A LAYER UNDER IT, where the dress has one: a woman's robe
           // shows what is beneath at the hem, which is a line of its own
           if (o.under) {
-            field([[-hw * 0.99 * h, 0], [hw * 0.99 * h, 0],
-                   [hw * 0.93 * h, -0.052 * h], [-hw * 0.93 * h, -0.052 * h]],
+            field([[-hw * 0.99 * h, hem * h], [hw * 0.99 * h, hem * h],
+                   [hw * 0.93 * h, (hem - 0.052) * h],
+                   [-hw * 0.93 * h, (hem - 0.052) * h]],
                   o.under, fine * 0.9, CRISP);
           }
           // its creases: long, few, fanning to the hem, and nothing across
@@ -2546,7 +2574,7 @@
            [0.21, 0.39, 0.10], [0.53, 0.76, 0.07]].forEach((u) => {
             crease([[u[0] * sw, SH / h + u[2]],
                     [u[1] * (hw + sw) * 0.5, SH / h + 0.52],
-                    [u[1] * hw, -0.01]]);
+                    [u[1] * hw, hem - 0.01]]);
           });
           // ONE break across, where the robe is tied and the cloth gathers
           crease([[-hw * 0.86, SH / h + 0.345], [0, SH / h + 0.400],
@@ -2709,21 +2737,129 @@
               ? "rgba(216,200,160,0.14)" : "rgba(152,134,99,0.12)";
             g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill();
           }
-          // TWO BANDS OF EARTH, not one. The pair in the duel stand on the
-          // near one and the two who watch on the far one: in this manner
-          // distance is drawn by standing a figure HIGHER and SMALLER, there
-          // being no perspective to put it in. On one baseline the five of
-          // them were a chorus line.
-          g.fillStyle = "#bba982";
-          g.fillRect(0, FAR_Y, W, H - FAR_Y);
-          stroke([[0, FAR_Y], [W * 0.34, FAR_Y - 5],
-                  [W * 0.72, FAR_Y + 4], [W, FAR_Y - 3]], 2.8,
-                 "rgba(42,36,28,0.35)");
-          g.fillStyle = "#b09a70";
-          g.fillRect(0, GROUND_Y, W, H - GROUND_Y);
-          stroke([[0, GROUND_Y], [W * 0.3, GROUND_Y - 7],
-                  [W * 0.7, GROUND_Y + 5], [W, GROUND_Y - 2]], 3.4,
-                 "rgba(42,36,28,0.55)");
+          // A HORIZON AND A WASH, not two bands of earth. Two flat bands with
+          // a hard line each read as a stage with a step in it. In this kind
+          // of picture the ground is ONE pale wash that warms as it goes
+          // back, and the only line in it is the horizon, soft and uneven.
+          {
+            const lg = g.createLinearGradient(0, FAR_Y - H * 0.02, 0, H);
+            lg.addColorStop(0, "#c0ac82");
+            lg.addColorStop(0.35, "#bda883");
+            lg.addColorStop(1, "#b49d78");
+            g.fillStyle = lg;
+            g.fillRect(0, FAR_Y - H * 0.02, W, H - FAR_Y + H * 0.02);
+          }
+          stroke([[0, FAR_Y], [W * 0.34, FAR_Y - 6],
+                  [W * 0.72, FAR_Y + 5], [W, FAR_Y - 4]], 2.4,
+                 "rgba(60,48,34,0.30)");
+          // and a second, fainter break where the near ground begins: it is
+          // a change of value and not a step
+          stroke([[0, GROUND_Y], [W * 0.3, GROUND_Y - 8],
+                  [W * 0.7, GROUND_Y + 6], [W, GROUND_Y - 3]], 2.2,
+                 "rgba(60,48,34,0.16)");
+
+          // SMALL TREES ON THE FAR HORIZON, on the left where the ground is
+          // open: scale is drawn by what is TINY, and with nothing small in
+          // it the picture had no distance at all.
+          // CLUSTERED AND UNEQUAL. Evenly spaced and all one size they were
+          // a row of lollipops: a far treeline gathers in threes and twos
+          // with gaps between, and no two of them are the same height.
+          for (let i = 0; i < 11; i++) {
+            const grp = Math.floor(i / 3);
+            const tx = W * (0.028 + grp * 0.135 + (i % 3) * 0.030
+                            + hash3(i, 3.1, 7.7) * 0.020);
+            const ty = FAR_Y - H * (0.003 + hash3(i, 5.3, 2.1) * 0.007);
+            const th = H * (0.016 + Math.pow(hash3(i, 8.1, 4.4), 1.6) * 0.044);
+            stroke([[tx, ty], [tx + (hash3(i, 1.3, 9.1) - 0.5) * 6,
+                    ty - th]], 2.0, "rgba(72,62,44,0.45)");
+            g.fillStyle = "rgba(96,104,70,0.34)";
+            for (let k = 0; k < 4; k++) {
+              g.beginPath();
+              g.ellipse(tx + (hash3(i * 5 + k, 2.2, 6.6) - 0.5) * th * 0.7,
+                        ty - th * (0.55 + hash3(i * 5 + k, 7.3, 1.9) * 0.5),
+                        th * 0.26, th * 0.15, 0, 0, Math.PI * 2);
+              g.fill();
+            }
+          }
+
+          // AND A PINE AT THE TOP RIGHT, which is what the gold is for: a
+          // branch coming in from the corner with its needle clusters in
+          // flat dark green, the one thing in the picture that is not a
+          // person and not the ground.
+          {
+            const px = W * 1.02, py = -H * 0.02;
+            g.strokeStyle = "rgba(58,46,32,0.78)";
+            g.lineCap = "round";
+            const limb = (x1, y1, x2, y2, x3, y3, wide) => {
+              g.lineWidth = wide;
+              g.beginPath();
+              g.moveTo(x1, y1);
+              g.quadraticCurveTo(x2, y2, x3, y3);
+              g.stroke();
+            };
+            // THE BRANCH COMES WELL INTO THE FRAME. Hung from the very
+            // corner it was almost entirely outside the picture and only the
+            // clusters showed, floating.
+            limb(px, py + H * 0.09, px - W * 0.11, py + H * 0.20,
+                 px - W * 0.25, py + H * 0.175, 9);
+            limb(px - W * 0.11, py + H * 0.165, px - W * 0.18, py + H * 0.26,
+                 px - W * 0.29, py + H * 0.300, 6);
+            limb(px - W * 0.06, py + H * 0.115, px - W * 0.085,
+                 py + H * 0.075, px - W * 0.150, py + H * 0.070, 5);
+            // THE NEEDLE CLUSTERS, third attempt and the first two name the
+            // trap. A rosette of nine ellipses round a centre read as a
+            // FLOWER. Four overlapping ellipses leaning the same way read as
+            // a PEA POD, and the whole branch as capsules on a wire. What a
+            // pine cluster actually is: a dense, roughly round tuft of many
+            // SHORT needles, dark and flat, with the needles showing at its
+            // edge. So the mass is an irregular blob and the needles are
+            // twenty strokes round it, not four ellipses.
+            const PINE = ["rgba(56,76,46,0.93)", "rgba(72,92,56,0.93)"];
+            // EACH ONE CARRIES ITS ATTACHMENT POINT. Without the twig that
+            // joins it to the limb, a cluster floats: the branch ran through
+            // the middle of them and the tufts hung in the air either side
+            // of it with a gap, which is a string of chestnuts and not a
+            // pine. The twig is the whole difference.
+            [[0.790, 0.120, 0.820, 0.158], [0.852, 0.196, 0.875, 0.172],
+             [0.893, 0.116, 0.905, 0.152], [0.757, 0.215, 0.776, 0.173],
+             [0.818, 0.292, 0.800, 0.262], [0.712, 0.172, 0.760, 0.161],
+             [0.936, 0.164, 0.952, 0.131], [0.878, 0.264, 0.856, 0.240]]
+              .forEach((c, i) => {
+              const cx = W * c[0], cy = H * c[1];
+              const r = H * (0.023 + hash3(i, 4.1, 8.3) * 0.014);
+              g.strokeStyle = "rgba(58,46,32,0.72)";
+              g.lineWidth = 2.6;
+              g.lineCap = "round";
+              g.beginPath();
+              g.moveTo(W * c[2], H * c[3]);
+              g.lineTo(cx, cy);
+              g.stroke();
+              g.fillStyle = PINE[i % 2];
+              g.strokeStyle = PINE[i % 2];
+              // the needles first, so the mass closes over their roots
+              g.lineWidth = 1.3;
+              for (let k = 0; k < 22; k++) {
+                const a2 = k / 22 * Math.PI * 2 + hash3(i, 1.7, 3.3) * 3;
+                const L = r * (0.66 + hash3(i * 23 + k, 2.9, 5.1) * 0.42);
+                g.beginPath();
+                g.moveTo(cx + Math.cos(a2) * r * 0.25,
+                         cy + Math.sin(a2) * r * 0.25);
+                g.lineTo(cx + Math.cos(a2) * L, cy + Math.sin(a2) * L);
+                g.stroke();
+              }
+              // and the mass, an irregular round blob
+              g.beginPath();
+              for (let k = 0; k <= 12; k++) {
+                const a2 = k / 12 * Math.PI * 2;
+                const rr = r * (0.52 + hash3(i * 17 + k, 6.1, 2.3) * 0.34);
+                const px2 = cx + Math.cos(a2) * rr;
+                const py2 = cy + Math.sin(a2) * rr * 0.80;
+                if (k) g.lineTo(px2, py2); else g.moveTo(px2, py2);
+              }
+              g.closePath();
+              g.fill();
+            });
+          }
 
           // ---- THE TWO WHO WATCH, set back: higher, and smaller -----------
           // Donna Anna in indigo over white, her hands at her mouth, and
@@ -2732,6 +2868,8 @@
           // the servant's and nowhere near the Commendatore's
           daimyo({ x: W * 0.800, y: FAR_Y, h: H * 0.330, robe: INDIGO,
                    cloth: 0.60, under: "#ded5c2", belt: "#36425c", seed: 11,
+                   legs: 0.055, feet: [[-0.052, 0], [0.050, 0]],
+                   trouser: "#ded5c2", shoe: "#3a332b",
                    motif: H * 0.034, mouth: "open" });
           // AND NO HANDS, at his ask and because they do not fit. Measured:
           // her mouth sits at 0.787 of her own height and her chin at 0.744,
@@ -2747,6 +2885,8 @@
           // there without covering the face they are reacting with.
           // LEPORELLO, a servant: the plainest cloth in the picture
           daimyo({ x: W * 0.906, y: FAR_Y - H * 0.012, h: H * 0.296,
+                   legs: 0.150, feet: [[-0.095, 0], [0.080, 0]],
+                   trouser: "#6d7c4e", shoe: "#e8e2d4",
                    robe: BROWN, cloth: 0.40, belt: "#5f4b36", mizura: true,
                    seed: 23, mouth: "down" });
 
@@ -2760,6 +2900,11 @@
             // read as two men standing abreast.
             x: W * 0.600, y: GROUND_Y, h: H * 0.430, tilt: 0.150,
             cloth: 1, lining: "#a8322a",
+            // FALLING BACK: the feet splay and the rear one has gone wide
+            legs: 0.135, feet: [[-0.115, 0], [0.205, 0]],
+            // his trousers a shade off the robe, or the legs are two white
+            // sticks with a shoe on the end of each
+            trouser: "#d6cfbd", shoe: "#3a332b",
             robe: WHITE, beard: true, agony: true, seed: 37,
             reach: { dx: 0.345, dy: 0.330 },
           });
@@ -2775,6 +2920,9 @@
           // of darkening it would have helped.
           const youngHand = daimyo({
             x: W * 0.408, y: GROUND_Y, h: H * 0.430, tilt: 0.085,
+            // LUNGING: one leg thrown forward and the other trailing
+            legs: 0.165, feet: [[-0.185, 0], [0.150, 0]],
+            trouser: "#5f7544", shoe: "#241f1a",
             robe: GREEN, cloth: 0.38, belt: "#728a52", seed: 53,
             mizura: true, moustache: true, mouth: "flat",
             bareArm: true, grips: true, hand: 0.082,
