@@ -4460,6 +4460,17 @@
       // re-centring had just folded into it, which is the cut. Neither can
       // happen if the mouse says nothing until he is seated.
       if (ceremony && cerT < CER_ALL) return;
+      // THE ORIGIN IS RECORDED WHATEVER ELSE THIS HANDLER DECIDES, and that
+      // is above the guard for a reason. The swing is measured from where the
+      // pointer last re-centred, and the guard below returns before ever
+      // setting it: so a dot sitting near the MIDDLE of the frame -- the
+      // takegaki's does, 108px from it at the bench, two pixels inside the
+      // 110 the guard holds -- meant the first movement was swallowed and the
+      // origin landed wherever the pointer went next. Measured: the swing
+      // then came out ZERO however far the head was turned, which is why the
+      // house beside the path could not be looked at from the one place you
+      // sit and wait.
+      if (lookOrigin.x === null) { lookOrigin.x = e.clientX; lookOrigin.y = e.clientY; }
       if (aimingAtDot(e.clientX, e.clientY)) return;   // hold the look, and the dots with it
       // RELATIVE, not absolute, and this is the general fix to what he found
       // across the whole roji: "quand on a un mouvement automatique, une fois
@@ -4473,7 +4484,6 @@
       // every automatic move ended by obeying it. Now the look follows how far
       // the pointer has MOVED since the last re-centring, and every automatic
       // move re-centres. A cursor left anywhere is a cursor left in the middle.
-      if (lookOrigin.x === null) { lookOrigin.x = e.clientX; lookOrigin.y = e.clientY; }
       const nx = Math.max(-1, Math.min(1,
         (e.clientX - lookOrigin.x) / (innerWidth * 0.5)));
       const ny = Math.max(-1, Math.min(1,
