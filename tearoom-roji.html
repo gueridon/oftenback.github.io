@@ -2063,25 +2063,26 @@
     // because it has to shed water; and it is made of thousands of stems, so
     // the surface is drawn as strips running down the slope, the same trick as
     // the leaves.
-    {
-      // The footprint is the HUT's, not a square. It was a square sized on the
-      // deeper of the two dimensions, which gave the ends their intended 52cm
-      // of eave and the narrow sides 83, and that surplus is what Nicolas saw:
-      // the roof read as bigger than the house it sits on.
-      //
-      // One factor narrows it in x, inside corner(), so the whole roof follows
-      // without knowing about it: slope, cut band, the 1900 stems per face and
-      // the rolled hips are all built from those corners.
-      //
-      // What is STILL deferred, and it is the older comment's real point: a hip
-      // over a rectangle wants a RIDGE rather than an apex point. This is a
-      // rectangular pyramid, correctly sized. The ridge is a job of its own.
-      const EAVE = 0.52;                               // the overhang, now all round
-      const RE = (SHELL_D / 2 + EAVE) * Math.SQRT2;    // eave radius, corner to corner
-      const SX = (ROOM_W / 2 + EAVE) / (SHELL_D / 2 + EAVE);
-      const RH = 1.95;                                // steep, as thatch must be
-      const TH = 0.34;                                // the depth of the thatch
-      const Y0 = WALL_H - 0.10;
+    // TWO HOUSES WEAR THIS THATCH, so it is a function and not a block: the
+    // tea house, and the host's own room at the edge of the outer garden. The
+    // seed moves every stem, so the two are the same thatch and not the same
+    // roof.
+    //
+    // The footprint is the HUT's, not a square. It was a square sized on the
+    // deeper of the two dimensions, which gave the ends their intended 52cm
+    // of eave and the narrow sides 83, and that surplus is what Nicolas saw:
+    // the roof read as bigger than the house it sits on.
+    //
+    // One factor narrows it in x, inside corner(), so the whole roof follows
+    // without knowing about it: slope, cut band, the stems per face and the
+    // rolled hips are all built from those corners.
+    //
+    // What is STILL deferred, and it is the older comment's real point: a hip
+    // over a rectangle wants a RIDGE rather than an apex point. This is a
+    // rectangular pyramid, correctly sized. The ridge is a job of its own.
+    function thatchHip(halfX, halfZ, EAVE, RH, TH, Y0, seed, N) {
+      const RE = (halfZ + EAVE) * Math.SQRT2;          // eave radius, corner to corner
+      const SX = (halfX + EAVE) / (halfZ + EAVE);
       const toL = (q) => (q <= 0.04045 ? q / 12.92 : Math.pow((q + 0.055) / 1.055, 2.4));
       const STRAW_LIT = [0.560, 0.505, 0.372], STRAW_DARK = [0.235, 0.212, 0.162];
       const MOSSY = [0.300, 0.352, 0.238];
@@ -2117,9 +2118,8 @@
         const sx2 = (B1[0] - B0[0]) / 2, sz2 = (B1[2] - B0[2]) / 2;
         const sl = Math.hypot(sx2, sz2);
         const sn = [sx2 / sl, 0, sz2 / sl];
-        const N = 1900;
         for (let i = 0; i < N; i++) {
-          let u = hash3(k * 31 + 7, i, 2.4), v = hash3(k * 31 + 7, i, 5.1);
+          let u = hash3(k * 31 + 7 + seed, i, 2.4), v = hash3(k * 31 + 7 + seed, i, 5.1);
           if (u + v > 1) { u = 1 - u; v = 1 - v; }
           const w = 1 - u - v;
           const px = APEX[0] * w + B0[0] * u + B1[0] * v;
@@ -2128,10 +2128,10 @@
           const down0 = u + v;
           // Thatch is cut clean at the eave. Un-clipped, the stems dangled past
           // it in a spiky fringe. Shorten them as they approach the edge.
-          const len = (0.26 + 0.22 * hash3(k, i, 7.3)) * (1 - 0.80 * Math.max(0, (down0 - 0.80) / 0.20));
-          const wid = 0.020 + 0.016 * hash3(k, i, 8.6);
-          const lift = 0.012 + 0.020 * hash3(k, i, 9.9);
-          const jit = (hash3(k, i, 11.2) - 0.5) * 0.10;      // stems not perfectly parallel
+          const len = (0.26 + 0.22 * hash3(k + seed, i, 7.3)) * (1 - 0.80 * Math.max(0, (down0 - 0.80) / 0.20));
+          const wid = 0.020 + 0.016 * hash3(k + seed, i, 8.6);
+          const lift = 0.012 + 0.020 * hash3(k + seed, i, 9.9);
+          const jit = (hash3(k + seed, i, 11.2) - 0.5) * 0.10;      // stems not perfectly parallel
           const ax = dn[0] + sn[0] * jit, ay = dn[1], az = dn[2] + sn[2] * jit;
           const ox = px + sn[0] * 0, oy = py + lift, oz = pz;
           const A = [ox - sn[0] * wid, oy, oz - sn[2] * wid];
@@ -2139,9 +2139,9 @@
           const C = [ox + sn[0] * wid * 0.4 + ax * len, oy + ay * len, oz + sn[2] * wid * 0.4 + az * len];
           const D = [ox - sn[0] * wid * 0.4 + ax * len, oy + ay * len, oz - sn[2] * wid * 0.4 + az * len];
           const down = u + v;                                // 0 at the apex, 1 at the eave
-          const t = 0.34 + 0.36 * hash3(k, i, 12.5) + 0.20 * (1 - down);
-          tri(A, Bp, C, t, 0.30 * down * hash3(k, i, 13.8));
-          tri(A, C, D, t, 0.30 * down * hash3(k, i, 13.8));
+          const t = 0.34 + 0.36 * hash3(k + seed, i, 12.5) + 0.20 * (1 - down);
+          tri(A, Bp, C, t, 0.30 * down * hash3(k + seed, i, 13.8));
+          tri(A, C, D, t, 0.30 * down * hash3(k + seed, i, 13.8));
         }
       }
       // the hips, rolled and slightly proud, as a thatcher finishes them
@@ -2175,6 +2175,12 @@
       }));
       roof.castShadow = true;
       roof.receiveShadow = true;
+      return roof;
+    }
+    {
+      // Kayabuki: a miscanthus thatch, which is what a rustic chashitsu wears.
+      const roof = thatchHip(ROOM_W / 2, SHELL_D / 2, 0.52, 1.95, 0.34,
+                             WALL_H - 0.10, 0, 1900);
       roof.name = "roof";          // named so a probe can find the house from above
       roof.position.z = SHELL_CZ;  // built about the origin, so it rides with the shell
       scene.add(outdoor(roof));
@@ -3309,6 +3315,173 @@
       gateStone("jikyakuishi", -0.22, 1.08, 0.18, 0.11, 129.5);
     }
 
+    // ---- en marge: the host's own room, at the edge of the outer garden ----
+    // A second small house, west of the path and across it from the waiting
+    // bench. It is not on the way to the tea, and that is the whole of what it
+    // is: the host's own room, at the margin of the walk.
+    //
+    // ITS ROOM IS THE ROOM en-marge.html STANDS IN, to the centimetre: 3.30 by
+    // 3.60 inside, walls 2.12, the paper 1.55 by 1.02 with its sill at 300,
+    // the door 700 by 720 over a 60 sill. The two pages are one building, so a
+    // visitor who crosses here arrives inside what he was looking at.
+    //
+    // THE DOOR FACES THE PATH and the paper faces away, which is not a choice
+    // either: in there the daylight is BEHIND the shoji, so the paper is on
+    // the far side from anyone walking. And a nijiriguchi is the one door that
+    // says what a building is from across a garden.
+    const MARGE = {
+      x: -2.40, z: 13.25, ry: -0.14,
+      w: 3.30, d: 3.60, h: 2.12, t: 0.11, rise: 0.30,
+      sh: { w: 1.55, h: 1.02, y: 0.30, z: -0.35 },
+      dr: { w: 0.70, h: 0.72, sill: 0.06, z: -0.46 },
+    };
+    {
+      const g = new THREE.Group();
+      const hw = MARGE.w / 2, hd = MARGE.d / 2;
+      const T2 = MARGE.t, H = MARGE.h, Y = MARGE.rise;
+      const sh = MARGE.sh, dr = MARGE.dr;
+      const wall = (sx, sy, sz, x, y, z) => {
+        const m = new THREE.Mesh(makeRuggedBox(sx, sy, sz,
+          Math.max(1, Math.round(sx * 3)), Math.max(1, Math.round(sy * 3)),
+          Math.max(1, Math.round(sz * 3)), 0.018), adobeMat);
+        m.position.set(x, y, z);
+        m.castShadow = true;
+        m.receiveShadow = true;
+        g.add(m);
+      };
+      // WHAT IT STANDS ON. A chashitsu sits on a raised floor, and without one
+      // the walls look laid on the ground rather than built.
+      const base = new THREE.Mesh(makeRuggedBox(
+        MARGE.w + T2 * 2 + 0.12, Y + 0.12, MARGE.d + T2 * 2 + 0.12,
+        8, 1, 8, 0.014), mat(0x514639));
+      base.position.set(0, Y / 2 - 0.06, 0);
+      base.castShadow = true;
+      base.receiveShadow = true;
+      g.add(base);
+
+      // the two long walls run the room's depth; the two short ones carry the
+      // corners, so there is no seam to see where they meet
+      const XW = hw + T2 / 2, ZW = hd + T2 / 2;
+
+      // the door wall, in four pieces around the opening
+      const dL = dr.z - dr.w / 2, dR = dr.z + dr.w / 2;
+      const dTop = dr.sill + dr.h;
+      wall(T2, H, dL + hd, XW, Y + H / 2, (-hd + dL) / 2);
+      wall(T2, H, hd - dR, XW, Y + H / 2, (dR + hd) / 2);
+      wall(T2, H - dTop, dr.w, XW, Y + (dTop + H) / 2, dr.z);
+      wall(T2, dr.sill, dr.w, XW, Y + dr.sill / 2, dr.z);
+
+      // the paper wall, in four pieces around its band
+      const sL = sh.z - sh.w / 2, sR = sh.z + sh.w / 2;
+      wall(T2, H, sL + hd, -XW, Y + H / 2, (-hd + sL) / 2);
+      wall(T2, H, hd - sR, -XW, Y + H / 2, (sR + hd) / 2);
+      wall(T2, H - sh.y - sh.h, sh.w, -XW, Y + (sh.y + sh.h + H) / 2, sh.z);
+      wall(T2, sh.y, sh.w, -XW, Y + sh.y / 2, sh.z);
+
+      // and the two blind walls
+      wall(MARGE.w + T2 * 2, H, T2, 0, Y + H / 2, ZW);
+      wall(MARGE.w + T2 * 2, H, T2, 0, Y + H / 2, -ZW);
+
+      // THE PAPER, and from out here it is paper and not a lamp: the sun is
+      // on this side of it by day, so it takes the light like any other
+      // surface rather than giving it off. Same basic material as the tea
+      // house's own, for the same reason -- no light touches it, so it keeps
+      // its value instead of going grey in the shade of its own eave.
+      {
+        const pane = new THREE.Mesh(new THREE.PlaneGeometry(sh.w, sh.h),
+          new THREE.MeshBasicMaterial({ color: 0xe6dcc6,
+                                        side: THREE.DoubleSide }));
+        pane.rotation.y = Math.PI / 2;
+        pane.position.set(-(hw + 0.014), Y + sh.y + sh.h / 2, sh.z);
+        g.add(pane);
+        const lat = mat(0x6f5f4c);
+        const PANE2 = 0.130, BAR2 = 0.007;
+        const nC2 = Math.round(sh.w / PANE2), nR2 = Math.round(sh.h / PANE2);
+        const kumi = (dy, dz, y, z) => {
+          const m = new THREE.Mesh(
+            makeRuggedBox(BAR2 * 1.4, dy, dz, 1, 2, 2, 0.001), lat);
+          m.position.set(-(hw + 0.022), y, z);
+          g.add(m);
+        };
+        for (let i = 1; i < nC2; i++)
+          kumi(sh.h, BAR2, Y + sh.y + sh.h / 2, sL + i * sh.w / nC2);
+        for (let j = 1; j < nR2; j++)
+          kumi(BAR2 * 1.2, sh.w, Y + sh.y + j * sh.h / nR2, sh.z);
+        const fr = mat(0x53442f);
+        const frame = (dy, dz, y, z) => {
+          const m = new THREE.Mesh(
+            makeRuggedBox(0.026, dy, dz, 1, 2, 3, 0.002), fr);
+          m.position.set(-(hw + 0.026), y, z);
+          m.castShadow = true;
+          g.add(m);
+        };
+        frame(0.030, sh.w + 0.05, Y + sh.y - 0.015, sh.z);
+        frame(0.030, sh.w + 0.05, Y + sh.y + sh.h + 0.015, sh.z);
+        frame(sh.h + 0.06, 0.030, Y + sh.y + sh.h / 2, sL - 0.015);
+        frame(sh.h + 0.06, 0.030, Y + sh.y + sh.h / 2, sR + 0.015);
+      }
+
+      // THE NIJIRIGUCHI, SHUT. Seven hundred by seven hundred and twenty, the
+      // same opening as the tea house's: it is the sign of the whole building
+      // type, and it is the one thing a visitor needs to read from the path.
+      {
+        const wood = mat(0x4a3826);
+        const leaf = new THREE.Mesh(makeRuggedBox(
+          0.030, dr.h + 0.04, dr.w + 0.05, 1, 4, 4, 0.004), wood);
+        leaf.position.set(hw + 0.030, Y + dr.sill + dr.h / 2, dr.z);
+        leaf.castShadow = true;
+        leaf.receiveShadow = true;
+        g.add(leaf);
+        [0.22, -0.22].forEach((dy) => {
+          const b = new THREE.Mesh(makeRuggedBox(
+            0.016, 0.046, dr.w + 0.05, 1, 1, 4, 0.003), mat(0x3a2c1e));
+          b.position.set(hw + 0.048, Y + dr.sill + dr.h / 2 + dy, dr.z);
+          b.castShadow = true;
+          g.add(b);
+        });
+      }
+
+      // and the thatch, the same thatch, with every stem in another place
+      const mroof = thatchHip(hw + T2, hd + T2, 0.40, 1.68, 0.30,
+                              Y + H - 0.10, 17, 1900);
+      g.add(mroof);
+
+      g.position.set(MARGE.x, groundAt(MARGE.x, MARGE.z), MARGE.z);
+      g.rotation.y = MARGE.ry;
+      g.name = "en-marge";
+      scene.add(outdoor(g));
+      // WHERE IT FALLS ON THE SCREEN at a given point of the walk. The garden
+      // was composed before this house existed, so whether a composed view
+      // contains it is a question to measure and not to reason about.
+      window.__margeOn = () => {
+        g.updateMatrixWorld(true);
+        const b = new THREE.Box3().setFromObject(g, true);
+        const c = b.getCenter(new THREE.Vector3());
+        const q = c.clone().project(camera);
+        const sx = (q.x + 1) / 2 * innerWidth, sy = (1 - q.y) / 2 * innerHeight;
+        let on = 0, n = 0;
+        for (let i = 0; i < 8; i++) {
+          const v = new THREE.Vector3(i & 1 ? b.max.x : b.min.x,
+                                      i & 2 ? b.max.y : b.min.y,
+                                      i & 4 ? b.max.z : b.min.z).project(camera);
+          n++;
+          if (v.z > -1 && v.z < 1 && Math.abs(v.x) <= 1 && Math.abs(v.y) <= 1) on++;
+        }
+        return { x: Math.round(sx), y: Math.round(sy), behind: q.z > 1,
+                 corners: on + " of " + n };
+      };
+      // AND WHERE IT COULD STAND. Moved, measured, moved back: the garden was
+      // composed before this house existed, so which ground is inside which
+      // composed view is a map to draw rather than an angle to argue.
+      window.__marge = () => {
+        g.updateMatrixWorld(true);
+        const b = new THREE.Box3().setFromObject(g, true);
+        return { x: MARGE.x, z: MARGE.z,
+                 lo: [+b.min.x.toFixed(3), +b.min.y.toFixed(3), +b.min.z.toFixed(3)],
+                 hi: [+b.max.x.toFixed(3), +b.max.y.toFixed(3), +b.max.z.toFixed(3)] };
+      };
+    }
+
     // ---- chiriana: the symbolic waste pit, beside the inner path ----------
     {
       const pit = new THREE.Group();
@@ -4217,6 +4390,9 @@
     const NOTES = [
       { at: 0.100, p: [5.82, groundAt(5.55, 13.60) + 1.05, 13.99], t: "Koshikake machiai",
         jp: "腰掛待合", d: "The waiting bench, in the outer roji. The guests sit here until the host comes to call them." },
+      { at: 0.170, p: [-0.55, groundAt(-0.55, 11.75) + 1.98, 11.75],
+        t: "En marge", jp: "", go: "en-marge.html",
+        d: "The host's own room, at the edge of the outer garden. It is not on the way to the tea: four and a half mats, a desk under the paper wall, a wall of records, a painting, and a corner for tea." },
       { at: 0.170, p: [2.30, groundAt(2.30, 9.90) + 0.75, 9.90], t: "Takegaki",
         jp: "竹垣", d: "The bamboo fence. Its culms are set almost touching, so the inner garden is not seen from the outer one." },
       { at: 0.340, p: [2.98, groundAt(2.98, 9.90) + 2.05, 9.90], t: "Chumon",
@@ -15103,8 +15279,19 @@
       cardEl.innerHTML =
         "<span class='vt'><span class='jp'>" + n.jp + "</span>" +
         "<span class='rom'>" + n.t + "</span></span>" +
-        "<span class='tx'>" + n.d + "</span>";
+        "<span class='tx'>" + n.d +
+        (n.go ? " <a class='go' href='" + n.go + "'>go in</a>" : "") +
+        "</span>";
       cardEl.classList.add("on");
+      if (n.go) {
+        const gb = cardEl.querySelector("a.go");
+        if (gb) gb.addEventListener("click", (ev) => {
+          ev.stopPropagation();
+          if (!window.__leaveTo) return;     // the plain link does the rest
+          ev.preventDefault();
+          window.__leaveTo(n.go);
+        });
+      }
     }
 
     // ---- the room answers for itself ---------------------------------------
