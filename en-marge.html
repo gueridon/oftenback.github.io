@@ -6,6 +6,7 @@
   <title>en marge &middot; oftenback</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="site.css">
+  <link rel="stylesheet" href="controls.css">
   <!--
     EN MARGE: UN LIEU, PAS UNE PAGE.
 
@@ -100,62 +101,11 @@
       font-weight:300;}
     @media (max-width:760px){ .room{padding-top:78px;} }
 
-    /* THE DIAL. Hairline and ink, like the rest of the house, but it lives
-       over a dark room so its own ink is pale. It appears only once the room
-       has opened, or it sits on the curtain. */
     /* HIDDEN MEANS HIDDEN. A display rule of our own beats the attribute's
        own display:none, so the empty name card showed itself over the room
        while promising a line it did not have. */
-    #nav[hidden],#say[hidden]{display:none !important;}
+    #say[hidden]{display:none !important;}
     html.panel #say{display:none !important;}
-    #nav{position:fixed;left:clamp(18px,3.2vw,34px);bottom:clamp(18px,3.2vw,34px);
-      z-index:20;display:flex;align-items:flex-end;gap:16px;
-      --ro:#e34234;}
-    /* THE RING AND ITS ARROWS TAKE THE SITE'S OWN VERMILLION, which is the
-       one accent the house allows, and the arrows are solid: an outlined
-       triangle at this size reads as a smudge rather than a direction. */
-    #nav .ring{position:relative;width:96px;height:96px;border-radius:50%;
-      border:1px solid rgba(227,66,52,0.52);
-      background:rgba(18,14,10,0.30);backdrop-filter:blur(3px);}
-    /* ONE TRIANGLE, TURNED FOUR WAYS. Measured, the font's own glyphs came
-       out 12.9 of ink across for the vertical pair and 10.0 for the
-       horizontal one, a difference of nearly a third on a dial whose whole
-       job is to look even. So the arrow is drawn rather than typed: a single
-       border triangle, --a degrees round, identical by construction. */
-    #nav .ar{position:absolute;background:none;border:0;padding:0;cursor:pointer;
-      width:26px;height:26px;opacity:.82;
-      transition:opacity .18s ease,transform .18s ease;}
-    #nav .ar::before{content:"";position:absolute;left:50%;top:50%;
-      width:0;height:0;
-      border-left:6px solid transparent;border-right:6px solid transparent;
-      border-bottom:10px solid var(--ro);
-      transform:translate(-50%,-50%) rotate(var(--a));}
-    #nav .ar:hover{opacity:1;}
-    #nav .ar.on{opacity:1;transform:scale(1.22);}
-    /* placed on the ring's own axes, by its middle rather than by an offset
-       counted from a corner */
-    #nav .up{--a:0deg;top:0;left:50%;margin:5px 0 0 -13px;}
-    #nav .dn{--a:180deg;bottom:0;left:50%;margin:0 0 5px -13px;}
-    #nav .lf{--a:-90deg;left:0;top:50%;margin:-13px 0 0 5px;}
-    #nav .rt{--a:90deg;right:0;top:50%;margin:-13px 5px 0 0;}
-    /* AND H AND I ARE THE ROJI'S OWN KEY ROWS, cap and gloss, down to the
-       eight pixels and the .16em. Its comment carries the reason there is no
-       border on them: an outlined cap is a button waiting to be pressed, and
-       these are labels for keys already under the hand. */
-    #nav .keys{display:flex;flex-direction:column;gap:3px;padding-bottom:8px;}
-    #nav .krow{display:flex;align-items:center;gap:9px;line-height:1;
-      background:none;border:0;padding:0;margin:0;cursor:pointer;}
-    #nav kbd{font:600 8px/1 system-ui,sans-serif;letter-spacing:.16em;
-      text-transform:uppercase;color:rgba(255,255,255,.94);
-      border:0;border-radius:3px;background:rgba(18,14,10,.34);
-      padding:4px 0 3px;min-width:50px;text-align:center;text-indent:.16em;
-      flex:0 0 auto;transition:background .2s ease,color .2s ease;}
-    #nav .d{font-size:10.5px;letter-spacing:.10em;
-      color:rgba(255,255,255,.62);transition:color .2s ease;}
-    #nav .krow:hover kbd{color:#fff;background:rgba(227,66,52,.55);}
-    #nav .krow.on kbd{color:#fff;background:var(--ro);
-      box-shadow:0 0 0 3px rgba(227,66,52,.18);}
-    #nav .krow.on .d{color:rgba(227,66,52,.92);}
 
     /* WHAT IS IN FRONT OF YOU, named. One line, bottom centre, the same
        grammar as the tea room's own card: it does not follow the pointer. */
@@ -358,21 +308,6 @@
     </div>
   </div>
   <canvas id="antre"></canvas>
-  <!-- THE ROOM'S OWN CONTROLS, bottom left: a ring with the four arrows in
-       their four places, and the two keys beside it. Pressable as well as
-       readable, because a phone has no arrow keys. -->
-  <div id="nav" hidden>
-    <div class="ring">
-      <button class="ar up" data-key="ArrowUp" aria-label="forward"></button>
-      <button class="ar dn" data-key="ArrowDown" aria-label="back"></button>
-      <button class="ar lf" data-key="ArrowLeft" aria-label="turn left"></button>
-      <button class="ar rt" data-key="ArrowRight" aria-label="turn right"></button>
-    </div>
-    <div class="keys">
-      <button class="krow" data-act="top"><kbd>H</kbd><span class="d">the room, from above</span></button>
-      <button class="krow" data-act="look"><kbd>I</kbd><span class="d">what this is</span></button>
-    </div>
-  </div>
   <div id="say" hidden><p></p></div>
   <!-- THE PLAYER, over the room. Empty until a box set is opened, and it
        is opened by choosing its spine twice. -->
@@ -414,6 +349,7 @@
   <script type="application/json" id="disques">[{"c":"FAURE","t":"REQUIEM","d":[[["0e2fdb45-7ba5-4035-b11e-7cb5d24259f1.mp3?filename=Gabriel+Faure+-+Requiem+Op.48+-+1.+Introit+and+kyrie,+2.+Offertoire,+3.+Sanctus.mp3&preview",1160,"20221206223225"],["e7b908c8-8ef2-4445-ade3-cf780f79105b.mp3?filename=Gabriel+Faure+-+Requiem+Op.48+-+4.+Pie+Jesu.mp3&preview",263,"20221207041140"],["d75176a3-0ffc-4f7b-9a53-1a30ab9307b6.mp3?filename=Gabriel+Faure+-+Requiem+Op.48+-+5.+Agnus+Dei.mp3&preview",424,"20221206204839"],["c4218eed-0855-4941-a68a-307292285070.mp3?filename=Gabriel+Faure+-+Requiem+Op.48+-+6.+Libera+me.mp3&preview",269,"20221206200100"],["4112f9fd-7977-4037-a0d4-14dc06e87a53.mp3?filename=Gabriel+Faure+-+Requiem+Op.48+-+7.+In+Paradisum.mp3&preview",216,"20221207015844"],["6395717a-ac5d-421a-b126-8c2005a855f2.mp3?filename=%C3%89l%C3%A9gie,+Op.+24+-+Complete+Performance.mp3&preview",426,"20211211234714"]]]},{"c":"FAURE","t":"PIANO WORKS","d":[[["6fc4cdfe-8a8e-4d55-aee7-357e89696a16.mp3?filename=Fantaisie,+Op.+79+-+Andantino.mp3&preview",119,"20230517130547"],["9458f18c-7bab-484b-b1ca-0ce484472506.mp3?filename=Faure+-+Barcarolle+No.1+in+A+minor,+Op.26+-+I.mp3&preview",277,"20211212032857"],["91b53781-da27-4792-8f56-b70b2049e30f.mp3?filename=Berceuse,+Op.+16.mp3&preview",310,"20211213125924"]]]},{"c":"BEETHOVEN","t":"THE SONATAS","d":[[["5d730eaa-3e26-4ebd-8ba7-0fd0d537baf9.mp3?filename=Beethoven,+Sonata+No.+3+in+C+Major,+Op.+2,+No.+3--1st+Movement--Allegro+con+brio.mp3&preview",479,"20220127034257"],["8ccd0044-8ff5-4ed7-841d-2777cffc38f1.mp3?filename=Beethoven,+Sonata+No.+3+in+C+Major,+Op.+2,+No.+3--2nd+Movement--Adagio.mp3&preview",474,"20220127040246"],["1a442473-ff5f-40aa-97b7-9ab217b45f5e.mp3?filename=Beethoven,+Sonata+No.+3+in+C+Major,+Op.+2,+No.+3--4th+Movement--Allegro+assai.mp3&preview",319,"20220127034315"],["034dba88-0cce-44ad-8ac5-877866f83521.mp3?filename=Piano+Sonata+no.+1+in+Fm,+Op.+2+no.+1+-+Complete+Performance.mp3&preview",1021,"20220130133356"]],[["8cfaadff-502b-4b51-92f2-d0d1fb037d8f.mp3?filename=Piano+Sonata+no.+1+in+Fm,+Op.+2+no.+1+-+I.+Allegro.mp3&preview",242,"20220130133348"],["ad40117e-6129-45e4-9d9e-ca9dc96ae7e8.mp3?filename=Piano+Sonata+no.+1+in+Fm,+Op.+2+no.+1+-+II.+Adagio.mp3&preview",298,"20220130222530"]],[["16f3a29e-6561-4f23-9ebb-ed832130a3b4.mp3?filename=Piano+Sonata+no.+1+in+Fm,+Op.+2+no.+1+-+III.+Menuetto+-+Allegretto.mp3&preview",203,"20220130172452"],["5bc9cb6d-9f65-4db2-b034-afaac90edc17.mp3?filename=Piano+Sonata+no.+1+in+Fm,+Op.+2+no.+1+-+IV.+Prestissimo.mp3&preview",328,"20220130222618"],["d54c4ce4-e88e-45f2-b2d8-bf16985d1724.mp3?filename=Piano+Sonata+no.+2+in+A,+Op.+2+no.+2+-+Complete+Performance.mp3&preview",1482,"20230423153208"]],[["1ccb721b-7007-4185-be44-b2541f2f7ed3.mp3?filename=Sonata+No.+3+in+C+Major,+Op.+2+No.+3+-+I.+Allegro+con+brio.mp3&preview",504,"20220127011941"],["3fa416a2-eb1f-4138-8da7-9c8fe7ebc959.mp3?filename=Sonata+No.+3+in+C+Major,+Op.+2+No.+3+-+II.+Adagio.mp3&preview",454,"20220127034305"],["74a7c8c3-f2bb-46d9-9ff7-d48b35ca77cb.mp3?filename=Sonata+No.+3+in+C+Major,+Op.+2+No.+3+-+IV.+Allegro+assai.mp3&preview",335,"20230425105442"],["37e77629-0142-4778-a9c9-3e14177576d9.mp3?filename=Violin+Sonata+No.+1+in+D+Major,+Op.+12,+No.+1+-+II.+Tema+con+Variazioni.+Andante+con+Moto%3B+III.+Rondo.+Allegro.mp3&preview",2734,"20230513181258"]],[["a53bcad9-3e15-40ca-8cce-0132d7074af2.mp3?filename=Piano+Sonata+no.+15+in+D+'Pastoral',+Op.+28+-+Complete+Performance.mp3&preview",1405,"20230503181030"],["bd2efd49-332b-4cf1-8c73-c1a9e5b25c65.mp3?filename=Piano+Sonata+no.+15+in+D+%27Pastoral%27,+Op.+28+-+I.+Allegro.mp3&preview",398,"20221019220245"],["3723c037-7894-43ff-afab-22b8004478c1.mp3?filename=Sonata+No.+15+in+D+Major+Pastoral,+Op.+28+-+I.+Allegro.mp3&preview",488,"20230503181034"]],[["3359555d-52a0-4a42-8217-598a9f8c2bce.mp3?filename=Sonata+No.+15+in+D+Major+Pastoral,+Op.+28+-+II.+Andante.mp3&preview",358,"20211019230750"],["77347367-9fde-452d-bea9-64fa6443407c.mp3?filename=Sonata+No.+15+in+D+Major+Pastoral,+Op.+28+-+III.+Scherzo.+Allegro+vivace.mp3&preview",138,"20211020102842"],["a7307eab-64b7-43ab-9a33-29e3516f483b.mp3?filename=Sonata+No.+15+in+D+Major+Pastoral,+Op.+28+-+IV.+Rondo.+Allegro+ma+non+troppo.mp3&preview",305,"20211019091414"]]]},{"c":"BEETHOVEN","t":"THE SYMPHONIES","d":[[["0cc2635a-2d72-45b2-b07c-6ffbd36045b9.mp3?filename=Beethoven+-+Symphony+No.+9+in+D+minor,+Op.+125+-+I.+Allegro+Ma+Non+Troppo,+un+Poco+Maestoso.mp3&preview",907,"20221207000549"],["e5c8a2ee-6669-402a-87c0-e1e8829d3ed8.mp3?filename=Beethoven+-+Symphony+No.+9+in+D+minor,+Op.+125+-+I.+Allegro+Ma+Non+Troppo,+un+Poco+Maestoso+(For+Recorder+Ensemble+and+Chorus+-+Papalin).mp3&preview",204,"20211108162015"],["a383cfe7-3f87-4ba4-b97b-2ef3986d3bc1.mp3?filename=Beethoven+-+Symphony+No.+9+in+D+minor,+Op.+125+-+II.+Scherzo:+Molto+Vivace+-+Presto.mp3&preview",629,"20221206162517"],["c4d9e8a8-b13c-4089-905d-33d470b4e117.mp3?filename=Beethoven+-+Symphony+No.+9+in+D+minor,+Op.+125+-+II.+Scherzo:+Molto+Vivace+-+Presto+(For+Recorder+Ensemble+and+Chorus+-+Papalin).mp3&preview",0,"20221207055408"],["d25c8883-66d4-4de0-91f4-42bd9f60aad8.mp3?filename=Beethoven+-+Symphony+No.+9+in+D+minor,+Op.+125+-+III.+Adagio+Molto+e+Cantabile+(For+Recorder+Ensemble+and+Chorus+-+Papalin).mp3&preview",340,"20211031142251"],["ac50b297-c059-45b0-a98a-0ce8cfb39140.mp3?filename=Beethoven+-+Symphony+No.+9+in+D+minor,+Op.+125+-+III.+Adagio+Molto+e+Cantabile+I.mp3&preview",376,"20221207230609"],["9d5bdb9a-96ba-41ab-bd94-06caaaaa38ec.mp3?filename=Beethoven+-+Symphony+No.+9+in+D+minor,+Op.+125+-+III.+Adagio+Molto+e+Cantabile+II.mp3&preview",231,"20211108162020"],["689d3390-e9a4-4655-b4f3-1e265fb56f7d.mp3?filename=Beethoven+-+Symphony+No.+9+in+D+minor,+Op.+125+-+IV.+Presto+-+Allegro+Assai.mp3&preview",1443,"20211108162018"]],[["2cd535d4-28a9-47be-b0ab-59e9a0dcc93e.mp3?filename=Beethoven+-+Symphony+No.+9+in+D+minor,+Op.+125+-+IV.+Presto+-+Allegro+Assai+(For+Recorder+Ensemble+and+Chorus+-+Papalin).mp3&preview",1350,"20221206184727"],["519282ab-92f9-4bc3-a291-746ce086ff59.mp3?filename=Beethoven+-+Symphony+No.9+in+D+minor+Op.125+-+I.+Allegro+Ma+Non+Troppo,+un+Poco+Maestoso.mp3&preview",926,"20221206163319"],["593d0ca5-4129-4b68-9d95-146ef25637ba.mp3?filename=Beethoven+-+Symphony+No.9+in+D+minor+Op.125+-+II.+Scherzo:+Molto+Vivace+-+Presto.mp3&preview",600,"20221207004607"],["0b5fdfae-0131-455d-b13e-995c15a75d5a.mp3?filename=Beethoven+-+Symphony+No.9+in+D+minor+Op.125+-+III.+Adagio+Molto+e+Cantabile.mp3&preview",974,"20211108162026"],["6019aa07-eddc-4a2f-91fe-8a7a5411f7a5.mp3?filename=Beethoven+-+Symphony+No.9+in+D+minor+Op.125+-+IV.+Final.mp3&preview",1391,"20221206183130"]],[["21d6af93-b51c-4e0a-988c-3fe623462377.mp3?filename=Beethoven+-+Symphony+No.9+in+D+minor+Op.125+-+V..mp3&preview",770,"20221206222055"],["b4cddaa0-045b-4267-a4a5-23783d4fa80c.mp3?filename=Beethoven+-+Symphony+No.6+in+F+major+Op.68+-+II.+Andante+molto+mosso.mp3&preview",700,"20230605060252"],["0a73e834-ac1f-4abc-a3ea-618870e0000d.mp3?filename=Beethoven+-+Symphony+No.6+in+F+major+Op.68+-+III.+Allegro+IV.+Allegro+V.+Allegretto.mp3&preview",1052,"20230604125243"],["3d6039c5-1ce8-4bd2-bb32-68767c1c29fe.mp3?filename=Symphony+No.+6+in+F+Major+%27Pastoral%27,+Op.+68+-+IV.+Allegro.mp3&preview",0,"20221019220244"],["aa7892f7-62c4-45d4-bc93-a9410392a26b.mp3?filename=Symphony+no.+5+in+Cm,+Op.+67+-+I.+Allegro+con+brio.mp3&preview",545,"20221205153626"],["7e4b8e5c-22ae-44b9-8ecd-0d80403b35a8.mp3?filename=Symphony+no.+5+in+Cm,+Op.+67+-+I.+Allegro+con+brio+(For+Recorder+Ensemble+-+Papalin).mp3&preview",80,"20221207005838"],["5fa87966-8f0c-400e-b762-92eb09e04af8.mp3?filename=Symphony+no.+5+in+Cm,+Op.+67+-+II.+Andante+con+moto.mp3&preview",721,"20220217084956"]],[["706d4705-f718-4bfb-a493-37498174c487.mp3?filename=Symphony+no.+5+in+Cm,+Op.+67+-+II.+Andante+con+moto+(For+Recorder+Ensemble+-+Papalin).mp3&preview",146,"20221205151251"],["8819f92d-ee01-47a7-bb45-632a87108076.mp3?filename=Symphony+no.+5+in+Cm,+Op.+67+-+III+Allegro+IV.+Allegro.mp3&preview",781,"20221205142727"],["21e1ca4f-49dc-4db9-ab1a-68646bde1149.mp3?filename=Symphony+no.+5+in+Cm,+Op.+67+-+III.+Allegro.mp3&preview",338,"20221206155919"],["3cab85b9-ad3b-4bde-8c6d-4d5d87d25494.mp3?filename=Symphony+no.+5+in+Cm,+Op.+67+-+III.+Allegro+(For+Recorder+Ensemble+-+Papalin).mp3&preview",57,"20221205112330"],["8de6b3b2-3b57-433e-9507-96b546612712.mp3?filename=Symphony+no.+5+in+Cm,+Op.+67+-+III.+Allegro+attacca.mp3&preview",958,"20220217084735"],["4f197fff-09f2-4623-a9c0-e7ec8399e00d.mp3?filename=Symphony+no.+5+in+Cm,+Op.+67+-+IV.+Allegro.mp3&preview",687,"20220217084320"],["3b3593f6-e58e-4d79-9905-653610b104d0.mp3?filename=Symphony+no.+5+in+Cm,+Op.+67+-+IV.+Allegro+(For+Recorder+Ensemble+-+Papalin).mp3&preview",116,"20220130063044"],["1750809c-906a-4ca2-b819-d1ddd868cb29.mp3?filename=Symphony+No.1+in+C+major+Op.21+-+I.+Adagio+molto+allegro+con+brio.mp3&preview",560,"20220803195838"],["0a81ae8b-de66-4dfa-baba-683de731939e.mp3?filename=Symphony+No.1+in+C+major+Op.21+-+II.+Andante+cantabile+con+moto.mp3&preview",380,"20220803195840"],["88a1b520-3733-436e-aa25-60060615e739.mp3?filename=Symphony+No.1+in+C+major+Op.21+-+III.+Minuetto+and+trio.mp3&preview",236,"20220803195840"]],[["fefd91a4-bd94-4fa6-851b-51cbc85c73a4.mp3?filename=Symphony+No.1+in+C+major+Op.21+-+IV.+Adagio+Allegro+molto+e+vivace.mp3&preview",370,"20220803195841"],["1e744da7-47ce-462d-b6e0-0256c1f7aa6f.mp3?filename=Symphony+no.+1+in+C,+Op.+21+-++I.+Adagio+molto+-+Allegro+con+brio.mp3&preview",530,"20220803195843"],["4629570d-8440-4314-8c2e-714ccaf0d578.mp3?filename=Symphony+no.+1+in+C,+Op.+21+-++II.+Andante+cantibile+con+moto.mp3&preview",428,"20220803195844"],["8a057bc2-e913-47b8-8aee-d969fde09f87.mp3?filename=Symphony+no.+1+in+C,+Op.+21+-++IV.+Adagio+-+Allegro+molto+e+vivace.mp3&preview",342,"20220803195848"],["78803730-a127-4fef-bcf8-def4774a8f76.mp3?filename=Symphony+no.+1+in+C,+Op.+21+-+Complete+Performance+%28Recorder+ensemble+version%29.mp3&preview",109,"20220803195850"],["b3948713-6af5-457a-85d5-47e0cc861ba0.mp3?filename=Symphony+no.+1+in+C,+Op.+21+-+III.+Menuetto+-+Allegro+molto+e+vivace.mp3&preview",260,"20220803195847"]]]},{"c":"BEETHOVEN","t":"THE CONCERTOS","d":[[["459dcc61-bccf-47f2-b2fc-6d86f20223f5.mp3?filename=+Concerto+in+D,+Op.+61+-+III.+Rondo:+Allegro.mp3&preview",904,"20221207202348"],["abda2887-5cb6-419c-b5e1-6b8c0f92b97b.mp3?filename=Violin+Concerto+in+D+major,+Op.+61+-+I.+Allegro+ma+non+troppo.mp3&preview",2065,"20221206074209"],["a2584781-1008-44b8-bb89-5300f52559d0.mp3?filename=Violin+Concerto+in+D+major,+Op.+61+-+II.+Larghetto.mp3&preview",825,"20221205212046"],["3095a46a-7b0f-4776-936d-02a68ef7bcc8.mp3?filename=Violin+Concerto+in+D+major,+Op.+61+-+III.+Rondo:+Allegro.mp3&preview",904,"20221207130658"],["54e260d2-87f8-4bb6-bba7-044322c901a7.mp3?filename=Violin+Concerto+in+D,+Op.+61+-+I.+Allegro+ma+non+troppo.mp3&preview",1324,"20221207041703"]],[["711c0b92-7bcd-4141-a652-050c3128af84.mp3?filename=Violin+Concerto+in+D,+Op.+61+-+II.+Larghetto.mp3&preview",825,"20221206005726"],["6ce6b7c1-6910-455c-976a-fb9bf33f45dd.mp3?filename=Violin+Concerto+in+D,+Op.+61+-+II.+Larghetto+III.+Rondo+(Allegro).mp3&preview",1196,"20220130192447"],["a7ffc5d7-9191-4ecf-98af-5bc31289ef1f.mp3?filename=Piano+Concerto+No.+4+in+G+Major,+Op.+58+-+II.+Andante+con+moto.mp3&preview",300,"20230525121924"],["17d7e89d-83c0-49a8-b014-1df8874c89a9.mp3?filename=Piano+Concerto+No.+4+in+G+Major,+Op.+58+-+III.+Rondo+(Vivace).mp3&preview",592,"20230525121920"],["dab027d6-e954-4dbb-a626-d9f4615b3f53.mp3?filename=Piano+Concerto+no.+4+in+G+major,+Op.+58+-+II.+Andante+con+moto.mp3&preview",273,"20221019220307"],["7a227bf4-4b88-44ad-a4d9-16e1ced79f8e.mp3?filename=+Concerto+no.+1+in+C,+Op.+15+-+I.+Allegro+con+brio.mp3&preview",0,"20210622150946"],["0b9667c0-5148-4a6c-ae2d-a3de5a5f8bf8.mp3?filename=Beethoven+-+Concerto+No.1+in+C+Major+Op.15+-+I.+Allegro+con+brio.mp3&preview",1100,"20210622150912"],["59f5353d-bd87-4085-9e29-e100b9e021cf.mp3?filename=Beethoven+-+Concerto+No.1+in+C+Major+Op.15+-+II.+Largo.mp3&preview",739,"20210622150927"],["4906b6d2-578b-417a-84bb-a8ce36db1cb1.mp3?filename=Beethoven+-+Concerto+No.1+in+C+Major+Op.15+-+III.+Rondo+Allegro+scherzando.mp3&preview",531,"20210622150938"]],[["16ef1c63-ef33-443f-8d2e-b53f13b423e9.mp3?filename=Concerto+no.+1+in+C,+Op.+15+-+II.+Largo.mp3&preview",0,"20210622150953"],["358e9104-811c-40e5-9bc2-35292be3d26d.mp3?filename=Concerto+no.+1+in+C,+Op.+15+-+III.+Rondo+(Allegro+scherzando).mp3&preview",0,"20230521202949"],["3080dfbb-cec7-4746-9cf5-c7d5e82a272c.mp3?filename=Beethoven+-+Piano+Concerto+No.+3,+Op+37,+I.+Allegro+con+brio.mp3&preview",1040,"20221205114547"],["f565ada8-3942-4599-93fe-8f20497fe300.mp3?filename=Piano+Concerto+No.3,+Op.37+-+I.+Allegro+con+brio.mp3&preview",1472,"20221205145739"],["f0abb004-351e-4826-ac3c-a7173160da1b.mp3?filename=Piano+Concerto+No.3,+Op.37+-+II.+Largo.mp3&preview",781,"20221205143136"],["9054005d-7a94-48fe-ac96-d33079ddad08.mp3?filename=Piano+Concerto+No.3,+Op.37+-+III.+Rondo.+Allegro.mp3&preview",790,"20221205210932"]]]},{"c":"BEETHOVEN","t":"THE STRING QUARTETS","d":[[["63d82abb-f5e6-436a-b5c8-dfc96215cfb7.mp3?filename=String+Quartet+No.+6+in+B+Flat+Major,+Op.+18,+No.+6+-+Complete+Performance.mp3&preview",1457,"20221209122610"],["ea3ae448-feed-40b7-b013-266bcffa4812.mp3?filename=String+Quartet+No.+6+in+B+Flat+Major,+Op.+18,+No.+6+-+I.+Allegro.mp3&preview",277,"20221209010132"],["a0a12d34-ce2b-42b4-a05c-37f3987543e5.mp3?filename=String+Quartet+No.+6+in+B+Flat+Major,+Op.+18,+No.+6+-+I.+Allegro+con+brio.mp3&preview",0,"20221209011950"],["b059cfae-65df-415b-8b89-fcea9a116b58.mp3?filename=String+Quartet+No.+6+in+B+Flat+Major,+Op.+18,+No.+6+-+II.+Adagio.mp3&preview",358,"20221209161459"],["0e94d44f-1bdb-4ebb-8113-580558a68602.mp3?filename=String+Quartet+No.+6+in+B+Flat+Major,+Op.+18,+No.+6+-+II.+Adagio+ma+non+troppo.mp3&preview",0,"20221209022321"],["931a0f0b-55d5-4e76-9d66-96d874294793.mp3?filename=String+Quartet+No.+6+in+B+Flat+Major,+Op.+18,+No.+6+-+III.+Scherzo.mp3&preview",194,"20221209063923"],["024ba97f-2b64-4234-a1b3-3b9e8bf6c085.mp3?filename=String+Quartet+No.+6+in+B+Flat+Major,+Op.+18,+No.+6+-+III.+Scherzo+Allegro.mp3&preview",0,"20221209043900"],["4c76afb2-cba1-462c-9f6a-b1d68924cd78.mp3?filename=String+Quartet+No.+6+in+B+Flat+Major,+Op.+18,+No.+6+-+IV.+(Adagio)+La+Malinconia.mp3&preview",0,"20221209052705"],["a3143246-0b1d-40b5-9923-2ed68ad708f7.mp3?filename=String+Quartet+No.+6+in+B+Flat+Major,+Op.+18,+No.+6+-+IV.+La+Malinconia.mp3&preview",35,"20221209023944"],["8b246033-ecc9-4e75-9cc2-67d67c3a5f2a.mp3?filename=String+Quartet+no.+13+in+Bb,+Op.+130+-+Complete+Performance.mp3&preview",2814,"20221206195142"]],[["f9c70997-1e4a-459f-9795-7e2288e3a163.mp3?filename=String+Quartet+no.+13+in+Bb,+Op.+130+-+I.+Adagio.mp3&preview",561,"20221206202700"],["cc982839-6c48-460d-b7db-b313b9e09e63.mp3?filename=String+Quartet+no.+13+in+Bb,+Op.+130+-+II.+Presto.mp3&preview",118,"20221206234633"],["c8de8618-7759-4775-bdda-87fc2454a6ae.mp3?filename=String+Quartet+no.+13+in+Bb,+Op.+130+-+III.+Andante+con+moto.mp3&preview",384,"20221209223525"],["c70ea749-0bed-4545-8207-5efb9577c30b.mp3?filename=String+Quartet+no.+13+in+Bb,+Op.+130+-+IV.+Allegro+assai.mp3&preview",213,"20221206185246"],["72ef8149-fc80-4a35-b09e-e71428bea351.mp3?filename=String+Quartet+no.+13+in+Bb,+Op.+130+-+V.+Cavatina.mp3&preview",383,"20221207041552"],["9b29b17b-5924-48e5-b7a3-7acc58962db8.mp3?filename=String+Quartet+no.+13+in+Bb,+Op.+130+-+VI.+Finale+Allegro.mp3&preview",480,"20221206184231"],["0d79b8ec-dea2-4a03-a9cb-cc26daeadc40.mp3?filename=Beethoven+-+Quartet+No.8+in+E+minor,+Op.59,+No.2+-+Complete+Performance.mp3&preview",2139,"20221206072954"],["62fb68dc-53fd-4009-8e42-d7d59a8d3d9f.mp3?filename=Beethoven+-+Quartet+No.8+in+E+minor,+Op.59,+No.2+-+I.+Allegro.mp3&preview",581,"20221206101911"],["76f16f25-8a76-4f79-b618-844423acb378.mp3?filename=Beethoven+-+Quartet+No.8+in+E+minor,+Op.59,+No.2+-+II.+Molto+adagio.mp3&preview",768,"20221206065554"],["7937e9f6-353f-4158-9aa7-5203665661d9.mp3?filename=Beethoven+-+Quartet+No.8+in+E+minor,+Op.59,+No.2+-+III.+Allegratto.mp3&preview",327,"20221206073746"],["103bb620-a3ae-4fa8-8e90-d171483495ef.mp3?filename=Beethoven+-+Quartet+No.8+in+E+minor,+Op.59,+No.2+-+IV.+Presto.mp3&preview",334,"20221207143353"]],[["c89dbe2b-5af3-49dc-8aa9-686fa271dcd7.mp3?filename=Beethoven+-+String+Quartet+No.7+in+F+major+Op.59+-+Complete+Performance.mp3&preview",2415,"20221207005322"],["ba9237ec-bc02-4ac0-8b31-7cc35f28479d.mp3?filename=Beethoven+-+String+Quartet+No.7+in+F+major+Op.59+-+I.+Allegro.mp3&preview",649,"20221207182153"],["2aa7439f-8324-449c-a1c6-ab2b6eff7a64.mp3?filename=Beethoven+-+String+Quartet+No.7+in+F+major+Op.59+-+II.+Allegreto+vivace.mp3&preview",507,"20221206085540"],["83dee9a6-8742-4aef-a45d-c608601e62f0.mp3?filename=Beethoven+-+String+Quartet+No.7+in+F+major+Op.59+-+III.Adagio+molto+e+mesto.mp3&preview",1042,"20221207044513"]]]},{"c":"BEETHOVEN","t":"THE TRIOS","d":[[["4fb61acc-6866-4680-8587-7aac5d45e74d.mp3?filename=3+String+Trios,+Op.+9+-+No.+1+in+G+major.mp3&preview",390,"20221020022917"]],[["fd80ff2e-1e05-4b32-855f-a2c0d4fd83ae.mp3?filename=3+String+Trios,+Op.+9+-+No.+2+in+D+major.mp3&preview",528,"20221020022913"]],[["05ea4a56-adec-4ffd-b9e7-4b6fcad25a57.mp3?filename=Piano+Trio+in+D+major,+Op.+70+no.+1.mp3&preview",1534,"20230612083831"]]]},{"c":"BEETHOVEN","t":"THE OCTETS","d":[[["ddba7d84-a721-47c1-8175-32fbc0b0bd4d.mp3?filename=Wind+Octet+in+E+flat+major,+Op.103+-+I.+Allegro.mp3&preview",460,"20221207162136"],["ca183e8d-cbba-43d8-9ad6-2408252de83d.mp3?filename=Wind+Octet+in+E+flat+major,+Op.103+-+II.+Andante.mp3&preview",489,"20221206161546"],["31db3c57-6768-463d-9b11-f7ba7a7291be.mp3?filename=Wind+Octet+in+E+flat+major,+Op.103+-+III.+Menuetto.mp3&preview",188,"20221206045225"],["68860972-1a27-43e3-b8fb-c9b375467119.mp3?filename=Wind+Octet+in+E+flat+major,+Op.103+-+IV.+Presto.mp3&preview",218,"20221206112951"]]]},{"c":"BEETHOVEN","t":"THE OVERTURES","d":[[["75032413-e16e-417e-97af-f7a67e78e00a.mp3?filename=Coriolan+Overture,+Op.+62.mp3&preview",0,"20211210144852"],["1b89c970-321e-48c7-b1dd-bff1ade4af29.mp3?filename=Egmont+Overture+Op.+84.mp3&preview",0,"20211121050112"],["acc45dcb-dd80-482b-8015-72c1b167874d.mp3?filename=Leonore+Overture+no.+1,+Op.+138.mp3&preview",818,"20221206020748"]]]},{"c":"BEETHOVEN","t":"SERENADES","d":[[["94e00179-1a5f-4a9f-b7f8-d6421e43546d.mp3?filename=Trio+in+E+Flat+Major,+Op.+38+-+III.+Tempo+di+Minuetto.mp3&preview",223,"20221019220257"],["904691d2-7773-49ba-b936-1f4f21654fbc.mp3?filename=Trio+in+E+Flat+Major,+Op.+38+-+IV.+Andante+con+Variazioni.mp3&preview",450,"20221019220256"]]]},{"c":"BEETHOVEN","t":"FUGUES","d":[[["05e229b4-789c-4b41-b420-e87cff9ca31b.mp3?filename=Grand+Fugue,+Op.+133+%28Orchestral%29.mp3&preview",302,"20221019220308"]]]},{"c":"BEETHOVEN","t":"THE ORATORIOS","d":[[["d7147738-9536-453e-874b-58094d766312.mp3?filename=Christ+in+the+Mount+of+Olives,+Op.+85+-+IV.+Recitative.mp3&preview",883,"20221019220305"]]]},{"c":"BEETHOVEN","t":"INCIDENTAL MUSIC","d":[[["1b89c970-321e-48c7-b1dd-bff1ade4af29.mp3?filename=Egmont+Overture+Op.+84.mp3&preview",0,"20211121050112"]]]},{"c":"BEETHOVEN","t":"BAGATELLES","d":[[["da249d63-f6fa-498e-928f-62f1d4408019.mp3?filename=Bagatelle+no.+25+%27%27F%C3%BCr+Elise%27%27,+WoO+59.mp3&preview",170,"20221019220253"]]]},{"c":"BEETHOVEN","t":"MINUETS","d":[[["e5238792-b5a6-48c0-b3cf-689328ffc786.mp3?filename=6+Minuets,+WoO+10+-+no.+2+in+G.mp3&preview",144,"20221019220253"]]]},{"c":"BEETHOVEN","t":"THE SEXTETS","d":[[["796aa941-9a03-4f10-88d8-a67d9ab181e1.mp3?filename=Wind+Sextet+in+E+Flat,+Op.+71+-+II.+Adagio.mp3&preview",228,"20221019220246"]]]},{"c":"RAVEL","t":"THE STRING QUARTETS","d":[[["c89dbe2b-5af3-49dc-8aa9-686fa271dcd7.mp3?filename=Beethoven+-+String+Quartet+No.7+in+F+major+Op.59+-+Complete+Performance.mp3&preview",2415,"20221207005322"],["ba9237ec-bc02-4ac0-8b31-7cc35f28479d.mp3?filename=Beethoven+-+String+Quartet+No.7+in+F+major+Op.59+-+I.+Allegro.mp3&preview",649,"20221207182153"],["2aa7439f-8324-449c-a1c6-ab2b6eff7a64.mp3?filename=Beethoven+-+String+Quartet+No.7+in+F+major+Op.59+-+II.+Allegreto+vivace.mp3&preview",507,"20221206085540"],["83dee9a6-8742-4aef-a45d-c608601e62f0.mp3?filename=Beethoven+-+String+Quartet+No.7+in+F+major+Op.59+-+III.Adagio+molto+e+mesto.mp3&preview",1042,"20221207044513"],["880d648a-80c2-403f-a2ac-21b6ccb622fa.mp3?filename=String+Quartet+No.+6+in+F+minor,+Op.+80+-+I.+Allegro+vivace+assai.mp3&preview",0,"20221206234935"],["65b52645-9299-4105-b827-ece2f8d425cc.mp3?filename=String+Quartet+No.+6+in+F+minor,+Op.+80+-+II.+Allegro+assai.mp3&preview",0,"20221205120945"],["40deb395-5ee9-477d-9d70-99192295f687.mp3?filename=String+Quartet+No.+6+in+F+minor,+Op.+80+-+III.+Adagio.mp3&preview",0,"20221205223142"],["8415d7a5-1d18-47a6-8c44-9d669351b909.mp3?filename=String+Quartet+No.+6+in+F+minor,+Op.+80+-+IV.+Finale.+Allegro+Molto.mp3&preview",0,"20221205175135"],["a5e57389-d70c-4365-8583-477ccd18c3b2.mp3?filename=String+Quartet+in+F+major+-+I.+Allegro+moderato.mp3&preview",491,"20221207161231"],["0e653c67-da03-46b6-b6ca-010705f1f161.mp3?filename=String+Quartet+in+F+major+-+II.+Assez+vif,+tr%C3%A8s+rythm%C3%A9+.mp3&preview",355,"20221208192530"],["3387de78-66af-4860-a478-e59cfb9390f9.mp3?filename=String+Quartet+in+F+major+-+III.+Tr%C3%A8s+lent+(.mp3&preview",505,"20221205190655"],["e427b36d-ed97-4a60-892c-1310cd7bb0d5.mp3?filename=String+Quartet+in+F+major+-+IV.+Vif+et+agit%C3%A9+.mp3&preview",294,"20221205224736"],["b1a13898-e0e9-44e5-81be-4ce11deef0df.mp3?filename=String+Quartet+no.+1+in+F+major,+Op.+18+no.+1+-+II.+Adagio+affettuoso+ed+appasionato.mp3&preview",450,"20221019220311"],["b83c6f06-4d3e-49ad-8b30-c6e0ce663b4f.mp3?filename=String+Quartet+no.+12++in+F+major+'American',+Op.+96+-+I.mp3&preview",0,"20221205194804"],["2be83dd5-0c44-4dc6-b362-ee4dc1b2ee1b.mp3?filename=String+Quartet+no.+12++in+F+major+'American',+Op.+96+-+II.mp3&preview",0,"20221205233704"],["60f77f97-3211-432d-a5d4-56b33850474b.mp3?filename=String+Quartet+no.+12++in+F+major+'American',+Op.+96+-+III.mp3&preview",0,"20221206011258"],["ef2cb39d-8e5e-4b94-b3ce-786564f66005.mp3?filename=String+Quartet+no.+12++in+F+major+'American',+Op.+96+-+IV.mp3&preview",0,"20221205222425"]]]},{"c":"RAVEL","t":"THE CONCERTOS","d":[[["a7ffc5d7-9191-4ecf-98af-5bc31289ef1f.mp3?filename=Piano+Concerto+No.+4+in+G+Major,+Op.+58+-+II.+Andante+con+moto.mp3&preview",300,"20230525121924"],["17d7e89d-83c0-49a8-b014-1df8874c89a9.mp3?filename=Piano+Concerto+No.+4+in+G+Major,+Op.+58+-+III.+Rondo+(Vivace).mp3&preview",592,"20230525121920"],["b9c49af7-64b6-4742-8b97-1cb98d0443e2.mp3?filename=Piano+Concerto+in+G+-+Adagio+(piano+solo+arr.).mp3&preview",552,"20221206233916"],["b224e28b-873b-4347-b76d-fb45def0743d.mp3?filename=Piano+Concerto+in+G+-+I.+Allegramente.mp3&preview",497,"20220222175618"],["3ce64b65-5ffa-4607-ba2d-3234f83dcb42.mp3?filename=Piano+Concerto+no.+1+in+G+minor,+Op.+25+-+I.+Molto+allegro+con+fuoco++(2+pianos+arr.).mp3&preview",2014,"20211212214051"],["5e586bcf-a2cd-4f6c-b063-59e9490d9be7.mp3?filename=Piano+Concerto+no.+17+in+G+major+-+I.+Allegro.mp3&preview",775,"20220329081450"],["2a9c5fb9-597b-4926-937a-e0b8b98182ae.mp3?filename=Piano+Concerto+no.+17+in+G+major+-+III.+Allegretto+(first+part).mp3&preview",281,"20220824202300"],["dab027d6-e954-4dbb-a626-d9f4615b3f53.mp3?filename=Piano+Concerto+no.+4+in+G+major,+Op.+58+-+II.+Andante+con+moto.mp3&preview",273,"20221019220307"]]]},{"c":"RAVEL","t":"THE SONATAS","d":[[["66eb5acb-db5a-4560-8d2d-e558cc54b9ee.mp3?filename=Violin+Sonata+no.+2,+Op.+100.mp3&preview",1228,"20221020022729"],["76728f1b-c082-48c5-a287-84df7976d950.mp3?filename=Violin+sonata+no.+7+in+Cm,+Op.+30+no.+2+-+IV.+Finale+Allegro,+Presto.mp3&preview",1435,"20221019220241"],["d7604fd4-62ad-45b9-a917-bf9afc21416b.mp3?filename=Sonatine+-++I.+Mod%C3%A9r%C3%A9.mp3&preview",753,"20221207230825"],["c26f54e8-25f9-4cbd-83cc-2386a84e7861.mp3?filename=Sonatine+-+II.+Mouvement+de+Menuet.mp3&preview",185,"20221207055255"],["f7bb287d-8343-4843-9082-7ce8164f0eb0.mp3?filename=Sonatine+-+III.+Anim%C3%A9.mp3&preview",246,"20221206231007"],["2ca4efe3-9b61-4f88-a90f-2fc68e551a53.mp3?filename=Sonatine+-+III.+Tempo+di+menuetto.mp3&preview",219,"20221020022711"],["37e77629-0142-4778-a9c9-3e14177576d9.mp3?filename=Violin+Sonata+No.+1+in+D+Major,+Op.+12,+No.+1+-+II.+Tema+con+Variazioni.+Andante+con+Moto%3B+III.+Rondo.+Allegro.mp3&preview",2734,"20230513181258"],["1e7a804c-23df-4fe0-afc5-2af25f5b7df9.mp3?filename=Violin+Sonata+no.+1,+Op.+8+-+III.+Allegro+molto+vivace.mp3&preview",378,"20221020022711"]]]},{"c":"RAVEL","t":"THE SUITES","d":[[["e16cc8bc-9c71-49d2-bad1-22205470a6b8.mp3?filename=Miroirs+-+I.+Noctuelles.mp3&preview",1062,"20220222160611"],["accf8065-9bee-45fe-9872-e24a233d5a03.mp3?filename=Miroirs+-+II.+Oiseaux+Tristes..mp3&preview",855,"20220222161129"],["ebd11d8d-7e4b-4cce-95a9-0dfe4ff06cde.mp3?filename=Miroirs+-+II.+Oiseaux+tristes.mp3&preview",247,"20220222160442"],["1c0d44e6-c728-4cd8-b17b-03ef00b83985.mp3?filename=Miroirs+-+IV.+Alborada+del+gracioso.mp3&preview",1400,"20220222160507"],["a0c821a3-8eac-4ecf-a2bb-b5d3b9bb753b.mp3?filename=Miroirs+-+V.+La+vallee+des+cloches.mp3&preview",337,"20220222161654"]]]},{"c":"RAVEL","t":"PIANO WORKS","d":[[["6a6e8842-9d0b-4c5c-83d8-a8a980585271.mp3?filename=Le+tombeau+de+Couperin+-+Complete.mp3&preview",1549,"20220222142306"],["02c982b1-414a-4aba-bef2-d4fa842e7fae.mp3?filename=Le+tombeau+de+Couperin+-+VI.+Toccata.mp3&preview",278,"20230508034114"],["5b4d6f3a-6161-4e1c-8329-ed4e6b2186b5.mp3?filename=Jeux+d'eau.mp3&preview",326,"20220710034945"],["83fb2d86-ac64-4f40-845b-11b8f5a6cf79.mp3?filename=Pavane+for+a+Dead+Princess.mp3&preview",372,"20220222162749"]]]},{"c":"RAVEL","t":"MINUETS","d":[[["bfbb14f1-02aa-4d16-bd9c-99a5aa715fc5.mp3?filename=Menuet+sur+le+nom+de+Haydn.mp3&preview",107,"20220222161209"]]]},{"c":"R STRAUSS","t":"THE TONE POEMS","d":[[["baab8002-06d9-40f6-96fb-47ca0e7f4660.mp3?filename=Don+Juan,+Op.+20.mp3&preview",1537,"20230517130405"]]]}]</script>
 
   <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+  <script src="controls.js"></script>
   <script>
     // THE MARK IS RAISED BEFORE site.js READS IT. blob.js draws the corner
     // mark at a tenth of an alpha, which is invisible on a dark ground;
@@ -620,6 +556,7 @@
       z: DESK.z - DESK.d / 2 - 0.31,
       yaw: Math.PI,
       pitch: -0.36,
+      eye: ROOM.seat.y,            // its pitch was worked out for a seated eye
       say: "Seated at the desk. The thesis, and the notebook.",
     };
 
@@ -1358,6 +1295,7 @@
           yaw: Math.atan2(-(ART.x - ZAFU.x) / L,
                           -(ROOM.d / 2 - ZAFU.z) / L),
           pitch: Math.atan2(ART.y - ROOM.seat.y, L),
+          eye: ROOM.seat.y,       // choosing the cushion is sitting down
           say: "Seated on the zafu, looking at the painting.",
         };
       };
@@ -2963,6 +2901,11 @@
       // ?hemi= sweeps it, because this is the one lever that lifts what is
       // IN shadow and it has had to be raised at every change of what the
       // room opens on.
+      // THE LIGHT THROUGH THE PAPER, on one dial. The paper is the sky here
+      // and the window's two lights are what it lets in, so the three move
+      // together: turning them separately would put the glow of the pane out
+      // of step with the light it is supposed to be casting.
+      let lumen = num("lum", 1);
       const hemi = new THREE.HemisphereLight(
         0xd8ccb6,
         parseInt(Q.get("ground") || "4a3b2c", 16) || 0x4a3b2c,
@@ -2996,6 +2939,28 @@
       const bounce = new THREE.PointLight(0xa9bcd6, num("bounce", 0.9), 2.2, 2);
       bounce.position.set(-ROOM.w / 2 + 0.22, SH.y + SH.h * 0.55, SH.z);
       scene.add(bounce);
+
+      // THE ONE DIAL ON THE LIGHT. The paper is the sky in this room and the
+      // window's two lights are what it lets in, so the three move together:
+      // the glow of the pane out of step with the light it casts is a window
+      // drawn rather than a window. Their own strengths are kept, so the dial
+      // is a factor and turning it back returns the room it found.
+      const LIT0 = { sky: sky.intensity, bounce: bounce.intensity,
+                     paper: paper.material.color.clone() };
+      function setLumen(v) {
+        lumen = Math.max(0.25, Math.min(2.2, v));
+        sky.intensity = LIT0.sky * lumen;
+        bounce.intensity = LIT0.bounce * lumen;
+        // the paper cannot go past white, so beyond one it warms instead of
+        // brightening: paper with the sun hard behind it is warm, not blue
+        const k = Math.min(1, lumen);
+        paper.material.color.copy(LIT0.paper).multiplyScalar(k);
+        if (lumen > 1) {
+          paper.material.color.lerp(new THREE.Color(0xfff2da),
+                                    Math.min(1, (lumen - 1) * 0.55));
+        }
+      }
+      setLumen(lumen);
 
       // the lamp's own light: warm, close, and it falls off fast, which is
       // what makes the far corners corners
@@ -3045,6 +3010,16 @@
       // turns the head, because a visitor who never presses a key should
       // still be able to look.
       const eye = new THREE.Vector3(ROOM.seat.x, ROOM.seat.y, ROOM.seat.z);
+      // RISING AND CROUCHING. This is a room one sits in, so the seated
+      // height is home and the other two are a look rather than a stance:
+      // standing, the beams are close overhead; down at the boards, the
+      // cushions and the tea are at eye level. Eased toward, like the head.
+      const EYE = { lo: 0.34, seat: ROOM.seat.y, hi: 1.44, step: 0.17 };
+      let eyeWant = num("eye", EYE.seat);
+      eye.y = eyeWant;
+      function lift(by) {
+        eyeWant = Math.max(EYE.lo, Math.min(EYE.hi, eyeWant + by));
+      }
       {
         const at = (Q.get("at") || "").split(",").map(Number);
         if (at.length === 2 && at.every(isFinite)) {
@@ -3057,8 +3032,9 @@
           eye.set(SEAT.x, ROOM.seat.y, SEAT.z);
         }
       }
-      const held = {};
-      const KEY = { ArrowUp: 1, ArrowDown: 1, ArrowLeft: 1, ArrowRight: 1 };
+      // THE SHARED HELD MAP: the ring's arrows and the keyboard's write to
+      // one place, so walking asks one thing.
+      const held = Controls.held;
       // WHAT EACH THING IS CALLED, for the I key. Facts only: a name and, at
       // most, a maker. The passages about what they mean to him are his to
       // write and will hang off these same handles.
@@ -3091,14 +3067,6 @@
         "murs": "The earth wall.",
         "poutres": "The beams.",
       };
-      addEventListener("keydown", (e) => {
-        if (e.code === "KeyH") { setTop(topWant < 0.5); return; }
-        if (e.code === "KeyI") { look(); return; }
-        if (!KEY[e.code]) return;
-        held[e.code] = true;
-        e.preventDefault();          // or the page scrolls under the room
-      });
-      addEventListener("keyup", (e) => { held[e.code] = false; });
       const STEP = 1.05;             // metres a second, an unhurried one
       const SPIN = 1.5;              // radians a second
       // KEPT OFF THE WALLS by half a metre, which is where a knee stops
@@ -3190,7 +3158,7 @@
           return {
             x: x, z: z,
             yaw: Math.atan2(-(c.x - x) / L, -(c.z - z) / L),
-            pitch: Math.atan2(c.y - ROOM.seat.y, L),
+            pitch: Math.atan2(c.y - eye.y, L),
             say: said,
           };
         };
@@ -3205,6 +3173,7 @@
         glide = { x0: eye.x, z0: eye.z, x1: s.x, z1: s.z,
                   y0: wantYaw, y1: wantYaw + d,
                   p0: wantPitch, p1: s.pitch, t: 0, T: 1.25 };
+        if (s.eye !== undefined) eyeWant = s.eye;
       }
       function glideStep(dt) {
         if (!glide) return;
@@ -3749,33 +3718,34 @@
       window.__openBox = openBox;
       window.__again = again;
 
-      // THE DIAL PRESSES THE SAME KEYS, so there is one path through the
-      // movement and not two: a phone has no arrow keys, and a second
-      // implementation of walking would drift from the first.
-      const navEl = document.getElementById("nav");
-      navEl.querySelectorAll(".ar").forEach((b2) => {
-        const code = b2.dataset.key;
-        const down = (ev) => { ev.preventDefault(); held[code] = true;
-                               b2.classList.add("on"); };
-        const up = () => { held[code] = false; b2.classList.remove("on"); };
-        b2.addEventListener("pointerdown", down);
-        b2.addEventListener("pointerup", up);
-        b2.addEventListener("pointerleave", up);
-        b2.addEventListener("pointercancel", up);
+      // THE ROOM'S CONTROLS, declared rather than drawn. controls.js builds
+      // the ring and the rows, binds the keys, and presses the same keys when
+      // a finger chooses a row.
+      const nav = Controls({
+        id: "nav",
+        ring: true,
+        rows: [
+          { cap: "H", says: "the room, from above",
+            press: () => setTop(topWant < 0.5), lit: () => topWant > 0.5 },
+          { cap: "I", says: "what this is", press: () => look() },
+          // THE KEYBOARD GETS BOTH DIRECTIONS and a finger gets the round
+          // of them: three heights and four lights, which is what a tap can
+          // say when there is only one thing to tap.
+          { cap: "PG UP/DN", says: "to rise, to crouch",
+            keys: { PageUp: () => lift(EYE.step), PageDown: () => lift(-EYE.step) },
+            press: () => {
+              eyeWant = eyeWant > EYE.seat + 0.01 ? EYE.lo
+                      : eyeWant < EYE.seat - 0.01 ? EYE.seat : EYE.hi;
+            },
+            lit: () => Math.abs(eyeWant - EYE.seat) > 0.01 },
+          { cap: "+ / \u2212", says: "the light through the paper",
+            keys: { Equal: () => setLumen(lumen + 0.18),
+                    Minus: () => setLumen(lumen - 0.18) },
+            press: () => setLumen(lumen > 1.6 ? 0.5 : lumen < 0.7 ? 1 : lumen + 0.45),
+            lit: () => Math.abs(lumen - 1) > 0.02 },
+        ],
       });
-      navEl.querySelectorAll(".krow").forEach((b2) => {
-        b2.addEventListener("click", () => {
-          if (b2.dataset.act === "top") setTop(topWant < 0.5);
-          else look();
-        });
-      });
-      function paintNav() {
-        navEl.querySelectorAll(".ar").forEach((b2) => {
-          b2.classList.toggle("on", !!held[b2.dataset.key]);
-        });
-        navEl.querySelector('[data-act="top"]')
-             .classList.toggle("on", topWant > 0.5);
-      }
+      function paintNav() { nav.paint(); }
 
 
       // ?disc=<n> opens that box, ?on=<disc>.<piece> marks a piece as the one
@@ -3851,6 +3821,7 @@
         const k = frozen ? 1 : 1 - Math.pow(0.0016, dt);
         yaw += (wantYaw - yaw) * k;
         pitch += (wantPitch - pitch) * k;
+        eye.y += (eyeWant - eye.y) * (frozen ? 1 : 1 - Math.pow(0.004, dt));
         camera.position.copy(eye);
         camera.rotation.set(0, 0, 0);
         camera.rotateY(yaw);
