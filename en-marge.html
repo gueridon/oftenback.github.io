@@ -186,8 +186,8 @@
     <div class="ring">
       <button class="ar up" data-key="ArrowUp" aria-label="avancer"></button>
       <button class="ar dn" data-key="ArrowDown" aria-label="reculer"></button>
-      <button class="ar lf" data-key="ArrowLeft" aria-label="tourner a gauche"></button>
-      <button class="ar rt" data-key="ArrowRight" aria-label="tourner a droite"></button>
+      <button class="ar lf" data-key="ArrowLeft" aria-label="tourner à gauche"></button>
+      <button class="ar rt" data-key="ArrowRight" aria-label="tourner à droite"></button>
     </div>
     <div class="keys">
       <button class="krow" data-act="top"><kbd>H</kbd><span class="d">vue de haut</span></button>
@@ -200,10 +200,10 @@
       <div class="cs">
         <div class="head"><span class="jp">en marge</span>
           <span class="rom">nicholas bacuez</span></div>
-        <p class="lede">Une piece, et les objets dedans sont ses interets.
-        <em>Une vision continue, des gestes repetes, une facon de faire, quel
+        <p class="lede">Une pièce, et les objets dedans sont ses intérêts.
+        <em>Une vision continue, des gestes répétés, une façon de faire, quel
         que soit l'objet.</em></p>
-        <p class="plain">La piece se dessine dans le navigateur et demande
+        <p class="plain">La pièce se dessine dans le navigateur et demande
         WebGL, que celui-ci n'a pas su ouvrir. Ce qu'elle dit sera ici en
         texte.</p>
       </div>
@@ -391,7 +391,7 @@
       z: DESK.z - DESK.d / 2 - 0.31,
       yaw: Math.PI,
       pitch: -0.36,
-      say: "Assis au bureau. La these, et le carnet.",
+      say: "Assis au bureau. La thèse, et le carnet.",
     };
 
     function build() {
@@ -2026,7 +2026,13 @@
         shell.add(tea);
       }
 
-      // ---- le tableau: Le meurtre du commandeur -----------------------------
+      // ---- le tableau: Apres le meurtre du commandeur -----------------------
+      // THE TITLE IS HIS, and it earns the picture back. With the figures
+      // gone the label "Le meurtre du commandeur" named a killing over an
+      // empty field, which is a title that does not describe its canvas.
+      // "Apres" describes exactly what is there: the same ground, the same
+      // pine, the same hour, and the act over. Nothing is missing from it
+      // any more.
       // The painting at the centre of Murakami's novel, and the reason this
       // room exists: his own brief for it was "l'atelier du peintre dans
       // Killing Commendatore". In the book the narrator finds it wrapped in
@@ -2574,7 +2580,7 @@
           x: ART.x, z: ROOM.d / 2 - SEE_D,
           yaw: Math.PI,
           pitch: Math.atan2(ART.y - ROOM.seat.y, SEE_D),
-          say: "Le meurtre du commandeur. Tomohiko Amada, a la maniere nihonga.",
+          say: "Après le meurtre du commandeur. Tomohiko Amada, à la manière nihonga.",
         };
         art.traverse((o) => { o.userData.goHere = seeArt; });
 
@@ -2702,26 +2708,26 @@
         "akari1ar": "Akari 1AR. Isamu Noguchi, washi de murier rouge.",
         "akariuf1o": "Akari UF1-O. Isamu Noguchi, quatre panneaux de washi.",
         "platine": "Audio-Technica LPW40WN. Bras droit en carbone, 223,6mm.",
-        "plateau": "Le plateau, aluminium moule.",
-        "bras": "Le bras, et sa tete de lecture.",
-        "meuble": "Le meuble a disques, en bouleau, mur nord.",
-        "enceinte-gauche": "Enceinte, a la hauteur du meuble.",
-        "enceinte-droite": "Enceinte, a la hauteur du meuble.",
+        "plateau": "Le plateau, aluminium moulé.",
+        "bras": "Le bras, et sa tête de lecture.",
+        "meuble": "Le meuble à disques, en bouleau, mur nord.",
+        "enceinte-gauche": "Enceinte, à la hauteur du meuble.",
+        "enceinte-droite": "Enceinte, à la hauteur du meuble.",
         "bureau": "Le bureau bas, mur est. On s'y assied par terre.",
-        "these": "La these: l'essence de contours continus dans un cadre de reference.",
+        "these": "La thèse: l'essence de contours continus dans un cadre de référence.",
         "cahier": "Un cahier ouvert. Un contour, d'un seul trait.",
         "coussin": "Le coussin du bureau. Choisissez-le pour vous y asseoir.",
-        "etagere": "L'etagere, au niveau du rebord de la fenetre.",
-        "kyusu": "Kyusu. Theiere a anse laterale, pour le sencha.",
+        "etagere": "L'étagère, au niveau du rebord de la fenêtre.",
+        "kyusu": "Kyusu. Théière à anse latérale, pour le sencha.",
         "yunomi": "Yunomi. La tasse se tient dans la paume.",
         "the": "Du sencha, encore chaud.",
-        "tableau": "Le meurtre du commandeur. Tomohiko Amada, nihonga.",
-        "chazutsu": "Chazutsu. La boite a the.",
+        "tableau": "Après le meurtre du commandeur. Tomohiko Amada, nihonga.",
+        "chazutsu": "Chazutsu. La boîte à thé.",
         "obon": "Le plateau.",
         "zafu": "Zafu, sur son zabuton. Fauve.",
         "zabuton": "Zabuton, sous le zafu.",
-        "nijiriguchi": "Nijiriguchi, mur nord. 700 sur 720, fermee.",
-        "fenetre": "Le shoji, mur sud, et le jour derriere.",
+        "nijiriguchi": "Nijiriguchi, mur nord. 700 sur 720, fermée.",
+        "fenetre": "Le shoji, mur sud, et le jour derrière.",
         "lampe": "La lampe.",
         "plancher": "Le plancher.",
         "murs": "Le mur de terre.",
@@ -2969,7 +2975,7 @@
       function pick(px, py, quiet) {
         const o = found(px, py);
         if (quiet) return (o && !FABRIC[o.name]) ? o : null;
-        if (!o) { say("Rien la."); return null; }
+        if (!o) { say("Rien là."); return null; }
         if (o.userData.goHere) {
           goTo(o.userData.goHere);
           say(o.userData.goHere.say);
