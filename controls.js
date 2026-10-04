@@ -50,7 +50,7 @@
     let ring = null;
     if (spec.ring) {
       ring = document.createElement("div");
-      ring.className = "ring";
+      ring.className = "ring ctl-ring";
       Object.keys(ARROWS).forEach(function (k) {
         const code = ARROWS[k];
         const b = document.createElement("button");

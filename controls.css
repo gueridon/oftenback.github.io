@@ -17,7 +17,7 @@
 /* THE RING AND ITS ARROWS TAKE THE SITE'S OWN VERMILLION, and the arrows are
    solid: an outlined triangle at this size reads as a smudge rather than a
    direction. */
-.ctl .ring{position:relative;width:96px;height:96px;border-radius:50%;
+.ctl-ring{position:relative;width:96px;height:96px;border-radius:50%;
   border:1px solid rgba(227,66,52,0.52);
   background:rgba(18,14,10,0.30);backdrop-filter:blur(3px);}
 /* ONE TRIANGLE, TURNED FOUR WAYS. A font's own glyphs come out 12.9 of ink
@@ -25,22 +25,22 @@
    of nearly a third on a dial whose whole job is to look even. So the arrow is
    drawn rather than typed: a single border triangle, --a degrees round,
    identical by construction. */
-.ctl .ar{position:absolute;background:none;border:0;padding:0;cursor:pointer;
+.ctl-ring .ar{position:absolute;background:none;border:0;padding:0;cursor:pointer;
   width:26px;height:26px;opacity:.82;
   transition:opacity .18s ease,transform .18s ease;}
-.ctl .ar::before{content:"";position:absolute;left:50%;top:50%;
+.ctl-ring .ar::before{content:"";position:absolute;left:50%;top:50%;
   width:0;height:0;
   border-left:6px solid transparent;border-right:6px solid transparent;
   border-bottom:10px solid var(--ro);
   transform:translate(-50%,-50%) rotate(var(--a));}
-.ctl .ar:hover{opacity:1;}
-.ctl .ar.on{opacity:1;transform:scale(1.22);}
+.ctl-ring .ar:hover{opacity:1;}
+.ctl-ring .ar.on{opacity:1;transform:scale(1.22);}
 /* placed on the ring's own axes, by its middle rather than by an offset
    counted from a corner */
-.ctl .up{--a:0deg;top:0;left:50%;margin:5px 0 0 -13px;}
-.ctl .dn{--a:180deg;bottom:0;left:50%;margin:0 0 5px -13px;}
-.ctl .lf{--a:-90deg;left:0;top:50%;margin:-13px 0 0 5px;}
-.ctl .rt{--a:90deg;right:0;top:50%;margin:-13px 5px 0 0;}
+.ctl-ring .up{--a:0deg;top:0;left:50%;margin:5px 0 0 -13px;}
+.ctl-ring .dn{--a:180deg;bottom:0;left:50%;margin:0 0 5px -13px;}
+.ctl-ring .lf{--a:-90deg;left:0;top:50%;margin:-13px 0 0 5px;}
+.ctl-ring .rt{--a:90deg;right:0;top:50%;margin:-13px 5px 0 0;}
 
 /* THE ROWS. No border on a cap: an outlined cap is a button waiting to be
    pressed, and these name keys that are already under the hand. They ARE
@@ -66,5 +66,5 @@
 
 @media (max-width:760px){
   .ctl{gap:12px;}
-  .ctl .ring{width:84px;height:84px;}
+  .ctl-ring{width:84px;height:84px;}
 }

@@ -6,6 +6,7 @@
   <title>tearoom · oftenback</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="site.css">
+  <link rel="stylesheet" href="controls.css">
   <style>
     /* The journey is keyboard-driven now, so the page does not scroll at all. */
     html,body{height:100%;overflow:hidden;margin:0;}
@@ -334,6 +335,12 @@
        near -- at which point the caps brighten and their descriptions arrive.
        The descriptions are always in the layout and only invisible, so nothing
        shifts under the hand and the area stays where it was. */
+    #keys button.krow{pointer-events:auto;cursor:pointer;background:none;
+      border:0;padding:0;margin:0;color:inherit;text-align:left;}
+    #keys .krow.label{cursor:default;}
+    /* THE RING, for the one place with somewhere to walk in every direction.
+       Its own look comes from controls.css, which every space shares. */
+    #keys .ring{pointer-events:auto;margin:2px 0 8px;}
     #keys{position:fixed;left:clamp(20px,4.4vw,60px);bottom:clamp(16px,2.6vh,34px);
       z-index:6;display:flex;flex-direction:column;align-items:flex-start;
       gap:13px;pointer-events:none;
@@ -518,26 +525,26 @@
   </button>
   <div id="keys">
     <div id="hint-room">
-      <div class="krow"><kbd>ARROWS</kbd><span class="d">to move about the room</span></div>
-      <div class="krow"><kbd>DRAG</kbd><span class="d">to turn, the whole way round</span></div>
-      <div class="krow"><kbd>PG UP/DN</kbd><span class="d">to rise, to crouch</span></div>
-      <div class="krow"><kbd>+ / &minus;</kbd><span class="d">the light through the paper</span></div>
-      <div class="krow" id="hint-dogu"><kbd>D</kbd><span class="d">the utensils, one by one</span></div>
-      <div class="krow" id="hint-arrive"><kbd>SPACE</kbd><span class="d">for the next step</span></div>
-      <div class="krow" id="hint-auto"><kbd>A</kbd><span class="d">let it play itself</span></div>
-      <div class="krow" id="hint-look"><kbd>MOUSE</kbd><span class="d">to look, without moving</span></div>
+      <div class="krow label"><kbd>ARROWS</kbd><span class="d">to move about the room</span></div>
+      <div class="krow label"><kbd>DRAG</kbd><span class="d">to turn, the whole way round</span></div>
+      <button class="krow hold" type="button" data-down="PageUp" data-up="PageDown"><kbd>PG UP/DN</kbd><span class="d">to rise, to crouch</span></button>
+      <button class="krow hold" type="button" data-down="Equal" data-up="Minus"><kbd>+ / &minus;</kbd><span class="d">the light through the paper</span></button>
+      <button class="krow" id="hint-dogu" type="button"><kbd>I</kbd><span class="d">the utensils, one by one</span></button>
+      <button class="krow" id="hint-arrive" type="button" data-key="Space"><kbd>SPACE</kbd><span class="d">for the next step</span></button>
+      <button class="krow" id="hint-auto" type="button" data-key="KeyA"><kbd>A</kbd><span class="d">let it play itself</span></button>
+      <div class="krow label" id="hint-look"><kbd>MOUSE</kbd><span class="d">to look, without moving</span></div>
     </div>
     <div id="hint">
-      <div class="krow" id="hint-mode"><kbd>A</kbd><span class="modes"><i data-m="auto">auto</i><em>·</em><i data-m="manual">walk</i></span></div>
+      <button class="krow" id="hint-mode" type="button" data-key="KeyA"><kbd>A</kbd><span class="modes"><i data-m="auto">auto</i><em>·</em><i data-m="manual">walk</i></span></button>
       <div class="kgap"></div>
-      <div class="krow"><kbd>SPACE</kbd><span class="d" data-k="space"></span></div>
-      <div class="krow"><kbd>R</kbd><span class="d" data-k="r"></span></div>
+      <button class="krow hold" type="button" data-down="Space"><kbd>SPACE</kbd><span class="d" data-k="space"></span></button>
+      <button class="krow hold" type="button" data-down="KeyR"><kbd>R</kbd><span class="d" data-k="r"></span></button>
       <div class="kgap"></div>
-      <div class="krow"><kbd>MOUSE</kbd><span class="d" data-k="mouse"></span></div>
+      <div class="krow label"><kbd>MOUSE</kbd><span class="d" data-k="mouse"></span></div>
     </div>
     <div class="kgap"></div>
     <button class="krow" id="hint-sky" type="button"
-      ><kbd>V</kbd><span class="d">the whole roji, from above</span></button>
+      ><kbd>H</kbd><span class="d">the whole roji, from above</span></button>
     <button class="krow" id="hint-sound" type="button"
       ><kbd>S</kbd><span class="d">the sound of the place</span></button>
   </div>
@@ -5295,7 +5302,7 @@
         drive(4);
         const y0 = camera.position.y, f0 = camera.fov, g0 = fog();
         const c0 = cap(), s0 = say();
-        dispatchEvent(new KeyboardEvent("keydown", { code: "KeyV" }));
+        dispatchEvent(new KeyboardEvent("keydown", { code: "KeyH" }));
         drive(200);
         const up = window.__sky();
         out.push("V from " + y0.toFixed(2) + "m: it rose to " +
@@ -5307,7 +5314,7 @@
                  s0 + "' to '" + say() + "'" +
                  (cap().indexOf("227, 66, 52") >= 0 && say() !== s0
                     ? "" : " -- THE CAP DOES NOT SAY"));
-        dispatchEvent(new KeyboardEvent("keydown", { code: "KeyV" }));
+        dispatchEvent(new KeyboardEvent("keydown", { code: "KeyH" }));
         drive(300);
         const dn = window.__sky(), g1 = fog();
         const back = dn.at === 0 && Math.abs(camera.fov - f0) < 0.01 &&
@@ -9414,7 +9421,7 @@
         // gated by it: 150 aims is that, without waiting for it
         for (let k = 0; k < 150; k++) window.__aim();
         out.push("before D: " + window.__dogu().discs + " discs");
-        const press = () => dispatchEvent(new KeyboardEvent("keydown", { code: "KeyD" }));
+        const press = () => dispatchEvent(new KeyboardEvent("keydown", { code: "KeyI" }));
         press();
         window.__aim();
         const d = window.__dogu();
@@ -15542,7 +15549,7 @@
     // them up -- and so that it composes with ?pure=, which is the only way
     // to see whether they follow the pieces they name.
     if (new URLSearchParams(location.search).has("dots")) {
-      setTimeout(() => dispatchEvent(new KeyboardEvent("keydown", { code: "KeyD" })), 700);
+      setTimeout(() => dispatchEvent(new KeyboardEvent("keydown", { code: "KeyI" })), 700);
     }
     // ?devopen opens it at load, for a still and for anyone who would rather
     // bookmark the menu than find the door.
@@ -15950,6 +15957,78 @@
       manual: { space: "hold, to walk",   r: "hold, to go back",
                 mouse: "to look, anywhere" },
     };
+    function sendKey(type, code) {
+      dispatchEvent(new KeyboardEvent(type, { code: code, bubbles: true }));
+    }
+    (function wireRows() {
+      const cluster = document.getElementById("keys");
+      if (!cluster) return;
+      cluster.querySelectorAll("button.krow").forEach(function (b) {
+        if (b.dataset.down) {
+          // HELD WHILE THE FINGER IS DOWN: walking, rising and the light are
+          // continuous, and a tap on them would be a twitch.
+          const down = function (ev) {
+            ev.preventDefault();
+            sendKey("keydown", b.dataset.down);
+          };
+          const up = function () {
+            sendKey("keyup", b.dataset.down);
+            if (b.dataset.up) sendKey("keyup", b.dataset.up);
+          };
+          b.addEventListener("pointerdown", down);
+          b.addEventListener("pointerup", up);
+          b.addEventListener("pointerleave", up);
+          b.addEventListener("pointercancel", up);
+          // and the other way, for the second half of a two-way row
+          if (b.dataset.up) {
+            b.addEventListener("contextmenu", function (ev) {
+              ev.preventDefault();
+              sendKey("keydown", b.dataset.up);
+              setTimeout(function () { sendKey("keyup", b.dataset.up); }, 260);
+            });
+          }
+          return;
+        }
+        if (b.dataset.key) {
+          b.addEventListener("click", function (ev) {
+            ev.preventDefault();
+            sendKey("keydown", b.dataset.key);
+            sendKey("keyup", b.dataset.key);
+          });
+        }
+      });
+      // THE RING, in the room, where there is somewhere to walk in every
+      // direction. It presses the arrows rather than moving anything itself.
+      const room = document.getElementById("hint-room");
+      if (!room) return;
+      const ring = document.createElement("div");
+      ring.className = "ring ctl-ring";
+      [["up", "ArrowUp", "forward"], ["dn", "ArrowDown", "back"],
+       ["lf", "ArrowLeft", "left"], ["rt", "ArrowRight", "right"]]
+        .forEach(function (q) {
+          const b = document.createElement("button");
+          b.type = "button";
+          b.className = "ar " + q[0];
+          b.dataset.key = q[1];
+          b.setAttribute("aria-label", q[2]);
+          const down = function (ev) {
+            ev.preventDefault();
+            b.classList.add("on");
+            sendKey("keydown", q[1]);
+          };
+          const up = function () {
+            b.classList.remove("on");
+            sendKey("keyup", q[1]);
+          };
+          b.addEventListener("pointerdown", down);
+          b.addEventListener("pointerup", up);
+          b.addEventListener("pointerleave", up);
+          b.addEventListener("pointercancel", up);
+          ring.appendChild(b);
+        });
+      room.insertBefore(ring, room.firstChild);
+    })();
+
     function paintHint(m) {
       const h = document.getElementById("hint");
       if (!h) return;
@@ -15994,7 +16073,7 @@
         e.preventDefault(); toggleDevs(); return;
       }
       // V LIFTS THE VIEW off whatever is happening and sets it back down.
-      if (e.code === "KeyV") { e.preventDefault(); setSky(!skyWant); return; }
+      if (e.code === "KeyH") { e.preventDefault(); setSky(!skyWant); return; }
       // S ON ITS OWN is the sound. Shift+S above it is the developer's
       // menu, and the guard is what keeps one press from doing both.
       if (e.code === "KeyS") {
@@ -16041,7 +16120,7 @@
         paintAuto();
         return;
       }
-      if (e.code === "KeyD") {
+      if (e.code === "KeyI") {
         e.preventDefault();
         dogMode = !dogMode;
         if (dogMode) layoutDots();         // from here, and then they hold still
