@@ -2271,17 +2271,15 @@
 
           // ---- AND NOW IT IS EIGHTY YEARS OLD ----------------------------
 
-          // THE PAINT GOES THROUGH A BLUR. At 1560 pixels for 1300mm this is
-          // under two millimetres of softness, and it is the single thing
-          // that stops the image reading as a diagram: a brush leaves no
-          // razor edge and a mineral pigment sinks into the sheet it is laid
-          // on.
+          // THE PAINT GOES ON SHARP, at his ask. The blur was there for the
+          // figures, whose vector edges it was hiding; the ground is made of
+          // gradients and soft strokes and has nothing to hide. ?age no
+          // longer touches the focus, only the paper and the damage.
           gf.setTransform(1, 0, 0, 1, 0, 0);
           gf.globalAlpha = 1;
-          gf.filter = "blur(" + (0.9 + 0.9 * AGE).toFixed(2) + "px)";
+          gf.filter = "none";
           gf.clearRect(0, 0, W, H);
           gf.drawImage(off, 0, 0);
-          gf.filter = "none";
 
           // THE PAPER ITSELF, over the paint and not under it, because that
           // is where it is: mulberry fibre runs long and lies in no
@@ -2471,10 +2469,15 @@
         shell.add(art);
 
         // one can go and stand in front of it
+        // CENTRED IN THE FRAME, at his ask: the eye lands on the painting's
+        // own x, faces its wall, and tilts to its centre, so the panel sits
+        // in the middle of the screen with a margin round it. At 1.05m the
+        // 950mm of it filled the height to the edge.
+        const SEE_D = 1.30;
         const seeArt = {
-          x: ART.x, z: ROOM.d / 2 - 1.05,
+          x: ART.x, z: ROOM.d / 2 - SEE_D,
           yaw: Math.PI,
-          pitch: Math.atan2(ART.y - ROOM.seat.y, 1.05),
+          pitch: Math.atan2(ART.y - ROOM.seat.y, SEE_D),
           say: "Le meurtre du commandeur. Tomohiko Amada, a la maniere nihonga.",
         };
         art.traverse((o) => { o.userData.goHere = seeArt; });
@@ -2660,7 +2663,10 @@
         // the pointer's own look is measured from where it last re-centred,
         // and walking re-centres it: a cursor left where it was is a cursor
         // doing nothing
-        if (moved) { origin.x = null; yawBase = wantYaw; glide = null; }
+        if (moved) {
+          origin.x = null; yawBase = wantYaw; pitchBase = wantPitch;
+          glide = null;
+        }
       }
 
       // ---- SITTING DOWN ----------------------------------------------------
@@ -2695,6 +2701,7 @@
         if (g.t >= 1) {
           glide = null;
           yawBase = wantYaw;     // or the hover pulls the head straight back
+          pitchBase = wantPitch;
           origin.x = null;
         }
       }
@@ -2719,6 +2726,13 @@
           // down anyway.
           pitch = num("pitch", Q.has("sit") ? SEAT.pitch : -0.13);
       let wantYaw = yaw, wantPitch = pitch;
+      // AND THE PITCH HAS A BASE, which the yaw always had and it did not.
+      // The hover set wantPitch ABSOLUTELY from the pointer's offset, so the
+      // first mouse move after arriving at a chosen pose threw the chosen
+      // height away and levelled the head: one went to the painting and it
+      // slid out of the top of the frame. Now the hover tilts AROUND
+      // whatever the last settled pitch was.
+      let pitchBase = pitch;
       // HOW FAR THE HEAD TURNS ON THE POINTER, and it looks DOWN further
       // than up: this is a room one sits on the floor of, so the floor and
       // everything at knee height is the half of it worth reaching. At 0.16
@@ -2769,7 +2783,7 @@
         const ny = Math.max(-1, Math.min(1,
           (e.clientY - origin.y) / (innerHeight * 0.5)));
         wantYaw = yawBase - nx * HOVER;
-        wantPitch = -ny * (ny > 0 ? TILT_DOWN : TILT_UP);
+        wantPitch = pitchBase - ny * (ny > 0 ? TILT_DOWN : TILT_UP);
         // and the cursor says what can be chosen, since nothing else does.
         // THROTTLED: this is a raycast through every mesh in the room, and
         // a pointer sends hundreds of moves a second.
@@ -2779,7 +2793,9 @@
           cv.style.cursor = pick(e.clientX, e.clientY, true) ? "pointer" : "";
         }
       });
-      addEventListener("pointerup", () => { yawBase = wantYaw; });
+      addEventListener("pointerup", () => {
+        yawBase = wantYaw; pitchBase = wantPitch;
+      });
 
       // ---- H, THE ROOM FROM ABOVE ------------------------------------------
       // The ceiling and its beams are in the way of any view from over the
@@ -3151,6 +3167,34 @@
             out.push("from the cushion, on the opening view, " + inside +
                      " of its four corners are in the frame -- " +
                      (inside === 4 ? "seen whole" : "IT IS CUT"));
+          }
+          // AND CHOOSING IT PUTS IT IN THE MIDDLE OF THE SCREEN, which is
+          // his ask and is measurable: from the pose the painting carries,
+          // its centre should land on the middle of the frame and all four
+          // corners should still be inside it with room to spare. This also
+          // catches the fault that prompted it, a chosen pitch thrown away
+          // by the hover, since a levelled head puts the centre high.
+          {
+            const pose = art.userData.goHere;
+            look(pose.x, pose.z, pose.yaw, pose.pitch);
+            const mid = new THREE.Vector3(ART.x, ART.y, ROOM.d / 2 - 0.03)
+                          .project(camera);
+            out.push("from its own pose the centre lands at " +
+                     (mid.x * 100).toFixed(1) + ", " + (mid.y * 100).toFixed(1) +
+                     " per cent off the middle -- " +
+                     (Math.abs(mid.x) < 0.02 && Math.abs(mid.y) < 0.02
+                        ? "in the middle of the screen" : "OFF CENTRE"));
+            let worst = 0;
+            [[-1, -1], [-1, 1], [1, -1], [1, 1]].forEach((c) => {
+              const v = new THREE.Vector3(ART.x + c[0] * ART.w / 2,
+                                          ART.y + c[1] * ART.h / 2,
+                                          ROOM.d / 2 - 0.03).project(camera);
+              worst = Math.max(worst, Math.abs(v.x), Math.abs(v.y));
+            });
+            out.push("and the furthest corner reaches " +
+                     (worst * 100).toFixed(0) + " per cent of the way to the " +
+                     "frame edge -- " +
+                     (worst < 1 ? "whole, with a margin" : "IT OVERFLOWS"));
           }
           camera.position.copy(keepP); camera.rotation.copy(keepR);
           camera.updateMatrixWorld(true);
