@@ -2561,15 +2561,17 @@
               g.fill();
             });
           }
-          // THE BEARD GOES ON FIRST AND THE FACE OVER IT, so the mouth the
-          // novel insists on is an opening IN the beard. Drawn the other way
-          // round, the beard closed over it and a man run through the chest
-          // had no cry in him.
+          // THE BEARD GOES ON FIRST AND THE FACE OVER IT, so a mouth drawn
+          // under a beard is an opening IN it rather than a thing the beard
+          // closes over.
           if (o.beard) {
             field([[-hr * 0.60, hy + hr * 0.30], [hr * 0.60, hy + hr * 0.30],
                    [hr * 0.50, hy + hr * 1.80], [0, hy + hr * 2.30],
                    [-hr * 0.50, hy + hr * 1.80]], "#e8e3d7", 2.4);
           }
+          // AND THE FACE. This call went missing in a bad splice and three
+          // of the five figures stood there with blank ovals for heads.
+          features(hr, hy, o);
           // ONE ARM, FORWARD, for the two in the duel: returned in canvas
           // coordinates so the sword can be hung off the hand that holds it
           let hand = null;
@@ -2681,26 +2683,30 @@
           crease([[-0.215, SH / h + 0.028], [0, SH / h + 0.014],
                   [0.215, SH / h + 0.028]]);
 
-          // THE COLLAR, panels overlapping at the throat, each one a plane
-          [[0.112, 0.042], [0.068, 0.014]].forEach((c) => {
-            field([[-c[0] * h, SH - 0.052 * h], [0, SH + 0.098 * h],
-                   [c[0] * h, SH - 0.052 * h],
-                   [c[0] * h - c[1] * h, SH - 0.056 * h],
-                   [0, SH + 0.062 * h],
-                   [-c[0] * h + c[1] * h, SH - 0.056 * h]],
+          // THE NECK IS SHORT AND THE COLLAR CLOSES OVER IT. This is what he
+          // saw: the head stood on a column. Two causes, and the second was
+          // the larger. The neck was drawn from the shoulder to 0.130 above
+          // it, and the collar's V dipped to 0.098 BELOW the shoulder line,
+          // so 0.160 of the figure's height was bare throat, seventy eight
+          // pixels of it on a head seventy two wide. A kariginu collar meets
+          // at the base of the throat and no lower, so the collar is raised
+          // and the chin brought down onto it.
+          //
+          // ORDER: neck, collar over it, head, hair, BEARD, and the face
+          // last, so the mouth the novel insists on is an opening IN the
+          // beard rather than a thing the beard closes over.
+          const hr = 0.074 * h, hy = SH - 0.118 * h;
+          field([[-0.040 * h, SH + 0.010 * h], [0.040 * h, SH + 0.010 * h],
+                 [0.034 * h, SH - 0.085 * h], [-0.034 * h, SH - 0.085 * h]],
+                FLESH, fine * 0.9, 0.10);
+          [[0.106, 0.040], [0.064, 0.013]].forEach((c) => {
+            field([[-c[0] * h, SH - 0.070 * h], [0, SH + 0.012 * h],
+                   [c[0] * h, SH - 0.070 * h],
+                   [c[0] * h - c[1] * h, SH - 0.074 * h],
+                   [0, SH - 0.020 * h],
+                   [-c[0] * h + c[1] * h, SH - 0.074 * h]],
                   o.robe, fine * 0.9, CRISP);
           });
-
-          // THE NECK AND THE SMALL HEAD. A fifth of the robe's height, which
-          // is the proportion that makes the cloth read as a mass: at the
-          // head size figure() uses, the robe is a coat and not a mountain.
-          // THE NECK SHOWS. Set at 0.050 the chin sat inside the collar and
-          // the head read as sunk into the cloth, which also hid the beard
-          // the novel makes a point of.
-          const hr = 0.074 * h, hy = SH - 0.105 * h - hr * 1.02;
-          field([[-0.040 * h, SH + 0.010 * h], [0.040 * h, SH + 0.010 * h],
-                 [0.034 * h, SH - 0.130 * h], [-0.034 * h, SH - 0.130 * h]],
-                FLESH, fine * 0.9, 0.10);
           field([[-hr * 0.74, hy - hr * 0.90], [hr * 0.74, hy - hr * 0.90],
                  [hr * 0.82, hy + hr * 0.44], [0, hy + hr * 1.06],
                  [-hr * 0.82, hy + hr * 0.44]], FLESH, fine * 0.9, 0.16);
@@ -2717,15 +2723,16 @@
                           -hr * 0.72, hy - hr * 0.50, -hr * 0.90, hy - hr * 0.06);
           g.closePath();
           g.fill();
-          features(hr, hy, o);
           if (o.beard) {
-            // SILVER AND NOT WHITE. A white beard in front of a white robe
-            // is not a beard, it is more robe: the whole lower half of his
-            // head read as one pale mass with the collar. The novel wants it
-            // lush, which is length and not value.
-            field([[-hr * 0.58, hy + hr * 0.36], [hr * 0.58, hy + hr * 0.36],
-                   [hr * 0.44, hy + hr * 1.70], [0, hy + hr * 2.15],
-                   [-hr * 0.44, hy + hr * 1.70]], "#cdc5b2", fine * 0.9, 0.22);
+            // SHORT, WIDE AND SILVER. White against a white robe it was not
+            // a beard, it was more robe; and at 2.30 of the head's radius it
+            // was a narrow pale column from the chin to the collar, which is
+            // the other half of what read as a long neck. Lush is the width
+            // of it, not the drop.
+            field([[-hr * 0.64, hy + hr * 0.38], [hr * 0.64, hy + hr * 0.38],
+                   [hr * 0.60, hy + hr * 0.92], [hr * 0.40, hy + hr * 1.34],
+                   [0, hy + hr * 1.56], [-hr * 0.40, hy + hr * 1.34],
+                   [-hr * 0.60, hy + hr * 0.92]], "#cdc5b2", fine * 0.9, 0.26);
           }
           features(hr, hy, o);
 
