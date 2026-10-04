@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="fr">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -22,8 +22,12 @@
     "le meme vide" -- one inhabits that emptiness as a field for colour, the
     other as silence. This room is the second. The dark IS the ma.
 
-    The text is FRENCH, where the rest of the site is English, because these
-    are his own sentences and translating them would be paraphrasing them.
+    THE TEXT IS ENGLISH, like the roji's, at his ask: this is one site and a
+    visitor should not change language walking from one room of it to the
+    next. HIS OWN SENTENCES STAY IN FRENCH where they are quoted, which is
+    the lede and the subject of the thesis, because the argument the French
+    version was built on still holds of a quotation: translating his words
+    would paraphrase them.
 
     And ONE object will carry a fluorescent accent against the site's single
     vermillion. One, and a test will hold it to one.
@@ -163,6 +167,16 @@
       border:1px solid rgba(228,218,203,0.16);border-radius:3px;
       padding:10px 18px;}
     #say p em{font-style:normal;color:rgba(255,248,236,0.96);}
+    /* THE NARRATION RISES ABOVE THE DIAL ON A NARROW WINDOW. The two are
+       laid out independently, the dial fixed at the bottom left and the
+       narration centred across the whole width, so they meet as soon as the
+       window is narrow enough to bring the centre over the dial. Measured:
+       they clear each other at 1400 and overlap by 43px at 1100 and by 176
+       at 820. The dial's top sits 130 above the bottom edge, so the panel
+       has to stand off by its own height plus that. */
+    @media (max-width:1240px){
+      #say{bottom:clamp(142px,21vh,174px);}
+    }
     @media (max-width:760px){
       #nav{gap:12px;}
       #nav .ring{width:84px;height:84px;}
@@ -184,14 +198,14 @@
        readable, because a phone has no arrow keys. -->
   <div id="nav" hidden>
     <div class="ring">
-      <button class="ar up" data-key="ArrowUp" aria-label="avancer"></button>
-      <button class="ar dn" data-key="ArrowDown" aria-label="reculer"></button>
-      <button class="ar lf" data-key="ArrowLeft" aria-label="tourner à gauche"></button>
-      <button class="ar rt" data-key="ArrowRight" aria-label="tourner à droite"></button>
+      <button class="ar up" data-key="ArrowUp" aria-label="forward"></button>
+      <button class="ar dn" data-key="ArrowDown" aria-label="back"></button>
+      <button class="ar lf" data-key="ArrowLeft" aria-label="turn left"></button>
+      <button class="ar rt" data-key="ArrowRight" aria-label="turn right"></button>
     </div>
     <div class="keys">
-      <button class="krow" data-act="top"><kbd>H</kbd><span class="d">vue de haut</span></button>
-      <button class="krow" data-act="look"><kbd>I</kbd><span class="d">interagir</span></button>
+      <button class="krow" data-act="top"><kbd>H</kbd><span class="d">the room, from above</span></button>
+      <button class="krow" data-act="look"><kbd>I</kbd><span class="d">what this is</span></button>
     </div>
   </div>
   <div id="say" hidden><p></p></div>
@@ -200,12 +214,12 @@
       <div class="cs">
         <div class="head"><span class="jp">en marge</span>
           <span class="rom">nicholas bacuez</span></div>
-        <p class="lede">Une pièce, et les objets dedans sont ses intérêts.
-        <em>Une vision continue, des gestes répétés, une façon de faire, quel
-        que soit l'objet.</em></p>
-        <p class="plain">La pièce se dessine dans le navigateur et demande
-        WebGL, que celui-ci n'a pas su ouvrir. Ce qu'elle dit sera ici en
-        texte.</p>
+        <p class="lede">A room, and the things in it are his interests.
+        <em lang="fr">Une vision continue, des gestes répétés, une façon de
+        faire, quel que soit l'objet.</em></p>
+        <p class="plain">The room is drawn in the browser and wants WebGL,
+        which this one could not open. What it says will be here as
+        text.</p>
       </div>
     </div>
   </main>
@@ -313,6 +327,32 @@
                  " on a ring of " + R.toFixed(1) +
                  (rHi - rLo < 1.5 ? " -- evenly placed"
                                   : " -- UNEVENLY PLACED"));
+        // AND THE DIAL MUST NOT MEET THE NARRATION. The two are laid out
+        // independently, the dial fixed at the bottom left and the
+        // narration centred across the whole width, so whether they touch
+        // is a function of the LENGTH OF THE TEXT IN THEM. Going from
+        // French to English made the key labels longer and the panel
+        // covered the end of one: the roji does not have this because its
+        // labels start at the window's edge, where mine start past a ring.
+        {
+          const sayEl2 = document.getElementById("say");
+          const was = sayEl2.hidden;
+          sayEl2.hidden = false;
+          sayEl2.querySelector("p").textContent =
+            "Click an object and it names itself. " +
+            "The desk cushion sits you down at the desk.";
+          const a = ring.closest("#nav").getBoundingClientRect();
+          const b = sayEl2.querySelector("p").getBoundingClientRect();
+          const gap = Math.round(b.left - a.right);
+          const clear = Math.round(a.top - b.bottom);
+          out.push("the dial ends at " + Math.round(a.right) +
+                   " and the narration begins at " + Math.round(b.left) +
+                   ", a gap of " + gap + "px, and it clears the dial's top " +
+                   "by " + clear + "px -- " +
+                   (gap > 8 || clear > 4 ? "they do not meet"
+                                         : "THEY OVERLAP"));
+          sayEl2.hidden = was;
+        }
         document.body.setAttribute("data-navtest", out.join(" | "));
       }, 600));
     }
@@ -391,7 +431,7 @@
       z: DESK.z - DESK.d / 2 - 0.31,
       yaw: Math.PI,
       pitch: -0.36,
-      say: "Assis au bureau. La thèse, et le carnet.",
+      say: "Seated at the desk. The thesis, and the notebook.",
     };
 
     function build() {
@@ -1114,6 +1154,27 @@
       zafu.receiveShadow = true;
       shell.add(zafu);
 
+      // CHOOSING THE CUSHION SITS YOU ON IT, FACING THE PAINTING, at his
+      // ask, and the pair are the only two things in the room that are SAT
+      // ON rather than looked at: a seat carries a place and a facing and
+      // not a framing, so neither of them goes through centreOn.
+      //
+      // A FUNCTION, because the painting does not exist yet where this is
+      // written: ART is declared with the panel, two thirds of the way down
+      // the room, and by the time anyone clicks a cushion it does.
+      const sitZafu = () => {
+        const L = Math.hypot(ART.x - ZAFU.x, ROOM.d / 2 - ZAFU.z);
+        return {
+          x: ZAFU.x, z: ZAFU.z,
+          yaw: Math.atan2(-(ART.x - ZAFU.x) / L,
+                          -(ROOM.d / 2 - ZAFU.z) / L),
+          pitch: Math.atan2(ART.y - ROOM.seat.y, L),
+          say: "Seated on the zafu, looking at the painting.",
+        };
+      };
+      zafu.userData.goHere = sitZafu;
+      zabuton.userData.goHere = sitZafu;
+
       // ---- le meuble, la platine, les deux enceintes -----------------------
       // To the right of the door, along the same wall, which is the wall the
       // room had nothing on. His own turntable, an Audio-Technica LPW40WN, at
@@ -1156,6 +1217,7 @@
       const hifi = new THREE.Group();
       hifi.name = "hifi";
       shell.add(hifi);
+
 
       // the carcass: a box you can see into, so it is six boards and not a
       // solid, plus one divider and four short feet
@@ -1473,6 +1535,20 @@
         sp.position.set(ROOM.w / 2 - D / 2 - 0.02, 0,
                         CAB.z + side * (CAB.w / 2 + W / 2 + 0.055));
         hifi.add(sp);
+      });
+
+      // CHOOSING ANY OF IT FRAMES THE WHOLE OF IT: the cabinet, the deck and
+      // the two speakers are one thing to LOOK at and three to NAME. Set
+      // after the children are in, since a group traversed before they are
+      // added has nothing in it; and set on everything EXCEPT the box set
+      // spines, which carry their own titles. The pick walks up from what
+      // the ray hit and takes the first thing that answers, so a spine still
+      // names itself while the wood beside it carries you back to see the
+      // whole set.
+      hifi.traverse((o) => {
+        if (o.userData && o.userData.who) return;
+        o.userData.goHere = centreOn(hifi,
+          "The cabinet, the deck, and a speaker at each end.", 1.10);
       });
 
       // ---- le bureau bas, mur est, au sud ----------------------------------
@@ -1998,31 +2074,20 @@
         // leave clear.
         tea.position.set(LEDGE.x, 0, LEDGE.z1 - 0.215);
 
-        // AND ONE CAN LEAN IN OVER IT. Measured: from the cushion the line
-        // to the tea drops 160 over 650, so the surface of the tea is seen
-        // at thirteen degrees and is a sliver. A cup with tea in it that
-        // cannot be looked into is a cup with nothing in it, and the walls
-        // hold a standing visitor 500 off, which is further than a cup is
-        // read from. So choosing the tea carries the eye to 300 from it,
-        // where the drop is twenty eight degrees and the tea is a disc.
-        // The same one piece of code that seats you at the desk.
-        {
-          const c = new THREE.Vector3(LEDGE.x + 0.040, 0,
-                                      LEDGE.z1 - 0.215 + 0.062);
-          const brewH = LEDGE.top + 0.008 + brewY;
-          const d = 0.297;
-          const pose = {
-            x: c.x + d * 0.707, z: c.z + d * 0.707,
-            yaw: Math.PI / 4,
-            pitch: Math.atan2(brewH - ROOM.seat.y, d),
-            say: "Du sencha, encore chaud.",
-          };
-          tea.traverse((o) => {
-            if (o.name === "yunomi" || o.name === "the" || o.name === "obon") {
-              o.userData.goHere = pose;
-            }
-          });
-        }
+        // AND CHOOSING ANY OF IT FRAMES THE TEA CORNER, at his ask, by the
+        // same mechanism as the cabinet and the painting.
+        //
+        // ONE THING IS LOST AND IT IS WORTH NAMING. The pose this replaces
+        // was a LEAN-IN at 300mm, which put the drop to the tea's surface at
+        // twenty eight degrees so the brew read as a disc. Framing a 300mm
+        // group needs about twice that stand-off, and from there the surface
+        // is seen at fifteen degrees and is a sliver again. Framing a group
+        // and looking INTO a cup are two different asks and cannot both be
+        // had from one pose: he asked for the framing.
+        tea.traverse((o) => {
+          o.userData.goHere = centreOn(tea,
+            "The tea, at the ledge's near end. Sencha, and one cup.", 1.30);
+        });
         shell.add(tea);
       }
 
@@ -2639,18 +2704,14 @@
         shell.add(art);
 
         // one can go and stand in front of it
-        // CENTRED IN THE FRAME, at his ask: the eye lands on the painting's
-        // own x, faces its wall, and tilts to its centre, so the panel sits
-        // in the middle of the screen with a margin round it. At 1.05m the
-        // 950mm of it filled the height to the edge.
-        const SEE_D = 1.30;
-        const seeArt = {
-          x: ART.x, z: ROOM.d / 2 - SEE_D,
-          yaw: Math.PI,
-          pitch: Math.atan2(ART.y - ROOM.seat.y, SEE_D),
-          say: "Après le meurtre du commandeur. Tomohiko Amada, à la manière nihonga.",
-        };
-        art.traverse((o) => { o.userData.goHere = seeArt; });
+        // AND IT IS FRAMED BY THE GENERAL MECHANISM, not by a pose written
+        // out here: this was the one that had its stand-off and its aim
+        // worked out by hand, and generalising it was his ask.
+        art.traverse((o) => {
+          o.userData.goHere = centreOn(art,
+            "After Killing Commendatore. Tomohiko Amada, in the nihonga " +
+            "manner.", 1.16);
+        });
 
       }
 
@@ -2773,33 +2834,33 @@
       // most, a maker. The passages about what they mean to him are his to
       // write and will hang off these same handles.
       const NAMED = {
-        "akari1ar": "Akari 1AR. Isamu Noguchi, washi de murier rouge.",
-        "akariuf1o": "Akari UF1-O. Isamu Noguchi, quatre panneaux de washi.",
-        "platine": "Audio-Technica LPW40WN. Bras droit en carbone, 223,6mm.",
-        "plateau": "Le plateau, aluminium moulé.",
-        "bras": "Le bras, et sa tête de lecture.",
-        "meuble": "Le meuble à disques, en bouleau, mur nord.",
-        "enceinte-gauche": "Enceinte, à la hauteur du meuble.",
-        "enceinte-droite": "Enceinte, à la hauteur du meuble.",
-        "bureau": "Le bureau bas, mur est. On s'y assied par terre.",
-        "these": "La thèse: l'essence de contours continus dans un cadre de référence.",
-        "cahier": "Un cahier ouvert. Un contour, d'un seul trait.",
-        "coussin": "Le coussin du bureau. Choisissez-le pour vous y asseoir.",
-        "etagere": "L'étagère, au niveau du rebord de la fenêtre.",
-        "kyusu": "Kyusu. Théière à anse latérale, pour le sencha.",
-        "yunomi": "Yunomi. La tasse se tient dans la paume.",
-        "the": "Du sencha, encore chaud.",
-        "tableau": "Après le meurtre du commandeur. Tomohiko Amada, nihonga.",
-        "chazutsu": "Chazutsu. La boîte à thé.",
-        "obon": "Le plateau.",
-        "zafu": "Zafu, sur son zabuton. Fauve.",
-        "zabuton": "Zabuton, sous le zafu.",
-        "nijiriguchi": "Nijiriguchi, mur nord. 700 sur 720, fermée.",
-        "fenetre": "Le shoji, mur sud, et le jour derrière.",
-        "lampe": "La lampe.",
-        "plancher": "Le plancher.",
-        "murs": "Le mur de terre.",
-        "poutres": "Les poutres.",
+        "akari1ar": "Akari 1AR. Isamu Noguchi, in red mulberry washi.",
+        "akariuf1o": "Akari UF1-O. Isamu Noguchi, four panels of washi.",
+        "platine": "Audio-Technica LPW40WN. A straight carbon arm, 223.6mm.",
+        "plateau": "The platter, in cast aluminium.",
+        "bras": "The arm, and its head.",
+        "meuble": "The record cabinet, in birch, on the north wall.",
+        "enceinte-gauche": "A speaker, at the cabinet's own height.",
+        "enceinte-droite": "A speaker, at the cabinet's own height.",
+        "bureau": "The low desk, on the east wall. One sits on the floor to use it.",
+        "these": "The thesis. Its subject, in his words: l'essence de contours continus dans un cadre de référence.",
+        "cahier": "An open notebook. One contour, drawn in a single line.",
+        "coussin": "The desk cushion. Choose it to sit down.",
+        "etagere": "The ledge, level with the window's sill.",
+        "kyusu": "Kyusu. A side-handled pot, for sencha.",
+        "yunomi": "Yunomi. The cup is held in the palm.",
+        "the": "Sencha, still hot.",
+        "tableau": "After Killing Commendatore. Tomohiko Amada, nihonga.",
+        "chazutsu": "Chazutsu. The tea tin.",
+        "obon": "The tray.",
+        "zafu": "Zafu, on its zabuton. Tawny.",
+        "zabuton": "Zabuton, under the zafu.",
+        "nijiriguchi": "Nijiriguchi, on the north wall. 700 by 720, shut.",
+        "fenetre": "The shoji, on the south wall, and the daylight behind it.",
+        "lampe": "The lamp.",
+        "plancher": "The boards.",
+        "murs": "The earth wall.",
+        "poutres": "The beams.",
       };
       addEventListener("keydown", (e) => {
         if (e.code === "KeyH") { setTop(topWant < 0.5); return; }
@@ -2849,6 +2910,62 @@
       // the arrows add to it turn after turn, so a bare target can mean three
       // revolutions: the difference is folded into a half turn either side
       // before it is used.
+      // ---- CENTRE ON A THING ------------------------------------------
+      // The painting had a pose written out by hand. Generalised at his ask:
+      // given any object or group, work out where to stand so that the whole
+      // of it sits in the middle of the frame with a margin round it.
+      //
+      // WHICH SIDE TO STAND ON IS READ OFF THE ROOM and not given. Whatever
+      // wall the thing is nearest, one stands on the room side of it and
+      // looks back: everything in here is against a wall except the
+      // cushions, and a cushion is a seat and carries its own pose.
+      //
+      // HOW FAR BACK comes from the camera's own angles, so the whole of the
+      // thing fits whatever the window is doing, and the eye is kept inside
+      // the room: a glide is not bound by the walk's clamp, so a large thing
+      // would otherwise put the visitor through the plaster. The aim is
+      // recomputed AFTER that clamp, or the thing slides off centre exactly
+      // when the room is too small to stand far enough back.
+      function centreOn(obj, said, pad) {
+        return () => {
+          obj.updateMatrixWorld(true);
+          const b = new THREE.Box3().setFromObject(obj, true);
+          const c = b.getCenter(new THREE.Vector3());
+          const sz = b.getSize(new THREE.Vector3());
+          // the nearest wall, with the extent ACROSS the view and the extent
+          // ALONG it, which are not the same number and are needed apart
+          const side = [
+            [ROOM.w / 2 - b.max.x, -1, 0, sz.z, sz.x],
+            [b.min.x + ROOM.w / 2, 1, 0, sz.z, sz.x],
+            [ROOM.d / 2 - b.max.z, 0, -1, sz.x, sz.z],
+            [b.min.z + ROOM.d / 2, 0, 1, sz.x, sz.z],
+          ].sort((p, q) => p[0] - q[0])[0];
+          const vt = Math.tan(camera.fov * Math.PI / 360);
+          const ht = vt * camera.aspect;
+          const m = pad === undefined ? 1.20 : pad;
+          // AND THE DEPTH IS ADDED, not ignored. Measured from the box's
+          // CENTRE, the cabinet with its two speakers overflowed the frame
+          // by 28 per cent: the near face of a deep thing is closer than its
+          // middle and the same width there subtends a larger angle. So the
+          // stand-off is what the near face needs, plus half the depth to
+          // get back to the centre.
+          const far = Math.max(sz.y * 0.5 / vt, side[3] * 0.5 / ht, 0.30) * m
+                      + side[4] * 0.5;
+          const IN = 0.34;
+          const x = Math.max(-ROOM.w / 2 + IN, Math.min(ROOM.w / 2 - IN,
+                             c.x + side[1] * far));
+          const z = Math.max(-ROOM.d / 2 + IN, Math.min(ROOM.d / 2 - IN,
+                             c.z + side[2] * far));
+          const L = Math.hypot(c.x - x, c.z - z) || 1;
+          return {
+            x: x, z: z,
+            yaw: Math.atan2(-(c.x - x) / L, -(c.z - z) / L),
+            pitch: Math.atan2(c.y - ROOM.seat.y, L),
+            say: said,
+          };
+        };
+      }
+
       function goTo(s) {
         const TWO = Math.PI * 2;
         let d = (s.yaw - wantYaw + Math.PI) % TWO;
@@ -3043,10 +3160,15 @@
       function pick(px, py, quiet) {
         const o = found(px, py);
         if (quiet) return (o && !FABRIC[o.name]) ? o : null;
-        if (!o) { say("Rien là."); return null; }
+        if (!o) { say("Nothing there."); return null; }
         if (o.userData.goHere) {
-          goTo(o.userData.goHere);
-          say(o.userData.goHere.say);
+          // A POSE MAY BE A FUNCTION, and the ones that frame a thing are:
+          // how far back to stand depends on the WINDOW, so a pose worked
+          // out at load would be wrong the moment it is resized.
+          const pose = typeof o.userData.goHere === "function"
+            ? o.userData.goHere() : o.userData.goHere;
+          goTo(pose);
+          say(pose.say);
         } else if (o.userData.who) {
           say("<em>" + o.userData.who + "</em> &nbsp; " + o.userData.what);
         } else {
@@ -3169,8 +3291,8 @@
       if (!frozen) {
         (function hint() {
           if (!window.__dismissed) { setTimeout(hint, 200); return; }
-          say("Cliquez un objet: il se nomme. " +
-              "Le coussin du bureau vous y assied.");
+          say("Click an object and it names itself. " +
+              "The desk cushion sits you down at the desk.");
         })();
       }
 
@@ -3338,37 +3460,94 @@
                      " of its four corners are in the frame -- " +
                      (inside === 4 ? "seen whole" : "IT IS CUT"));
           }
-          // AND CHOOSING IT PUTS IT IN THE MIDDLE OF THE SCREEN, which is
-          // his ask and is measurable: from the pose the painting carries,
-          // its centre should land on the middle of the frame and all four
-          // corners should still be inside it with room to spare. This also
-          // catches the fault that prompted it, a chosen pitch thrown away
-          // by the hover, since a levelled head puts the centre high.
-          {
-            const pose = art.userData.goHere;
-            look(pose.x, pose.z, pose.yaw, pose.pitch);
-            const mid = new THREE.Vector3(ART.x, ART.y, ROOM.d / 2 - 0.03)
-                          .project(camera);
-            out.push("from its own pose the centre lands at " +
-                     (mid.x * 100).toFixed(1) + ", " + (mid.y * 100).toFixed(1) +
-                     " per cent off the middle -- " +
-                     (Math.abs(mid.x) < 0.02 && Math.abs(mid.y) < 0.02
-                        ? "in the middle of the screen" : "OFF CENTRE"));
-            let worst = 0;
-            [[-1, -1], [-1, 1], [1, -1], [1, 1]].forEach((c) => {
-              const v = new THREE.Vector3(ART.x + c[0] * ART.w / 2,
-                                          ART.y + c[1] * ART.h / 2,
-                                          ROOM.d / 2 - 0.03).project(camera);
-              worst = Math.max(worst, Math.abs(v.x), Math.abs(v.y));
-            });
-            out.push("and the furthest corner reaches " +
-                     (worst * 100).toFixed(0) + " per cent of the way to the " +
-                     "frame edge -- " +
-                     (worst < 1 ? "whole, with a margin" : "IT OVERFLOWS"));
-          }
           camera.position.copy(keepP); camera.rotation.copy(keepR);
           camera.updateMatrixWorld(true);
           document.body.setAttribute("data-arttest", out.join(" | "));
+        }, 1200);
+      }
+
+      // ---- DOES CHOOSING A THING FRAME IT ---------------------------------
+      // ?posetest. The mechanism is general now, so the claim is general
+      // too: for each thing that carries a framing pose, stand where the
+      // pose says, and the whole of its box must be inside the frame with
+      // its centre on the middle. And for each thing that carries a SEAT,
+      // the eye must land on the cushion and face what the seat is for.
+      //
+      // Measured per thing rather than once, because the stand-off comes
+      // from the object's own size and the window's aspect: the painting is
+      // 1300 wide on a wall, the cabinet is 1600 with two speakers, and the
+      // tea is 300 of tray. Nothing but a measurement tells whether one
+      // rule serves all three.
+      if (Q.has("posetest")) {
+        setTimeout(() => {
+          const out = [];
+          const keepP = camera.position.clone();
+          const keepR = camera.rotation.clone();
+          const aim = (po) => {
+            camera.position.set(po.x, ROOM.seat.y, po.z);
+            camera.rotation.set(0, 0, 0);
+            camera.rotateY(po.yaw); camera.rotateX(po.pitch);
+            camera.updateMatrixWorld(true);
+            camera.matrixWorldInverse.copy(camera.matrixWorld).invert();
+          };
+          [["tableau", "the painting"], ["hifi", "the cabinet"],
+           ["sencha", "the tea"]].forEach((t) => {
+            const o = shell.getObjectByName(t[0]);
+            if (!o) { out.push(t[1] + " -- MISSING"); return; }
+            const gh = o.userData.goHere
+              || (o.children[0] && o.children[0].userData.goHere);
+            if (!gh) { out.push(t[1] + " -- NO POSE"); return; }
+            const po = typeof gh === "function" ? gh() : gh;
+            aim(po);
+            o.updateMatrixWorld(true);
+            const b = new THREE.Box3().setFromObject(o, true);
+            const c = b.getCenter(new THREE.Vector3()).project(camera);
+            let worst = 0;
+            [0, 1].forEach((i) => [0, 1].forEach((j) => [0, 1].forEach((k) => {
+              const v = new THREE.Vector3(
+                i ? b.max.x : b.min.x, j ? b.max.y : b.min.y,
+                k ? b.max.z : b.min.z).project(camera);
+              worst = Math.max(worst, Math.abs(v.x), Math.abs(v.y));
+            })));
+            const inside = po.x > -ROOM.w / 2 && po.x < ROOM.w / 2
+                           && po.z > -ROOM.d / 2 && po.z < ROOM.d / 2;
+            out.push(t[1] + ": from " + po.x.toFixed(3) + "," +
+                     po.z.toFixed(3) + " yaw " + po.yaw.toFixed(3) +
+                     " pitch " + po.pitch.toFixed(3) +
+                     ", centre " + (c.x * 100).toFixed(1) + ", " +
+                     (c.y * 100).toFixed(1) + " per cent off the middle, " +
+                     "furthest corner at " + (worst * 100).toFixed(0) +
+                     " per cent of the frame, eye " +
+                     (inside ? "in the room" : "THROUGH THE WALL") + " -- " +
+                     (Math.abs(c.x) < 0.03 && Math.abs(c.y) < 0.04
+                      && worst < 1 && inside
+                        ? "framed" : "NOT FRAMED"));
+          });
+          // and the two seats: on the cushion, facing the right thing
+          [["coussin", "cahier", "the desk cushion"],
+           ["zafu", "tableau", "the zafu"]].forEach((t) => {
+            const o = shell.getObjectByName(t[0]);
+            const gh = o && o.userData.goHere;
+            if (!gh) { out.push(t[2] + " -- NO SEAT"); return; }
+            const po = typeof gh === "function" ? gh() : gh;
+            o.updateMatrixWorld(true);
+            const cb = new THREE.Box3().setFromObject(o, true)
+                         .getCenter(new THREE.Vector3());
+            const onIt = Math.hypot(po.x - cb.x, po.z - cb.z);
+            aim(po);
+            const tgt = shell.getObjectByName(t[1]);
+            tgt.updateMatrixWorld(true);
+            const v = new THREE.Box3().setFromObject(tgt, true)
+                        .getCenter(new THREE.Vector3()).project(camera);
+            out.push(t[2] + ": the eye lands " + Math.round(onIt * 1000) +
+                     "mm from its middle and the " + t[1] + " sits " +
+                     (v.x * 100).toFixed(1) + " per cent off the centre -- " +
+                     (onIt < 0.10 && Math.abs(v.x) < 0.06
+                        ? "on it, and facing" : "NOT ON IT OR NOT FACING"));
+          });
+          camera.position.copy(keepP); camera.rotation.copy(keepR);
+          camera.updateMatrixWorld(true);
+          document.body.setAttribute("data-posetest", out.join(" | "));
         }, 1200);
       }
 
@@ -3519,12 +3698,18 @@
             const ang = (ex, ez) => Math.round(
               Math.atan2(ROOM.seat.y - c2.y,
                          Math.hypot(ex - c2.x, ez - c2.z)) * 180 / Math.PI);
-            const pose = cu.userData.goHere;
-            const near = ang(pose.x, pose.z);
-            out.push("the surface is seen at " + ang(SEAT.x, SEAT.z) +
-                     " degrees from the cushion and " + near +
-                     " from the cup's own pose -- " +
-                     (near > 22 ? "a disc, leaning in" : "STILL A SLIVER"));
+            // THE DROP IS REPORTED AND NOT ASSERTED, which is a change of
+            // claim and not a weakened one. The cup's pose used to be a
+            // LEAN-IN, whose whole purpose was that angle; it is now a
+            // FRAMING of the tea corner, at his ask, and the angle is a
+            // consequence of where one has to stand to see the group whole
+            // rather than a requirement. What is asserted about the framing
+            // lives in ?posetest.
+            const pose = typeof cu.userData.goHere === "function"
+              ? cu.userData.goHere() : cu.userData.goHere;
+            out.push("the surface of the tea is seen at " +
+                     ang(SEAT.x, SEAT.z) + " degrees from the cushion and " +
+                     ang(pose.x, pose.z) + " from the pose the tea carries");
           }
           // AND IT IS AT THE DESK END, which is the whole point of where it
           // stands: within reach of someone on the cushion.
