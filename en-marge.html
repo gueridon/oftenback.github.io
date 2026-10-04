@@ -1528,6 +1528,7 @@
                           .sort((a2, b2) => a2.k - b2.k)
                           .map((q) => q.st);
         let next = 0;
+        let shelfOver = -1, shelfWho = "";
         const blackFace = mat(0x0c0b0a, 0.96);
         [-1, 1].forEach((side) => {
           const inner = (CAB.w - 3 * T) / 2;
@@ -1562,19 +1563,33 @@
             // FILED LIKE BOOKS, the spine out: the material list is ordered
             // +x, -x, +y, -y, +z, -z, and -x is the face that looks into the
             // room out of this cabinet.
-            // AND THE LAST ONE LEANS INTO THE GAP, which is what the
-            // end of a row of records does when nothing holds it up. Its
-            // box is measured turned: a leaning box stands lower and takes
-            // more of the shelf than its own thickness.
-            const slack = room - used;
-            const lean = (i === pick.length - 1 && slack > 0.045);
-            const a2 = lean ? -0.30 : -0.035 - hash3(i, side, 3) * 0.015;
+            // AND THE LAST ONE LEANS INTO THE GAP, which is what the end
+            // of a row of records does when nothing holds it up.
+            //
+            // HOW FAR IT LEANS IS WHAT THE GAP ALLOWS. A 21mm box turned a
+            // twentieth of a turn reaches 113mm along the shelf, five times
+            // its own thickness, so at a fixed angle it went straight
+            // through the divider: the left cubby fills TOWARDS the middle
+            // and its gap is the one against the partition.
+            const free = room - used + th + 0.0012;
+            const tip = i === pick.length - 1
+              ? Math.asin(Math.max(0, Math.min(Math.sin(0.30),
+                  (free - 0.008 - th) / LP)))
+              : 0;
+            const lean = tip > 0.10;
+            const a2 = lean ? -tip : -0.035 - hash3(i, side, 3) * 0.015;
             const ca = Math.cos(a2), sa = Math.abs(Math.sin(a2));
+            const deep = lean ? th * ca + LP * sa : th;
             m.rotation.x = a2;
             m.position.set(-0.012,
                            FOOT + T + (LP * ca + th * sa) / 2 + 0.004,
-                           z0 + at + (lean ? (th * ca + LP * sa) / 2
-                                           : th / 2));
+                           z0 + at + deep / 2);
+            // HOW FAR ANY OF THEM REACHES PAST ITS OWN CUBBY, kept for the
+            // test: he saw the leaning one cross the partition before any
+            // number here did.
+            shelfOver = Math.max(shelfOver,
+              at + deep - inner / 2, -inner / 2 - at);
+            if (shelfOver > 0 && !shelfWho) shelfWho = st[0] + " " + st[1];
             m.name = "coffret";
             m.userData = { who: st[0], what: st[1],
                            set: SETS.indexOf(st) };
@@ -1584,6 +1599,7 @@
           });
         });
         cab.position.set(CAB_X, 0, CAB.z);
+        window.__shelfFit = { over: shelfOver, who: shelfWho };
         hifi.add(cab);
       }
 
@@ -3983,6 +3999,16 @@
                        Math.round(gap * 1000) + "mm" +
                        (gap > 0.010 ? "" : " -- TOUCHING"));
             }
+          }
+          // AND THE BOXES INSIDE THEIR OWN CUBBY, which is a fit the wall
+          // readings above cannot see: the divider is not a wall.
+          const sf = window.__shelfFit;
+          if (sf) {
+            out.push("the boxes clear their cubby by " +
+                     (-sf.over * 1000).toFixed(0) + "mm" +
+                     (sf.over < 0 ? "" : " -- " + sf.who +
+                      " REACHES " + (sf.over * 1000).toFixed(0) +
+                      "mm PAST IT"));
           }
           document.body.setAttribute("data-fittest", out.join(" | "));
         }, 1200);
