@@ -335,8 +335,11 @@
        near -- at which point the caps brighten and their descriptions arrive.
        The descriptions are always in the layout and only invisible, so nothing
        shifts under the hand and the area stays where it was. */
+    /* A BUTTON BRINGS ITS OWN PADDING, BORDER AND CENTRING, and they all go.
+       NOT its margin: the rows are spaced by a 3px margin of their own, and
+       resetting it here laid SPACE against R with nothing between them. */
     #keys button.krow{pointer-events:auto;cursor:pointer;background:none;
-      border:0;padding:0;margin:0;color:inherit;text-align:left;}
+      border:0;padding:0;color:inherit;text-align:left;}
     #keys .krow.label{cursor:default;}
     /* THE RING, for the one place with somewhere to walk in every direction.
        Its own look comes from controls.css, which every space shares. */
@@ -3439,6 +3442,14 @@
         leaf.castShadow = true;
         leaf.receiveShadow = true;
         g.add(leaf);
+        // IT SLIDES ONTO WALL THAT IS THERE. The opening sits at z -0.81 to
+        // -0.11 and there are 1.91m of wall on its +z side against 0.99 on
+        // the other, so it goes that way or it hangs in the air past a corner.
+        MARGE.slide = function (t) {
+          leaf.position.z = dr.z + (dr.w + 0.06) * Math.max(0, Math.min(1, t));
+        };
+        window.__margeSlide = MARGE.slide;
+        window.__doorAt = function () { return +leaf.position.z.toFixed(3); };
         [0.22, -0.22].forEach((dy) => {
           const b = new THREE.Mesh(makeRuggedBox(
             0.016, 0.046, dr.w + 0.05, 1, 1, 4, 0.003), mat(0x3a2c1e));
@@ -3452,6 +3463,65 @@
       const mroof = thatchHip(hw + T2, hd + T2, 0.40, 1.68, 0.30,
                               Y + H - 0.10, 17, 1900);
       g.add(mroof);
+
+      // ---- THE WAY TO IT -------------------------------------------------
+      // A BRANCH OF TOBI-ISHI, because that is how a roji says there is a way
+      // this way. The house stood two metres off the path with nothing
+      // leading to it, and a building you can see and cannot reach is
+      // scenery.
+      //
+      // A SIZE SMALLER AND FEWER THAN THE PATH'S OWN, so it reads as a branch
+      // and not as a fork: the way to the tea is what the garden is composed
+      // for, and this one steps aside from it. And the steps SHORTEN as they
+      // arrive, which is what feet do at a door.
+      const WAY = [[3.14, 14.55], [2.40, 14.32], [1.68, 14.02],
+                   [1.00, 13.68], [0.42, 13.36]];
+      WAY.forEach(function (q, i) {
+        const a = WAY[Math.max(0, i - 1)], b2 = WAY[Math.min(WAY.length - 1, i + 1)];
+        const across = Math.atan2(b2[0] - a[0], -(b2[1] - a[1]));
+        const r = 0.168 + hash3(i, 3.3, 1.7) * 0.034;
+        const st = new THREE.Mesh(
+          makeStoneGeo(r, 0.20, 310 + i * 7.1, undefined, undefined, 0), stoneMat);
+        st.position.set(q[0], groundAt(q[0], q[1]) - 0.054, q[1]);
+        st.rotation.set((hash3(i, 9.1, 3) - 0.5) * 0.10,
+                        -(across + (hash3(i, 3.6, 7.2) - 0.5) * 0.55),
+                        (hash3(i, 4.4, 8) - 0.5) * 0.10);
+        st.castShadow = true;
+        st.receiveShadow = true;
+        scene.add(outdoor(st));
+      });
+      // KUTSUNUGI-ISHI, the stone one steps off: broader, flatter and set
+      // square to the door rather than across the way, because it is not a
+      // stride but a place to stand. Under the eave, where it belongs.
+      {
+        const nx = Math.cos(MARGE.ry), nz = -Math.sin(MARGE.ry);
+        const wallx = MARGE.x + (hw + T2) * nx, wallz = MARGE.z + (hw + T2) * nz;
+        const kx = wallx + nx * 0.42 + nz * -0.02;
+        const kz = wallz + nz * 0.42 + nx * 0.02 + dr.z * Math.cos(MARGE.ry);
+        const k = new THREE.Mesh(makeStoneGeo(0.255, 0.16, 377.2, undefined, 0.8, 0),
+                                 stoneMat);
+        k.position.set(kx, groundAt(kx, kz) - 0.030, kz);
+        k.rotation.set(0.012, -MARGE.ry, -0.008);
+        k.castShadow = true;
+        k.receiveShadow = true;
+        k.name = "kutsunugi";
+        scene.add(outdoor(k));
+        MARGE.step = [kx, kz];
+        // WHERE THE WAY FALLS ON THE SCREEN. A route the visitor cannot see
+        // is not a route, and which composed view contains it is a thing to
+        // measure rather than to hope for.
+        window.__way = function () {
+          const out = [];
+          WAY.concat([[kx, kz]]).forEach(function (q, i) {
+            const v = new THREE.Vector3(q[0], groundAt(q[0], q[1]) + 0.02, q[1])
+                        .project(camera);
+            out.push({ i: i, x: Math.round((v.x + 1) / 2 * innerWidth),
+                       y: Math.round((1 - v.y) / 2 * innerHeight),
+                       on: v.z < 1 && Math.abs(v.x) <= 1 && Math.abs(v.y) <= 1 });
+          });
+          return out;
+        };
+      }
 
       g.position.set(MARGE.x, groundAt(MARGE.x, MARGE.z), MARGE.z);
       g.rotation.y = MARGE.ry;
@@ -4399,7 +4469,7 @@
         jp: "腰掛待合", d: "The waiting bench, in the outer roji. The guests sit here until the host comes to call them." },
       { at: 0.170, p: [-0.55, groundAt(-0.55, 11.75) + 1.98, 11.75],
         t: "En marge", jp: "", go: "en-marge.html",
-        d: "The host's own room, at the edge of the outer garden. It is not on the way to the tea: four and a half mats, a desk under the paper wall, a wall of records, a painting, and a corner for tea." },
+        d: "The host's own room, at the edge of the outer garden, and the stepping stones that branch off to it. It is not on the way to the tea: four and a half mats, a desk under the paper wall, a wall of records, a painting, and a corner for tea. The door is a nijiriguchi like the tea house's own, 700 by 720, and nobody passes one upright." },
       { at: 0.170, p: [2.30, groundAt(2.30, 9.90) + 0.75, 9.90], t: "Takegaki",
         jp: "竹垣", d: "The bamboo fence. Its culms are set almost touching, so the inner garden is not seen from the outer one." },
       { at: 0.340, p: [2.98, groundAt(2.98, 9.90) + 2.05, 9.90], t: "Chumon",
@@ -15287,7 +15357,7 @@
         "<span class='vt'><span class='jp'>" + n.jp + "</span>" +
         "<span class='rom'>" + n.t + "</span></span>" +
         "<span class='tx'>" + n.d +
-        (n.go ? " <a class='go' href='" + n.go + "'>go in</a>" : "") +
+        (n.go ? " <a class='go' href='" + n.go + "'>slip in</a>" : "") +
         "</span>";
       cardEl.classList.add("on");
       if (n.go) {
@@ -15296,7 +15366,15 @@
           ev.stopPropagation();
           if (!window.__leaveTo) return;     // the plain link does the rest
           ev.preventDefault();
-          window.__leaveTo(n.go);
+          const slide = window.__margeSlide;
+          if (!slide) { window.__leaveTo(n.go); return; }
+          const t0 = performance.now(), DUR = 700;
+          (function open(now) {
+            const k = Math.min(1, (now - t0) / DUR);
+            slide(k * k * (3 - 2 * k));      // eased, as a hand slides it
+            if (k < 1) requestAnimationFrame(open);
+            else window.__leaveTo(n.go);
+          })(t0);
         });
       }
     }
