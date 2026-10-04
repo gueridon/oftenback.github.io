@@ -47,6 +47,27 @@
       opacity:.62;transition:opacity .3s ease;
       text-shadow:0 1px 2px rgba(18,14,10,.95), 0 0 8px rgba(18,14,10,.90);}
     .note-dot:hover .note-jp,.note-dot.on .note-jp{opacity:1;}
+    /* A WAY SAYS WHERE IT GOES, horizontally and in words, because a visitor
+       who cannot see that there are two ways cannot choose one. The disc is
+       the same disc; what hangs off it is a destination rather than a name,
+       so it reads across and not down, and it sits BESIDE the disc, on the
+       side the way runs. */
+    .note-sign .note-way{position:absolute;left:21px;top:50%;
+      transform:translateY(-50%);white-space:nowrap;
+      font:400 11.5px/1.45 system-ui,sans-serif;letter-spacing:.07em;
+      color:rgba(244,237,226,.72);
+      text-shadow:0 1px 2px rgba(18,14,10,.95), 0 0 8px rgba(18,14,10,.90),
+        0 0 22px rgba(18,14,10,.80);
+      transition:color .3s ease;}
+    .note-sign .note-way b{display:block;font-weight:600;font-size:9px;
+      letter-spacing:.26em;text-transform:uppercase;color:#f4ede2;
+      margin-bottom:2px;}
+    .note-sign.to-left .note-way{left:auto;right:21px;text-align:right;}
+    .note-sign:hover .note-way,.note-sign.on .note-way{color:#fff;}
+    .note-sign:hover .note-way b{color:#fff;}
+    /* and the disc of a way is a shade smaller than a name's: a direction is
+       quieter than a thing */
+    .note-sign .note-disc{width:11px;height:11px;margin:7.5px;}
     /* The hairline. One line for the whole page: only one card is ever open. */
     /* width and height, and not only inset: an <svg> is a replaced element and
        keeps its default 300 x 150 box whatever inset says, so the hairline was
@@ -1065,12 +1086,17 @@
     // direct entrance needs them too, and because STATIC_AMP is expressed as a
     // fraction of the swing: at 0.14 of 0.58 the frozen views allow 24% of a
     // head turn, which is right for a debug frame and wrong for a destination.
-    const LOOK_SWING = 0.58, LOOK_TILT = 0.20;
-    // The mouse gives an angle bounded by LOOK_SWING, which is the walk's 33
-    // degrees: enough to glance about while standing on a path, far too little
-    // in a room where the two things worth looking at are 66 degrees apart. So
-    // the room scales it. At SWING_D each way the head reaches the alcove, the
-    // window and most of the way to the door.
+    const LOOK_SWING = 1.02, LOOK_TILT = 0.20;
+    // FIFTY EIGHT DEGREES EACH WAY, and it was thirty three. Thirty three was
+    // enough while the only things in the garden stood on the path; measured
+    // from the bench, the host's own house is 38 degrees off the axis and its
+    // door is 49, so the head could not be turned far enough to see a building
+    // that is plainly there. A thing in the garden that the look cannot reach
+    // is a thing found by luck.
+    //
+    // The room scales this by SWING_K, so widening the path's swing leaves the
+    // room exactly where it was: at SWING_D each way the head reaches the
+    // alcove, the window and most of the way to the door.
     const SWING_K = SWING_D * Math.PI / 180 / LOOK_SWING;
     const _so = new THREE.Vector3().subVectors(CAM_BASE, LOOK_BASE);
     const STATIC_RADIUS = Math.hypot(_so.x, _so.z);
@@ -4465,6 +4491,13 @@
     // so they appear only where the traveller has paused: the path is never
     // littered with dots while you are moving.
     const NOTES = [
+      // THE TWO WAYS. At the fork, from the moment the walk begins, because
+      // that is where the choice is. Choosing a way goes that way: the tea
+      // house by the walk's own next stop, the host's room by its door.
+      { at: 0.020, sign: 1, p: [2.74, groundAt(2.74, 13.60) + 1.46, 13.60],
+        t: "The tea house", d: "this way", act: "tea" },
+      { at: 0.020, sign: 1, left: 1, p: [1.58, groundAt(1.58, 14.18) + 1.18, 14.18],
+        t: "The host's room", d: "this way", act: "marge" },
       { at: 0.100, p: [5.82, groundAt(5.55, 13.60) + 1.05, 13.99], t: "Koshikake machiai",
         jp: "腰掛待合", d: "The waiting bench, in the outer roji. The guests sit here until the host comes to call them." },
       { at: 0.170, p: [-0.55, groundAt(-0.55, 11.75) + 1.98, 11.75],
@@ -15347,6 +15380,40 @@
     // Opening a card is no longer only a click: the room's own card opens by
     // itself when you arrive, so the two doors out of the piece are standing
     // open rather than waiting to be found. One function for both paths.
+    // THE TWO WAYS, WALKED. The tea house is the walk's own next stop, so it
+    // presses the key that takes it: one path through moving, as everywhere
+    // else here. The host's room is not a place on the rail -- it is a door --
+    // so it opens the door and the garden dissolves over the opening.
+    // WHY A WAY IS NOT UP, when it is not: the visibility of a point is four
+    // conditions and guessing which one failed is how an afternoon goes.
+    window.__signs = function () {
+      return NOTES.filter(function (n) { return n.sign; }).map(function (n) {
+        const v = n.vec.clone().project(camera);
+        return { t: n.t, reach: !!n.reach,
+                 opacity: n.el ? n.el.style.opacity : null,
+                 at: n.at, u: +currentU.toFixed(3),
+                 world: [+n.vec.x.toFixed(2), +n.vec.y.toFixed(2), +n.vec.z.toFixed(2)],
+                 ndc: [+v.x.toFixed(2), +v.y.toFixed(2), +v.z.toFixed(2)] };
+      });
+    };
+    function goWay(which) {
+      if (which === "tea") {
+        dispatchEvent(new KeyboardEvent("keydown", { code: "Space" }));
+        dispatchEvent(new KeyboardEvent("keyup", { code: "Space" }));
+        return;
+      }
+      const slide = window.__margeSlide;
+      if (!slide) { if (window.__leaveTo) window.__leaveTo("en-marge.html"); return; }
+      const t0 = performance.now(), DUR = 700;
+      (function open(now) {
+        const k = Math.min(1, (now - t0) / DUR);
+        slide(k * k * (3 - 2 * k));
+        if (k < 1) requestAnimationFrame(open);
+        else if (window.__leaveTo) window.__leaveTo("en-marge.html");
+        else location.href = "en-marge.html";
+      })(t0);
+    }
+
     function showCard(i) {
       openNote = i;
       NOTES.forEach((m, k) => m.el && m.el.classList.toggle("on", k === openNote));
@@ -15411,16 +15478,21 @@
     NOTES.forEach((n, i) => {
       const room = isRoomNote(n);
       const b = document.createElement("button");
-      b.className = "note-dot" + (room ? " indoor" : "");
+      b.className = "note-dot" + (room ? " indoor" : "") +
+                    (n.sign ? " note-sign" : "") +
+                    (n.left ? " to-left" : "");
       // The name rides beside the disc, except where it would cover what it
       // names: see `bare` on the tokonoma notes, and every disc in the room,
       // which sits ON its object and has the frame at the bottom for a name.
       b.innerHTML = "<span class='note-disc'></span>" +
-        (n.jp && !n.bare && !room ? "<span class='note-jp'>" + n.jp + "</span>" : "");
+        (n.sign ? "<span class='note-way'><b>" + n.t + "</b>" + n.d + "</span>"
+         : (n.jp && !n.bare && !room ? "<span class='note-jp'>" + n.jp + "</span>" : ""));
       b.style.opacity = 0;
       b.setAttribute("aria-label", n.t);
       b.addEventListener("click", (ev) => {
         ev.stopPropagation();
+        // A WAY IS WALKED, not read: choosing it goes there.
+        if (n.sign) { goWay(n.act); return; }
         // IN THE ROOM the disc opens the piece itself, at the bottom of the
         // screen, where every other frame in this scene opens.
         if (room) inspectNote(inspecting === i ? -1 : i);
