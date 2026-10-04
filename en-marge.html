@@ -2100,7 +2100,13 @@
         // it is pressed and narrow where it lifts, so the path is sampled,
         // offset either side by half a width that runs from w0 to w1, and
         // filled.
-        function inkTaper(a, c1, c2, b, w0, w1, col) {
+        // WITH AN OPTIONAL MID WIDTH, so a mark can swell and taper to
+        // nothing at BOTH ends, which is what a crack and a brushed line do
+        // and what a linear ramp from w0 to w1 cannot.
+        // ON A GIVEN CONTEXT, because the paint is laid on one canvas and
+        // the paper and the damage go on the other: a crack is drawn with
+        // the same brush as a trunk but on the second of the two.
+        function inkTaperOn(cx2, a, c1, c2, b, w0, w1, col, wMid) {
           const N = 14, L = [], R = [];
           for (let k = 0; k <= N; k++) {
             const t = k / N, u = 1 - t;
@@ -2113,18 +2119,23 @@
             const dy = 3 * (u * u * (c1[1] - a[1])
                        + 2 * u * t * (c2[1] - c1[1]) + t * t * (b[1] - c2[1]));
             const m = Math.hypot(dx, dy) || 1;
-            const w = (w0 + (w1 - w0) * t) * 0.5;
+            const u2 = 1 - t;
+            const w = 0.5 * (wMid === undefined
+              ? w0 + (w1 - w0) * t
+              : u2 * u2 * w0 + 2 * u2 * t * wMid + t * t * w1);
             L.push([x - dy / m * w, y + dx / m * w]);
             R.push([x + dy / m * w, y - dx / m * w]);
           }
-          g.fillStyle = col;
-          g.beginPath();
-          g.moveTo(L[0][0], L[0][1]);
-          for (let i = 1; i < L.length; i++) g.lineTo(L[i][0], L[i][1]);
-          for (let i = R.length - 1; i >= 0; i--) g.lineTo(R[i][0], R[i][1]);
-          g.closePath();
-          g.fill();
+          cx2.fillStyle = col;
+          cx2.beginPath();
+          cx2.moveTo(L[0][0], L[0][1]);
+          for (let i = 1; i < L.length; i++) cx2.lineTo(L[i][0], L[i][1]);
+          for (let i = R.length - 1; i >= 0; i--) cx2.lineTo(R[i][0], R[i][1]);
+          cx2.closePath();
+          cx2.fill();
         }
+        const inkTaper = (a, c1, c2, b, w0, w1, col, wMid) =>
+          inkTaperOn(g, a, c1, c2, b, w0, w1, col, wMid);
         // A DAB, which is a brush set down once: an irregular edge, and the
         // faint halo the paper draws out of it before it dries.
         function dab(x, y, rx, ry, rot, col, al, seed) {
@@ -2198,14 +2209,31 @@
             g.fillStyle = lg;
             g.fillRect(0, FAR_Y - H * 0.02, W, H - FAR_Y + H * 0.02);
           }
-          stroke([[0, FAR_Y], [W * 0.34, FAR_Y - 6],
-                  [W * 0.72, FAR_Y + 5], [W, FAR_Y - 4]], 2.4,
-                 "rgba(60,48,34,0.30)");
+          // THE HORIZON IS BRUSHED AND NOT RULED. At one width from edge to
+          // edge it was the hardest thing on the sheet, a line laid with a
+          // straight edge across a picture that has no other straight line
+          // in it. Drawn in three overlapping passes, each swelling in the
+          // middle and dying at both ends, it reads as a brush carried
+          // across and lifted.
+          [[-0.02, 0.40, 2.6], [0.33, 0.74, 3.0], [0.66, 1.02, 2.4]]
+            .forEach((r, i) => {
+            const x0 = W * r[0], x1 = W * r[1];
+            inkTaper([x0, FAR_Y + (hash3(i, 2.1, 5.5) - 0.5) * 7],
+                     [x0 + (x1 - x0) * 0.33, FAR_Y - 7],
+                     [x0 + (x1 - x0) * 0.66, FAR_Y + 6],
+                     [x1, FAR_Y + (hash3(i, 7.3, 1.9) - 0.5) * 7],
+                     0, 0, "rgba(60,48,34,0.26)", r[2]);
+          });
           // and a second, fainter break where the near ground begins: it is
           // a change of value and not a step
-          stroke([[0, GROUND_Y], [W * 0.3, GROUND_Y - 8],
-                  [W * 0.7, GROUND_Y + 6], [W, GROUND_Y - 3]], 2.2,
-                 "rgba(60,48,34,0.16)");
+          [[-0.02, 0.46, 2.2], [0.40, 1.02, 2.6]].forEach((r, i) => {
+            const x0 = W * r[0], x1 = W * r[1];
+            inkTaper([x0, GROUND_Y + (hash3(i, 4.1, 8.3) - 0.5) * 9],
+                     [x0 + (x1 - x0) * 0.33, GROUND_Y - 8],
+                     [x0 + (x1 - x0) * 0.66, GROUND_Y + 7],
+                     [x1, GROUND_Y + (hash3(i, 6.7, 2.3) - 0.5) * 9],
+                     0, 0, "rgba(60,48,34,0.14)", r[2]);
+          });
 
           // SMALL TREES ON THE FAR HORIZON, on the left where the ground is
           // open: scale is drawn by what is TINY, and with nothing small in
@@ -2387,22 +2415,40 @@
           // is where it is: mulberry fibre runs long and lies in no
           // direction in particular, and the laid lines of the mould show
           // faintly across it.
+          // EVERY FIBRE A DIFFERENT SHAPE, which is the fault he saw on the
+          // ground. The variation was in position and length only: the angle
+          // was confined to 0.7 radians either side of horizontal, and the
+          // control point was offset by a CONSTANT six pixels downward, so
+          // all fifteen hundred of them were the same shallow V laid out at
+          // different places. The eye does not see fifteen hundred fibres,
+          // it sees one shape repeated, and a repeated shape is what reads
+          // as vector.
+          //
+          // So: the angle runs the whole circle, the two control points are
+          // offset INDEPENDENTLY and either way, and the strand is drawn
+          // with the same tapering brush as the trees, thickest somewhere
+          // along its length and nothing at both ends. No two share a
+          // silhouette.
           for (let i = 0; i < 1500; i++) {
             const x = hash3(i, 1.7, 4.3) * W, y = hash3(i, 9.1, 2.9) * H;
-            const a2 = (hash3(i, 3.7, 8.1) - 0.5) * 1.4;
+            const a2 = hash3(i, 3.7, 8.1) * Math.PI * 2;
             // SHORT. At a hundred and fifty pixels a fibre reads as a hair
             // lying on the picture rather than as the sheet it is in.
-            const L = 10 + hash3(i, 5.3, 6.7) * 62;
-            gf.strokeStyle = hash3(i, 2.2, 7.9) < 0.5
-              ? "rgba(255,250,236,0.055)" : "rgba(104,88,62,0.050)";
-            gf.lineWidth = 0.7 + hash3(i, 8.3, 1.9) * 1.5;
-            gf.lineCap = "round";
-            gf.beginPath();
-            gf.moveTo(x, y);
-            gf.quadraticCurveTo(x + Math.cos(a2) * L * 0.5,
-                                y + Math.sin(a2) * L * 0.5 + 6,
-                                x + Math.cos(a2) * L, y + Math.sin(a2) * L);
-            gf.stroke();
+            const L = 9 + hash3(i, 5.3, 6.7) * 54;
+            const nx = -Math.sin(a2), ny = Math.cos(a2);
+            const b1 = (hash3(i, 6.1, 3.3) - 0.5) * L * 0.42;
+            const b2 = (hash3(i, 2.7, 9.7) - 0.5) * L * 0.42;
+            inkTaperOn(gf, [x, y],
+                       [x + Math.cos(a2) * L * 0.33 + nx * b1,
+                        y + Math.sin(a2) * L * 0.33 + ny * b1],
+                       [x + Math.cos(a2) * L * 0.66 + nx * b2,
+                        y + Math.sin(a2) * L * 0.66 + ny * b2],
+                       [x + Math.cos(a2) * L, y + Math.sin(a2) * L],
+                       0, 0,
+                       hash3(i, 2.2, 7.9) < 0.5
+                         ? "rgba(255,250,236,0.075)"
+                         : "rgba(104,88,62,0.068)",
+                       0.7 + hash3(i, 8.3, 1.9) * 1.3);
           }
           gf.strokeStyle = "rgba(118,100,70,0.030)";
           gf.lineWidth = 1.0;
@@ -2498,23 +2544,45 @@
           // whole sheet including the empty ground. They read as hairs lying
           // ON the painting. A craquelure is SHORT, it is faint to the point
           // of doubt, and it sits where the pigment lies thick.
-          gf.strokeStyle = "rgba(62,46,30," + (0.075 * AGE).toFixed(3) + ")";
-          gf.lineWidth = 0.7;
-          for (let i = 0; i < 90; i++) {
-            let x = hash3(i, 8.8, 2.2) * W, y = hash3(i, 1.4, 7.3) * H;
-            // kept off the open ground: the upper third of this picture is
-            // bare gofun and a crack there has nothing to crack
-            if (y < H * 0.42) continue;
-            let a2 = hash3(i, 5.5, 9.1) * Math.PI * 2;
-            gf.beginPath();
-            gf.moveTo(x, y);
-            for (let k = 0; k < 3; k++) {
-              a2 += (hash3(i * 7 + k, 3.3, 6.6) - 0.5) * 2.2;
-              x += Math.cos(a2) * (2.5 + hash3(i + k, 2.1, 8.4) * 6);
-              y += Math.sin(a2) * (2.5 + hash3(i + k, 4.4, 1.6) * 6);
-              gf.lineTo(x, y);
+          // THE CRACKS ARE INK, which is the fault he saw: three straight
+          // segments meeting at hard angles, all of one width, ninety of
+          // them scattered over the ground. They read as tiny vector
+          // scribbles, which is exactly what they were. A crack in pigment
+          // is a hairline that CURVES, swells somewhere along its length and
+          // dies to nothing at both ends, and sometimes forks.
+          {
+            const gwas = g;
+            const col = "rgba(62,46,30," + (0.085 * AGE).toFixed(3) + ")";
+            for (let i = 0; i < 70; i++) {
+              const x = hash3(i, 8.8, 2.2) * W, y = hash3(i, 1.4, 7.3) * H;
+              // kept off the open ground: the upper third of this picture is
+              // bare gofun and a crack there has nothing to crack
+              if (y < H * 0.42) continue;
+              const a2 = hash3(i, 5.5, 9.1) * Math.PI * 2;
+              const L = 9 + hash3(i, 2.1, 8.4) * 20;
+              const bend = (hash3(i, 4.4, 1.6) - 0.5) * L * 0.55;
+              const ex = x + Math.cos(a2) * L, ey = y + Math.sin(a2) * L;
+              const mx = (x + ex) / 2 - Math.sin(a2) * bend;
+              const my = (y + ey) / 2 + Math.cos(a2) * bend;
+              inkTaperOn(gf, [x, y],
+                         [x + (mx - x) * 1.1, y + (my - y) * 1.1],
+                         [ex + (mx - ex) * 1.1, ey + (my - ey) * 1.1],
+                         [ex, ey], 0, 0, col,
+                         0.8 + hash3(i, 9.3, 3.7) * 1.1);
+              // and one fork on some of them, off the middle
+              if (hash3(i, 3.9, 6.1) > 0.55) {
+                const b2 = a2 + (hash3(i, 1.1, 4.7) - 0.5) * 1.6;
+                const L2 = L * (0.35 + hash3(i, 8.2, 2.6) * 0.35);
+                inkTaperOn(gf, [mx, my],
+                           [mx + Math.cos(b2) * L2 * 0.4,
+                            my + Math.sin(b2) * L2 * 0.4],
+                           [mx + Math.cos(b2) * L2 * 0.7,
+                            my + Math.sin(b2) * L2 * 0.7],
+                           [mx + Math.cos(b2) * L2,
+                            my + Math.sin(b2) * L2],
+                           0, 0, col, 0.7);
+              }
             }
-            gf.stroke();
           }
 
           // AND A LAST GRAIN over everything, so the blur leaves nothing
