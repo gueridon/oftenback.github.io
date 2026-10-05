@@ -534,6 +534,20 @@
       // follow its cushion is a room opening from nowhere.
       seat: { x: ZAFU.x, y: 0.55, z: ZAFU.z },
     };
+    // THE DOORWAY'S NUMBERS, declared with the room because three things need
+    // them: the north wall that carries the opening, the panel that slides in
+    // it, and the crossing to and from the garden. 700 by 720 over a 60 sill,
+    // set to one side, which is what a nijiriguchi is.
+    const NIJIRI = { w: 0.70, h: 0.72, sill: 0.06, z: -0.46 };
+    // WHERE ONE IS WHEN ONE IS IN THE DOOR, and which way the head is turned
+    // there. Both pages hold this pose across the crossing: the garden walks
+    // up to it and hands over, and the walk out leaves from it.
+    const IN_DOOR = { x: ROOM.w / 2 - 0.55, z: NIJIRI.z };
+    IN_DOOR.yawIn = Math.atan2(-(ZAFU.x - IN_DOOR.x), -(ZAFU.z - IN_DOOR.z));
+    IN_DOOR.pitchIn = Math.atan2(0.18 - ROOM.seat.y,
+      Math.hypot(ZAFU.x - IN_DOOR.x, ZAFU.z - IN_DOOR.z));
+    IN_DOOR.yawOut = -Math.PI / 2;      // square to the opening
+    IN_DOOR.pitchOut = -0.05;
     // THE LOW DESK, and its place, declared with the room rather than where
     // it is built: the four panel Akari stands ON it, so the lamp needs to
     // know the desk's top before either of them exists.
@@ -592,6 +606,7 @@
 
       const camera = new THREE.PerspectiveCamera(58, innerWidth / innerHeight,
                                                  0.05, 40);
+      window.__cam = camera;          // the same measuring affordance
 
       // ---- materials: matte, flat, no shine and no photographs ------------
       const mat = (hex, rough) => new THREE.MeshStandardMaterial({
@@ -707,11 +722,10 @@
       // around the opening: a PlaneGeometry cannot hold a hole, and the tea
       // room solved this the same way rather than give up its hand jitter.
       //
-      // The door's own numbers are that room's, because it is the same house
-      // and the same doorway: 700 wide, 720 high, a 60mm sill, and set to one
-      // side, since a real nijiriguchi is never centred. Seventy centimetres
-      // because nobody enters a tea room standing.
-      const DOOR = { w: 0.70, h: 0.72, sill: 0.06, z: -0.46 };
+      // The numbers are the room's own, declared up with it: seventy
+      // centimetres wide and seven hundred and twenty high, because nobody
+      // enters a tea room standing.
+      const DOOR = NIJIRI;
       {
         const X = ROOM.w / 2, GROW = 0.06;
         const l = DOOR.z - DOOR.w / 2, r = DOOR.z + DOOR.w / 2;
@@ -763,11 +777,8 @@
         sill.castShadow = true; sill.receiveShadow = true;
         walls.add(sill);
 
-        // AND THE DOOR ITSELF, SHUT. A cedar panel on the OUTER face, as it
-        // runs in reality, so from in here you see its back set into the
-        // opening. Shut for now: later this room stands somewhere in the
-        // roji with a path to it, and then the panel has somewhere to slide
-        // aside to.
+        // AND THE DOOR ITSELF. A cedar panel on the OUTER face, as it runs in
+        // reality, so from in here you see its back set into the opening.
         const door = new THREE.Group();
         door.name = "nijiriguchi";
         const dw = DOOR.w + 0.10, dh = DOOR.sill + DOOR.h + 0.06;
@@ -789,6 +800,14 @@
         door.add(pull);
         door.position.set(X + 0.045, dh / 2 - 0.02, DOOR.z);
         shell.add(door);
+        // IT SLIDES, the same travel and the same side as the leaf in the
+        // garden's copy of this house: the opening has 1.91m of wall on its
+        // +z side and 0.99 on the other, so it goes that way or it hangs in
+        // the air past a corner.
+        window.__doorSlide = (t) => {
+          door.position.z = DOOR.z + (DOOR.w + 0.06) * Math.max(0, Math.min(1, t));
+        };
+        window.__doorAt = () => +door.position.z.toFixed(3);
       }
       const front = wall(ROOM.w, ROOM.h, 5.5);
       front.rotation.y = Math.PI;
@@ -3025,6 +3044,9 @@
         const at = (Q.get("at") || "").split(",").map(Number);
         if (at.length === 2 && at.every(isFinite)) {
           eye.set(at[0], ROOM.seat.y, at[1]);
+        } else if (Q.has("door")) {
+          // arrived through the opening, where the garden's walk left off
+          eye.set(IN_DOOR.x, ROOM.seat.y, IN_DOOR.z);
         } else if (Q.has("sit")) {
           // ?sit ARRIVES SEATED AT THE DESK, since a glide is a thing the
           // harness cannot run: nothing animated advances in there, and a
@@ -3061,7 +3083,8 @@
         "obon": "The tray.",
         "zafu": "Zafu, on its zabuton. Tawny.",
         "zabuton": "Zabuton, under the zafu.",
-        "nijiriguchi": "Nijiriguchi, on the north wall. 700 by 720, shut.",
+        "nijiriguchi": "Nijiriguchi, on the north wall. 700 by 720. " +
+          "&nbsp;&middot;&nbsp; again, to go out to the garden",
         "fenetre": "The shoji, on the south wall, and the daylight behind it.",
         "lampe": "The lamp.",
         "plancher": "The boards.",
@@ -3205,14 +3228,16 @@
       // The old opening, from the middle of the floor at -0.62, put the
       // round Akari at eye height a metre away. That was the better picture
       // and it is no longer available: the eye moved with the cushion.
-      const YAW0 = Q.has("sit") ? SEAT.yaw : -2.356;
+      const YAW0 = Q.has("sit") ? SEAT.yaw
+                 : Q.has("door") ? IN_DOOR.yawIn : -2.356;
       let yaw = num("yaw", YAW0),
           // A LITTLE MORE DOWN THAN BEFORE. From a corner at 550 the ceiling
           // is close overhead and the diagonal view filled the top of the
           // frame with it, which is the one surface here with nothing to
           // catch. Seated and looking across a room, one looks slightly
           // down anyway.
-          pitch = num("pitch", Q.has("sit") ? SEAT.pitch : -0.13);
+          pitch = num("pitch", Q.has("sit") ? SEAT.pitch
+                             : Q.has("door") ? IN_DOOR.pitchIn : -0.13);
       let wantYaw = yaw, wantPitch = pitch;
       // AND THE PITCH HAS A BASE, which the yaw always had and it did not.
       // The hover set wantPitch ABSOLUTELY from the pointer's offset, so the
@@ -3268,7 +3293,12 @@
           // apart arrived 466 and 487ms apart, so a window of half a second
           // cannot be met on a slow machine however fast the hand is.
           const t2 = performance.now();
-          if (o && o.userData && o.userData.set !== undefined) {
+          // AND THE DOOR OPENS ON THE SAME GESTURE, for the same reason: the
+          // first touch says what it is and warns that the second one leaves.
+          if (o && o.name === "nijiriguchi") {
+            if (again.o === o && t2 - again.t < 1200) { again.o = null; stepOut(); }
+            else { again.o = o; again.t = t2; }
+          } else if (o && o.userData && o.userData.set !== undefined) {
             if (again.o === o && t2 - again.t < 1200) {
               openBox(o.userData.set);
               again.o = null;
@@ -3786,9 +3816,85 @@
           { cap: "S", says: "the sound of the place",
             press: () => wakeSound(),
             lit: () => soundOn && window.SOUND && !SOUND.state().muted },
+          { cap: "O", says: "out, through the door",
+            press: () => stepOut(), lit: () => going >= 0 },
         ],
       });
       function paintNav() { nav.paint(); }
+
+      // ---- IN AND OUT BY THE DOOR -------------------------------------------
+      // "on devrait s'y deplacer et rentrer par la porte, ce serait plus beau
+      // qu'un fondu." The approach belongs to the garden, which walks the
+      // branch of stones and hands over with the opening filling the frame.
+      // What is left here is the other half of the gesture: the panel slides
+      // shut behind you and the room comes to the cushion.
+      //
+      // AND THE WAY BACK OUT, which the room did not have: one came in and
+      // the only exit was the menu. It glides to the opening, squares up to
+      // it, slides it and crosses while it is still sliding.
+      const ease = (t) => t * t * (3 - 2 * t);
+      const clamp01 = (t) => Math.max(0, Math.min(1, t));
+      const SHUT_WAIT = 0.8, SHUT_DUR = 1.1;     // behind you, not under you
+      const GO_TURN = 1.5, GO_SLIDE = 0.9;
+      let shutT = -1, going = -1, gone = false;
+      if (Q.has("door")) {
+        // the panel stands open on the FIRST frame, where the garden left it
+        if (window.__doorSlide) window.__doorSlide(1);
+        // and the rest waits for the veil: three seconds that begin behind a
+        // curtain are not three seconds
+        // and it goes anyway after three seconds: a visitor left standing in
+        // the doorway because a flag never arrived is worse than a glide
+        // that starts under the last of the veil
+        const gaveUp = performance.now() + 3000;
+        const settle = () => {
+          if (!window.__dismissed && performance.now() < gaveUp) {
+            setTimeout(settle, 80); return;
+          }
+          shutT = 0;
+          goTo({ x: ZAFU.x, z: ZAFU.z, yaw: -2.356, pitch: -0.13, eye: EYE.seat });
+          if (glide) glide.T = 2.8;              // the room's own length
+        };
+        setTimeout(settle, 0);
+      }
+      function stepOut() {
+        if (going >= 0) return;
+        going = 0; shutT = -1;
+        goTo({ x: IN_DOOR.x, z: IN_DOOR.z, yaw: IN_DOOR.yawOut,
+               pitch: IN_DOOR.pitchOut, eye: EYE.seat });
+        if (glide) glide.T = GO_TURN;
+      }
+      window.__stepOut = stepOut;
+      // WHERE ONE IS AND WHICH WAY ONE FACES, and the room's own tick handed
+      // out: headless starves rAF, so a crossing timed off it never finishes
+      // inside a measurement.
+      window.__eye = () => ({ x: +eye.x.toFixed(3), y: +eye.y.toFixed(3),
+        z: +eye.z.toFixed(3), yaw: +wantYaw.toFixed(3),
+        pitch: +wantPitch.toFixed(3), gliding: !!glide });
+      window.__roomStep = (dt) => { walk(dt); glideStep(dt); crossStep(dt); };
+      window.__crossing = () => ({ shut: +shutT.toFixed(2),
+                                   going: +going.toFixed(2), gone: gone });
+      function crossStep(dt) {
+        if (shutT >= 0) {
+          shutT += dt;
+          if (window.__doorSlide)
+            window.__doorSlide(1 - ease(clamp01((shutT - SHUT_WAIT) / SHUT_DUR)));
+          if (shutT > SHUT_WAIT + SHUT_DUR) shutT = -1;
+        }
+        if (going < 0) return;
+        going += dt;
+        const k = going - GO_TURN;
+        if (k > 0 && window.__doorSlide) window.__doorSlide(ease(clamp01(k / GO_SLIDE)));
+        // THE VEIL BEGINS BEFORE THE PANEL HAS FINISHED, and the last of the
+        // motion happens under it: there is no garden modelled on the far
+        // side of this wall, so an opening held wide on a dark hole is the
+        // one frame this crossing must not sit on.
+        if (k > GO_SLIDE * 0.55 && !gone) {
+          gone = true;
+          if (window.__leaveTo) window.__leaveTo("tearoom-roji.html?door");
+          else location.href = "tearoom-roji.html?door";
+        }
+        if (gone) eye.x += (ROOM.w / 2 - 0.18 - eye.x) * Math.min(1, dt * 1.6);
+      }
 
 
       // ?disc=<n> opens that box, ?on=<disc>.<piece> marks a piece as the one
@@ -3860,7 +3966,7 @@
         const dt = Math.min(0.05, (now - last) / 1000);
         last = now;
         // eased, so the head never snaps; the frozen views want it exact
-        if (!frozen) { walk(dt); glideStep(dt); }
+        if (!frozen) { walk(dt); glideStep(dt); crossStep(dt); }
         const k = frozen ? 1 : 1 - Math.pow(0.0016, dt);
         yaw += (wantYaw - yaw) * k;
         pitch += (wantPitch - pitch) * k;

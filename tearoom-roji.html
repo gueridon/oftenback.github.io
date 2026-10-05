@@ -3553,6 +3553,27 @@
       g.rotation.y = MARGE.ry;
       g.name = "en-marge";
       scene.add(outdoor(g));
+      // WHAT THE CROSSING NEEDS, handed to the walk that uses it. The house
+      // stands at an angle, so every point inside it is given in the room's
+      // own coordinates and turned here: the two pages share those numbers
+      // and must not each keep a rotated copy.
+      MARGE.way = WAY;
+      MARGE.floor = g.position.y + Y;
+      MARGE.toWorld = (lx, ly, lz) => {
+        g.updateMatrixWorld(true);
+        return g.localToWorld(new THREE.Vector3(lx, ly, lz));
+      };
+      MARGE.half = { w: hw, d: hd, t: T2 };
+      // AND NOTHING GROWS THROUGH IT. The grove was planted before this house
+      // existed, so a culm rooted under the building stands in the room. From
+      // the path it passes for a stem in front of a wall; from the doorway it
+      // is eight stems in the middle of the floor.
+      MARGE.inside = (wx, wz) => {
+        const c = Math.cos(MARGE.ry), sn = Math.sin(MARGE.ry);
+        const u = wx - MARGE.x, v = wz - MARGE.z;
+        return Math.abs(u * c - v * sn) < hw + T2 + 0.45 &&
+               Math.abs(u * sn + v * c) < hd + T2 + 0.45;
+      };
       // WHERE IT FALLS ON THE SCREEN at a given point of the walk. The garden
       // was composed before this house existed, so whether a composed view
       // contains it is a question to measure and not to reason about.
@@ -4022,6 +4043,7 @@
           const jd = d + (hash3(seed, clump * 5 + c, 3.3) - 0.5) * 0.42;
           const jb = back + (hash3(seed, clump * 5 + c, 4.4) - 0.5) * 0.55;
           const wx = cx0 + dx * jd + nx * jb, wz = cz0 + dz * jd + nz * jb;
+          if (MARGE.inside && MARGE.inside(wx, wz)) continue;   // not through a house
           const g0 = groundAt(wx, wz);
           const H = 4.2 + 2.0 * hash3(seed, clump * 5 + c, 5.5);
           const r = 0.017 + 0.013 * hash3(seed, clump * 5 + c, 6.6);
@@ -15380,6 +15402,8 @@
     // The roji's panel opens as the loading veil LIFTS and not before: five
     // seconds that begin behind a curtain are not five seconds.
     (function openOnEntry() {
+      // NOT TO SOMEONE COMING OUT OF THE HOUSE: they have read it already.
+      if (new URLSearchParams(location.search).has("door")) return;
       if (window.__dismissed) { cardOpen(introEl, CARD_HOLD); return; }
       setTimeout(openOnEntry, 120);
     })();
@@ -15392,8 +15416,8 @@
     // open rather than waiting to be found. One function for both paths.
     // THE TWO WAYS, WALKED. The tea house is the walk's own next stop, so it
     // presses the key that takes it: one path through moving, as everywhere
-    // else here. The host's room is not a place on the rail -- it is a door --
-    // so it opens the door and the garden dissolves over the opening.
+    // else here. The host's room is off the rail, so it has a route of its
+    // own, and choosing it walks that route rather than dissolving to it.
     // WHY A WAY IS NOT UP, when it is not: the visibility of a point is four
     // conditions and guessing which one failed is how an afternoon goes.
     window.__signs = function () {
@@ -15412,16 +15436,10 @@
         dispatchEvent(new KeyboardEvent("keyup", { code: "Space" }));
         return;
       }
-      const slide = window.__margeSlide;
-      if (!slide) { if (window.__leaveTo) window.__leaveTo("en-marge.html"); return; }
-      const t0 = performance.now(), DUR = 700;
-      (function open(now) {
-        const k = Math.min(1, (now - t0) / DUR);
-        slide(k * k * (3 - 2 * k));
-        if (k < 1) requestAnimationFrame(open);
-        else if (window.__leaveTo) window.__leaveTo("en-marge.html");
-        else location.href = "en-marge.html";
-      })(t0);
+      // A DOOR IS NOT A LINK. It walks there and goes in: see the route.
+      if (doorWalk(1)) return;
+      if (window.__leaveTo) window.__leaveTo("en-marge.html");
+      else location.href = "en-marge.html";
     }
 
     function showCard(i) {
@@ -15443,15 +15461,8 @@
           ev.stopPropagation();
           if (!window.__leaveTo) return;     // the plain link does the rest
           ev.preventDefault();
-          const slide = window.__margeSlide;
-          if (!slide) { window.__leaveTo(n.go); return; }
-          const t0 = performance.now(), DUR = 700;
-          (function open(now) {
-            const k = Math.min(1, (now - t0) / DUR);
-            slide(k * k * (3 - 2 * k));      // eased, as a hand slides it
-            if (k < 1) requestAnimationFrame(open);
-            else window.__leaveTo(n.go);
-          })(t0);
+          showCard(-1);
+          goWay("marge");                    // the same walk, asked another way
         });
       }
     }
@@ -16042,6 +16053,252 @@
       lookTarget = 0;
       markIdx = next;
     }
+
+    // ---- THE WALK TO THE HOUSE, AND BACK OUT OF IT -------------------------
+    // "on devrait s'y deplacer et rentrer par la porte, ce serait plus beau
+    // qu'un fondu." So the sign is not a link. Choosing it walks the path to
+    // where the branch of tobi-ishi leaves it, follows the branch, stands on
+    // the kutsunugi-ishi, slides the panel and stoops through the opening.
+    // The page changes with the opening already filling the frame.
+    //
+    // ONE POLYLINE, WALKED BOTH WAYS. Coming back out of en-marge arrives at
+    // ?door and runs this same route reversed, so the two crossings cannot
+    // drift apart: a route built twice is two routes.
+    //
+    // THE FIRST LEG IS THE JOURNEY'S OWN LINE, sampled off the beats rather
+    // than drawn straight. A straight line from where one stands to the first
+    // stone cuts the bend in the path and walks four metres over the moss.
+    const U_JOIN = 0.10;             // where the branch leaves the path
+    const WALK_MPS = 1.60;           // peak, at the middle of the stride
+    const RAMP = 0.18;               // of the trip, spent starting and stopping
+    const DOORW = { on: false, t: 0, dir: 1, dur: 1, pts: null,
+                    cum: null, len: 0, gone: false, frozen: false,
+                    fov0: 54, slide: 0, kf: 0,
+                    p: new THREE.Vector3(), l: new THREE.Vector3() };
+
+    function doorRoute() {
+      if (!MARGE.toWorld || !MARGE.way || !MARGE.step) return null;
+      const EYE_UP = 1.50;           // a standing eye, over the ground it is on
+      const fl = MARGE.rise;         // the floor, in the room's own coordinates
+      const hw = MARGE.half.w, t2 = MARGE.half.t, dz = MARGE.dr.z;
+      // TWO THINGS ARE LOOKED AT, NOT ONE. Aimed at the door the whole way,
+      // the head is already steeply down at a metre and a half out and the
+      // house reads as a wall one is walking into. So the walk looks at the
+      // BUILDING until it is nearly there, and at the opening only once the
+      // opening is what one is about to do.
+      const house = MARGE.toWorld(hw + 0.02, fl + 1.30, dz);
+      const door = MARGE.toWorld(hw + 0.02, fl + 0.42, dz);
+      const cush = MARGE.toWorld(-1.03, fl + 0.18, -1.265);
+      const pts = [];
+      // A POINT ALREADY STOOD ON IS NOT A STEP, and it keeps the aim it
+      // arrived with: coming out, the whole leading leg collapses onto the
+      // join, and the aim kept must be the path's own rather than the door
+      // one would otherwise end up facing from the path.
+      const push = (p, a) => {
+        const last = pts[pts.length - 1];
+        if (last && last.p.distanceTo(p) < 1e-4) return;
+        pts.push({ p: p, a: a });
+      };
+      const N = 5, u0 = Math.min(currentU, U_JOIN);
+      for (let i = 0; i <= N; i++) {
+        sampleJourney(u0 + (U_JOIN - u0) * (i / N));
+        const k = i / N;
+        push(_p.clone(), _l.clone().lerp(house, k * k));
+      }
+      const joined = pts.length;       // 1 when one is already at the join
+      // THE EYE COMES DOWN WITH THE AIM, over the last two stones. Standing
+      // at 1500 a metre from a 780 opening the head is 25 degrees below the
+      // horizon and the frame is all ground and lower wall: nobody walks up
+      // to a nijiriguchi at full height, one is already stooping.
+      const nw = MARGE.way.length;
+      MARGE.way.forEach((q, i) => {
+        const d = Math.max(0, (i - (nw - 3)) / 2);
+        push(new THREE.Vector3(q[0], groundAt(q[0], q[1]) + EYE_UP - 0.50 * d, q[1]),
+             house.clone().lerp(door, d));
+      });
+      // AND ONE KNEELS, which is the gesture this door is for. The tea
+      // house's own entrance in this garden holds the figures: 1150 standing
+      // before it, 620 kneeling, 400 with the head at the threshold.
+      push(MARGE.toWorld(hw + t2 + 0.85, 0.90, dz), door);
+      push(MARGE.toWorld(hw + t2 + 0.40, 0.74, dz), door);   // on the stone
+      push(MARGE.toWorld(hw + 0.04, fl + 0.50, dz), door.clone().lerp(cush, 0.45));
+      push(MARGE.toWorld(hw - 0.55, fl + 0.55, dz), cush);
+      // AND IF THE LEG DID COLLAPSE, the head still has to come round: the
+      // turn is spread over the first stone instead of happening on it.
+      if (joined === 1 && pts.length > 1)
+        pts[1].a = pts[0].a.clone().lerp(house, 0.5);
+      return pts;
+    }
+    // A TRAPEZOID AND NOT A SMOOTHSTEP. Eased over the whole trip, a nine
+    // metre walk runs at half as much again as its average through the middle
+    // of it, which is a trot. This ramps up, holds a pace and ramps down.
+    function pace(k) {
+      const a = RAMP;
+      const f = k < a ? k * k / (2 * a)
+              : k < 1 - a ? a / 2 + (k - a)
+              : (1 - a) - (1 - k) * (1 - k) / (2 * a);
+      return Math.max(0, Math.min(1, f / (1 - a)));
+    }
+    function doorWalk(dir) {
+      if (DOORW.on) return false;
+      // COMING OUT, ONE IS AT THE JOIN ALREADY, and the route is built from
+      // where one stands: set that before building it or the way out runs
+      // the whole soto-roji backwards and ends at the garden's gate.
+      if (dir < 0) { currentU = U_JOIN; markIdx = 1; moving = false; }
+      const pts = doorRoute();
+      if (!pts || pts.length < 3) return false;
+      const cum = [0];
+      for (let i = 1; i < pts.length; i++)
+        cum.push(cum[i - 1] + pts[i - 1].p.distanceTo(pts[i].p));
+      DOORW.pts = pts; DOORW.cum = cum; DOORW.len = cum[cum.length - 1];
+      DOORW.dur = Math.max(2.4, DOORW.len / (WALK_MPS * (1 - RAMP)));
+      DOORW.on = true; DOORW.t = 0; DOORW.dir = dir; DOORW.gone = false;
+      DOORW.fov0 = PATH_FOV;         // the garden's own lens, at either end
+      // THE PANEL SLIDES OVER THE LAST METRE AND A HALF, which is while you
+      // are still on the stones: a door that opens once you are standing on
+      // the kutsunugi-ishi opens under your nose.
+      const thr = cum[pts.length - 2];
+      DOORW.kDoor = [thr - 1.70, thr - 0.30];
+      DOORW.kHand = cum[pts.length - 2] / DOORW.len;   // where the veil begins
+      if (dir < 0) {
+        manualDir = 0; manualV = 0;
+        if (MARGE.slide) MARGE.slide(1);
+      }
+      if (notesEl) notesEl.style.pointerEvents = "none";
+      doorStep(0);                   // so the first frame is already on it
+      return true;
+    }
+    window.__doorWalk = () => ({ on: DOORW.on, dir: DOORW.dir,
+      t: +DOORW.t.toFixed(2), dur: +DOORW.dur.toFixed(2),
+      len: +DOORW.len.toFixed(2), gone: DOORW.gone,
+      k: +(DOORW.on ? DOORW.t / DOORW.dur : 0).toFixed(3),
+      frozen: DOORW.frozen, kf: +DOORW.kf.toFixed(3),
+      slide: +DOORW.slide.toFixed(3),
+      at: [+DOORW.p.x.toFixed(2), +DOORW.p.y.toFixed(2), +DOORW.p.z.toFixed(2)] });
+    function doorStep(dt) {
+      if (!DOORW.on) return;
+      if (!DOORW.frozen) DOORW.t += dt;
+      const k = Math.min(1, DOORW.t / DOORW.dur);
+      const kf = DOORW.dir > 0 ? pace(k) : 1 - pace(k);     // along the route
+      DOORW.kf = kf;
+      const s = kf * DOORW.len;
+      const cum = DOORW.cum, pts = DOORW.pts;
+      let i = 0;
+      while (i < pts.length - 2 && s > cum[i + 1]) i++;
+      const seg = cum[i + 1] - cum[i];
+      const t = seg > 1e-6 ? (s - cum[i]) / seg : 0;
+      // ITS OWN TWO VECTORS. `_p` and `_l` belong to the journey and are
+      // rewritten by every aim; a route that borrowed them read back the
+      // rail's position one line after writing its own.
+      DOORW.p.copy(pts[i].p).lerp(pts[i + 1].p, t);
+      DOORW.l.copy(pts[i].a).lerp(pts[i + 1].a, t);
+      DOORW.slide = Math.max(0, Math.min(1,
+        (s - DOORW.kDoor[0]) / (DOORW.kDoor[1] - DOORW.kDoor[0])));
+      if (MARGE.slide) MARGE.slide(smooth(DOORW.slide));
+      // THE LENS MATCHES THE OTHER PAGE'S by the time the frame is handed
+      // over, and comes back to the path's own on the way out: 58 and 54 on
+      // either side of a dissolve is a lurch on a frame meant to be one.
+      const near = Math.max(0, Math.min(1, (kf - DOORW.kHand + 0.30) / 0.30));
+      const want = DOORW.fov0 + (58 - DOORW.fov0) * near;
+      if (Math.abs(camera.fov - want) > 0.02) {
+        camera.fov = want; camera.updateProjectionMatrix();
+      }
+      if (DOORW.dir > 0 && !DOORW.gone && kf >= DOORW.kHand) {
+        DOORW.gone = true;
+        if (window.__leaveTo) window.__leaveTo("en-marge.html?door");
+        else location.href = "en-marge.html?door";
+      }
+      if (k >= 1) doorEnd();
+    }
+    function doorEnd() {
+      DOORW.on = false;
+      if (notesEl) notesEl.style.pointerEvents = "";
+      if (DOORW.dir > 0) return;     // the page is leaving; leave it as it is
+      // THE PANELS GO BACK TO BEING THE FRAME LOOP'S, which sets their own
+      // opacity every frame: an inline value left behind would win for ever.
+      const side = document.querySelector(".side");
+      if (notesEl) notesEl.style.opacity = "";
+      if (side) { side.style.opacity = ""; side.style.pointerEvents = ""; }
+      if (keysEl) keysEl.style.opacity = "";
+      if (hintEl) hintEl.style.opacity = "";
+      // BACK ON THE PATH, standing where the branch left it, with the head
+      // square: the route turned it to the door and nothing else would.
+      currentU = U_JOIN; markIdx = 1; fromU = toU = U_JOIN; moving = false;
+      lookTarget = 1; lookW = 1;
+      spin = 0; tiltHold = 0;
+      targetAngle = currentAngle = 0; targetTilt = currentTilt = 0;
+      walkPrev = null;
+      camera.fov = PATH_FOV; camera.updateProjectionMatrix();
+      if (MARGE.slide) MARGE.slide(0);
+      recentreLook();
+    }
+    // THE CAMERA, WHOLESALE. The route is not on the rail and the mouse has
+    // no business in it, so this runs after the aim and replaces it rather
+    // than adding to it.
+    function doorAim() {
+      camera.position.copy(DOORW.p);
+      camera.lookAt(DOORW.l);
+      // WITH THE ROUTE AND NOT WITH THE CLOCK. Tied to the clock they went
+      // out half a second in and stayed out, which coming the other way is a
+      // garden with no labels and no panel of keys for good.
+      const fade = (1 - Math.min(1, DOORW.kf / 0.22)).toFixed(3);
+      if (notesEl) notesEl.style.opacity = fade;
+      const side = document.querySelector(".side");
+      if (side) { side.style.opacity = fade; side.style.pointerEvents = "none"; }
+      if (keysEl) keysEl.style.opacity = fade;
+      if (hintEl) hintEl.style.opacity = fade;
+    }
+    window.__doorTick = (dt) => { doorStep(dt); if (DOORW.on) doorAim(); };
+    // THE ROUTE ITSELF, point by point, because an end that is right in two
+    // coordinates and wrong in the third is a route to read rather than a
+    // walk to argue about.
+    window.__doorRoute = () => (DOORW.pts || []).map((q, i) => ({
+      i: i, at: [+q.p.x.toFixed(2), +q.p.y.toFixed(2), +q.p.z.toFixed(2)],
+      aim: [+q.a.x.toFixed(2), +q.a.y.toFixed(2), +q.a.z.toFixed(2)],
+      m: +DOORW.cum[i].toFixed(2) }));
+    // WHERE THE OPENING FALLS ON THE SCREEN. Handing the frame to the other
+    // page on a view that does not contain the door is the one way this
+    // crossing can be wrong and still run to the end.
+    window.__doorPoint = () => {
+      if (!MARGE.toWorld) return null;
+      const v = MARGE.toWorld(MARGE.half.w + 0.02, MARGE.rise + 0.42, MARGE.dr.z)
+                  .project(camera);
+      return { x: Math.round((v.x + 1) / 2 * innerWidth),
+               y: Math.round((1 - v.y) / 2 * innerHeight), ahead: v.z < 1 };
+    };
+    // ?doorat=0.87 STANDS AT THAT POINT OF THE ROUTE AND STAYS THERE. The
+    // frame the crossing hands over on is the one thing about it worth
+    // looking at, and it is reached by four seconds of motion: a view that
+    // has to be walked to is a view that cannot be measured.
+    // WAITING FOR THE VEIL, BUT NOT FOR EVER. The flag is set on a frame,
+    // and a frame is the one thing nothing here may depend on: a visitor
+    // left standing at the door because rAF never ran is worse than a walk
+    // that starts under the last of the dissolve.
+    function whenLifted(fn) {
+      const until = performance.now() + 3000;
+      const again = () => {
+        if ((!window.__dismissed && performance.now() < until) || !fn())
+          setTimeout(again, 80);
+      };
+      setTimeout(again, 0);
+    }
+    (function doorSnap() {
+      const v = parseFloat(new URLSearchParams(location.search).get("doorat"));
+      if (!isFinite(v)) return;
+      whenLifted(() => {
+        if (!doorWalk(1)) return false;
+        DOORW.t = Math.max(0, Math.min(1, v)) * DOORW.dur;
+        DOORW.gone = true;           // it stands in the doorway, it does not go
+        DOORW.frozen = true;
+        doorStep(0); doorAim();
+        return true;
+      });
+    })();
+    // ARRIVING FROM THE ROOM, once the veil is up: four seconds that begin
+    // behind a curtain are not four seconds.
+    if (new URLSearchParams(location.search).has("door")) {
+      whenLifted(() => doorWalk(-1));
+    }
     // The entrance shortcut, and it FADES rather than cuts: through the page's
     // OWN veil, the same element the loading screen holds and site.js reuses to
     // leave the page, so there is one dissolve in the project and not a second
@@ -16224,6 +16481,10 @@
     paintHint(MODE);          // the panel starts out saying what auto means
 
     addEventListener("keydown", (e) => {
+      // NOTHING ANSWERS WHILE THE ROUTE TO THE HOUSE IS BEING WALKED. It is
+      // a few seconds long and it has the camera; a key pressed into it
+      // would move a rail nobody is on.
+      if (DOORW.on) return;
       // SHIFT+S OPENS THE STEPS, from anywhere: garden, room or seat. The
       // door used to be the brown silk at the top of the scroll and it was
       // hard to hit -- at some window shapes the silk never comes inside the
@@ -16934,6 +17195,12 @@
           sideEl.style.pointerEvents = menuW > 0.5 ? "" : "none";
         }
       }
+
+      // THE ROUTE TO THE HOUSE, LAST: it is not on the rail and the mouse has
+      // no part in it, so it replaces the aim rather than adding to it, and
+      // it must come after the panels have set their own opacity.
+      doorStep(rdt);
+      if (DOORW.on) doorAim();
 
       if (WIND) { windUniforms.uWindTime.value = t; window.__windTime = t; }
       // outside the walk branch, so the ?cam= views report it too -- it was

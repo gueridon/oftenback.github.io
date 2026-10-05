@@ -28,8 +28,8 @@
   // A CAP IS THE KEY IT NAMES. Caps absent from this table are labels: DRAG
   // and MOUSE name the hand and not a key, and a label is not pressable.
   const CODES = {
-    A: "KeyA", D: "KeyD", H: "KeyH", I: "KeyI", R: "KeyR", S: "KeyS",
-    T: "KeyT", V: "KeyV", SPACE: "Space",
+    A: "KeyA", D: "KeyD", H: "KeyH", I: "KeyI", O: "KeyO", R: "KeyR",
+    S: "KeyS", T: "KeyT", V: "KeyV", SPACE: "Space",
     "PG UP": "PageUp", "PG DN": "PageDown",
     "+": "Equal", "−": "Minus",
   };
